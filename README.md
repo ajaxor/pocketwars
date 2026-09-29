@@ -2,45 +2,34 @@
 
 A turn-based tactics game that runs in your phone's browser. Build units, capture properties, and take the enemy HQ.
 
-The game has no dependencies and no build tooling: `index.html` (loader and title screen), `style.css` and `game.js`.
-
-## Play
-
-Once GitHub Pages is enabled: https://ajaxor.github.io/pocketwars/
-
-Or open `index.html` directly in any modern browser (it shows `build dev` because no commit hash is stamped locally). It is designed for touch screens, but mouse clicks work too.
+**Play:** https://ajaxor.github.io/pocketwars/
 
 ## How to play
 
 - Tap one of your units to select it, tap a highlighted tile to move, then choose Capture or Wait, or tap an enemy to attack (tap again to confirm).
-- Tap a factory, barracks or airfield you own to build vehicles, infantry or aircraft.
-- Infantry, Mech and Sniper units can capture properties. Capturing takes 20 capture points, and each turn adds the unit's current HP.
+- Tap a factory, barracks or airfield you own to build units.
+- Units with the `capture` attribute (Infantry, Mech) capture properties: 20 points, each turn adds the unit's HP.
 - Units on owned properties heal each turn, and each property earns funds.
 - Win by capturing the enemy HQ or by destroying all enemy units when they cannot rebuild.
-- Undo reverts your last move, and it is cleared when you end your turn.
+- Undo reverts your last order; it is cleared when you build or end your turn.
 
-## Units
+## Development
 
-| Group | Units |
-|-------|-------|
-| Infantry (Barracks) | Infantry, Mech, Sniper |
-| Vehicles (Factory) | Recon, Tank, Heavy Tank, Artillery, Flak |
-| Aircraft (Airfield) | Copter, Fighter, Bomber |
+```
+npm start          # dev server at http://localhost:8080  (?map=<id> picks a map)
+npm test           # node --test, Node 22+
+npm run validate   # validates data/*.json and every map
+```
 
-Fighters and Bombers are high air units, so only Flak and Fighters can hit them. Artillery cannot hit copters.
+ES modules and `fetch` need a web server; opening `index.html` from `file://` does not work.
 
-## Hosting and versioning
+- **Entities are data.** Units, terrain, factions, rules and AI tuning are JSON in `data/`. Special handling is an
+  *attribute* on the entity, each with tests: [docs/attributes.md](docs/attributes.md).
+- **Maps are files.** `data/maps/*.map.json`: [docs/map-format.md](docs/map-format.md).
+- **Code layout and deploy:** [docs/architecture.md](docs/architecture.md).
 
-Deploys run through GitHub Actions (`.github/workflows/pages.yml`) on every push to `main`.
+Deploys run through GitHub Actions on every push to `main`: tests and data validation gate the deploy, and each build is
+published under `v/<commit>/` with a no-cache `version.json` pointing at it. One-time setup: Settings -> Pages -> Source:
+**GitHub Actions**.
 
-One-time setup: Settings, then Pages, then Build and deployment, then Source: **GitHub Actions**.
-
-On each deploy the workflow copies the game files into a `_site` folder, writes `version.json` with the short commit hash and build time, and stamps the hash into `index.html`. The title screen shows that hash as `build abc1234`.
-
-Cache busting: the page fetches `version.json` with `no-store` on every load and loads `style.css` and `game.js` with `?v=<hash>`, so a reload after a deploy gets the new code even if the browser cached the old files. If the cached `index.html` itself is stale, it jumps once to `?v=<hash>` to fetch a fresh copy. Coming back to the title screen after a new deploy shows an update button.
-
-## Development notes
-
-- `game.js` holds the game data, rules, AI and rendering. `style.css` holds the game UI styles. The title screen and loader live in `index.html`.
-- To test locally, serve the folder (for example `python3 -m http.server`) and open it. With no `version.json`, the loader falls back to a timestamp so you always get your latest edits.
-- The undo feature must be removed if fog of war is ever added, because undoing a move would give free scouting.
+The undo feature must be removed if fog of war is ever added, because undoing a move would give free scouting.
