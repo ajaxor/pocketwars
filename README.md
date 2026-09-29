@@ -2,13 +2,13 @@
 
 A turn-based tactics game that runs in your phone's browser. Build units, capture properties, and take the enemy HQ.
 
-The whole game is one self-contained file, `index.html`, with no dependencies and no build step.
+The game has no dependencies and no build tooling: `index.html` (loader and title screen), `style.css` and `game.js`.
 
 ## Play
 
 Once GitHub Pages is enabled: https://ajaxor.github.io/pocketwars/
 
-Or open `index.html` directly in any modern browser. It is designed for touch screens, but mouse clicks work too.
+Or open `index.html` directly in any modern browser (it shows `build dev` because no commit hash is stamped locally). It is designed for touch screens, but mouse clicks work too.
 
 ## How to play
 
@@ -29,15 +29,18 @@ Or open `index.html` directly in any modern browser. It is designed for touch sc
 
 Fighters and Bombers are high air units, so only Flak and Fighters can hit them. Artillery cannot hit copters.
 
-## Hosting on GitHub Pages
+## Hosting and versioning
 
-1. Push to `main`.
-2. In the repository, go to Settings, then Pages.
-3. Under Build and deployment, choose Deploy from a branch, select `main` and `/ (root)`, and save.
+Deploys run through GitHub Actions (`.github/workflows/pages.yml`) on every push to `main`.
 
-The `.nojekyll` file tells Pages to serve the files as they are.
+One-time setup: Settings, then Pages, then Build and deployment, then Source: **GitHub Actions**.
+
+On each deploy the workflow copies the game files into a `_site` folder, writes `version.json` with the short commit hash and build time, and stamps the hash into `index.html`. The title screen shows that hash as `build abc1234`.
+
+Cache busting: the page fetches `version.json` with `no-store` on every load and loads `style.css` and `game.js` with `?v=<hash>`, so a reload after a deploy gets the new code even if the browser cached the old files. If the cached `index.html` itself is stale, it jumps once to `?v=<hash>` to fetch a fresh copy. Coming back to the title screen after a new deploy shows an update button.
 
 ## Development notes
 
-- Everything lives in `index.html`: styles, game data, rules, AI and rendering.
+- `game.js` holds the game data, rules, AI and rendering. `style.css` holds the game UI styles. The title screen and loader live in `index.html`.
+- To test locally, serve the folder (for example `python3 -m http.server`) and open it. With no `version.json`, the loader falls back to a timestamp so you always get your latest edits.
 - The undo feature must be removed if fog of war is ever added, because undoing a move would give free scouting.
