@@ -1,4 +1,4 @@
-name: Deploy to GitHub Pages
+name: Test and deploy to GitHub Pages
 
 on:
   push:
@@ -15,7 +15,18 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm run validate
+      - run: npm test
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages
@@ -23,15 +34,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Every build is published under v/<hash>/ so module imports and data fetches (all relative) are
+      # cache-busted together; index.html reads version.json (never cached) to find the current folder.
       - name: Stamp build
         run: |
           SHORT="${GITHUB_SHA::7}"
-          mkdir _site
-          cp index.html style.css game.js .nojekyll _site/
+          mkdir -p "_site/v/${SHORT}"
+          cp -r src data style.css "_site/v/${SHORT}/"
+          cp index.html .nojekyll _site/
           sed -i "s/__BUILD__/${SHORT}/g" _site/index.html
           printf '{"hash":"%s","full":"%s","built":"%s"}\n' \
             "$SHORT" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > _site/version.json
           cat _site/version.json
+          find _site -type f | sort
 
       - uses: actions/configure-pages@v5
 

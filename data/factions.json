@@ -1,0 +1,4 @@
+{
+  "orange_star": { "name": "Orange Star", "color": "#e8712c", "dark": "#9a3f0e" },
+  "blue_moon":   { "name": "Blue Moon",   "color": "#3c74d6", "dark": "#1e3f80" }
+}

@@ -1,0 +1,10 @@
+{
+  "maxHp": 10,
+  "neutralColor": "#b9b9b9",
+  "moveClasses": ["foot", "vehicle", "air"],
+  "layers": {
+    "ground":   { "label": null },
+    "low_air":  { "label": "low air",  "airborne": true },
+    "high_air": { "label": "high air", "airborne": true }
+  }
+}

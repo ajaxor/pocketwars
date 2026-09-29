@@ -12,8 +12,8 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d2436'/%3E%3Crect x='6' y='16' width='20' height='8' rx='2' fill='%23e8712c'/%3E%3Crect x='11' y='10' width='10' height='7' rx='2' fill='%239a3f0e'/%3E%3Crect x='19' y='12' width='9' height='2' fill='%23f3ecd6'/%3E%3C/svg%3E">
 <title>Pocket Wars</title>
-<!-- Shell: stays tiny and stable. style.css and game.js are loaded by the loader below with a
-     version tag from version.json (fetched with no-store), so a reload always gets the newest build. -->
+<!-- Shell: stays tiny and stable. The loader below reads version.json (fetched with no-store) and loads the
+     game from that build's own directory (v/<hash>/), so every module and data file a reload touches is new. -->
 <style>
 html,body{height:100%;margin:0;background:#1d2436}
 #tl{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;box-sizing:border-box;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));background:radial-gradient(ellipse at 50% 30%,#2f3b5e 0%,#1d2436 70%);color:#f3ecd6;font:600 14px ui-monospace,Menlo,monospace;text-align:center;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
@@ -57,23 +57,26 @@ const fill=$('tl-fill'),status=$('tl-status'),go=$('tl-go'),ver=$('tl-ver'),upd=
 let loaded=null,latest=null,ready=false,started=false;
 const prog=(p,t)=>{fill.style.width=p+'%';status.textContent=t};
 const getVersion=async()=>{try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return await r.json()}catch(e){return null}};
-const load=(tag,attrs)=>new Promise((ok,no)=>{const el=document.createElement(tag);Object.assign(el,attrs);el.onload=ok;el.onerror=()=>no(new Error(attrs.src||attrs.href));(tag=='script'?document.body:document.head).appendChild(el)});
-const goTo=h=>location.replace(location.pathname+'?v='+h);
+const loadCss=href=>new Promise((ok,no)=>{const el=document.createElement('link');el.rel='stylesheet';el.href=href;el.onload=ok;el.onerror=()=>no(new Error(href));document.head.appendChild(el)});
+const goTo=h=>{const q=new URLSearchParams(location.search);q.set('v',h);location.replace(location.pathname+'?'+q)};
 
 async function boot(){
   prog(10,'Checking for updates...');
   const v=await getVersion();
   // The shell itself may be a stale cached copy: jump to a fresh URL once if the build differs.
-  if(v&&!DEV&&v.hash!==BUILD&&!location.search.includes('v='+v.hash)){goTo(v.hash);return}
-  const tag=v?v.hash:String(Date.now());
+  if(v&&!DEV&&v.hash!==BUILD&&new URLSearchParams(location.search).get('v')!==v.hash){goTo(v.hash);return}
   loaded=v?v.hash:'dev';latest=loaded;
   ver.textContent='build '+(v?v.hash+(v.built?' - '+v.built.slice(0,10):''):'dev');
+  // Deployed builds live in v/<hash>/ (see .github/workflows/pages.yml); a local checkout serves from the repo root.
+  const base=v&&!DEV?'v/'+v.hash+'/':'./',tag=v&&!DEV?v.hash:String(Date.now());
   try{
-    prog(35,'Loading styles...');await load('link',{rel:'stylesheet',href:'style.css?v='+tag});
-    prog(70,'Loading game...');await load('script',{src:'game.js?v='+tag});
+    if(!v&&!DEV)throw new Error('version.json is missing');
+    prog(35,'Loading styles...');await loadCss(base+'style.css?v='+tag);
+    prog(70,'Loading game...');const game=await import(new URL(base+'src/main.js?v='+tag,location.href).href);await game.boot();
     prog(100,'Ready');ready=true;go.disabled=false;go.textContent='Start';
   }catch(e){
-    prog(0,'Could not load the game. Check your connection.');go.disabled=false;go.textContent='Retry';
+    console.error(e);
+    prog(0,'Could not load the game: '+String(e.message||e).split('\n')[0].slice(0,120));go.disabled=false;go.textContent='Retry';
   }
 }
 go.onclick=()=>{

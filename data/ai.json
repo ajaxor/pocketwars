@@ -1,0 +1,31 @@
+{
+  "weights": {
+    "distanceToGoal": 2,
+    "unreachableDistance": 60,
+    "terrainDefense": 0.4,
+    "attackBase": 60,
+    "killBonus": 4,
+    "captureBase": 50,
+    "victoryCaptureBonus": 100,
+    "costUnit": 1000
+  },
+  "build": {
+    "infantry": [
+      { "unit": "mech",    "max": 2 },
+      { "unit": "sniper",  "max": 1 },
+      { "unit": "infantry", "max": 5 }
+    ],
+    "aircraft": [
+      { "unit": "bomber",  "max": 1 },
+      { "unit": "fighter", "max": 1 },
+      { "unit": "copter",  "max": 2 }
+    ],
+    "vehicle": [
+      { "unit": "flak",       "max": 2, "when": "enemyHasAirborne" },
+      { "unit": "heavy_tank", "max": 2 },
+      { "unit": "tank",       "max": 3 },
+      { "unit": "artillery",  "max": 2 },
+      { "unit": "recon",      "max": 1 }
+    ]
+  }
+}

@@ -1,0 +1,169 @@
+// Draws the board. The renderer only READS the game and a `view` object describing the current selection
+// (owned by the input controller); it never changes game state.
+//
+// view = {
+//   selectedId: number|null       unit currently selected
+//   dest: {x,y}|null              tentative destination of the selected unit (move preview)
+//   reach: ReachMap|null          tiles to highlight as reachable
+//   attackTiles: Set<number>|null tile indexes outlined as the attack range
+//   targets: Unit[]               enemies that can be attacked right now (mode 'act')
+//   showTargets: boolean
+//   pendingTargetId: number|null  enemy awaiting attack confirmation
+// }
+
+import { calcDamage, canTarget } from '../engine/combat.js';
+import { tileIndex, unitById } from '../engine/queries.js';
+import { drawTile } from './terrain-sprites.js';
+import { drawUnit } from './unit-sprites.js';
+
+export class Renderer {
+  constructor(canvas, game, effects, animator) {
+    this.cv = canvas;
+    this.g = canvas.getContext('2d');
+    this.game = game;
+    this.effects = effects;
+    this.animator = animator;
+    this.S = 40;
+  }
+
+  get tileSize() { return this.S; }
+
+  colorsOf(owner) {
+    const { registry, map } = this.game;
+    return owner === null ? { color: registry.rules.neutralColor, dark: registry.rules.neutralColor } : registry.faction(map.players[owner].faction);
+  }
+
+  /** Resize the canvas to fit the window (tiles are at least 24px). */
+  fit() {
+    const { map } = this.game;
+    const S = Math.max(24, Math.min(Math.floor(Math.min(innerWidth, 440) / map.width), Math.floor((innerHeight - 200) / map.height)));
+    const d = devicePixelRatio || 1;
+    this.S = S;
+    this.cv.width = map.width * S * d;
+    this.cv.height = map.height * S * d;
+    this.cv.style.width = map.width * S + 'px';
+    this.cv.style.height = map.height * S + 'px';
+    this.g.setTransform(d, 0, 0, d, 0, 0);
+  }
+
+  /** Screen position (tile units -> pixels) of the tile a canvas point falls in. */
+  tileAt(clientX, clientY) {
+    const r = this.cv.getBoundingClientRect();
+    return { x: Math.floor((clientX - r.left) / this.S), y: Math.floor((clientY - r.top) / this.S) };
+  }
+
+  logicalPos(u, view) {
+    return view.dest && u.id === view.selectedId ? view.dest : u;
+  }
+
+  drawUnitAt(g, u, view, now, { dying = false, alpha = 1 } = {}) {
+    const { S, game, animator, effects } = this;
+    const lp = dying ? u : this.logicalPos(u, view);
+    const moving = animator.current !== null && animator.current.unitId === u.id;
+    const base = animator.positionOf(u.id, now, S) || [lp.x * S, lp.y * S];
+    const [dx, dy] = effects.unitOffset(u.id, now, S);
+    const acted = u.done && u.owner === game.state.turn;
+    drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
+      def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
+      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
+    });
+  }
+
+  drawArrow(now) {
+    const arrow = this.animator.arrow;
+    if (!arrow || arrow.length < 2) return;
+    const g = this.g;
+    const s = this.S;
+    const n = arrow.length;
+    const C = arrow.map(([x, y]) => [(x + .5) * s, (y + .5) * s]);
+    const [dx, dy] = C[n - 1];
+    const [qx, qy] = C[n - 2];
+    const a = Math.atan2(dy - qy, dx - qx);
+    const hl = s * .3;
+    const tx = qx + Math.cos(a) * s * .38;
+    const ty = qy + Math.sin(a) * s * .38;
+    const bx = tx - Math.cos(a) * hl * .7;
+    const by = ty - Math.sin(a) * hl * .7;
+    const P = C.slice(0, n - 1);
+    const line = (w, col, dash) => {
+      g.strokeStyle = col; g.lineWidth = w; g.setLineDash(dash ? [s * .2, s * .12] : []); g.lineDashOffset = dash ? -now / 40 : 0; g.beginPath();
+      P.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.lineTo(bx, by); g.stroke();
+    };
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round'; line(s * .2, 'rgba(0,0,0,.6)'); line(s * .11, '#ffe45c', 1); g.setLineDash([]);
+    g.beginPath(); g.moveTo(tx, ty); g.lineTo(tx - Math.cos(a - .55) * hl, ty - Math.sin(a - .55) * hl); g.lineTo(tx - Math.cos(a + .55) * hl, ty - Math.sin(a + .55) * hl); g.closePath();
+    g.lineWidth = s * .08; g.strokeStyle = 'rgba(0,0,0,.6)'; g.stroke(); g.fillStyle = '#ffe45c'; g.fill(); g.restore();
+  }
+
+  draw(view, now) {
+    const { g, S, game } = this;
+    const { map, state } = game;
+    const sel = view.selectedId !== null ? unitById(game, view.selectedId) : null;
+    const anim = this.animator.active;
+
+    for (let y = 0; y < map.height; y++) {
+      for (let x = 0; x < map.width; x++) {
+        const terrain = game.registry.terrainDef(map.terrain[y][x]);
+        drawTile(g, x, y, S, terrain, terrain.attributes.property ? this.colorsOf(state.owners[y][x]).color : null);
+      }
+    }
+    if (view.reach) {
+      g.fillStyle = 'rgba(255,255,255,.38)';
+      for (const { x, y } of view.reach.tiles()) g.fillRect(x * S, y * S, S, S);
+    }
+    if (view.showTargets) {
+      g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;
+      view.targets.forEach((e) => g.strokeRect(e.x * S + 2.5, e.y * S + 2.5, S - 5, S - 5));
+    }
+    state.units.forEach((u) => this.drawUnitAt(g, u, view, now));
+    this.drawArrow(now);
+
+    const atk = view.attackTiles;
+    if (atk) {
+      g.save(); g.strokeStyle = '#ff3b3b'; g.lineWidth = 3; g.lineCap = 'square'; g.beginPath();
+      for (const k of atk) {
+        const x = k % map.width;
+        const y = Math.floor(k / map.width);
+        const l = x * S + 1.5;
+        const t = y * S + 1.5;
+        const r = l + S - 3;
+        const b = t + S - 3;
+        if (!atk.has(tileIndex(map, x, y - 1)) || y === 0) { g.moveTo(l, t); g.lineTo(r, t); }
+        if (!atk.has(tileIndex(map, x, y + 1)) || y === map.height - 1) { g.moveTo(l, b); g.lineTo(r, b); }
+        if (!atk.has(tileIndex(map, x - 1, y)) || x === 0) { g.moveTo(l, t); g.lineTo(l, b); }
+        if (!atk.has(tileIndex(map, x + 1, y)) || x === map.width - 1) { g.moveTo(r, t); g.lineTo(r, b); }
+      }
+      g.stroke(); g.restore();
+    }
+    if (atk && sel) {
+      g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;
+      state.units.forEach((e) => {
+        if (e.owner !== sel.owner && atk.has(tileIndex(map, e.x, e.y)) && canTarget(game, sel, e)) g.strokeRect(e.x * S + 2, e.y * S + 2, S - 4, S - 4);
+      });
+    }
+    const pending = view.pendingTargetId !== null && sel ? unitById(game, view.pendingTargetId) : null;
+    if (pending) {
+      const ex = (pending.x + .5) * S;
+      const ey = (pending.y + .5) * S;
+      const r = S * (.4 + .04 * Math.sin(now / 110));
+      g.strokeStyle = '#ff3b3b'; g.lineWidth = 3; g.beginPath(); g.arc(ex, ey, r, 0, 7); g.stroke();
+      for (let i = 0; i < 4; i++) {
+        const a = i * Math.PI / 2;
+        const c = Math.cos(a);
+        const n = Math.sin(a);
+        g.beginPath(); g.moveTo(ex + c * (r - S * .1), ey + n * (r - S * .1)); g.lineTo(ex + c * (r + S * .12), ey + n * (r + S * .12)); g.stroke();
+      }
+      const n = calcDamage(game, sel, pending);
+      const cx = (pending.x + (pending.x < map.width - 1 ? 1.5 : -.5)) * S;
+      const cy = (pending.y + .5) * S;
+      const w = S * .82;
+      const h = S * .42;
+      g.save(); g.fillStyle = 'rgba(255,255,255,.95)'; g.strokeStyle = '#ff3b3b'; g.lineWidth = 2; g.beginPath(); g.roundRect(cx - w / 2, cy - h / 2, w, h, 6); g.fill(); g.stroke();
+      g.fillStyle = '#d62828'; g.font = `800 ${S * .32}px ui-monospace,monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('-' + n, cx, cy); g.restore();
+    }
+    if (sel && !anim) {
+      const p = this.logicalPos(sel, view);
+      g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(p.x * S + 1, p.y * S + 1, S - 2, S - 2);
+    }
+    this.effects.draw(g, now, S, (unit, alpha) => this.drawUnitAt(g, unit, view, now, { dying: true, alpha }));
+  }
+}
