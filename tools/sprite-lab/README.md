@@ -14,13 +14,13 @@ Images land in `tools/sprite-lab/out/` (git-ignored).
 
 ```
 node lab.mjs list                                  all styles found
-node lab.mjs sheet flat-b                          every unit x both factions (detail view, 176 px tiles)
-node lab.mjs compare current,flat-a,flat-b         styles stacked for side-by-side (120 px = a phone tile on a 3x screen)
-node lab.mjs units current,flat-b sniper,flak      before/after: chosen units, styles as columns
-node lab.mjs zoom flat-b flak                      one unit large + phone size + 1x, on every terrain
-node lab.mjs anim flat-b flak                      animation filmstrip (spinning radar, recoil, running gear...)
-node lab.mjs check flat-b                          numbers: size, tile overflow, shadow fit
-node lab.mjs gallery                               rebuild gallery/ (images + index.html) from every style
+node lab.mjs sheet flat                            every unit x both factions (detail view, 176 px tiles)
+node lab.mjs compare current,flat                  styles stacked for side-by-side (120 px = a phone tile on a 3x screen)
+node lab.mjs units current,flat sniper,flak        before/after: chosen units, styles as columns
+node lab.mjs zoom flat flak                        one unit large + phone size + 1x, on every terrain
+node lab.mjs anim flat flak                        animation filmstrip (spinning radar, recoil, running gear...)
+node lab.mjs check flat                            numbers: size, tile overflow, shadow fit
+node lab.mjs gallery                               rebuild the live gallery page (gallery/index.html)
 ```
 
 Flags: `--bg plain|forest|mountain|road|sea|#rrggbb`, `--t <seconds into the animation>`, `--size <tile px>`, `--out <file.png>`.
@@ -32,33 +32,33 @@ Details that vanish at 40 are not worth the pixels; silhouette and faction colou
 `check` catches what eyes miss: a unit wider than its tile, a shadow that is the wrong width or detached from the
 body, an unexpectedly small unit. Run it after every edit.
 
-## Styles
+## The flat sprite set
 
-Two kinds are discovered automatically:
+`variants/flat.js` is the unit art: one game-compatible module exporting `SPRITES` and `SHADOWS`, with the same
+signature as `src/render/unit-sprites.js` (plus a shadow per unit). It is self-contained and browser-safe.
+`variants/frame.js` composes one frame exactly as the game's `drawUnit` does; the lab and the gallery both use it.
 
-| Folder | Exports | Use |
-| --- | --- | --- |
-| `variants/*.js` | `meta`, `SPRITES`, `SHADOWS` | Game-compatible sets. Same signature as `src/render/unit-sprites.js`, so they can be copied into the game as-is. `check` works on these. |
-| `styles/*.mjs` | `meta`, `draw(g, id, o)` | Free-form experiments (pixel art, toy vector, badge). |
+`lab.mjs` also discovers any other file in `variants/` (game-compatible, exports `meta`, `SPRITES`, `SHADOWS`) or
+`styles/` (free-form, exports `meta` and `draw(g, id, o)`), so a new direction can be prototyped beside it and compared
+with `compare`. `current` is the game's own sprites, for before/after.
 
-`variants/flat-core.js` holds all the flat drawings; `flat-a`, `flat-b` and `flat-c` are three finishes of it:
+The infantry family (infantry, mech, sniper) shares one body, head and walk cycle; each unit's `KIT` supplies only its
+pack and weapon, so any change to the body applies to all three.
 
-| Variant | Finish |
-| --- | --- |
-| `flat-a` | Pure flat fills, as the game looks today, with more detail |
-| `flat-b` | A light band on top and a dark band underneath every part |
-| `flat-c` | Banded shading plus a thin outline in each part's own darker colour |
+## The gallery
 
-To add a look, add a file that exports `meta` and calls `makeFlat({...})` (or write a new set), then `node lab.mjs gallery`.
+`gallery/index.html` is a live page: it runs `flat.js` on canvas with the game's animation states (Idle, Moving at
+double speed, and the faded still Done pose), with controls for tile size and ground colour. It is published to
+GitHub Pages at `/gallery/`, and locally at `http://localhost:8080/gallery/` (`npm start`).
+`node lab.mjs gallery` regenerates the page shell; `gallery/preview.js` is hand-written.
 
-## Adopting a variant in the game
+## Adopting the sprites in the game
 
 Sprite names already match `data/units.json`, so no data changes are needed.
 
-1. Copy `variants/flat-core.js` to `src/render/` and export the chosen look from it (`makeFlat({ shade: true })`).
-2. In `src/render/unit-sprites.js`, use its `SPRITES` in place of the current table.
-3. In `drawUnit`, replace the generic shadow ellipse with `(SHADOWS[def.render.sprite] || defaultShadow)(g, { s, alt, w, ph, run })`,
-   drawn before the altitude translation so aircraft shadows stay on the ground.
+1. Copy `variants/flat.js` to `src/render/` and use its `SPRITES` in place of the table in `unit-sprites.js`.
+2. In `drawUnit`, replace the generic shadow ellipse with `SHADOWS[def.render.sprite](g, { s, alt, w, ph, run })`,
+   drawn before the altitude translation so aircraft shadows stay on the ground. `variants/frame.js` shows the order.
 
 ## Notes for design work
 

@@ -1,93 +1,71 @@
-// Rebuilds gallery/img/*.png and gallery/index.html from whatever styles exist. Run: node lab.mjs gallery
-import { writeFileSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
+// Writes gallery/index.html: a static shell with the unit and faction data embedded. The page itself
+// (gallery/preview.js) renders the real sprite code live, so nothing here draws. Run: node lab.mjs gallery
+import { writeFileSync } from 'node:fs';
 import path from 'node:path';
-import { REPO } from './lib.mjs';
-import * as R from './render.mjs';
+import { REPO, units, factions, terrain } from './lib.mjs';
 
-const GROUPS = [
-  {
-    title: 'Flat variations',
-    intro: 'Three takes on the flat look you liked, all drawn from the same shapes. Each unit now casts a shadow shaped like itself, has more detail, and the sniper, flak, fighter and bomber are redrawn. Row pairs are Orange Star / Blue Moon.',
-    styles: ['current', 'flat-a', 'flat-b', 'flat-c'],
-    focus: ['sniper', 'flak', 'fighter', 'bomber', 'infantry', 'copter'],
-    loupe: ['flat-b', 'flak'],
-    anim: ['flat-b', 'flak'],
-  },
-  {
-    title: 'Earlier explorations',
-    intro: 'The first round of different directions, kept for comparison.',
-    styles: ['current', 'pixel', 'toy', 'badge'],
-  },
-];
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;');
 
-const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
-
-export function build(styles, save) {
-  const IMG = path.join(REPO, 'gallery', 'img');
-  mkdirSync(IMG, { recursive: true });
-  for (const f of readdirSync(IMG)) rmSync(path.join(IMG, f));          // no orphaned images
-  const out = (name, cv) => { save(cv, path.join(IMG, name)); return `img/${name}`; };
-  const pick = (id) => { if (!styles[id]) throw new Error(`gallery: style "${id}" not found`); return styles[id]; };
-  const sheets = new Set();
-  let html = '';
-
-  GROUPS.forEach((grp, gi) => {
-    const list = grp.styles.map(pick);
-    const tag = gi === 0 ? 'flat' : 'earlier';
-    html += `\n  <h2>${esc(grp.title)}</h2>\n  <p>${esc(grp.intro)}</p>\n`;
-    html += `  <h3>Side by side at phone size</h3>\n  <p>Top to bottom: ${list.map((s) => esc(s.meta.name)).join(', ')}. About a 40 px tile on a 3x screen.</p>\n`;
-    html += `  <div class="sheet full"><img src="${out(`compare-${tag}.png`, R.compare(list, { size: 120 }))}" alt="${esc(grp.title)} compared at phone size" loading="lazy"></div>\n`;
-    const oneX = R.compare(list, { size: 40 });
-    html += `  <h3>The same at 1x</h3>\n  <p>Native size, where readability is decided.</p>\n  <div class="sheet px"><img src="${out(`compare-${tag}-1x.png`, oneX)}" alt="${esc(grp.title)} at 1x" style="width:${oneX.width}px"></div>\n`;
-    if (grp.focus) {
-      html += `  <h3>Before and after</h3>\n  <p>Columns: ${list.map((s) => esc(s.meta.name)).join(', ')}. Units: ${grp.focus.join(', ')}.</p>\n`;
-      html += `  <div class="sheet full"><img src="${out(`focus-${tag}.png`, R.unitsGrid(list, grp.focus, { size: 150 }))}" alt="Before and after" loading="lazy" style="max-width:${list.length * 160 + 20}px"></div>\n`;
-    }
-    if (grp.loupe) {
-      const [sid, uid] = grp.loupe;
-      html += `  <h3>Loupe: ${esc(uid)}</h3>\n  <p>${esc(pick(sid).meta.name)} large, at phone size and at 1x on every terrain.</p>\n  <div class="sheet full"><img src="${out(`zoom-${sid}-${uid}.png`, R.zoom(pick(sid), uid))}" alt="${uid} loupe" loading="lazy"></div>\n`;
-    }
-    if (grp.anim) {
-      const [sid, uid] = grp.anim;
-      html += `  <h3>Animation: ${esc(uid)}</h3>\n  <p>One second of the idle animation in eight frames.</p>\n  <div class="sheet"><img src="${out(`anim-${sid}-${uid}.png`, R.anim(pick(sid), uid, { frames: 8, period: 1, size: 130 }))}" alt="${uid} animation" loading="lazy"></div>\n`;
-    }
-    for (const s of list) {
-      if (s.meta.id === 'current' && gi > 0) continue;
-      if (sheets.has(s.meta.id)) continue; sheets.add(s.meta.id);
-      html += `  <h3>${esc(s.meta.name)}</h3>\n  <p>${esc(s.meta.blurb)}</p>\n  <div class="sheet${s.meta.id === 'pixel' ? ' px' : ''}"><img src="${out(`sheet-${s.meta.id}.png`, R.sheet(s, { size: 176 }))}" alt="${esc(s.meta.name)}" loading="lazy"></div>\n`;
-    }
-  });
-
+export function build() {
+  const data = {
+    units: Object.entries(units).map(([id, u]) => ({
+      id, name: u.name, sprite: u.render.sprite, altitude: u.render.altitude || 0,
+      note: `${u.category} · move ${u.move} · range ${u.range[0] === u.range[1] ? u.range[0] : `${u.range[0]}–${u.range[1]}`}`,
+    })),
+    factions: Object.entries(factions).map(([id, f]) => ({ id, name: f.name, color: f.color, dark: f.dark })),
+    terrain: { plain: terrain.plain.render.base, road: terrain.road.render.base, sea: terrain.sea.render.base },
+  };
   const page = `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pocket Wars: unit art styles</title>
+<title>Pocket Wars: unit art</title>
 <style>
-  :root { color-scheme: dark; }
+  :root { color-scheme: dark; --s: 96px; }
+  * { box-sizing: border-box; }
   body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
-  main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+  header, main { max-width: 980px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 20px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
-  h2 { font-size: 19px; margin: 40px 0 4px; padding-top: 14px; border-top: 1px solid #2a2d35; }
-  h3 { font-size: 15px; margin: 22px 0 2px; }
-  p { margin: 4px 0 10px; color: #b9b5a8; }
-  .sheet { overflow-x: auto; border-radius: 10px; background: #86b95c; -webkit-overflow-scrolling: touch; }
-  .sheet img { display: block; height: auto; max-width: none; width: 1100px; }
-  .full img { width: 100%; max-width: 100%; }
-  .px img { image-rendering: pixelated; }
+  p { margin: 4px 0 12px; color: #b9b5a8; }
+  .controls { position: sticky; top: 0; z-index: 2; background: #16181dee; backdrop-filter: blur(6px); border-bottom: 1px solid #2a2d35; }
+  .controls-inner { max-width: 980px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b9b5a8; }
+  .seg { display: inline-flex; border: 1px solid #383c46; border-radius: 8px; overflow: hidden; }
+  .seg button, #pause { background: #20232b; color: #e9e6dc; border: 0; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid #383c46; }
+  .seg button[aria-pressed="true"], #pause[aria-pressed="true"] { background: #3c74d6; color: #fff; }
+  #pause { border: 1px solid #383c46; border-radius: 8px; }
+  input[type=range] { width: 130px; accent-color: #e8712c; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 2 + 34px), 1fr)); gap: 12px; padding: 16px 0 48px; }
+  .card { background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 10px; }
+  .name { font-weight: 600; }
+  .note { font-size: 12px; color: #8a877c; margin-bottom: 8px; }
+  .row { display: flex; gap: 8px; }
+  canvas { display: block; border-radius: 8px; flex: none; }
   .hint { font-size: 13px; color: #8a877c; }
   a { color: #8fc2ee; }
 </style>
 </head>
 <body>
+<header>
+  <h1>Unit art</h1>
+  <p>The real sprite code, drawn live with the animations running. Orange Star on the left, Blue Moon on the right.</p>
+</header>
+<div class="controls"><div class="controls-inner">
+  <div class="ctl">State <span class="seg" id="mode"><button data-v="idle" aria-pressed="true">Idle</button><button data-v="moving" aria-pressed="false">Moving</button><button data-v="done" aria-pressed="false">Done</button></span></div>
+  <div class="ctl">Ground <span class="seg" id="bg"><button data-v="plain" aria-pressed="true">Grass</button><button data-v="road" aria-pressed="false">Road</button><button data-v="sea" aria-pressed="false">Sea</button></span></div>
+  <div class="ctl">Size <input id="size" type="range" min="40" max="160" step="4" value="96" aria-label="Tile size"><output id="sizeOut">96 px</output></div>
+  <button id="pause" aria-pressed="false">Pause</button>
+</div></div>
 <main>
-  <h1>Unit art styles</h1>
-  <p>Every unit, both factions, drawn by the same code that would ship in the game. Swipe sideways on the wide sheets.</p>
-${html}
-  <p class="hint" style="margin-top:32px">Generated by <code>node tools/sprite-lab/lab.mjs gallery</code>. Add a style file and rerun to include it.</p>
+  <div id="grid"></div>
+  <p class="hint">Idle is what a ready unit does, Moving is the same at double speed, and Done is the faded still pose of a unit that has acted. 40 px is a phone tile at 1x. Generated by <code>node tools/sprite-lab/lab.mjs gallery</code>.</p>
   <p class="hint"><a href="../">Back to the game</a></p>
 </main>
+<script type="application/json" id="data">${JSON.stringify(data).replace(/</g, '\\u003c')}</script>
+<script type="module" src="preview.js"></script>
 </body>
 </html>
 `;

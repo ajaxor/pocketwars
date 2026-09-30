@@ -1,11 +1,8 @@
-// Flat-style unit sprites, take 2. Drop-in compatible with src/render/unit-sprites.js:
+// Pocket Wars flat unit sprites. Drop-in compatible with src/render/unit-sprites.js:
 //   SPRITES[name](g, { s, c, dk, w, ph, run, b, j })   same parameters as the current sprites
 //   SHADOWS[name](g, { s, alt, w, ph, run })            NEW: each unit casts a shadow shaped like itself
-// Self-contained and browser-safe (no imports), so a variant can be copied straight into src/render/.
-//
-// makeFlat(look) builds one full set. `look` only changes how parts are finished, never the drawings:
-//   shade: add a light band on top and a dark band underneath each part (still flat fills, no gradients)
-//   tone:  add a thin tone-on-tone outline (a darker version of each part's own colour, never black)
+// Self-contained and browser-safe (no imports), so this file can be copied straight into src/render/ and is also
+// what the gallery page runs live.
 // Everything is drawn in a 100-unit tile space centred on (0, 0), facing right.
 
 const hexToRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -17,38 +14,24 @@ const darken = (h, t) => mix(h, '#000000', t);
 // neutral colours shared by every faction
 const N = {
   ink: '#222', tread: '#2b2b2b', pad: '#9a9a9a', steel: '#9a9fa8', steelD: '#565a64', glass: '#cfe6f5',
-  skin: '#f1c99b', boot: '#2e2620', brown: '#7a5230', olive: '#4b5238', oliveL: '#6b7048', flame: '#ff9a2e', flameL: '#ffd35c',
+  skin: '#f1c99b', boot: '#2e2620', brown: '#7a5230', olive: '#4b5238', oliveL: '#6b7048', oliveD: '#3a4029', flame: '#ff9a2e', flameL: '#ffd35c',
 };
 
-export function makeFlat(look = {}) {
-  const { shade = false, tone = false } = look;
+function build() {
 
-  // A painter bound to one canvas context. Every method fills a shape, then applies the look.
+  // A painter bound to one canvas context: every method fills one flat shape.
   function painter(g) {
-    const finish = (col, bb) => {
-      g.fillStyle = col; g.fill();
-      if (shade) {
-        const [x0, y0, x1, y1] = bb, h = y1 - y0;
-        if (h > 5) {
-          g.save(); g.clip();
-          g.fillStyle = 'rgba(255,255,255,.2)'; g.fillRect(x0 - 1, y0 - 1, x1 - x0 + 2, h * .3 + 1);
-          g.fillStyle = 'rgba(0,0,0,.17)'; g.fillRect(x0 - 1, y0 + h * .72, x1 - x0 + 2, h * .3 + 1);
-          g.restore();
-        }
-      }
-      if (tone) { g.lineWidth = 1.4; g.lineJoin = 'round'; g.strokeStyle = darken(col, .42); g.stroke(); }
-    };
+    const finish = (col) => { g.fillStyle = col; g.fill(); };
     return {
-      rect(x, y, w, h, r, col) { g.beginPath(); g.roundRect(x, y, w, h, r); finish(col, [x, y, x + w, y + h]); },
+      rect(x, y, w, h, r, col) { g.beginPath(); g.roundRect(x, y, w, h, r); finish(col); },
       poly(pts, col) {
         g.beginPath(); g.moveTo(pts[0][0], pts[0][1]); for (let i = 1; i < pts.length; i++) g.lineTo(pts[i][0], pts[i][1]); g.closePath();
-        const xs = pts.map((p) => p[0]), ys = pts.map((p) => p[1]);
-        finish(col, [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)]);
+        finish(col);
       },
-      circ(x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, 7); finish(col, [x - r, y - r, x + r, y + r]); },
-      ell(x, y, rx, ry, col, rot = 0) { g.beginPath(); g.ellipse(x, y, Math.max(.01, rx), ry, rot, 0, 7); const m = Math.max(rx, ry); finish(col, [x - m, y - m, x + m, y + m]); },
+      circ(x, y, r, col) { g.beginPath(); g.arc(x, y, r, 0, 7); finish(col); },
+      ell(x, y, rx, ry, col, rot = 0) { g.beginPath(); g.ellipse(x, y, Math.max(.01, rx), ry, rot, 0, 7); finish(col); },
       // half disc (dome / helmet): top half of a circle
-      dome(x, y, r, col) { g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.closePath(); finish(col, [x - r, y - r, x + r, y]); },
+      dome(x, y, r, col) { g.beginPath(); g.arc(x, y, r, Math.PI, 0); g.closePath(); finish(col); },
       line(x0, y0, x1, y1, th, col) { g.strokeStyle = col; g.lineWidth = th; g.lineCap = 'round'; g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); },
       flat(col) { g.fillStyle = col; g.fill(); },
     };
@@ -78,54 +61,68 @@ export function makeFlat(look = {}) {
     U.circ(x0 + hgt * .5, y0 + hgt / 2, hgt * .36, '#6e6e6e'); U.circ(x1 - hgt * .5, y0 + hgt / 2, hgt * .36, '#6e6e6e');
   };
 
+  // ---- infantry family: shared body, head and walk cycle; a kit supplies the pack and the weapon ----------------
+  const GHILLIE = (c) => mix(c, '#56643a', .6);
+  const KIT = {
+    // rifleman: backpack with bedroll, rifle held across the chest
+    infantry: {
+      pack(U, { dk, b }) { U.rect(-22, -9 + b, 10, 23, 3.5, dk); U.rect(-23, -13 + b, 12, 6, 3, N.oliveL); },
+      weapon(g, U, { c, b, sw }) {
+        U.line(-11, 7 + b, -3, 3.5 + b, 6, N.brown);
+        U.line(-8, 6 + b, 30, -12 + b + sw, 3.4, N.ink); U.rect(4, -2.5 + b, 3, 6, 1, N.ink);
+        U.line(-2, -1 + b, 17, -6.5 + b + sw * .5, 7, c); U.circ(19.5, -7 + b + sw * .5, 3.3, N.skin);
+      },
+    },
+    // mech: rocket pack and a bazooka resting on the shoulder
+    mech: {
+      pack(U, { dk, c, b }) {
+        U.rect(-22, -9 + b, 10, 23, 3.5, dk); U.rect(-21, -15 + b, 3.6, 7, 1.4, N.steel); U.rect(-16, -15 + b, 3.6, 7, 1.4, N.steel); U.rect(-21, -2 + b, 9, 3, 1, c);
+      },
+      weapon(g, U, { c, b, sw }) {
+        g.save(); g.translate(3, -6 + b); g.rotate(-.24 + sw * .01);
+        U.rect(-30, -5, 64, 10, 5, N.olive); U.rect(-30, -5, 64, 3, 1.5, N.oliveL); U.rect(-9, -5, 3, 10, 0, N.oliveD); U.rect(13, -5, 3, 10, 0, N.oliveD);
+        U.rect(-36, -6.5, 7, 13, 3, N.steelD); U.rect(32, -7.5, 7, 15, 3, N.steel); U.rect(4, -9, 9, 4, 1, N.ink);
+        g.restore();
+        U.line(-2, 1 + b, 15, 0 + b, 7, c); U.circ(17.5, -.5 + b, 3.4, N.skin);
+      },
+    },
+    // sniper: ghillie-draped pack and a very long scoped rifle
+    sniper: {
+      pack(U, { c, b }) {
+        const gh = GHILLIE(c), ghL = lighten(gh, .22);
+        U.rect(-23, -9 + b, 12, 24, 4, gh);
+        for (let i = 0; i < 3; i++) U.poly([[-23 + i * 4, -8 + b], [-21 + i * 4, -15 + b], [-19 + i * 4, -8 + b]], ghL);
+        U.rect(-24, 4 + b, 4, 12, 1.5, ghL);
+      },
+      weapon(g, U, { c, b, sw }) {
+        const sy = sw * .5;
+        U.line(-13, 7.5 + b, -5, 4 + b, 6, N.brown);
+        U.line(-10, 6 + b, 47, -14.4 + b + sy, 3, N.ink); U.rect(44, -17.8 + b + sy, 4, 6, 1.2, N.steelD);
+        g.save(); g.translate(19, -9.4 + b + sy * .3); g.rotate(-.34);
+        U.rect(-10.5, -2.6, 21, 5.2, 2.6, '#15151b'); U.circ(10.5, 0, 2.8, '#7fd0ff'); U.circ(-10.5, 0, 2.3, '#3a3a44'); U.rect(-4, 2.4, 3, 3, .8, N.steelD); U.rect(3, 2.4, 3, 3, .8, N.steelD);
+        g.restore();
+        U.line(38, -11 + b + sy, 42, -5.5 + b, 1.6, '#333'); U.line(39, -11 + b + sy, 36, -5.5 + b, 1.6, '#333');
+        U.line(-2, -1 + b, 20, -5.6 + b + sy, 7, c); U.circ(22.5, -6.2 + b + sy, 3.3, N.skin);
+      },
+    },
+  };
+  const trooper = (kit) => wrap((g, U, { c, dk, w, ph, run, b }) => {
+    const l = Math.sin(w * 8 + ph) * 5 * run, sw = Math.sin(w * 8 + ph) * 2 * run;
+    U.rect(-15, 12, 11, 17 + l, 3, dk); U.rect(4, 12, 11, 17 - l, 3, dk);
+    U.rect(-17, 25 + l, 14, 5, 2, N.boot); U.rect(3, 25 - l, 14, 5, 2, N.boot);
+    kit.pack(U, { c, dk, b });
+    U.rect(-14, -12 + b, 28, 28, 7, c);
+    U.rect(-9, 3 + b, 7, 7, 1.5, dk); U.rect(2, 3 + b, 7, 7, 1.5, dk); U.rect(-14, 12 + b, 28, 4, 1, dk);
+    U.circ(0, -20 + b, 9, N.skin); U.circ(4, -19 + b, 1.2, N.ink);
+    U.dome(0, -21 + b, 11.5, dk); U.rect(-13.5, -22.5 + b, 27, 3.6, 1.6, dk); U.line(-8, -19 + b, -6, -12 + b, 1.6, dk);
+    kit.weapon(g, U, { c, dk, b, sw });
+  });
+
   const SPRITES = {
-    // ---- infantry: rifleman with pack, pouches, boots and helmet strap --------------------------------
-    infantry: wrap((g, U, { c, dk, w, ph, run, b }) => {
-      const l = Math.sin(w * 8 + ph) * 5 * run, sw = Math.sin(w * 8 + ph) * 2 * run;
-      U.rect(-15, 12, 11, 17 + l, 3, dk); U.rect(4, 12, 11, 17 - l, 3, dk);
-      U.rect(-17, 25 + l, 14, 5, 2, N.boot); U.rect(3, 25 - l, 14, 5, 2, N.boot);
-      U.rect(-22, -9 + b, 10, 23, 3.5, dk); U.rect(-23, -13 + b, 12, 6, 3, N.oliveL);       // backpack + bedroll
-      U.rect(-14, -12 + b, 28, 28, 7, c);
-      U.rect(-9, 3 + b, 7, 7, 1.5, dk); U.rect(2, 3 + b, 7, 7, 1.5, dk); U.rect(-14, 12 + b, 28, 4, 1, dk);
-      U.circ(0, -20 + b, 9, N.skin); U.circ(4, -19 + b, 1.2, N.ink);
-      U.dome(0, -21 + b, 11.5, dk); U.rect(-13.5, -22.5 + b, 27, 3.6, 1.6, dk); U.line(-8, -19 + b, -6, -12 + b, 1.6, dk);
-      U.line(-11, 7 + b, -3, 3.5 + b, 6, N.brown);
-      U.line(-8, 6 + b, 30, -12 + b + sw, 3.4, N.ink); U.rect(4, -2.5 + b, 3, 6, 1, N.ink);
-      U.line(-2, -1 + b, 17, -6.5 + b + sw * .5, 7, c); U.circ(19.5, -7 + b + sw * .5, 3.3, N.skin);
-    }),
-
-    // ---- mech: armoured trooper with rocket pack and a bazooka -----------------------------------------
-    mech: wrap((g, U, { c, dk, w, ph, run, b }) => {
-      const l = Math.sin(w * 8 + ph) * 3 * run, sw = Math.sin(w * 8 + ph) * 1.5 * run;
-      U.rect(-17, 10, 14, 19 + l, 3.5, dk); U.rect(3, 10, 14, 19 - l, 3.5, dk);
-      U.rect(-15, 15 + l, 10, 5, 2, c); U.rect(5, 15 - l, 10, 5, 2, c);                        // knee pads
-      U.rect(-19, 25 + l, 17, 5, 2, N.boot); U.rect(2, 25 - l, 17, 5, 2, N.boot);
-      U.rect(-29, -10 + b, 12, 27, 3, dk); U.rect(-28, -15 + b, 3.5, 6, 1, N.steel); U.rect(-22, -15 + b, 3.5, 6, 1, N.steel); U.rect(-27, -3 + b, 8, 3, 1, c);
-      U.rect(-17, -14 + b, 34, 30, 9, c); U.rect(-17, -14 + b, 34, 10, 6, dk); U.rect(-3, -5 + b, 6, 18, 2, dk);
-      U.circ(-16, -10 + b, 7, dk); U.circ(16, -10 + b, 7, dk); U.rect(-17, 11 + b, 34, 4, 1, dk);
-      U.circ(0, -25 + b, 11, dk); U.rect(-1, -29 + b, 10.5, 4.6, 2.2, N.glass); U.rect(-9, -17 + b, 18, 5, 2, dk);
-      g.save(); g.translate(0, -5 + b); g.rotate(-.3 + sw * .01);
-      U.rect(-27, -5.5, 60, 11, 5.5, N.olive); U.rect(-27, -5.5, 60, 3, 1.5, N.oliveL); U.rect(-7, -5.5, 3, 11, 0, dk); U.rect(15, -5.5, 3, 11, 0, dk);
-      U.rect(-32, -7, 7, 14, 3, N.steelD); U.rect(31, -8, 7, 16, 3, N.steel); U.rect(4, -10, 9, 4, 1, N.ink);
-      g.restore();
-      U.rect(8, 4 + b, 15, 7, 3, c); U.circ(24, 7.5 + b, 3.6, N.steelD);
-    }),
-
-    // ---- sniper: PRONE in a ghillie, long rifle on a bipod. Deliberately a low, wide silhouette --------
-    sniper: wrap((g, U, { c, dk, w, run, b }) => {
-      const gh = mix(c, '#56643a', .6), ghL = lighten(gh, .2), br = Math.sin(w * 2) * .6 * run;
-      U.rect(-47, 17, 25, 9, 4, N.olive); U.rect(-49, 17, 8, 9, 2.5, N.boot);
-      U.rect(-30, 8 + b * .5 + br, 46, 18, 8, gh);
-      for (let i = 0; i < 5; i++) { const x = -27 + i * 9; U.poly([[x, 9 + b * .5 + br], [x + 3.5, 2.5 + b * .5 + br], [x + 7, 9 + b * .5 + br]], ghL); }
-      U.rect(7, 6.5 + b * .5, 10, 8, 3, c);
-      U.circ(21, 10.5 + b * .5, 8.5, N.skin); U.circ(25, 11 + b * .5, 1.2, N.ink);
-      U.rect(9, 2.5 + b * .5, 25, 4, 2, N.olive); U.dome(21, 4 + b * .5, 9, gh); U.rect(9, 5 + b * .5, 25, 1.8, .9, c);
-      U.line(30, 14, 25, 27.5, 1.8, '#333'); U.line(36, 14, 41, 27.5, 1.8, '#333');
-      U.rect(-19, 17, 12, 7, 3, N.brown);
-      U.line(-9, 21, 46, 14.4, 3.2, N.ink); U.rect(44, 11.8, 4, 5.4, 1.2, N.steelD);
-      U.rect(9, 8.5, 18, 5.4, 2.7, '#15151b'); U.circ(27, 11.2, 2.7, '#7fd0ff'); U.circ(9.5, 11.2, 2.2, '#3a3a44'); U.rect(14, 6.5, 6, 2, 1, N.steelD);
-      U.line(13, 20, 31, 15, 6, gh); U.circ(32, 14.4, 3.2, N.skin);
-    }),
+    // ---- the infantry family: one body and head, differing only in pack and weapon ----------------------
+    infantry: trooper(KIT.infantry),
+    mech: trooper(KIT.mech),
+    sniper: trooper(KIT.sniper),
 
     // ---- recon: jeep with roll bar, pintle MG, spare tyre, fenders and lamps --------------------------
     recon: wrap((g, U, { c, dk, w, run, j }) => {
@@ -242,7 +239,6 @@ export function makeFlat(look = {}) {
       g.save(); g.beginPath(); wingPts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.clip();
       g.fillStyle = dk; g.beginPath(); g.moveTo(10, 0); g.lineTo(-30, -60); g.lineTo(-60, -60); g.lineTo(-60, 60); g.lineTo(-30, 60); g.closePath(); g.fill();
       g.restore();
-      if (tone) { g.lineWidth = 1.4; g.strokeStyle = darken(c, .42); g.beginPath(); wingPts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.stroke(); }
       for (const sy of [-1, 1]) {
         U.poly([[12, sy * 7], [22, sy * 4.5], [22, sy * 9], [13, sy * 11]], N.ink);               // intake mouths
         U.poly([[-2, sy * 4], [-16, sy * 4], [-17, sy * 8], [-4, sy * 9]], mix(dk, '#000', .35));   // engine bays
@@ -294,8 +290,8 @@ export function makeFlat(look = {}) {
   const copterOutline = () => [[-50, -2], [-14, -3], [-6, -21], [6, -21], [16, -8], [42, 4], [33, 11], [-14, 7], [-50, 2], [-48, -2], [-6, 21], [6, 21], [-2, 18]].slice(0, 9);
   const SHADOWS = {
     infantry: ground(.2, .045, .295),
-    mech: ground(.26, .05, .295),
-    sniper: ground(.36, .045, .285, -.03),
+    mech: ground(.2, .045, .295),
+    sniper: ground(.2, .045, .295),
     recon: ground(.36, .05, .29),
     tank: ground(.4, .05, .29),
     heavy_tank: ground(.44, .055, .3),
@@ -307,3 +303,6 @@ export function makeFlat(look = {}) {
   };
   return { SPRITES, SHADOWS };
 }
+
+export const meta = { id: 'flat', name: 'Flat', blurb: 'flat fills, no outlines: detailed, animated, with shaped shadows' };
+export const { SPRITES, SHADOWS } = build();

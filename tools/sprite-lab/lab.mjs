@@ -100,8 +100,8 @@ const COMMANDS = {
         if (!sh) notes.push('NO SHADOW');
         else {
           const air = units[id].render.altitude;
-          const ratio = sw / bw; if (!air && (ratio < .7 || ratio > 1.25)) notes.push('shadow width off');
-          if (!air && Math.abs((sh.l + sh.r) / 2 - (body.l + body.r) / 2) > .06) notes.push('shadow off-centre');
+          const ratio = sw / bw, min = units[id].category === 'infantry' ? .45 : .7; if (!air && (ratio < min || ratio > 1.25)) notes.push('shadow width off');
+          if (!air && units[id].category !== 'infantry' && Math.abs((sh.l + sh.r) / 2 - (body.l + body.r) / 2) > .06) notes.push('shadow off-centre');
           if (!air && Math.abs(sh.b - body.b) > .06 && sh.t > body.b + .01) notes.push('shadow detached');
         }
         if (bw < .3 && bh < .3) notes.push('very small');
@@ -113,8 +113,8 @@ const COMMANDS = {
     console.log(warnings ? `\n${warnings} unit(s) with notes` : '\nall clear');
   },
 
-  // node lab.mjs gallery   regenerate gallery/img/*.png and gallery/index.html from every style
-  async gallery(styles) { (await import('./gallery.mjs')).build(styles, save); },
+  // node lab.mjs gallery   regenerate gallery/index.html (the live, animated preview page)
+  async gallery() { (await import('./gallery.mjs')).build(); },
 
   help() {
     console.log(`Sprite lab: render unit art to PNG (in tools/sprite-lab/out/) and look at it.
@@ -126,7 +126,7 @@ const COMMANDS = {
   node lab.mjs zoom <style> <unit>                        one unit big + phone size + 1x on every terrain
   node lab.mjs anim <style> <unit> [--frames 8]           animation filmstrip
   node lab.mjs check [style|all]                          bounds, shadow fit and size as numbers
-  node lab.mjs gallery                                    rebuild gallery/ (images + index.html)
+  node lab.mjs gallery                                    rebuild gallery/index.html (the live animated page)
 
 Common flags: --bg plain|forest|mountain|road|sea|#rrggbb   --t <seconds into the animation>   --out <file.png>
 Sizes: 40 = a phone tile at 1x, 120 = the same tile on a 3x screen, 176+ = inspect detail.

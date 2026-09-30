@@ -11,6 +11,7 @@ import { createCanvas } from '@napi-rs/canvas';
 import { readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
+import { drawFrame } from './variants/frame.js';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(HERE, '../..');
@@ -42,22 +43,9 @@ export function paintTile(g, bg, x, y, S) {
 export const baseColor = (bg) => (terrain[bg] ? terrain[bg].render.base : bg);
 
 // ---- styles ----------------------------------------------------------------------------------------------
-const defaultShadow = (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.ellipse(0, s * .31, s * .3, s * .06, 0, 0, 7); g.fill(); };
-
-/** Wrap a game-compatible module ({ SPRITES, SHADOWS }) with the same frame logic as drawUnit() in the game. */
+/** Wrap a game-compatible module ({ SPRITES, SHADOWS }) so it can be drawn like any other style. */
 export function gameStyle(mod) {
-  return {
-    meta: mod.meta, kind: 'game', mod,
-    draw(g, id, o) {
-      const { s, c, dk, alt = 0, w = 0, ph = 0, run = 1, only } = o;
-      const b = Math.sin(w * 5 + ph) * s * .025 * run, j = Math.sin(w * 14 + ph) * s * .012 * run;
-      if (only !== 'body') { g.save(); (mod.SHADOWS?.[id] || defaultShadow)(g, { s, alt, w, ph, run }); g.restore(); }
-      if (only !== 'shadow') {
-        g.save(); if (alt) g.translate(0, -s * alt + Math.sin(w * 3 + ph) * s * .03 * run);
-        mod.SPRITES[id](g, { s, c, dk, w, ph, run, b, j }); g.restore();
-      }
-    },
-  };
+  return { meta: mod.meta, kind: 'game', mod, draw: (g, id, o) => drawFrame(g, mod, id, o) };
 }
 
 export async function loadStyles() {
