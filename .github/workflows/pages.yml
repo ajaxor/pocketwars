@@ -42,6 +42,7 @@ jobs:
           mkdir -p "_site/v/${SHORT}"
           cp -r src data style.css "_site/v/${SHORT}/"
           cp index.html .nojekyll _site/
+          cp -r gallery _site/gallery
           sed -i "s/__BUILD__/${SHORT}/g" _site/index.html
           printf '{"hash":"%s","full":"%s","built":"%s"}\n' \
             "$SHORT" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > _site/version.json

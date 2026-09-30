@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Wars: unit art styles</title>
+<style>
+  :root { color-scheme: dark; }
+  body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
+  main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 17px; margin: 32px 0 4px; }
+  p { margin: 4px 0 10px; color: #b9b5a8; }
+  .sheet { overflow-x: auto; border-radius: 10px; background: #7fae5a; -webkit-overflow-scrolling: touch; }
+  .sheet img { display: block; height: auto; max-width: none; width: 1100px; }
+  .full img { width: 100%; max-width: 100%; }
+  .px img { image-rendering: pixelated; }
+  ul { padding-left: 18px; margin: 4px 0 0; color: #b9b5a8; }
+  li { margin: 2px 0; }
+  .hint { font-size: 13px; color: #8a877c; }
+  a { color: #8fc2ee; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Unit art styles</h1>
+  <p>Every unit, both factions, drawn by the same code that would ship in the game. Rows are Orange Star and Blue Moon. Swipe sideways on the wide sheets.</p>
+
+  <h2>Side by side at phone size</h2>
+  <p>Top to bottom: current, pixel, toy, badge. About a 40 px tile on a 3x screen.</p>
+  <div class="sheet full"><img src="img/compare-phone.png" alt="All four styles at phone size" loading="lazy"></div>
+
+  <h2>Same thing at 1x (40 px tiles)</h2>
+  <p>Where readability really gets decided. Shown at native size.</p>
+  <div class="sheet px"><img src="img/compare-1x.png" alt="All four styles at 1x" style="width:476px"></div>
+
+  <h2>Current</h2>
+  <p>Flat shapes, no outlines. Top-down aircraft next to side-view ground units.</p>
+  <div class="sheet"><img src="img/current.png" alt="Current style" loading="lazy"></div>
+
+  <h2>Pixel art</h2>
+  <p>32×32 grid with an automatic outline. Charming and very readable, but it wants whole-number scaling.</p>
+  <div class="sheet px"><img src="img/pixel.png" alt="Pixel art style" loading="lazy"></div>
+
+  <h2>Toy vector</h2>
+  <p>Bold outlines, gradients, highlights, and one consistent side view for every unit including aircraft.</p>
+  <div class="sheet"><img src="img/toy.png" alt="Toy vector style" loading="lazy"></div>
+
+  <h2>Flat badge</h2>
+  <p>Cream glyph on a faction plate. Clearest at tiny sizes, but hides the terrain under each unit.</p>
+  <div class="sheet"><img src="img/badge.png" alt="Flat badge style" loading="lazy"></div>
+
+  <p class="hint" style="margin-top:28px">Regenerate with the sprite lab: <code>tools/sprite-lab</code> in the repo.</p>
+  <p class="hint"><a href="../">Back to the game</a></p>
+</main>
+</body>
+</html>

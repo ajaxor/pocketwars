@@ -11,7 +11,8 @@ src/ui/          controller (taps -> orders), hud, presenter (events -> animatio
 src/main.js      boot(): load data + map, create Game, start Session
 index.html       title screen and cache-busting loader (imports src/main.js from the current build folder)
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
-tools/           validate-data.mjs, serve.mjs
+tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
+gallery/         static pages published next to the game (unit art style samples)
 ```
 
 ## Layers
