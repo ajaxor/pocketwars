@@ -26,7 +26,7 @@ export const UNIT_IDS = Object.keys(units);
 export const FACTION_IDS = Object.keys(factions);
 export const make = (w, h) => createCanvas(w, h);
 /** Global draw options set from CLI flags (lab.mjs): --moving shows the walk cycle. */
-export const view = { moving: false };
+export const view = { moving: false, submerged: false };
 
 // ---- colour maths ----------------------------------------------------------------------------------------
 export const hex = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -75,6 +75,6 @@ export async function loadStyles() {
 export function drawCell(g, style, id, fid, x, y, S, { bg = 'plain', t = .35, ph = 0, only } = {}) {
   if (bg) paintTile(g, bg, x, y, S);
   g.save(); g.translate(x + S / 2, y + S / 2);
-  style.draw(g, id, { s: S, c: factions[fid].color, dk: factions[fid].dark, alt: units[id].render.altitude || 0, w: t, ph, run: 1, moving: view.moving, make, only });
+  style.draw(g, id, { s: S, c: factions[fid].color, dk: factions[fid].dark, alt: units[id].render.altitude || 0, w: t, ph, run: 1, moving: view.moving, submerged: view.submerged && !!units[id].attributes?.submerge, make, only });
   g.restore();
 }

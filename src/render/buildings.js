@@ -139,24 +139,13 @@ export const BUILDINGS = {
 
   shipyard(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
-    const d = .08, dx = d * DX, dy = d * DY;
-    // the quay: a low concrete slab along the front, lit on top
-    k.poly([[.06, .9], [.9, .9], [.9 + dx, .9 + dy], [.9 + dx + .02, .9 + dy + .05], [.06 + .09, .95], [.06, .95]], SHADOW);
-    k.box(.04, .74, .84, .16, d, '#9aa1ab');
-    for (let i = 1; i < 6; i++) k.rect(.04 + i * .84 / 6, .74, .008, .16, 'rgba(0,0,0,.12)');   // expansion joints
-    // the hull on the slip: steel, with the owner's colour as a waterline stripe and ribs still showing above the deck
-    k.poly([[.4, .5], [.86, .5], [.9, .56], [.82, .74], [.46, .74]], '#59606c');
-    k.poly([[.44, .64], [.86, .64], [.84, .7], [.47, .7]], owner);
-    k.poly([[.4, .5], [.86, .5], [.87, .53], [.41, .53]], '#7d8592');
-    for (let i = 0; i < 4; i++) k.rect(.47 + i * .13, .36 + (i % 2) * .03, .02, .15 - (i % 2) * .03, '#4a505a');   // ribs
-    // the gantry crane: two legs on the quay, a long jib over the hull, a hook on a line
-    k.box(.1, .22, .055, .52, .05, owner);
-    k.box(.27, .22, .055, .52, .05, owner);
-    k.box(.08, .13, .66, .07, .06, owner);
-    k.rect(.12, .13, .03, .07, shade(owner, -.35));
-    k.line([[.66, .2], [.66, .4]], '#20232a', .014);
-    k.rect(.63, .4, .06, .05, '#ffd24a');
-    k.rect(.16, .36, .1, .05, '#20232a');     // crane cab
-    k.rect(.17, .37, .08, .03, '#cfe6f5');
+    // flat and simple: a concrete pad, a hull on the slip, and one crane in the owner's colour
+    k.rect(.06, .7, .86, .2, '#9aa1ab');                                        // pad
+    k.poly([[.34, .46], [.86, .46], [.9, .54], [.8, .72], [.4, .72]], '#59606c');   // hull
+    k.rect(.4, .58, .48, .07, owner);                                           // owner stripe
+    k.rect(.12, .14, .07, .6, owner);                                           // crane: one leg, a jib over the hull, a hook
+    k.rect(.12, .14, .6, .07, owner);
+    k.line([[.64, .21], [.64, .4]], '#20232a', .014);
+    k.rect(.6, .4, .08, .05, '#ffd24a');
   },
 };

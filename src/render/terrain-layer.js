@@ -108,14 +108,7 @@ export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, owne
         n: same(0, -1), e: same(1, 0), s: same(0, 1), w: same(-1, 0),
         ne: same(1, -1), se: same(1, 1), sw: same(-1, 1), nw: same(-1, -1),
       };
-      // which sides open onto land ('shore') and which onto other water of the same group ('open'), for edge drawings like the shallows'
-      const myKey = keyAt(x, y);
-      const edge = {};
-      for (const [k, dx, dy] of [['n', 0, -1], ['e', 1, 0], ['s', 0, 1], ['w', -1, 0]]) {
-        const other = keyAt(x + dx, y + dy);
-        edge[k] = other === null ? null : other !== myKey ? 'shore' : link[k] ? null : 'open';
-      }
-      paintTile(g, x * S, y * S, S, terrainAt(x, y), ownerColorAt(x, y), nb, { x, y, now, dimmed: dimmedAt(x, y), link, edge, ground: groundAt(x, y) });
+      paintTile(g, x * S, y * S, S, terrainAt(x, y), ownerColorAt(x, y), nb, { x, y, now, dimmed: dimmedAt(x, y), link, ground: groundAt(x, y) });
     }
   }
 }

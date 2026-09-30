@@ -169,40 +169,17 @@ export const TERRAIN_DECOR = {
       }
       peak(cx, w, top, yb, pkx, false);
     },
-    // Shallow water is lighter than the open sea, with pale sand showing through it: it reads as "you could wade here" at a glance,
-    // so nobody sends a battleship into it. Where it meets land (`edge` 'shore') wet sand fades out along the beach; where it meets
-    // deep water ('open') the colour deepens toward the drop-off, so the two blues blend instead of meeting in a hard line.
-    shallows(g, px, py, S, { x, y, now, edge = {}, radii }) {
-      g.save();
-      if (radii) { g.beginPath(); g.roundRect(px, py, S, S, radii); g.clip(); }
-      for (const k of ['n', 'e', 's', 'w']) {
-        const kind = edge[k];
-        if (!kind) continue;
-        const [sx, sy, ix, iy] = { n: [0, 0, 0, 1], s: [0, 1, 0, -1], w: [0, 0, 1, 0], e: [1, 0, -1, 0] }[k];   // edge origin, inward direction
-        const x0 = px + sx * S, y0 = py + sy * S;
-        if (kind === 'open') {
-          const grad = g.createLinearGradient(x0, y0, x0 + ix * S * .3, y0 + iy * S * .3);
-          grad.addColorStop(0, 'rgba(48,120,196,.42)'); grad.addColorStop(1, 'rgba(48,120,196,0)');
-          g.fillStyle = grad;
-          g.fillRect(k === 'e' ? px + S * .7 : px, k === 's' ? py + S * .7 : py, ix ? S * .3 : S, iy ? S * .3 : S);
-        } else {
-          const wide = S * .24;                                                              // wet sand fading out into the water
-          const grad = g.createLinearGradient(x0, y0, x0 + ix * wide, y0 + iy * wide);
-          grad.addColorStop(0, 'rgba(247,238,200,.62)'); grad.addColorStop(1, 'rgba(247,238,200,0)');
-          g.fillStyle = grad;
-          g.fillRect(k === 'e' ? px + S - wide : px, k === 's' ? py + S - wide : py, ix ? wide : S, iy ? wide : S);
-        }
+    // Shallow water is lighter than the open sea, with a few small pale sand specks and faint glints: it reads as "you could wade
+    // here" at a glance, so nobody sends a battleship into it. Edges stay flat (the tile shape is terrain-layer.js's business).
+    shallows(g, px, py, S, { x, y, now }) {
+      for (let i = 0; i < 2; i++) {
+        const cx = px + (.22 + .56 * rnd(x, y, i + 10)) * S, cy = py + (.26 + .48 * rnd(x, y, i + 13)) * S;
+        g.fillStyle = i ? 'rgba(244,232,186,.4)' : 'rgba(244,232,186,.6)';
+        g.beginPath(); g.ellipse(cx, cy, S * (.05 + .05 * rnd(x, y, i + 16)), S * (.02 + .02 * rnd(x, y, i + 19)), (rnd(x, y, i + 22) - .5) * .7, 0, 7); g.fill();
       }
-      for (let i = 0; i < 2; i++) {                                                           // sandbars showing through
-        if (rnd(x, y, i + 30) < .45) continue;
-        const cx = px + (.25 + .5 * rnd(x, y, i + 10)) * S, cy = py + (.3 + .4 * rnd(x, y, i + 13)) * S;
-        g.fillStyle = 'rgba(244,232,186,.5)';
-        g.beginPath(); g.ellipse(cx, cy, S * (.1 + .09 * rnd(x, y, i + 16)), S * (.035 + .035 * rnd(x, y, i + 19)), (rnd(x, y, i + 22) - .5) * .7, 0, 7); g.fill();
-      }
-      g.restore();
       const t = now / 1000;
       const a = Math.max(0, Math.sin(t * 1.1 + rnd(x, y, 5) * 6.28));
-      if (a > .05) { g.fillStyle = `rgba(255,255,255,${(a * .55).toFixed(2)})`; g.fillRect(px + (.2 + .55 * rnd(x, y, 7)) * S, py + (.4 + .3 * rnd(x, y, 8)) * S, S * .08, Math.max(1, S * .026)); }
+      if (a > .05) { g.fillStyle = `rgba(255,255,255,${(a * .55).toFixed(2)})`; g.fillRect(px + (.15 + .6 * rnd(x, y, 7)) * S, py + (.6 + .2 * rnd(x, y, 8)) * S, S * .08, Math.max(1, S * .026)); }
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {
