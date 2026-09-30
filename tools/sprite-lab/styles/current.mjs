@@ -7,5 +7,5 @@ export const meta = { id: 'current', name: 'Current (flat)', blurb: 'the game to
 
 export function draw(g, id, o) {
   const { s, c, dk, w = 0 } = o;
-  drawUnit(g, { type: id, x: 0, y: 0, hp: 10 }, { def: units[id], colors: { color: c, dark: dk }, px: -s / 2, py: -s / 2, size: s, now: w, animate: true, moving: false, alpha: 1, showHp: false });
+  drawUnit(g, { type: id, x: 0, y: 0, hp: 10 }, { def: units[id], colors: { color: c, dark: dk }, px: -s / 2, py: -s / 2, size: s, now: w * 1000, animate: true, moving: false, alpha: 1, showHp: false });
 }

@@ -2,10 +2,11 @@
   "name": "pocketwars-sprite-lab",
   "private": true,
   "type": "module",
-  "description": "Offline tooling for prototyping unit art. Not part of the game build.",
+  "description": "Offline tooling for designing unit art. Not part of the game build.",
   "scripts": {
-    "sheet": "node sheet.mjs",
-    "compare": "node compare.mjs"
+    "lab": "node lab.mjs",
+    "gallery": "node lab.mjs gallery",
+    "check": "node lab.mjs check"
   },
   "dependencies": {
     "@napi-rs/canvas": "^0.1.0"

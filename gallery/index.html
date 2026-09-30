@@ -9,14 +9,13 @@
   body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
   main { max-width: 900px; margin: 0 auto; padding: 20px 16px 60px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
-  h2 { font-size: 17px; margin: 32px 0 4px; }
+  h2 { font-size: 19px; margin: 40px 0 4px; padding-top: 14px; border-top: 1px solid #2a2d35; }
+  h3 { font-size: 15px; margin: 22px 0 2px; }
   p { margin: 4px 0 10px; color: #b9b5a8; }
-  .sheet { overflow-x: auto; border-radius: 10px; background: #7fae5a; -webkit-overflow-scrolling: touch; }
+  .sheet { overflow-x: auto; border-radius: 10px; background: #86b95c; -webkit-overflow-scrolling: touch; }
   .sheet img { display: block; height: auto; max-width: none; width: 1100px; }
   .full img { width: 100%; max-width: 100%; }
   .px img { image-rendering: pixelated; }
-  ul { padding-left: 18px; margin: 4px 0 0; color: #b9b5a8; }
-  li { margin: 2px 0; }
   .hint { font-size: 13px; color: #8a877c; }
   a { color: #8fc2ee; }
 </style>
@@ -24,33 +23,57 @@
 <body>
 <main>
   <h1>Unit art styles</h1>
-  <p>Every unit, both factions, drawn by the same code that would ship in the game. Rows are Orange Star and Blue Moon. Swipe sideways on the wide sheets.</p>
+  <p>Every unit, both factions, drawn by the same code that would ship in the game. Swipe sideways on the wide sheets.</p>
 
-  <h2>Side by side at phone size</h2>
-  <p>Top to bottom: current, pixel, toy, badge. About a 40 px tile on a 3x screen.</p>
-  <div class="sheet full"><img src="img/compare-phone.png" alt="All four styles at phone size" loading="lazy"></div>
+  <h2>Flat variations</h2>
+  <p>Three takes on the flat look you liked, all drawn from the same shapes. Each unit now casts a shadow shaped like itself, has more detail, and the sniper, flak, fighter and bomber are redrawn. Row pairs are Orange Star / Blue Moon.</p>
+  <h3>Side by side at phone size</h3>
+  <p>Top to bottom: Current (flat), Flat A: pure flat, Flat B: banded shading, Flat C: tone outline. About a 40 px tile on a 3x screen.</p>
+  <div class="sheet full"><img src="img/compare-flat.png" alt="Flat variations compared at phone size" loading="lazy"></div>
+  <h3>The same at 1x</h3>
+  <p>Native size, where readability is decided.</p>
+  <div class="sheet px"><img src="img/compare-flat-1x.png" alt="Flat variations at 1x" style="width:464px"></div>
+  <h3>Before and after</h3>
+  <p>Columns: Current (flat), Flat A: pure flat, Flat B: banded shading, Flat C: tone outline. Units: sniper, flak, fighter, bomber, infantry, copter.</p>
+  <div class="sheet full"><img src="img/focus-flat.png" alt="Before and after" loading="lazy" style="max-width:660px"></div>
+  <h3>Loupe: flak</h3>
+  <p>Flat B: banded shading large, at phone size and at 1x on every terrain.</p>
+  <div class="sheet full"><img src="img/zoom-flat-b-flak.png" alt="flak loupe" loading="lazy"></div>
+  <h3>Animation: flak</h3>
+  <p>One second of the idle animation in eight frames.</p>
+  <div class="sheet"><img src="img/anim-flat-b-flak.png" alt="flak animation" loading="lazy"></div>
+  <h3>Current (flat)</h3>
+  <p>the game today: flat shapes, no outlines</p>
+  <div class="sheet"><img src="img/sheet-current.png" alt="Current (flat)" loading="lazy"></div>
+  <h3>Flat A: pure flat</h3>
+  <p>today’s look, more detail, shaped shadows</p>
+  <div class="sheet"><img src="img/sheet-flat-a.png" alt="Flat A: pure flat" loading="lazy"></div>
+  <h3>Flat B: banded shading</h3>
+  <p>flat fills with a light top band and dark underside on each part</p>
+  <div class="sheet"><img src="img/sheet-flat-b.png" alt="Flat B: banded shading" loading="lazy"></div>
+  <h3>Flat C: tone outline</h3>
+  <p>banded shading + soft outline in each part’s own darker colour</p>
+  <div class="sheet"><img src="img/sheet-flat-c.png" alt="Flat C: tone outline" loading="lazy"></div>
 
-  <h2>Same thing at 1x (40 px tiles)</h2>
-  <p>Where readability really gets decided. Shown at native size.</p>
-  <div class="sheet px"><img src="img/compare-1x.png" alt="All four styles at 1x" style="width:476px"></div>
+  <h2>Earlier explorations</h2>
+  <p>The first round of different directions, kept for comparison.</p>
+  <h3>Side by side at phone size</h3>
+  <p>Top to bottom: Current (flat), Pixel art, Toy vector, Flat badge. About a 40 px tile on a 3x screen.</p>
+  <div class="sheet full"><img src="img/compare-earlier.png" alt="Earlier explorations compared at phone size" loading="lazy"></div>
+  <h3>The same at 1x</h3>
+  <p>Native size, where readability is decided.</p>
+  <div class="sheet px"><img src="img/compare-earlier-1x.png" alt="Earlier explorations at 1x" style="width:464px"></div>
+  <h3>Pixel art</h3>
+  <p>32×32 grid, auto-outlined, nearest-neighbour scaled</p>
+  <div class="sheet px"><img src="img/sheet-pixel.png" alt="Pixel art" loading="lazy"></div>
+  <h3>Toy vector</h3>
+  <p>bold outlines, gradients, specular highlights, consistent side view</p>
+  <div class="sheet"><img src="img/sheet-toy.png" alt="Toy vector" loading="lazy"></div>
+  <h3>Flat badge</h3>
+  <p>cream glyph on a faction-coloured plate; built for tiny sizes</p>
+  <div class="sheet"><img src="img/sheet-badge.png" alt="Flat badge" loading="lazy"></div>
 
-  <h2>Current</h2>
-  <p>Flat shapes, no outlines. Top-down aircraft next to side-view ground units.</p>
-  <div class="sheet"><img src="img/current.png" alt="Current style" loading="lazy"></div>
-
-  <h2>Pixel art</h2>
-  <p>32×32 grid with an automatic outline. Charming and very readable, but it wants whole-number scaling.</p>
-  <div class="sheet px"><img src="img/pixel.png" alt="Pixel art style" loading="lazy"></div>
-
-  <h2>Toy vector</h2>
-  <p>Bold outlines, gradients, highlights, and one consistent side view for every unit including aircraft.</p>
-  <div class="sheet"><img src="img/toy.png" alt="Toy vector style" loading="lazy"></div>
-
-  <h2>Flat badge</h2>
-  <p>Cream glyph on a faction plate. Clearest at tiny sizes, but hides the terrain under each unit.</p>
-  <div class="sheet"><img src="img/badge.png" alt="Flat badge style" loading="lazy"></div>
-
-  <p class="hint" style="margin-top:28px">Regenerate with the sprite lab: <code>tools/sprite-lab</code> in the repo.</p>
+  <p class="hint" style="margin-top:32px">Generated by <code>node tools/sprite-lab/lab.mjs gallery</code>. Add a style file and rerun to include it.</p>
   <p class="hint"><a href="../">Back to the game</a></p>
 </main>
 </body>

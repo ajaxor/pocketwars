@@ -8,6 +8,7 @@
   "scripts": {
     "start": "node tools/serve.mjs",
     "test": "node --test",
-    "validate": "node tools/validate-data.mjs"
+    "validate": "node tools/validate-data.mjs",
+    "lab": "node tools/sprite-lab/lab.mjs"
   }
 }
