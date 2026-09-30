@@ -2,7 +2,7 @@
 // nothing here touches the DOM, so the numbers are tested without one. Everything is read from the registry and the game
 // state: no unit or terrain ids are compared here (labels for attributes live in the attribute catalogue).
 
-import { attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } from '../engine/attributes.js';
+import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } from '../engine/attributes.js';
 import { calcDamage, terrainStars } from '../engine/combat.js';
 import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
 
@@ -13,6 +13,9 @@ const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft' };
 const categoryLabel = (c) => CATEGORY_LABELS[c] || `${cap(c)}s`;
 /** A move class as a short word for the terrain's move-cost chips. */
 const moveLabel = (c) => MOVE_LABELS[c] || cap(c);
+
+/** A labelled attribute as a tag: the short name and the sentence that explains it. */
+const tagOf = (catalogue, name, cfg) => ({ label: attributeLabel(catalogue, name, cfg), help: attributeHelp(catalogue, name, cfg) });
 
 export const fmtMoney = (n) => Number(n).toLocaleString('en-US');
 
@@ -31,7 +34,7 @@ function hitsOf(game, weapon) {
 /** Stats of a unit TYPE: what the build menu shows, and the base of the unit info box. */
 export function unitStats(game, def) {
   const { registry } = game;
-  const tags = Object.entries(def.attributes).map(([name, cfg]) => attributeLabel(UNIT_ATTRIBUTES, name, cfg));
+  const tags = Object.entries(def.attributes).map(([name, cfg]) => tagOf(UNIT_ATTRIBUTES, name, cfg));
   const layer = registry.rules.layers[def.layer];
   return {
     id: def.id, name: def.name, category: def.category, cost: def.cost, move: def.move,
@@ -51,7 +54,7 @@ export function terrainInfo(game, x, y) {
   const t = terrainAt(game, x, y);
   const prop = propertyAt(game, x, y);
   const owner = prop ? ownerAt(game, x, y) : undefined;
-  const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => attributeLabel(TERRAIN_ATTRIBUTES, name, cfg));
+  const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => tagOf(TERRAIN_ATTRIBUTES, name, cfg));
   return {
     x, y, name: t.name, color: t.render.base, defense: t.defense,
     moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),

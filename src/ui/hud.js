@@ -186,9 +186,32 @@ export class Hud {
     return w.root;
   }
 
+  /**
+   * A row of small tags. Each is a string or { label, help }; tapping one that has `help` shows the sentence under the row
+   * (tap it again, or another tag, to change or hide it).
+   */
   #tags(list) {
-    const box = h(this.doc, 'div', 'tags');
-    for (const t of list) box.append(h(this.doc, 'span', 'tag', t));
+    const d = this.doc;
+    const box = h(d, 'div', 'tags-box');
+    const row = h(d, 'div', 'tags');
+    const help = h(d, 'div', 'note tag-help');
+    help.hidden = true;
+    let open = null;
+    for (const t of list) {
+      const tag = typeof t === 'string' ? { label: t, help: null } : t;
+      if (!tag.help) { row.append(h(d, 'span', 'tag', tag.label)); continue; }
+      const b = h(d, 'button', 'tag tag--help', tag.label);
+      b.setAttribute('type', 'button');
+      b.addEventListener('click', () => {
+        const same = open === b;
+        if (open) toggle(open, 'is-open', false);
+        open = same ? null : b;
+        help.hidden = same;
+        if (!same) { help.textContent = tag.help; toggle(b, 'is-open', true); }
+      });
+      row.append(b);
+    }
+    box.append(row, help);
     return box;
   }
 
@@ -230,7 +253,7 @@ export class Hud {
     const { model, choice, faction, onBuild, onClose } = this.buildState;
     const scrolled = this.buildList ? this.buildList.scrollTop : 0;   // choosing a row redraws the window: keep the list where it was
     this.el.main.replaceChildren();
-    const w = windowBox(d, { title: model.title, tag: `Funds ${fmtMoney(model.funds)}`, accent: faction?.color, cls: 'win--build' });
+    const w = windowBox(d, { title: model.title, accent: faction?.color, cls: 'win--build' });
     const list = h(d, 'div', 'build-list');
     list.setAttribute('role', 'listbox');
     const picked = model.options.find((o) => o.id === choice) || model.options[0];

@@ -226,3 +226,11 @@ test('the tapped-tile cursor draws only while nothing is selected', () => {
   assert.equal(withCursor, calls.filter((c) => c === 'stroke').length + 1, 'one outline for the cursor');
   assert.ok(selected >= 1);
 });
+
+test('income floats up from every property that paid, one after another, without locking input', () => {
+  const { effects, presenter } = rig();
+  presenter.present([{ type: 'turnStart', player: 0, day: 2, income: 2000, incomes: [{ x: 1, y: 2, amount: 1000 }, { x: 4, y: 5, amount: 1000 }], repaired: [] }], { now: 100 });
+  const floats = effects.list.filter((f) => f.k === 'txt');
+  assert.deepEqual(floats.map((f) => [f.s, f.x, f.t0]), [['+1000', 1.5, 100], ['+1000', 4.5, 240]]);
+  assert.ok(!effects.isLocked(150));
+});

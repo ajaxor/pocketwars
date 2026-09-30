@@ -152,6 +152,7 @@ export class Session {
     const { game, hud } = this;
     do {
       const res = game.endTurn();
+      this.presenter.present(res.events, { now: this.#now() });   // income numbers float up from the properties
       this.#handleEvents(res.events);
       if (game.isOver || this.disposed) return;
       if (!this.#humanTurn()) {

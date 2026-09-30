@@ -138,11 +138,11 @@ function openBuild(funds, extra = {}) {
   return { ...t, calls, rows, buy, label: (b) => b.children.at(-1).textContent };
 }
 
-test('the build menu has a row per unit, the funds in its title, and a Build button for the picked unit', () => {
+test('the build menu has a row per unit, and a Build button for the picked unit', () => {
   const { rows, byClass, texts, buy, label } = openBuild(8000);
   assert.equal(rows().length, 5);
   assert.deepEqual(texts(byClass('win-title')), ['Factory']);
-  assert.deepEqual(texts(byClass('win-tag')), ['Funds 8,000']);
+  assert.deepEqual(texts(byClass('win-tag')), [], 'the menu does not show the player\'s funds');
   assert.deepEqual(texts(byClass('build-name')), ['Recon', 'Tank', 'Heavy Tank', 'Artillery', 'Flak']);
   assert.deepEqual(texts(byClass('build-cost')), ['4,000', '7,000', '10,000', '6,000', '6,000']);
   assert.ok(rows()[0].classList.contains('is-picked'));
@@ -209,4 +209,22 @@ test('clear() removes the boxes, the orders and the build menu but leaves the to
   hud.actions({ items: [{ label: 'Wait', onClick() {} }] });
   hud.clear();
   assert.deepEqual([hud.el.info.children.length, hud.el.main.children.length, hud.el.toast.children.length], [0, 0, 1]);
+});
+
+test('tapping an attribute tag shows what it does; tapping it again, or the next tag, changes or hides that', () => {
+  const { hud, game, byClass } = make();
+  const u = game.state.units.find((q) => q.owner === 0 && q.type === 'soldier');
+  hud.info({ unit: unitInfo(game, u) });
+  const [captures, cover] = byClass('tag--help');
+  const help = byClass('tag-help')[0];
+  assert.equal(help.hidden, true);
+  captures.click();
+  assert.equal(help.hidden, false);
+  assert.match(help.textContent, /capture the property/);
+  assert.ok(captures.classList.contains('is-open'));
+  cover.click();
+  assert.match(help.textContent, /2 times the defense/);
+  assert.ok(!captures.classList.contains('is-open') && cover.classList.contains('is-open'));
+  cover.click();
+  assert.equal(help.hidden, true);
 });

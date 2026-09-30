@@ -11,6 +11,7 @@ export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduc
 export function startTurn(game, player) {
   const { state, registry } = game;
   const income = incomeFor(game, player);
+  const incomes = propertiesOwnedBy(game, player).filter((p) => p.property.income > 0).map((p) => ({ x: p.x, y: p.y, amount: p.property.income }));
   state.funds[player] += income;
   const repaired = [];
   for (const u of state.units) {
@@ -23,7 +24,7 @@ export function startTurn(game, player) {
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
     }
   }
-  return [{ type: 'turnStart', player, day: state.day, income, repaired }];
+  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired }];
 }
 
 /** Unit definitions that a property tile owned by the current player can produce, in menu order. */

@@ -22,6 +22,8 @@ export class Presenter {
         t = this.effects.strike(ev, t);
       } else if (ev.type === 'capture') {
         this.effects.capture(ev, t);
+      } else if (ev.type === 'turnStart') {
+        this.effects.income(ev, t);
       }
     }
   }

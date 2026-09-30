@@ -84,3 +84,12 @@ test('killing the last enemy unit ends the game inside act()', () => {
   assert.equal(events.at(-1).type, 'gameOver');
   assert.equal(game.isOver, true);
 });
+
+test('turnStart lists the income of each property that paid', () => {
+  const game = makeGame({ rows: ['a.c', '..H'], unitsOnMap: [['a', 0, 1, 0], ['b', 1, 1, 1]] });
+  const ev = game.endTurn().events.find((e) => e.type === 'turnStart');
+  const own = game.endTurn().events.find((e) => e.type === 'turnStart');
+  assert.equal(ev.player, 1);
+  assert.deepEqual(own.incomes.map((i) => [i.x, i.y, i.amount]).sort(), [[0, 0, 1000], [2, 1, 1000]]);
+  assert.equal(own.income, own.incomes.reduce((n, i) => n + i.amount, 0));
+});

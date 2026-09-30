@@ -118,7 +118,12 @@ canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block;
 .chip--no .chip-v { color: var(--hot); }
 .chip--gold .chip-v { color: var(--gold); }
 .tags { display: flex; flex-wrap: wrap; gap: 4px; }
-.tag { padding: 0 7px 1px; border: 1.5px solid rgba(243, 236, 214, .28); border-radius: 999px; font-size: 10.5px; color: var(--dim); white-space: nowrap; }
+.tags-box { display: flex; flex-direction: column; gap: 4px; }
+.tag { font: inherit; color: var(--dim); background: none; padding: 0 7px 1px; border: 1.5px solid rgba(243, 236, 214, .28); border-radius: 999px; font-size: 10.5px; color: var(--dim); white-space: nowrap; }
+
+button.tag--help { cursor: pointer; pointer-events: auto; touch-action: manipulation; color: var(--ink); border-style: dashed; }
+button.tag--help.is-open { background: rgba(255, 228, 92, .18); border-color: var(--gold); border-style: solid; }
+.tag-help { pointer-events: auto; color: var(--ink); }
 
 .stars { display: inline-flex; gap: 2px; }
 .star { display: block; width: 12px; height: 12px; background: #485575;

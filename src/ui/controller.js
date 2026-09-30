@@ -45,6 +45,8 @@ export class Controller {
     this.targets = [];
     this.pendingTargetId = null;
     this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
+    this.cards = null;  // the info cards for the current selection; while orders are being given they start hidden (see #setCards)
+    this.infoOn = false;
   }
 
   /** Snapshot of the selection state for the renderer. */
@@ -130,11 +132,36 @@ export class Controller {
     this.hud.message(null);
   }
 
+  /**
+   * Info cards for the unit being ordered. They would cover the map while the player is choosing, so they start hidden and
+   * the Info button on the order window toggles them. (Enemy units and units that have already moved, which get no orders,
+   * show their cards straight away through #show.)
+   */
+  #setCards(cards) {
+    this.cards = cards;
+    this.hud.info(this.infoOn ? cards : {});
+  }
+
+  #toggleInfo() {
+    this.infoOn = !this.infoOn;
+    this.hud.info(this.infoOn ? this.cards : {});
+    if (this.mode === 'move') this.#selectOrders(); else if (this.mode === 'act') this.#actions();
+  }
+
+  #infoButton() { return { label: this.infoOn ? 'Hide info' : 'Info', variant: 'ghost', onClick: () => this.#toggleInfo() }; }
+
+  #selectOrders() {
+    this.hud.actions({
+      hint: 'Tap a highlighted tile to move, or an enemy to attack it.',
+      items: [this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+    });
+  }
+
   /** The selected unit with the terrain at its (previewed) position. */
   #showSelected() {
     const pos = this.#selPos();
     this.hud.focus(pos);
-    this.hud.info({ unit: unitInfo(this.game, this.sel, { at: pos }), terrain: terrainInfo(this.game, pos.x, pos.y) });
+    this.#setCards({ unit: unitInfo(this.game, this.sel, { at: pos }), terrain: terrainInfo(this.game, pos.x, pos.y) });
   }
 
   #select(u) {
@@ -145,7 +172,7 @@ export class Controller {
     this.mode = 'move';
     this.hud.message(null);
     this.#showSelected();
-    this.hud.actions({ hint: 'Tap a highlighted tile to move, or an enemy to attack it.', items: [{ label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }] });
+    this.#selectOrders();
   }
 
   /** An enemy is picked as the target: show it (and the damage it would take) and offer the Attack button. */
@@ -153,7 +180,7 @@ export class Controller {
     this.pendingTargetId = enemy.id;
     const pos = this.#selPos();
     this.hud.focus({ x: enemy.x, y: enemy.y });
-    this.hud.info({
+    this.#setCards({
       unit: unitInfo(this.game, enemy, { attacker: this.sel, attackerAt: pos }),
       terrain: terrainInfo(this.game, enemy.x, enemy.y),
     });
@@ -199,7 +226,7 @@ export class Controller {
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
     if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
     items.push({ label: 'Wait', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
-    items.push({ label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
+    items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
     hud.actions({
       hint: pending ? `Attack ${name}? Tap it again or press Attack.`

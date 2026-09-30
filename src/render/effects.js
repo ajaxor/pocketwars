@@ -61,6 +61,13 @@ export class Effects {
     this.lockUntil = Math.max(this.lockUntil, t0 + (ev.completed ? 1700 : 1400));
   }
 
+  /** Income floating up from each property as a turn begins (ev = a turnStart event). Does not lock input. */
+  income(ev, t0) {
+    (ev.incomes || []).forEach((p, i) => {
+      this.list.push({ k: 'txt', x: p.x + .5, y: p.y + .1, s: '+' + p.amount, sz: .3, c: '#ffe45c', t0: t0 + i * 140, d: 1300 });
+    });
+  }
+
   /** Pixel offset applied to a unit while a lunge or hit-shake is playing. */
   unitOffset(id, now, S) {
     let dx = 0;
@@ -103,7 +110,7 @@ export class Effects {
         // outline + digits are drawn opaque and faded as one image; per-shape alpha lets the black outline show through the fill
         const y = f.y * S - S * .3 - p * S * .5, rx = S * 1.1, ry = S * .4;
         drawFaded(g, 1 - p * p, f.x * S - rx, y - ry, rx * 2, ry * 2, (c) => {
-          c.save(); c.font = font(700, S * .44); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 4; c.strokeStyle = '#000';
+          c.save(); c.font = font(700, S * (f.sz || .44)); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = f.sz ? 3 : 4; c.strokeStyle = '#000';
           c.strokeText(f.s, f.x * S, y); c.fillStyle = f.c || '#ff5a4d'; c.fillText(f.s, f.x * S, y); c.restore();
         });
       } else if (f.k === 'die') {

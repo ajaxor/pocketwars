@@ -22,7 +22,8 @@ test('terrain info: defense, move cost per move class (a dash-less null means im
   assert.equal(t.name, 'Mountain');
   assert.equal(t.defense, 4);
   assert.deepEqual(t.moves.map((c) => [c.label, c.cost]), [['Foot', 2], ['Wheels', null], ['Air', 1]]);
-  assert.deepEqual(t.notes, ['Blocks line of sight', 'High ground']);
+  assert.deepEqual(t.notes.map((n) => n.label), ['Blocks line of sight', 'High ground']);
+  assert.ok(t.notes.every((n) => n.help), 'each note explains itself');
   assert.equal(t.property, null);
 });
 
@@ -46,9 +47,10 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air'] }]);
   assert.deepEqual(tank.tags, []);
 
-  assert.deepEqual(unitStats(game, registry.unit('soldier')).tags, ['Captures', 'Cover x2']);
+  assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures', 'Cover x2']);
+  assert.match(unitStats(game, registry.unit('soldier')).tags[1].help, /2 times the defense/);
   const sniper = unitStats(game, registry.unit('sniper'));
-  assert.deepEqual(sniper.tags, ['Indirect fire']);
+  assert.deepEqual(sniper.tags.map((t) => t.label), ['Indirect fire']);
   assert.deepEqual([sniper.weapons[0].min, sniper.weapons[0].max], [2, 2]);
   assert.deepEqual(unitStats(game, registry.unit('artillery')).weapons[0].hits, ['Ground']);
   assert.deepEqual(unitStats(game, registry.unit('fighter')).weapons[0].hits, ['Low air', 'High air']);

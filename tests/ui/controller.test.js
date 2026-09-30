@@ -113,29 +113,53 @@ test('tapping empty ground shows the terrain alone and outlines the tile', () =>
   assert.deepEqual(t.controller.view.cursor, { x: 2, y: 0 });
 });
 
-test('selecting a unit shows it and its tile, with a Cancel button for touch screens', () => {
+test('while orders are given the info cards start hidden; Info shows them and Hide info puts them away again', () => {
   const t = setup(duelMap);
   t.controller.tap(0, 0);
-  assert.equal(t.hud.shown.unit.name, 'Unit');
+  assert.deepEqual(t.hud.shown, {}, 'nothing shown yet');
   assert.deepEqual(t.hud.focused, { x: 0, y: 0 });
-  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Cancel']);
+  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Info', 'Cancel']);
+  t.press('Info');
+  assert.equal(t.hud.shown.unit.name, 'Unit');
+  assert.equal(t.hud.shown.terrain.name, 'Plain');
+  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Hide info', 'Cancel']);
+  t.press('Hide info');
+  assert.deepEqual(t.hud.shown, {});
 });
 
-test('after a move preview the boxes describe the destination and the focus follows the unit', () => {
+test('the Info choice survives the move preview, and the cards describe the destination', () => {
   const t = setup({ rows: ['.F...'], unitsOnMap: [['a', 0, 0, 0], ['b', 1, 4, 0]] });
-  t.controller.tap(0, 0); t.controller.tap(1, 0); t.finishMove();
+  t.controller.tap(0, 0); t.press('Info'); t.controller.tap(1, 0); t.finishMove();
   assert.equal(t.hud.shown.terrain.name, 'Forest');
   assert.ok(t.hud.shown.unit.cover > 0, 'cover is the forest\'s, not the plain the unit left');
   assert.deepEqual(t.hud.focused, { x: 1, y: 0 });
+  assert.ok(t.hud.acts.items.some((b) => b.label === 'Hide info'));
 });
 
-test('picking a target shows it with the damage it would take, and the Attack button commits', () => {
+test('a new selection starts with the cards hidden again', () => {
+  const t = setup(duelMap);
+  t.controller.tap(0, 0); t.press('Info'); t.press('Cancel');
+  t.controller.tap(0, 0);
+  assert.deepEqual(t.hud.shown, {});
+});
+
+test('an enemy, or a unit of yours that already acted, shows its cards straight away', () => {
+  const t = setup(duelMap);
+  t.game.state.units[0].done = true;
+  t.controller.tap(0, 0);
+  assert.equal(t.hud.shown.unit.name, 'Unit');
+  assert.equal(t.controller.mode, 'idle');
+});
+
+test('picking a target shows the enemy and the damage it would take once Info is on, and Attack commits', () => {
   const t = setup({ rows: ['...'], unitsOnMap: [['a', 0, 0, 0], ['b', 1, 2, 0]] });
   t.controller.tap(0, 0); t.controller.tap(2, 0); t.finishMove();
-  assert.equal(t.hud.shown.unit.owner, 1, 'the boxes now show the enemy');
-  assert.ok(t.hud.shown.unit.forecast > 0);
+  assert.deepEqual(t.hud.shown, {}, 'hidden until asked for');
   assert.deepEqual(t.hud.focused, { x: 2, y: 0 });
-  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Attack', 'Wait', 'Cancel']);
+  t.press('Info');
+  assert.equal(t.hud.shown.unit.owner, 1, 'the cards show the enemy');
+  assert.ok(t.hud.shown.unit.forecast > 0);
+  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Attack', 'Wait', 'Hide info', 'Cancel']);
   t.press('Attack');
   assert.ok(t.game.state.units[1].hp < 10);
   assert.equal(t.controller.mode, 'idle');
