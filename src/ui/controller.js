@@ -1,7 +1,8 @@
 // Input controller: turns taps on the board into game orders.
 //
 // It is a small state machine:  idle -> move -> (anim) -> act -> commit -> idle
-//   idle  nothing selected; tap a ready unit to select it, or a property you own to open the build menu
+//   idle  nothing selected; tap a ready unit to select it, or a property you own to open the build menu; tapping anything
+//         else shows what is there (the info boxes)
 //   move  a unit is selected and its reachable tiles are highlighted; tap a tile to preview the move,
 //         or tap an enemy to preview the best attack position
 //   anim  the selected unit is sliding to the previewed tile (taps ignored)
@@ -12,17 +13,19 @@
 // game.act(), so cancelling is free and the engine never sees half-finished moves.
 
 import { canCapture } from '../engine/capture.js';
-import { canTarget, terrainStars } from '../engine/combat.js';
+import { canTarget } from '../engine/combat.js';
 import { buildOptions } from '../engine/economy.js';
 import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, targetsFrom } from '../engine/movement.js';
-import { ownerAt, propertyAt, terrainAt, layerInfo, unitDef } from '../engine/queries.js';
+import { ownerAt } from '../engine/queries.js';
+import { buildMenuModel, defaultChoice } from './build-menu.js';
+import { terrainInfo, unitInfo } from './info.js';
 import { describeEvents } from './messages.js';
 
 export class Controller {
   /**
    * @param {object} deps
    * @param {import('../engine/game.js').Game} deps.game
-   * @param {import('./hud.js').Hud} deps.hud
+   * @param {import('./hud.js').Hud} deps.hud   shows what the controller decides: info(), actions(), build(), message(), focus()
    * @param {import('./presenter.js').Presenter} deps.presenter
    * @param {import('../render/animator.js').MoveAnimator} deps.animator
    * @param {(owner:number)=>object} deps.colorsOf faction colours for a player
@@ -41,6 +44,7 @@ export class Controller {
     this.attack = null;
     this.targets = [];
     this.pendingTargetId = null;
+    this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
   }
 
   /** Snapshot of the selection state for the renderer. */
@@ -53,6 +57,7 @@ export class Controller {
       targets: this.targets,
       showTargets: this.mode === 'act',
       pendingTargetId: this.pendingTargetId,
+      cursor: this.cursor,
     };
   }
 
@@ -65,29 +70,30 @@ export class Controller {
   cancelAll() {
     this.animator.arrow = null;
     this.reset();
-    if (!this.game.isOver) this.hud.buttons([]);
+    this.hud.clear();
   }
 
   tap(x, y) {
     const { game, hud } = this;
     if (x < 0 || y < 0 || x >= game.map.width || y >= game.map.height || this.mode === 'anim') return;
-    if (this.mode === 'build') { this.mode = 'idle'; hud.buttons([]); }
+    if (this.mode === 'build') { this.mode = 'idle'; hud.clear(); }
     const u = this.#unitAt(x, y);
 
     if (this.mode === 'idle') {
+      this.cursor = { x, y };
       if (u && u.owner === game.currentPlayer && !u.done) this.#select(u);
-      else if (u) this.#info(u);
+      else if (u) this.#show(x, y, u);
       else {
         const options = ownerAt(game, x, y) === game.currentPlayer ? buildOptions(game, x, y) : [];
-        if (options.length) this.#buildMenu(x, y, options);
-        else { const t = terrainAt(game, x, y); this.#msg(`${t.name} def ${t.defense}`); }
+        if (options.length) this.#buildMenu(x, y);
+        else this.#show(x, y, null);
       }
     } else if (this.mode === 'move') {
       const sel = this.sel;
       if (u && u.owner !== sel.owner && canTarget(game, sel, u)) {
         const spot = bestAttackTile(game, sel, u, this.reach);
         if (spot) {
-          this.#previewMove(spot[0], spot[1], () => { this.pendingTargetId = u.id; this.#msg(this.#attackPrompt(u)); });
+          this.#previewMove(spot[0], spot[1], () => this.#pend(u));
           return;
         }
       }
@@ -106,26 +112,29 @@ export class Controller {
       const target = this.targets.find((e) => e.x === x && e.y === y);
       if (target) {
         if (this.pendingTargetId === target.id) { this.#commit({ type: 'attack', targetId: target.id }); return; }
-        this.pendingTargetId = target.id;
-        this.#msg(this.#attackPrompt(target));
+        this.#pend(target);
       } else if (x === pos.x && y === pos.y) {
         this.#commit(canCapture(game, this.sel, pos.x, pos.y) ? { type: 'capture' } : { type: 'wait' });
       } else if (this.reach && this.reach.has(x, y) && !u) {
         this.#previewMove(x, y);
-      } else this.pendingTargetId = null;
+      } else { this.pendingTargetId = null; this.#actMenu(); }
     }
   }
 
-  #attackPrompt(enemy) { return `Attack ${this.game.registry.unit(enemy.type).name}? Tap it again to confirm`; }
+  // Info boxes -------------------------------------------------------------------------------------------------------------
 
-  #info(u) {
-    const { game } = this;
-    const def = unitDef(game, u);
-    const label = layerInfo(game, u).label;
-    const t = terrainAt(game, u.x, u.y);
-    const prop = propertyAt(game, u.x, u.y);
-    this.#msg(`${def.name}${label ? ` (${label})` : ''} HP ${Math.ceil(u.hp)} - ${t.name} def ${terrainStars(game, u)}`
-      + (u.capture && prop ? ` - capturing ${u.capture}/${prop.capturePoints}` : ''));
+  /** Show what is on tile (x, y): its unit (when there is one) and its terrain. */
+  #show(x, y, unit) {
+    this.hud.focus({ x, y });
+    this.hud.info({ unit: unit ? unitInfo(this.game, unit) : null, terrain: terrainInfo(this.game, x, y) });
+    this.hud.message(null);
+  }
+
+  /** The selected unit with the terrain at its (previewed) position. */
+  #showSelected() {
+    const pos = this.#selPos();
+    this.hud.focus(pos);
+    this.hud.info({ unit: unitInfo(this.game, this.sel, { at: pos }), terrain: terrainInfo(this.game, pos.x, pos.y) });
   }
 
   #select(u) {
@@ -134,7 +143,21 @@ export class Controller {
     this.reach = computeReach(this.game, u);
     this.attack = attackTiles(this.game, u);
     this.mode = 'move';
-    this.#info(u);
+    this.hud.message(null);
+    this.#showSelected();
+    this.hud.actions({ hint: 'Tap a highlighted tile to move, or an enemy to attack it.', items: [{ label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }] });
+  }
+
+  /** An enemy is picked as the target: show it (and the damage it would take) and offer the Attack button. */
+  #pend(enemy) {
+    this.pendingTargetId = enemy.id;
+    const pos = this.#selPos();
+    this.hud.focus({ x: enemy.x, y: enemy.y });
+    this.hud.info({
+      unit: unitInfo(this.game, enemy, { attacker: this.sel, attackerAt: pos }),
+      terrain: terrainInfo(this.game, enemy.x, enemy.y),
+    });
+    this.#actions();
   }
 
   // Preview a move: the unit slides to the destination (from its ORIGINAL tile), then the action menu opens.
@@ -162,45 +185,63 @@ export class Controller {
     this.mode = 'act';
     this.attack = blocked ? null : attackTiles(game, sel, pos.x, pos.y);
     this.targets = blocked ? [] : targetsFrom(game, sel, pos.x, pos.y);
+    if (!this.pendingTargetId) this.#showSelected();
+    this.#actions();
+  }
+
+  /** The order buttons for the unit where it stands (or is previewed): Attack (once a target is picked), Capture, Wait, Cancel. */
+  #actions() {
+    const { game, sel, hud } = this;
+    const pos = this.#selPos();
     const capture = canCapture(game, sel, pos.x, pos.y);
-    const buttons = [];
-    if (capture) buttons.push({ label: 'Capture', onClick: () => this.#commit({ type: 'capture' }) });
-    buttons.push({ label: 'Wait', onClick: () => this.#commit({ type: 'wait' }) });
-    buttons.push({ label: 'Cancel', onClick: () => this.cancelAll() });
-    this.hud.buttons(buttons);
-    this.#msg(capture ? 'Tap your unit to capture - or pick an action'
-      : this.targets.length ? 'Tap an enemy to target it (again to attack), or tap your unit to wait'
-        : 'Tap your unit to confirm the move');
+    const pending = this.pendingTargetId !== null ? this.targets.find((e) => e.id === this.pendingTargetId) : null;
+    const items = [];
+    if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
+    if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
+    items.push({ label: 'Wait', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
+    items.push({ label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
+    const name = game.registry.unit(pending ? pending.type : sel.type).name;
+    hud.actions({
+      hint: pending ? `Attack ${name}? Tap it again or press Attack.`
+        : capture ? 'Capture this property, or pick another action.'
+          : this.targets.length ? 'Tap an enemy to target it, or tap your unit to wait.'
+            : 'Tap your unit to confirm the move.',
+      items,
+    });
   }
 
   #commit(action) {
     const { game, sel } = this;
     const res = game.act({ unitId: sel.id, to: this.#selPos(), action });
-    if (!res.ok) { this.#msg(`That order is not allowed (${res.error}).`); this.cancelAll(); return; }
+    if (!res.ok) { this.cancelAll(); this.#msg(`That order is not allowed (${res.error}).`); return; }
     this.presenter.present(res.events, { now: performance.now(), animateMoves: false }); // move was already previewed
     const text = describeEvents(game, res.events);
+    this.cancelAll();
     if (text) this.#msg(text);
     this.onEvents(res.events);
-    this.cancelAll();
   }
 
-  #buildMenu(x, y, options) {
+  #buildMenu(x, y) {
     const { game, hud } = this;
+    const player = game.currentPlayer;
     this.mode = 'build';
-    this.#msg(`Funds ${game.state.funds[game.currentPlayer]}`);
-    const colors = this.colorsOf(game.currentPlayer);
-    hud.buttons(options.map((def) => ({
-      label: `${def.name} ${def.cost / 1000}k`,
-      onClick: () => {
-        if (game.state.funds[game.currentPlayer] < def.cost) { this.#msg('Not enough funds'); return; }
-        const res = game.build(x, y, def.id);
+    hud.focus({ x, y });
+    hud.info({});
+    hud.message(null);
+    const close = () => { this.mode = 'idle'; hud.clear(); };
+    const model = buildMenuModel(game, player, x, y);
+    hud.build(model, {
+      choice: defaultChoice(model.options), faction: this.colorsOf(player),
+      onClose: close,
+      onBuild: (id) => {
+        const def = game.registry.unit(id);
+        if (game.state.funds[player] < def.cost) { this.#msg('Not enough funds'); return; }
+        const res = game.build(x, y, id);
         if (!res.ok) { this.#msg(`Cannot build (${res.error}).`); return; }
-        this.#msg('Built ' + def.name);
         this.mode = 'idle';
-        hud.buttons([]);
+        hud.clear();
+        this.#msg('Built ' + def.name);
       },
-      icon: { def, colors },
-      dim: game.state.funds[game.currentPlayer] < def.cost,
-    })).concat([{ label: 'Close', onClick: () => { this.mode = 'idle'; hud.buttons([]); } }]));
+    });
   }
 }

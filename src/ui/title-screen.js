@@ -1,6 +1,6 @@
 // The title screen: a full-screen overlay with the logo, a progress bar, the Start button and links to the galleries.
 // This is only the view: it builds its DOM and exposes the states below. The launcher (src/launcher.js) decides when each
-// state happens. Its styles are the `.title*` rules in style.css.
+// state happens. Its styles are the `.title*` rules in style.css; the buttons are the shared `.btn` kit.
 //
 //   setProgress(pct, text)   progress bar and status line
 //   setVersion(text)         small build label at the bottom
@@ -37,11 +37,11 @@ export class TitleScreen {
     const progress = h('div', 'title-prog');
     this.fill = h('div', 'title-fill'); progress.append(this.fill);
     this.status = h('div', 'title-status', 'Starting...');
-    this.go = h('button', 'title-go', 'Loading'); this.go.disabled = true;
+    this.go = h('button', 'btn btn--primary btn--lg title-go', 'Loading'); this.go.disabled = true;
     this.go.addEventListener('click', () => this.onStart());
     this.links = h('nav', 'title-links');
-    for (const { label, href } of links) { const a = h('a', '', label); a.setAttribute('href', href); this.links.append(a); }
-    this.upd = h('button', 'title-upd', 'New version available - tap to update'); this.upd.hidden = true;
+    for (const { label, href } of links) { const a = h('a', 'btn btn--ghost', label); a.setAttribute('href', href); this.links.append(a); }
+    this.upd = h('button', 'btn btn--sm title-upd', 'New version available - tap to update'); this.upd.hidden = true;
     this.upd.addEventListener('click', () => this.onUpdate());
     this.ver = h('div', 'title-ver');
 

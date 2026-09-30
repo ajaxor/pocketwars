@@ -4,6 +4,7 @@
 import { SPRITES, SHADOWS } from './unit-art.js';
 import { drawFrameAlpha, DISABLED_TINT } from './unit-frame.js';
 import { drawFaded } from './layer.js';
+import { font } from './font.js';
 
 export const UNIT_SPRITES = SPRITES;
 const ART = { SPRITES, SHADOWS };
@@ -36,7 +37,7 @@ export function drawUnit(g, unit, o) {
     const hx = px + s * .8, hy = py + s * .82, r = s * .3;
     drawFaded(g, alpha, hx - r, hy - r, r * 2, r * 2, (c) => {   // outline + digit as one image, so fading never greys the digit, and a unit that has acted keeps a clear white digit
       c.save(); c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';
-      c.font = `800 ${s * .32}px ui-monospace,monospace`; c.lineWidth = 3; c.strokeStyle = '#000';
+      c.font = font(700, s * .34); c.lineWidth = 3; c.strokeStyle = '#000';
       c.strokeText(dh, hx, hy); c.fillText(dh, hx, hy); c.restore();
     });
   }

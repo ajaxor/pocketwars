@@ -3,6 +3,7 @@
 // resize mid-animation stays aligned.
 
 import { drawFaded } from './layer.js';
+import { font } from './font.js';
 
 const tileCentre = (u) => [u.x + .5, u.y + .5];
 
@@ -102,7 +103,7 @@ export class Effects {
         // outline + digits are drawn opaque and faded as one image; per-shape alpha lets the black outline show through the fill
         const y = f.y * S - S * .3 - p * S * .5, rx = S * 1.1, ry = S * .4;
         drawFaded(g, 1 - p * p, f.x * S - rx, y - ry, rx * 2, ry * 2, (c) => {
-          c.save(); c.font = `800 ${S * .42}px ui-monospace,monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 4; c.strokeStyle = '#000';
+          c.save(); c.font = font(700, S * .44); c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 4; c.strokeStyle = '#000';
           c.strokeText(f.s, f.x * S, y); c.fillStyle = f.c || '#ff5a4d'; c.fillText(f.s, f.x * S, y); c.restore();
         });
       } else if (f.k === 'die') {

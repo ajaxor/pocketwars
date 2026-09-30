@@ -1,0 +1,86 @@
+// Player-facing facts about a tile, a unit or a unit type, as plain data. The info boxes and the build menu draw these;
+// nothing here touches the DOM, so the numbers are tested without one. Everything is read from the registry and the game
+// state: no unit or terrain ids are compared here (labels for attributes live in the attribute catalogue).
+
+import { attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } from '../engine/attributes.js';
+import { calcDamage, terrainStars } from '../engine/combat.js';
+import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
+
+const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const MOVE_LABELS = { foot: 'Foot', vehicle: 'Wheels', air: 'Air' };
+const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft' };
+/** "vehicle" -> "Vehicles": a unit category as a heading (unknown names are capitalised and pluralised). */
+const categoryLabel = (c) => CATEGORY_LABELS[c] || `${cap(c)}s`;
+/** A move class as a short word for the terrain's move-cost chips. */
+const moveLabel = (c) => MOVE_LABELS[c] || cap(c);
+
+export const fmtMoney = (n) => Number(n).toLocaleString('en-US');
+
+/** What a weapon can shoot at, as words: the layer of each target mode ("Ground", "Low air"). */
+function hitsOf(game, weapon) {
+  const { layers, targetModes } = game.registry.rules;
+  const out = [];
+  for (const m of weapon.targets) {
+    const layer = targetModes[m].layer;
+    const word = layers[layer]?.label ? cap(layers[layer].label) : cap(layer);
+    if (!out.includes(word)) out.push(word);
+  }
+  return out;
+}
+
+/** Stats of a unit TYPE: what the build menu shows, and the base of the unit info box. */
+export function unitStats(game, def) {
+  const { registry } = game;
+  const tags = Object.entries(def.attributes).map(([name, cfg]) => attributeLabel(UNIT_ATTRIBUTES, name, cfg));
+  const layer = registry.rules.layers[def.layer];
+  return {
+    id: def.id, name: def.name, category: def.category, cost: def.cost, move: def.move,
+    toughness: def.toughness, armor: Math.round(def.armor * 100),
+    layer: layer?.label ? cap(layer.label) : null,
+    weapons: def.weapons.map((id) => {
+      const w = registry.weapon(id);
+      return { name: w.name, damage: w.damage, min: w.range[0], max: w.range[1], hits: hitsOf(game, w) };
+    }),
+    tags,
+  };
+}
+
+/** Facts about one tile's terrain, including who owns it when it is a property. */
+export function terrainInfo(game, x, y) {
+  const { registry } = game;
+  const t = terrainAt(game, x, y);
+  const prop = propertyAt(game, x, y);
+  const owner = prop ? ownerAt(game, x, y) : undefined;
+  const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => attributeLabel(TERRAIN_ATTRIBUTES, name, cfg));
+  return {
+    x, y, name: t.name, color: t.render.base, defense: t.defense,
+    moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),
+    property: prop ? {
+      income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel),
+      owner: owner === null ? null : { player: owner, name: factionOf(game, owner).name, color: factionOf(game, owner).color },
+    } : null,
+    notes,
+  };
+}
+
+/**
+ * Facts about a unit standing on the map. `at` is where it stands for the cover number (a unit previewing a move is
+ * still on its old tile in the game state); `attacker` adds the damage it would take from that unit.
+ */
+export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = attacker } = {}) {
+  const def = unitDef(game, unit);
+  const faction = unit.owner === null ? null : factionOf(game, unit.owner);
+  const prop = propertyAt(game, at.x, at.y);
+  const where = { ...unit, x: at.x, y: at.y };
+  return {
+    ...unitStats(game, def),
+    unitId: unit.id, owner: unit.owner,
+    faction: faction ? { name: faction.name, color: faction.color, dark: faction.dark } : null,
+    hp: Math.ceil(unit.hp - 1e-9), maxHp: game.registry.rules.maxHp,
+    layerLabel: layerInfo(game, unit).label,
+    acted: !!unit.done && unit.owner === game.state.turn,
+    cover: terrainStars(game, where),
+    capture: unit.capture && prop ? { progress: unit.capture, needed: prop.capturePoints } : null,
+    forecast: attacker ? calcDamage(game, attacker, where, attackerAt) : null,
+  };
+}

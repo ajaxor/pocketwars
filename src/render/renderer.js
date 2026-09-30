@@ -9,11 +9,16 @@
 //   targets: Unit[]               enemies that can be attacked right now (mode 'act')
 //   showTargets: boolean
 //   pendingTargetId: number|null  enemy awaiting attack confirmation
+//   cursor: {x,y}|null            tile the player last tapped (outlined while nothing is selected)
 // }
+//
+// The canvas covers the whole window; the map is centred in it (see fit()) and everything below draws in map pixels, so the
+// frame starts by clearing the window and moving the origin to the map's top-left corner.
 
 import { calcDamage, canAttackFrom } from '../engine/combat.js';
 import { tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
+import { font } from './font.js';
 import { drawUnit } from './unit-sprites.js';
 
 export class Renderer {
@@ -24,6 +29,7 @@ export class Renderer {
     this.effects = effects;
     this.animator = animator;
     this.S = 40;
+    this.layout = { W: game.map.width * this.S, H: game.map.height * this.S, ox: 0, oy: 0, d: 1 };
   }
 
   get tileSize() { return this.S; }
@@ -36,23 +42,37 @@ export class Renderer {
     return owner === null ? { color: registry.rules.neutralColor, dark: registry.rules.neutralColor } : registry.faction(map.players[owner].faction);
   }
 
-  /** Resize the canvas to fit the window (tiles are at least 24px). */
-  fit() {
+  /**
+   * Make the canvas cover the window and pick the biggest whole-pixel tile size that fits the whole map into the space below
+   * `top` px (the status bar). The map is centred in that space; the windows float over the canvas, not beside it.
+   */
+  fit({ top = 0 } = {}) {
     const { map } = this.game;
-    const S = Math.max(24, Math.min(Math.floor(Math.min(innerWidth, 440) / map.width), Math.floor((innerHeight - 200) / map.height)));
-    const d = devicePixelRatio || 1;
+    const W = innerWidth, H = innerHeight;
+    const availH = Math.max(1, H - top);
+    const S = Math.max(16, Math.floor(Math.min(W / map.width, availH / map.height)));
+    const d = globalThis.devicePixelRatio || 1;
+    const ox = Math.floor((W - map.width * S) / 2);
+    const oy = Math.floor(top + (availH - map.height * S) / 2);
     this.S = S;
-    this.cv.width = map.width * S * d;
-    this.cv.height = map.height * S * d;
-    this.cv.style.width = map.width * S + 'px';
-    this.cv.style.height = map.height * S + 'px';
-    this.g.setTransform(d, 0, 0, d, 0, 0);
+    this.layout = { W, H, ox, oy, d };
+    this.cv.width = Math.round(W * d);
+    this.cv.height = Math.round(H * d);
+    this.cv.style.width = W + 'px';
+    this.cv.style.height = H + 'px';
   }
 
-  /** Screen position (tile units -> pixels) of the tile a canvas point falls in. */
+  /** Tile (x, y)'s rectangle in window pixels: where the windows look to decide which edge to sit on. */
+  tileRect(x, y) {
+    const { ox, oy } = this.layout;
+    return { left: ox + x * this.S, top: oy + y * this.S, size: this.S };
+  }
+
+  /** The map tile a window point falls in (outside the map the numbers are out of range). */
   tileAt(clientX, clientY) {
     const r = this.cv.getBoundingClientRect();
-    return { x: Math.floor((clientX - r.left) / this.S), y: Math.floor((clientY - r.top) / this.S) };
+    const { ox, oy } = this.layout;
+    return { x: Math.floor((clientX - r.left - ox) / this.S), y: Math.floor((clientY - r.top - oy) / this.S) };
   }
 
   logicalPos(u, view) {
@@ -118,6 +138,10 @@ export class Renderer {
     const { map, state } = game;
     const sel = view.selectedId !== null ? unitById(game, view.selectedId) : null;
     const anim = this.animator.active;
+    const { W, H, ox, oy, d } = this.layout;
+    g.setTransform(d, 0, 0, d, 0, 0);
+    g.clearRect(0, 0, W, H);
+    g.setTransform(d, 0, 0, d, ox * d, oy * d);
 
     const terrainAt = (x, y) => game.registry.terrainDef(map.terrain[y][x]);
     const dimmed = this.dimmedTiles(view);
@@ -188,7 +212,11 @@ export class Renderer {
       const w = S * .82;
       const h = S * .42;
       g.save(); g.fillStyle = 'rgba(255,255,255,.95)'; g.strokeStyle = '#ff3b3b'; g.lineWidth = 2; g.beginPath(); g.roundRect(cx - w / 2, cy - h / 2, w, h, 6); g.fill(); g.stroke();
-      g.fillStyle = '#d62828'; g.font = `800 ${S * .32}px ui-monospace,monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('-' + n, cx, cy); g.restore();
+      g.fillStyle = '#d62828'; g.font = font(700, S * .34); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('-' + n, cx, cy); g.restore();
+    }
+    if (view.cursor && !sel) {
+      g.strokeStyle = '#fff'; g.lineWidth = 3; g.globalAlpha = .7 + .3 * Math.sin(now / 220);
+      g.beginPath(); g.roundRect(...this.face(view.cursor.x, view.cursor.y, 1)); g.stroke(); g.globalAlpha = 1;
     }
     if (sel && !anim) {
       const p = this.logicalPos(sel, view);

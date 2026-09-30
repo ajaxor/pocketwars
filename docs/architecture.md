@@ -8,7 +8,9 @@ src/data/        validate.js, registry.js (frozen lookup of the data), map-forma
 src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, sight (line of sight), capture, economy, victory, ai
 src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, buildings.js, color.js,
                  terrain-art.js (trees, mountains, sea), terrain-layer.js (rounded merged tiles), effects, move animator
-src/ui/          controller (taps -> orders), hud, presenter (events -> animations), session (frame loop, AI pacing)
+src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/windows/chips), info + build-menu (facts as plain data),
+                 presenter (events -> animations), session (frame loop, AI pacing)
+src/fonts/       the self-hosted typeface (Fredoka, OFL); declared in style.css, named for canvas text in src/render/font.js
 src/main.js      boot(): load data + map, create Game, start Session
 src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Start
 src/ui/title-screen.js  the title screen view (logo, progress, Start, gallery links, update button); styles are `.title*` in style.css
@@ -30,6 +32,26 @@ gallery/         live preview pages published next to the game: unit art (index.
   (`dest`), so the engine never sees half-finished moves.
 - **Special handling is data.** Engine code asks `hasAttribute(def, 'capture')`; it never compares unit ids.
   See `docs/attributes.md`.
+
+## UI
+
+The map is one canvas that covers the whole window (`Renderer.fit`): the biggest whole-pixel tile size that fits the board below the
+status bar, centred. Everything else floats over it in `#ui`, built by `src/ui/hud.js`:
+
+- **Status bar**, pinned to the top: turn, day, funds, properties, Undo, End turn.
+- **Dock**: a column of windows on the screen edge *away from* the tile being worked on (`Hud.focus` gives the tile, the session turns it
+  into `top` or `bottom` with `Session.#placeDock`). Top to bottom of the column: order buttons (or the build menu), the unit and
+  terrain info cards, then toasts. The info cards and toasts let taps through to the map; the order buttons and build menu do not.
+- **Info cards** show a tapped tile: the unit (HP, move, range, attack, armor, cover, attribute tags, capture progress) and the terrain
+  (defense stars, move cost per move class, owner, income, repair, what it builds). When an attack target is picked the card shows the
+  enemy with the damage it would take.
+- **Build menu**: a row per unit the property can build (picture, move/range/attack, cost); tapping a row selects it and shows its weapon
+  and armor; the big button builds it. Units the player cannot pay for are greyed and the button says how much is missing.
+
+What the windows show is computed as plain data in `src/ui/info.js` and `src/ui/build-menu.js` (no DOM, tested directly); the controller
+hands those models to the Hud, which owns all DOM. Buttons, windows, chips, stars and meters come from `src/ui/kit.js` and are styled by
+the tokens at the top of `style.css`, so a new window looks like the rest without new CSS. Attribute names shown to the player are the
+`label` of each attribute in the catalogue (`src/engine/attributes.js`).
 
 ## Terrain drawing
 

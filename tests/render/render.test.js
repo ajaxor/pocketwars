@@ -161,3 +161,68 @@ test('describeEvents summarises strikes, captures, builds and game over', () => 
   assert.match(describeEvents(game, [{ type: 'gameOver', winner: 0 }]), /wins!$/);
   assert.equal(describeEvents(game, []), null);
 });
+
+// ---- layout: the canvas covers the window, the map is centred below the status bar ------------------------------------------
+function withWindow(w, h, dpr, fn) {
+  const keep = { innerWidth: globalThis.innerWidth, innerHeight: globalThis.innerHeight, devicePixelRatio: globalThis.devicePixelRatio };
+  Object.assign(globalThis, { innerWidth: w, innerHeight: h, devicePixelRatio: dpr });
+  try { fn(); } finally {
+    for (const [k, v] of Object.entries(keep)) { if (v === undefined) delete globalThis[k]; else globalThis[k] = v; }
+  }
+}
+
+test('on a phone the map is as wide as the window and sits centred below the status bar', () => {
+  withWindow(400, 800, 2, () => {
+    const { renderer } = rig();
+    renderer.fit({ top: 50 });          // the classic map is 10 x 11
+    assert.equal(renderer.tileSize, 40);
+    assert.deepEqual(renderer.tileRect(0, 0), { left: 0, top: 205, size: 40 });
+    assert.deepEqual(renderer.layout, { W: 400, H: 800, ox: 0, oy: 205, d: 2 });
+    assert.deepEqual([renderer.cv.width, renderer.cv.height], [800, 1600], 'the canvas is the whole window, in device pixels');
+  });
+});
+
+test('on a wide window the height decides the tile size and the map is centred sideways', () => {
+  withWindow(1200, 800, 1, () => {
+    const { renderer } = rig();
+    renderer.fit({ top: 50 });
+    assert.equal(renderer.tileSize, 68);            // 750 px of height for 11 rows
+    assert.equal(renderer.layout.ox, 260);          // (1200 - 680) / 2
+    assert.equal(renderer.layout.oy, 50 + Math.floor((750 - 11 * 68) / 2));
+  });
+});
+
+test('taps are turned into map tiles through the offset; taps beside the map land outside it', () => {
+  withWindow(400, 800, 1, () => {
+    const { renderer, game } = rig();
+    renderer.fit({ top: 50 });
+    const r = renderer.tileRect(3, 4);
+    assert.deepEqual(renderer.tileAt(r.left + 5, r.top + 5), { x: 3, y: 4 });
+    assert.deepEqual(renderer.tileAt(r.left + 39, r.top + 39), { x: 3, y: 4 });
+    assert.ok(renderer.tileAt(10, 10).y < 0, 'above the map');
+    assert.ok(renderer.tileAt(10, 790).y >= game.map.height, 'below the map');
+  });
+});
+
+test('each frame clears the whole window and then draws in map coordinates', () => {
+  withWindow(400, 800, 1, () => {
+    const { renderer, calls } = rig();
+    renderer.fit({ top: 50 });
+    renderer.draw(emptyView, 0);
+    assert.ok(calls.indexOf('clearRect') >= 0 && calls.indexOf('clearRect') < calls.indexOf('fill'));
+    assert.equal(calls.filter((c) => c === 'setTransform').length, 2);
+  });
+});
+
+test('the tapped-tile cursor draws only while nothing is selected', () => {
+  const { renderer, calls, game } = rig();
+  renderer.draw({ ...emptyView, cursor: { x: 1, y: 1 } }, 0);
+  const withCursor = calls.filter((c) => c === 'stroke').length;
+  calls.length = 0;
+  renderer.draw({ ...emptyView, cursor: { x: 1, y: 1 }, selectedId: game.state.units[0].id }, 0);
+  const selected = calls.filter((c) => c === 'stroke').length;
+  calls.length = 0;
+  renderer.draw(emptyView, 0);
+  assert.equal(withCursor, calls.filter((c) => c === 'stroke').length + 1, 'one outline for the cursor');
+  assert.ok(selected >= 1);
+});

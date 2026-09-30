@@ -7,7 +7,16 @@ import { MoveAnimator } from '../../src/render/animator.js';
 
 function setup(opts) {
   const game = makeGame(opts);
-  const hud = { messages: [], last: [], message(t) { this.messages.push(t); }, buttons(b) { this.last = b; } };
+  // A recording stand-in for the Hud: what the controller asks it to show is kept for the assertions.
+  const hud = {
+    messages: [], shown: null, acts: null, built: null, focused: null,
+    message(t) { this.messages.push(t); },
+    info(o) { this.shown = o; },
+    actions(a) { this.acts = a; },
+    build(model, o) { this.built = model ? { model, ...o } : null; },
+    focus(t) { this.focused = t; },
+    clear() { this.shown = null; this.acts = null; this.built = null; },
+  };
   const presented = [];
   const events = [];
   const animator = new MoveAnimator();
@@ -16,7 +25,7 @@ function setup(opts) {
     colorsOf: () => ({ color: '#f00', dark: '#800' }), onEvents: (ev) => events.push(...ev),
   });
   const finishMove = () => { const c = animator.current; animator.current = null; c.onDone(); };
-  const press = (label) => hud.last.find((b) => b.label === label || b.label.startsWith(label)).onClick();
+  const press = (label) => hud.acts.items.find((b) => b.label === label).onClick();
   return { game, hud, controller, animator, events, presented, finishMove, press, lastMsg: () => hud.messages.at(-1) };
 }
 
@@ -51,7 +60,8 @@ test('Cancel abandons the preview without touching the game', () => {
   t.press('Cancel');
   assert.equal(t.controller.mode, 'idle');
   assert.equal(t.game.state.units[0].x, 0);
-  assert.deepEqual(t.hud.last, []);
+  assert.equal(t.hud.acts, null, 'the order buttons are gone');
+  assert.equal(t.hud.shown, null, 'and so are the info boxes');
 });
 
 test('taps are ignored while the unit is sliding', () => {
@@ -67,7 +77,7 @@ test('attacking takes two taps: preview the target, then confirm', () => {
   t.controller.tap(2, 0); // enemy in reach -> walks to the best attack tile
   t.finishMove();
   assert.equal(t.controller.view.pendingTargetId, t.game.state.units[1].id);
-  assert.match(t.lastMsg(), /Tap it again to confirm/);
+  assert.match(t.hud.acts.hint, /Tap it again/);
   assert.equal(t.game.state.units[1].hp, 10);
   t.controller.tap(2, 0); // confirm
   assert.ok(t.game.state.units[1].hp < 10);
@@ -89,7 +99,46 @@ test('enemy or exhausted units only show info', () => {
   const t = setup(duelMap);
   t.controller.tap(4, 0);
   assert.equal(t.controller.mode, 'idle');
-  assert.match(t.lastMsg(), /HP 10/);
+  assert.equal(t.hud.shown.unit.hp, 10);
+  assert.equal(t.hud.shown.terrain.name, 'Plain');
+  assert.deepEqual(t.hud.focused, { x: 4, y: 0 });
+  assert.equal(t.hud.acts, null, 'no orders for a unit that is not yours');
+});
+
+test('tapping empty ground shows the terrain alone and outlines the tile', () => {
+  const t = setup(duelMap);
+  t.controller.tap(2, 0);
+  assert.equal(t.hud.shown.unit, null);
+  assert.equal(t.hud.shown.terrain.name, 'Plain');
+  assert.deepEqual(t.controller.view.cursor, { x: 2, y: 0 });
+});
+
+test('selecting a unit shows it and its tile, with a Cancel button for touch screens', () => {
+  const t = setup(duelMap);
+  t.controller.tap(0, 0);
+  assert.equal(t.hud.shown.unit.name, 'Unit');
+  assert.deepEqual(t.hud.focused, { x: 0, y: 0 });
+  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Cancel']);
+});
+
+test('after a move preview the boxes describe the destination and the focus follows the unit', () => {
+  const t = setup({ rows: ['.F...'], unitsOnMap: [['a', 0, 0, 0], ['b', 1, 4, 0]] });
+  t.controller.tap(0, 0); t.controller.tap(1, 0); t.finishMove();
+  assert.equal(t.hud.shown.terrain.name, 'Forest');
+  assert.ok(t.hud.shown.unit.cover > 0, 'cover is the forest\'s, not the plain the unit left');
+  assert.deepEqual(t.hud.focused, { x: 1, y: 0 });
+});
+
+test('picking a target shows it with the damage it would take, and the Attack button commits', () => {
+  const t = setup({ rows: ['...'], unitsOnMap: [['a', 0, 0, 0], ['b', 1, 2, 0]] });
+  t.controller.tap(0, 0); t.controller.tap(2, 0); t.finishMove();
+  assert.equal(t.hud.shown.unit.owner, 1, 'the boxes now show the enemy');
+  assert.ok(t.hud.shown.unit.forecast > 0);
+  assert.deepEqual(t.hud.focused, { x: 2, y: 0 });
+  assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Attack', 'Wait', 'Cancel']);
+  t.press('Attack');
+  assert.ok(t.game.state.units[1].hp < 10);
+  assert.equal(t.controller.mode, 'idle');
 });
 
 test('tapping an owned factory opens the build menu; buying spends funds and closes it', () => {
@@ -97,20 +146,38 @@ test('tapping an owned factory opens the build menu; buying spends funds and clo
   t.game.state.funds[0] = 3000;
   t.controller.tap(0, 0);
   assert.equal(t.controller.mode, 'build');
-  t.press('Unit'); // first button
+  assert.equal(t.hud.built.model.title, 'Base');
+  assert.equal(t.hud.built.choice, 'a', 'starts on the first unit the player can afford');
+  t.hud.built.onBuild('a');
   assert.equal(t.game.state.units.filter((u) => u.owner === 0).length, 1);
   assert.equal(t.game.state.funds[0], 2000);
   assert.equal(t.controller.mode, 'idle');
+  assert.equal(t.hud.built, null, 'the menu closes');
+  assert.equal(t.lastMsg(), 'Built Unit');
 });
 
-test('the build menu dims units the player cannot afford and refuses them', () => {
+test('the build menu marks units the player cannot afford and refuses them', () => {
   const t = setup({ rows: ['a..b'], unitsOnMap: [['b', 1, 3, 0]] });
   t.game.state.funds[0] = 0;
   t.controller.tap(0, 0);
-  assert.ok(t.hud.last.filter((b) => b.dim).length >= 1);
-  t.hud.last[0].onClick();
+  assert.ok(t.hud.built.model.options.every((o) => !o.affordable));
+  t.hud.built.onBuild(t.hud.built.model.options[0].id);
   assert.match(t.lastMsg(), /Not enough funds/);
   assert.equal(t.game.state.units.length, 1);
+  assert.equal(t.controller.mode, 'build', 'the menu stays open');
+});
+
+test('closing the build menu, or tapping the map, leaves build mode', () => {
+  const t = setup({ rows: ['a..b'], unitsOnMap: [['b', 1, 3, 0]] });
+  t.controller.tap(0, 0);
+  t.hud.built.onClose();
+  assert.equal(t.controller.mode, 'idle');
+  assert.equal(t.hud.built, null);
+  t.controller.tap(0, 0);
+  t.controller.tap(2, 0);
+  assert.equal(t.controller.mode, 'idle');
+  assert.equal(t.hud.built, null);
+  assert.equal(t.hud.shown.terrain.name, 'Plain');
 });
 
 test('taps outside the board are ignored', () => {

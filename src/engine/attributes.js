@@ -15,18 +15,22 @@ const isFlag = (v) => v === true;
 /** Attributes that may appear in units.json -> attributes. */
 export const UNIT_ATTRIBUTES = {
   capture: {
+    label: 'Captures',
     doc: 'Can capture properties (cities, HQ, factories...) it stands on. Progress per capture action equals the unit\'s current HP.',
     check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   indirect: {
+    label: 'Indirect fire',
     doc: 'Artillery-style fire: cannot move and attack in the same turn, never counterattacks, and is never counterattacked by the unit it hits. Every weapon of the unit needs a minimum range of at least 2 (checked with the weapons table). Unrelated to the weapon target modes direct_ground / indirect_ground, which decide whether obstacles block a shot.',
     check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   ignoresTerrainDefense: {
+    label: 'Ignores cover',
     doc: 'Terrain defense stars do not reduce damage this unit takes (e.g. aircraft).',
     check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   terrainDefenseMultiplier: {
+    label: (v) => `Cover x${v}`,
     doc: 'Multiplies the terrain defense this unit gets (e.g. 2 doubles it). Does nothing on 0-defense terrain, and is moot with ignoresTerrainDefense.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 1) fail('must be a number greater than 1'); },
   },
@@ -35,6 +39,7 @@ export const UNIT_ATTRIBUTES = {
 /** Attributes that may appear in terrain.json -> attributes. */
 export const TERRAIN_ATTRIBUTES = {
   property: {
+    label: 'Property',
     doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored each turn to units on it, if owned), builds (unit categories the owner may build here).',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object');
@@ -45,14 +50,17 @@ export const TERRAIN_ATTRIBUTES = {
     },
   },
   blocksLineOfSight: {
+    label: 'Blocks line of sight',
     doc: 'An obstacle: direct fire cannot pass over this tile. The number is its height (forest 1, mountain and buildings 2); a firer standing on a tile whose `vantage` is higher shoots over it. The tiles at either end of a shot never block it, and units never block.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
   },
   vantage: {
+    label: 'High ground',
     doc: 'A high position: a direct-fire unit standing here is not blocked by obstacles (blocksLineOfSight) lower than this number.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
   },
   victoryOnCapture: {
+    label: 'Capture to win',
     doc: 'Capturing this tile wins the game for the capturing player (an HQ). Requires the property attribute.',
     check: (v, e, fail) => {
       if (!isFlag(v)) fail('must be true');
@@ -60,6 +68,12 @@ export const TERRAIN_ATTRIBUTES = {
     },
   },
 };
+
+/** Short player-facing name of an attribute (catalogue `label`: a string, or a function of the attribute's config). */
+export function attributeLabel(catalogue, name, config) {
+  const label = catalogue[name]?.label;
+  return typeof label === 'function' ? label(config) : label || name;
+}
 
 export const hasAttribute = (def, name) => !!def.attributes && def.attributes[name] != null && def.attributes[name] !== false;
 export const attributeConfig = (def, name) => (hasAttribute(def, name) ? def.attributes[name] : undefined);

@@ -12,19 +12,19 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d2436'/%3E%3Crect x='6' y='16' width='20' height='8' rx='2' fill='%23e8712c'/%3E%3Crect x='11' y='10' width='10' height='7' rx='2' fill='%239a3f0e'/%3E%3Crect x='19' y='12' width='9' height='2' fill='%23f3ecd6'/%3E%3C/svg%3E">
 <title>Pocket Wars</title>
-<!-- Shell: stays tiny and stable. It reads version.json (fetched with no-store) to find the build folder (v/<hash>/, see
+<!-- Shell: stays tiny and stable. The map fills the whole window (canvas#c) and every window floats over it in #ui; both are
+     made and styled by the build (src/ui/hud.js, style.css). It reads version.json (fetched with no-store) to find the build folder (v/<hash>/, see
      .github/workflows/pages.yml) and hands over to src/launcher.js from that build, so every module, style and data file a
      reload touches is new. The title screen, its styles and the loading logic all live in that build (src/launcher.js,
      src/ui/title-screen.js, style.css), not here. -->
 <style>
 html,body{height:100%;margin:0;background:#1d2436}
 body.loading>:not(#boot){visibility:hidden}
-#boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#f3ecd6;font:600 14px ui-monospace,Menlo,monospace;text-align:center;padding:24px;box-sizing:border-box}
-#boot button{font:800 16px ui-monospace,Menlo,monospace;color:#f3ecd6;background:#e8712c;border:3px solid #f3ecd6;border-radius:10px;padding:10px 28px}
+#boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#f3ecd6;font:600 14px ui-rounded,system-ui,sans-serif;text-align:center;padding:24px;box-sizing:border-box}
+#boot button{font:700 16px ui-rounded,system-ui,sans-serif;color:#fff;background:#e8712c;border:3px solid #0e1322;border-radius:12px;padding:12px 28px}
 </style></head><body class="loading">
 <div id="boot"><div id="boot-msg">Loading...</div></div>
-<div id="hud"><div><div id="t"></div><div id="f"></div></div><div id="bar"><button id="undo" disabled>Undo</button><button id="end">End turn</button></div></div>
-<canvas id="c"></canvas><div id="msg"></div><div id="btns"></div>
+<canvas id="c"></canvas><div id="ui"></div>
 
 <script>
 (()=>{

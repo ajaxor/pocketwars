@@ -29,7 +29,7 @@ export class Session {
     this.renderer = null;
     this.effects = new Effects(game.registry, (owner) => this.renderer.colorsOf(owner));
     this.renderer = new Renderer(canvas, game, this.effects, this.animator);
-    this.hud = new Hud(doc);
+    this.hud = new Hud(doc, { registry: game.registry });
     this.presenter = new Presenter({ effects: this.effects, animator: this.animator });
     this.controller = new Controller({
       game, hud: this.hud, presenter: this.presenter, animator: this.animator,
@@ -42,7 +42,17 @@ export class Session {
       const { x, y } = this.renderer.tileAt(e.clientX, e.clientY);
       this.controller.tap(x, y);
     };
-    this.onResize = () => this.renderer.fit();
+    this.onResize = () => this.#fit();
+  }
+
+  #fit() { this.renderer.fit({ top: this.hud.barHeight() }); }
+
+  /** The dock floats over the map on the edge away from the tile being worked on: the top half of the screen -> bottom edge. */
+  #placeDock() {
+    const tile = this.hud.focusTile;
+    if (!tile) return;
+    const r = this.renderer.tileRect(tile.x, tile.y);
+    this.hud.setSide(r.top + r.size / 2 < this.renderer.layout.H / 2 ? 'bottom' : 'top');
   }
 
   #now() { return performance.now(); }
@@ -51,7 +61,7 @@ export class Session {
 
   start() {
     const { hud, game } = this;
-    this.renderer.fit();
+    this.#fit();
     this.canvas.addEventListener('pointerdown', this.onPointerDown);
     addEventListener('resize', this.onResize);
     hud.onEnd(() => this.#onEndTurn());
@@ -90,9 +100,12 @@ export class Session {
     hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
     this.animator.update(now);
     const viewer = this.#viewer();
-    hud.status(`Day ${game.state.day} - ${factionOf(game, game.currentPlayer).name}`, `Funds ${game.state.funds[viewer]} - Props ${propertiesOwnedBy(game, viewer).length}`);
+    const faction = factionOf(game, game.currentPlayer);
+    hud.status({ day: game.state.day, name: faction.name, color: faction.color, funds: game.state.funds[viewer], props: propertiesOwnedBy(game, viewer).length });
     hud.setEndDisabled(this.busy);
+    this.#placeDock();
     this.renderer.draw(controller.view, now);
+    hud.tick(now);
     hud.drawIcons(now);
     requestAnimationFrame(() => this.#frame());
   }
@@ -114,7 +127,11 @@ export class Session {
   }
 
   #showGameOver() {
-    this.hud.buttons([{ label: 'Play again', onClick: () => this.restart() }]);
+    const { game, hud } = this;
+    const winner = game.state.winner;
+    const faction = winner === 'draw' || winner === null ? null : factionOf(game, winner);
+    hud.clear();
+    hud.gameOver({ title: faction ? 'Victory' : 'Draw', text: faction ? `${faction.name} wins!` : 'Nobody wins.', color: faction?.color, onClick: () => this.restart() });
   }
 
   async #onEndTurn() {
@@ -138,7 +155,7 @@ export class Session {
       this.#handleEvents(res.events);
       if (game.isOver || this.disposed) return;
       if (!this.#humanTurn()) {
-        hud.message(`${factionOf(game, game.currentPlayer).name} is moving...`);
+        hud.message(`${factionOf(game, game.currentPlayer).name} is moving...`, { sticky: true });
         await this.#playAiTurn();
         if (game.isOver || this.disposed) return;
         await sleep(500 + Math.max(0, this.effects.lockUntil - this.#now()));
