@@ -31,12 +31,12 @@ const treads = (g, s, x0, x1, y, h, w, run, j) => {
 };
 
 // ---- infantry: one body, head and walk cycle for every foot soldier; only the pack and weapon differ ----------
-const trooper = (kind) => (g, { s, c, dk, w, ph, run, b }) => {
-  const l = Math.sin(w * 8 + ph) * s * .05 * run, sw = Math.sin(w * 8 + ph) * s * .02 * run;
+const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
+  const walk = run && moving ? 1 : 0;                                                          // legs only step while the unit moves
+  const l = Math.sin(w * 8 + ph) * s * .05 * walk, sw = Math.sin(w * 8 + ph) * s * .02 * walk;
   g.fillStyle = dk; g.fillRect(-s * .14, s * .12, s * .1, s * .17 + l); g.fillRect(s * .04, s * .12, s * .1, s * .17 - l);
   if (kind === 'mech') box(g, s, -.24, -.1 + b / s, .09, .22, 3, dk);                         // rocket pack
   else if (kind === 'sniper') box(g, s, -.24, -.08 + b / s, .09, .2, 3, mix(c, '#56643a', .6)); // ghillie-covered pack
-  else box(g, s, -.23, -.08 + b / s, .08, .2, 3, dk);                                          // rucksack
   box(g, s, -.16, -.12 + b / s, .32, .28, 4, c);
   disc(g, s, 0, -.2 + b / s, .09, SKIN);
   g.fillStyle = dk; g.beginPath(); g.arc(0, -s * .21 + b, s * .11, Math.PI, 0); g.fill(); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
@@ -46,7 +46,7 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, b }) => {
   } else if (kind === 'sniper') { // standing, long rifle with a big, clearly visible scope
     const sy = b / s + sw / s * .5;
     stroke(g, s, -.12, .06 + b / s, .42, -.07 + sy, Math.max(2.2, s * .045), INK);
-    g.save(); g.translate(s * .17, (-.055 + sy) * s); g.rotate(-.24);
+    g.save(); g.translate(s * .06, (-.05 + sy) * s); g.rotate(-.24);
     box(g, s, -.1, -.04, .2, .075, 3, '#1b1b22');                                             // scope tube
     box(g, s, -.115, -.05, .04, .095, 2, '#3a3a44'); box(g, s, .075, -.055, .05, .105, 2, '#3a3a44'); // eyepiece and objective bells
     disc(g, s, .125, -.0025, .032, '#7fd0ff'); disc(g, s, .132, -.012, .012, '#ffffff');         // bright lens
@@ -135,7 +135,6 @@ const bomber = (g, { s, c, dk, w, run }) => {
   box(g, s, -.46, -.08, .92, .16, s * .08, c);                                                // fuselage
   box(g, s, -.42, .035, .82, .04, 2, mix(c, dk, .45));                                        // belly shade
   box(g, s, .3, -.06, .11, .05, 2, GLASS);                                                    // cockpit windows
-  g.fillStyle = dk; g.fillRect(-s * .14, -s * .02, s * .22, s * .045);                        // cargo doors
   poly(g, s, [[.12, .06], [-.1, .32], [-.26, .32], [-.16, .06]], near);                       // near wing
   poly(g, s, [[-.32, .06], [-.4, .16], [-.46, .16], [-.44, .06]], near);                      // near tailplane
   for (const [ey, ex] of [[.16, -.09], [.27, -.19]]) {                                        // near engines, hung under the wing

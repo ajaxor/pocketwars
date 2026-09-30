@@ -23,7 +23,7 @@ node lab.mjs check flat                            numbers: size, tile overflow,
 node lab.mjs gallery                               rebuild the live gallery page (gallery/index.html)
 ```
 
-Flags: `--bg plain|forest|mountain|road|sea|#rrggbb`, `--t <seconds into the animation>`, `--size <tile px>`, `--out <file.png>`.
+Flags: `--moving` (walk cycle; idle infantry stand still), `--bg plain|forest|mountain|road|sea|#rrggbb`, `--t <seconds into the animation>`, `--size <tile px>`, `--out <file.png>`.
 Backdrops use the game's real terrain drawing, so units are judged on what they will actually sit on.
 
 Sizes to judge at: **40** is a phone tile at 1x, **120** is the same tile on a 3x screen, **176+** is for detail work.

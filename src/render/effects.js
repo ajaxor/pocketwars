@@ -2,6 +2,8 @@
 // feeds events in here. Effect positions are stored in tile units and scaled at draw time, so a window
 // resize mid-animation stays aligned.
 
+import { drawFaded } from './layer.js';
+
 const tileCentre = (u) => [u.x + .5, u.y + .5];
 
 export class Effects {
@@ -87,8 +89,12 @@ export class Effects {
         for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + p; g.beginPath(); g.moveTo(Math.cos(a) * r * .6, Math.sin(a) * r * .6); g.lineTo(Math.cos(a) * r * 1.25, Math.sin(a) * r * 1.25); g.stroke(); }
         g.restore();
       } else if (f.k === 'txt') {
-        g.save(); g.globalAlpha = 1 - p * p; g.font = `800 ${S * .42}px ui-monospace,monospace`; g.textAlign = 'center'; g.textBaseline = 'middle'; g.lineWidth = 4; g.strokeStyle = '#000';
-        const y = f.y * S - S * .3 - p * S * .5; g.strokeText(f.s, f.x * S, y); g.fillStyle = f.c || '#ff5a4d'; g.fillText(f.s, f.x * S, y); g.restore();
+        // outline + digits are drawn opaque and faded as one image; per-shape alpha lets the black outline show through the fill
+        const y = f.y * S - S * .3 - p * S * .5, rx = S * 1.1, ry = S * .4;
+        drawFaded(g, 1 - p * p, f.x * S - rx, y - ry, rx * 2, ry * 2, (c) => {
+          c.save(); c.font = `800 ${S * .42}px ui-monospace,monospace`; c.textAlign = 'center'; c.textBaseline = 'middle'; c.lineWidth = 4; c.strokeStyle = '#000';
+          c.strokeText(f.s, f.x * S, y); c.fillStyle = f.c || '#ff5a4d'; c.fillText(f.s, f.x * S, y); c.restore();
+        });
       } else if (f.k === 'die') {
         drawDying(f.unit, now < f.t0 ? 1 : 1 - p);
       } else if (f.k === 'cap') {

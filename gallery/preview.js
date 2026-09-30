@@ -15,7 +15,7 @@ export function paintTile(g, { unit, faction, size, t, state, phase, bg }) {
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
   g.save(); g.translate(size / 2, size / 2);
-  drawFrameAlpha(g, MOD, unit.sprite, { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run }, st.alpha);
+  drawFrameAlpha(g, MOD, unit.sprite, { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run, moving: state === 'moving' }, st.alpha);
   g.restore();
 }
 

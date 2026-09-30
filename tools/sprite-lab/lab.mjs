@@ -4,7 +4,7 @@
 import { createCanvas } from '@napi-rs/canvas';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
-import { HERE, units, factions, UNIT_IDS, FACTION_IDS, loadStyles } from './lib.mjs';
+import { view, HERE, units, factions, UNIT_IDS, FACTION_IDS, loadStyles } from './lib.mjs';
 import * as R from './render.mjs';
 
 const OUT_DIR = path.join(HERE, 'out');
@@ -18,6 +18,7 @@ function parse(argv) {
   return a;
 }
 const args = parse(process.argv.slice(2));
+view.moving = !!args.moving;   // --moving: show the walk cycle (infantry legs only step while moving)
 const cmd = args._[0] || 'help';
 const num = (v, d) => (v === undefined || v === true ? d : Number(v));
 const list = (v) => (typeof v === 'string' ? v.split(',').filter(Boolean) : null);
