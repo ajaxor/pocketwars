@@ -163,3 +163,36 @@ test('the AI dives a submarine when it has nothing better to do', () => {
   assert.ok(['submerge', 'wait'].includes(order.action.type));
 });
 
+
+// ---- shipyards: ships are launched onto a free water tile next to the yard --------------------------------------------------
+const yardGame = (rows, unitsOnMap = []) => sea(rows, unitsOnMap);
+
+test('a ship built at a shipyard appears on the chosen adjacent water tile, and never on land', () => {
+  const g = yardGame(['.Y~', '.~~', '...']);
+  g.state.funds[0] = 20000;
+  const res = g.build(1, 0, 'cruiser', { x: 1, y: 1 });
+  assert.equal(res.ok, true);
+  assert.deepEqual([res.events[0].unit.x, res.events[0].unit.y], [1, 1]);
+  assert.equal(g.build(1, 0, 'cruiser', { x: 0, y: 0 }).error, 'invalid-deploy-tile', 'land is not a deploy tile');
+});
+
+test('without a choice the first free water tile is used; with none the build is refused', () => {
+  const g = yardGame(['.Y~', '...']);
+  g.state.funds[0] = 40000;
+  assert.equal(g.build(1, 0, 'destroyer').ok, true);
+  assert.deepEqual([g.state.units[0].x, g.state.units[0].y], [2, 0]);
+  assert.equal(g.build(1, 0, 'destroyer').error, 'no-deploy-tile', 'the only water tile is taken');
+});
+
+test('deployTiles: deep-sea ships cannot launch into shallows, destroyers can', async () => {
+  const { deployTiles } = await import('../../src/engine/economy.js');
+  const g = yardGame(['.Y~', '.s.']);
+  assert.deepEqual(deployTiles(g, 1, 0, registry.unit('submarine')).map((t) => [t.x, t.y]), [[2, 0]]);
+  assert.deepEqual(deployTiles(g, 1, 0, registry.unit('destroyer')).map((t) => [t.x, t.y]).sort(), [[1, 1], [2, 0]]);
+});
+
+test('ordinary properties still deploy on themselves', async () => {
+  const { deployTiles } = await import('../../src/engine/economy.js');
+  const g = sea(['H~'], []);
+  assert.deepEqual(deployTiles(g, 0, 0, registry.unit('soldier')), [{ x: 0, y: 0 }]);
+});

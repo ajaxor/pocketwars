@@ -132,10 +132,10 @@ export class Game {
     return { ok: true, events };
   }
 
-  /** Current player builds `unitType` on the property at (x, y). */
-  build(x, y, unitType) {
+  /** Current player builds `unitType` on the property at (x, y); `at` picks the deploy tile when the property offers several (see economy.js deployTiles). */
+  build(x, y, unitType, at = null) {
     if (this.isOver) return fail('game-over');
-    const result = buildUnit(this, this.state.turn, x, y, unitType);
+    const result = buildUnit(this, this.state.turn, x, y, unitType, at);
     if (result.ok) this.undoSnapshot = null; // spending funds can't be undone
     return result;
   }

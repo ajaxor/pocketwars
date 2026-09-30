@@ -24,7 +24,7 @@ wrong kind of entity, fail validation.
 
 | Attribute | Meaning | Tests |
 |---|---|---|
-| `property` | Ownable, capturable tile: `income`, `capturePoints`, `repair`, `builds` (unit categories). | `property.test.js` |
+| `property` | Ownable, capturable tile: `income`, `capturePoints`, `repair`, `builds` (unit categories), optional `deploy` (`on` by default; `adjacent` puts new units on a free neighbouring tile they can enter: shipyards). | `property.test.js` |
 | `blocksLineOfSight` | Obstacle for direct fire; the number is its height (forest 1, mountain and buildings 2). | `sight.test.js` |
 | `vantage` | A firer standing here shoots over obstacles lower than this number (mountain 2). | `sight.test.js` |
 | `submergible` | Deep water: `submerge` units can dive here. | `tests/engine/naval.test.js` |

@@ -8,6 +8,7 @@
 //   anim  the selected unit is sliding to the previewed tile (taps ignored)
 //   act   the unit sits at its previewed tile; pick Wait / Capture / an enemy (tap twice to attack)
 //   build the build menu is open
+//   deploy a ship was bought at a shipyard that has several free water tiles next to it: tap one to launch it there
 //
 // An order can come back INTERRUPTED (the path ran into a hidden unit, see engine/game.js): the unit has already moved, so the
 // controller plays the partial move and goes straight to the act menu for it ('resume'); the player then attacks or waits.
@@ -18,9 +19,9 @@
 import { canCapture } from '../engine/capture.js';
 import { canTarget } from '../engine/combat.js';
 import { canSee } from '../engine/detection.js';
-import { buildOptions } from '../engine/economy.js';
+import { buildOptions, deployTiles } from '../engine/economy.js';
 import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, hasMovedAlready, targetsFrom } from '../engine/movement.js';
-import { ownerAt, unitById } from '../engine/queries.js';
+import { ownerAt, terrainAt, unitById } from '../engine/queries.js';
 import { canSubmergeAt, canSurface } from '../engine/submerge.js';
 import { buildMenuModel, defaultChoice } from './build-menu.js';
 import { terrainInfo, unitInfo } from './info.js';
@@ -50,6 +51,7 @@ export class Controller {
     this.targets = [];
     this.pendingTargetId = null;
     this.preview = null; // { reach, attack }: where a tapped unit that cannot be ordered (an enemy's, say) could move and hit
+    this.deploy = null; // tiles a new unit may appear on, while the player is choosing one
     this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
     this.cards = null;  // the info cards for the current selection; while orders are being given they start hidden (see #setCards)
     this.infoOn = false;
@@ -66,6 +68,7 @@ export class Controller {
       showTargets: this.mode === 'act',
       pendingTargetId: this.pendingTargetId,
       cursor: this.cursor,
+      deploy: this.deploy,
     };
   }
 
@@ -88,6 +91,7 @@ export class Controller {
   tap(x, y) {
     const { game, hud } = this;
     if (x < 0 || y < 0 || x >= game.map.width || y >= game.map.height || this.mode === 'anim') return;
+    if (this.mode === 'deploy') { this.#deployTap(x, y); return; }
     if (this.mode === 'build') { this.mode = 'idle'; hud.clear(); }
     const u = this.#unitAt(x, y);
 
@@ -316,12 +320,39 @@ export class Controller {
       onBuild: (id) => {
         const def = game.registry.unit(id);
         if (game.state.funds[player] < def.cost) { this.#msg('Not enough funds'); return; }
-        const res = game.build(x, y, id);
-        if (!res.ok) { this.#msg(`Cannot build (${res.error}).`); return; }
-        this.mode = 'idle';
-        hud.clear();
-        this.#msg('Built ' + def.name);
+        const tiles = deployTiles(game, x, y, def);
+        if (!tiles.length) { this.#msg(`No free tile next to the ${terrainAt(game, x, y).name.toLowerCase()} for a ${def.name}.`); return; }
+        if (tiles.length > 1) { this.#chooseDeploy(x, y, def, tiles); return; }   // the player picks where it goes
+        this.#buildAt(x, y, def, tiles[0]);
       },
     });
+  }
+
+  #buildAt(x, y, def, at) {
+    const res = this.game.build(x, y, def.id, at);
+    this.cancelAll();
+    this.#msg(res.ok ? 'Built ' + def.name : `Cannot build (${res.error}).`);
+  }
+
+  /** More than one tile could take the new unit: highlight them and wait for a tap on one. */
+  #chooseDeploy(x, y, def, tiles) {
+    const { hud } = this;
+    hud.clear();                       // closes the build window
+    this.mode = 'deploy';
+    this.deploy = tiles;
+    this.deployWhat = { x, y, def };
+    hud.info({});
+    hud.focus({ x, y });
+    hud.actions({
+      hint: `Tap a highlighted tile to launch the ${def.name} there.`,
+      items: [{ label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+    });
+  }
+
+  #deployTap(x, y) {
+    const at = this.deploy.find((t) => t.x === x && t.y === y);
+    if (!at) { this.cancelAll(); return; }
+    const { x: bx, y: by, def } = this.deployWhat;
+    this.#buildAt(bx, by, def, at);
   }
 }

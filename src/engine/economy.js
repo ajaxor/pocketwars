@@ -1,6 +1,7 @@
 // Turn income, repair and unit production, all driven by the terrain `property` attribute.
 
-import { propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, unitAt } from './queries.js';
+import { moveCostAt } from './movement.js';
+import { DIRS, inBounds, propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, unitAt } from './queries.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
 
@@ -35,26 +36,41 @@ export function buildOptions(game, x, y) {
   return game.registry.unitsInCategories(property.builds);
 }
 
-/** Why a build request is invalid, or null when it is fine. */
-export function buildProblem(game, player, x, y, typeId) {
+/**
+ * The tiles a unit of type `def` built on the property at (x, y) could appear on. A property deploys `on` itself by default
+ * (when it is free); one with `deploy: "adjacent"` (a shipyard) uses the free orthogonal neighbours the unit can enter.
+ */
+export function deployTiles(game, x, y, def) {
+  const property = propertyAt(game, x, y);
+  if (!property) return [];
+  if (property.deploy !== 'adjacent') return unitAt(game, x, y) ? [] : [{ x, y }];
+  return DIRS.map(([dx, dy]) => ({ x: x + dx, y: y + dy }))
+    .filter((t) => inBounds(game.map, t.x, t.y) && moveCostAt(game, def.moveClass, t.x, t.y) != null && !unitAt(game, t.x, t.y));
+}
+
+/** Why a build request is invalid, or null when it is fine. `at` (optional) is the chosen deploy tile; the first one is used without it. */
+export function buildProblem(game, player, x, y, typeId, at = null) {
   const { state, registry } = game;
   const def = registry.units[typeId];
   if (!def) return 'unknown-unit';
   const property = propertyAt(game, x, y);
   if (!property || ownerAt(game, x, y) !== player) return 'not-your-property';
   if (!property.builds.includes(def.category)) return 'cannot-build-here';
-  if (unitAt(game, x, y)) return 'tile-occupied';
+  const tiles = deployTiles(game, x, y, def);
+  if (!tiles.length) return property.deploy === 'adjacent' ? 'no-deploy-tile' : 'tile-occupied';
+  if (at && !tiles.some((t) => t.x === at.x && t.y === at.y)) return 'invalid-deploy-tile';
   if (state.funds[player] < def.cost) return 'not-enough-funds';
   return null;
 }
 
 /** Produce a unit for `player` at (x, y). New units cannot act until next turn. */
-export function buildUnit(game, player, x, y, typeId) {
-  const problem = buildProblem(game, player, x, y, typeId);
+export function buildUnit(game, player, x, y, typeId, at = null) {
+  const problem = buildProblem(game, player, x, y, typeId, at);
   if (problem) return { ok: false, error: problem, events: [] };
   const { state, registry } = game;
+  const spot = at || deployTiles(game, x, y, registry.unit(typeId))[0];
   state.funds[player] -= registry.unit(typeId).cost;
-  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x, y, hp: registry.rules.maxHp, done: true, capture: 0, submerged: false, halted: null };
+  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x: spot.x, y: spot.y, hp: registry.rules.maxHp, done: true, capture: 0, submerged: false, halted: null };
   state.units.push(unit);
   return { ok: true, events: [{ type: 'build', unit: snapshotUnit(unit), cost: registry.unit(typeId).cost }] };
 }

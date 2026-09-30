@@ -15,7 +15,7 @@ import { calcDamage, canAttackFrom } from './combat.js';
 import { canSee } from './detection.js';
 import { buildProblem } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
-import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
+import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
 import { canSubmergeAt } from './submerge.js';
 
 /**
@@ -107,7 +107,7 @@ export function planBuild(game, x, y, ai = game.registry.ai) {
 export function buildPhase(game, ai = game.registry.ai) {
   const events = [];
   for (const p of allProperties(game)) {
-    if (p.owner !== game.state.turn || !p.property.builds.length || unitAt(game, p.x, p.y)) continue;
+    if (p.owner !== game.state.turn || !p.property.builds.length) continue;
     const type = planBuild(game, p.x, p.y, ai);
     if (type) events.push(...game.build(p.x, p.y, type).events);
   }

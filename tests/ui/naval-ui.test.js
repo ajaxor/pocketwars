@@ -107,3 +107,36 @@ test('the renderer leaves out units hidden from its viewer, and draws everything
   r.viewer = 0;
   r.draw({ selectedId: null, dest: null, reach: null, attackTiles: null, targets: [t.game.state.units[1]], showTargets: true, pendingTargetId: null }, 0);
 });
+
+test('a shipyard with several free water tiles asks where to launch; one tile builds straight away', () => {
+  const legend2 = { ...legend, '.': { terrain: 'plain' }, Y: { terrain: 'shipyard', owner: 0 }, h: { terrain: 'hq', owner: 1 } };
+  const make = (rows) => {
+    const game = new Game(registry, parseMap(rawMap({ rows, unitsOnMap: [], players, legend: legend2 }), registry));
+    game.state.funds[0] = 50000;
+    const hud = { messages: [], acts: null, built: null, message(t) { this.messages.push(t); }, info() {}, actions(a) { this.acts = a; }, build(m, o) { this.built = m ? { m, ...o } : null; }, focus() {}, clear() { this.acts = null; this.built = null; } };
+    const animator = new MoveAnimator();
+    const presenter = new Presenter({ effects: new Effects(registry, () => ({ color: '#f00' })), animator });
+    const controller = new Controller({ game, hud, animator, presenter, colorsOf: () => ({ color: '#f00', dark: '#800' }), onEvents: () => {} });
+    return { game, hud, controller };
+  };
+  const one = make(['.Y~', '...']);
+  one.controller.tap(1, 0);
+  one.hud.built.onBuild('destroyer');
+  assert.equal(one.game.state.units.length, 1, 'built without asking');
+  assert.equal(one.game.state.units[0].x, 2);
+
+  const two = make(['.Y~', '.~.']);
+  two.controller.tap(1, 0);
+  two.hud.built.onBuild('destroyer');
+  assert.equal(two.controller.mode, 'deploy');
+  assert.equal(two.controller.view.deploy.length, 2);
+  assert.equal(two.game.state.units.length, 0, 'nothing built yet');
+  two.controller.tap(0, 0);   // land: cancels
+  assert.equal(two.controller.mode, 'idle');
+  assert.equal(two.game.state.units.length, 0);
+  two.controller.tap(1, 0);
+  two.hud.built.onBuild('destroyer');
+  two.controller.tap(1, 1);   // the chosen tile
+  assert.deepEqual([two.game.state.units[0].x, two.game.state.units[0].y], [1, 1]);
+  assert.equal(two.controller.mode, 'idle');
+});

@@ -39,14 +39,14 @@
     "defense": 0,
     "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "coastal": 1, "deep_sea": 1 },
     "attributes": { "submergible": true },
-    "render": { "base": "#3d7ec7", "decor": "sea", "mini": "#3d7ec7" }
+    "render": { "base": "#3d7ec7", "group": "water", "decor": "sea", "mini": "#3d7ec7" }
   },
   "shallows": {
     "name": "Shallows",
     "defense": 1,
     "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "coastal": 1, "deep_sea": null },
     "attributes": {},
-    "render": { "base": "#62b9e0", "decor": "shallows", "mini": "#62b9e0" }
+    "render": { "base": "#62b9e0", "group": "water", "decor": "shallows", "mini": "#62b9e0" }
   },
   "city": {
     "name": "City",
@@ -91,7 +91,7 @@
     "name": "Shipyard",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "coastal": 1, "deep_sea": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval"] }, "blocksLineOfSight": 1 },
-    "render": { "base": "#62b9e0", "building": "shipyard", "mini": "#62b9e0" }
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval"], "deploy": "adjacent" }, "blocksLineOfSight": 1 },
+    "render": { "building": "shipyard" }
   }
 }

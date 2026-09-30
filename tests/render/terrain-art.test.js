@@ -160,3 +160,15 @@ test('a mountain stays (nearly) inside its tile', () => {
     assert.ok(Math.min(...xs) > -8 && Math.max(...xs) < 108, `x=${x}`);   // curve control points may bulge a little
   }
 });
+
+test('shallows and deep sea are one shape: the shore is rounded, the border between them is not', () => {
+  const shallows = registry.terrainDef('shallows'), sea = registry.terrainDef('sea');
+  assert.equal(shallows.render.group, sea.render.group, 'same group in the data');
+  const G = '#86b95c';
+  const rounds = (t, nb) => { const { ctx } = recorder(); const at = { x: 0, y: 0, now: 0 }; paintTile(ctx, 0, 0, 40, t, null, nb, at); return at.radii; };
+  const allWater = (c) => ({ n: c, e: c, s: c, w: c, ne: c, se: c, sw: c, nw: c });
+  // a shallows tile with deep sea to the east and south, land to the north and west: only its outer (land-facing) corner rounds
+  const nb = { ...allWater('#3d7ec7'), n: G, w: G, nw: G, ne: G, sw: G };
+  nb.group = { n: G, w: G, nw: G, ne: G, sw: G, e: 'water', s: 'water', se: 'water' };
+  assert.deepEqual(rounds(shallows, nb), [40 * .3, 0, 0, 0]);
+});

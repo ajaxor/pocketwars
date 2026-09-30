@@ -150,71 +150,78 @@ const bomber = (g, { s, c, dk, w, run }) => {
 };
 
 // ---- ships (side view, bow to the right, riding a little above the waterline) ------------------------------------
-// One hull shape shared by all four: a dark lower hull, a band of faction colour along the top of it, a pale steel deck, and the
-// deckhouse and guns of each ship on top. `b` (the bob) rocks them gently on the water; the wake at the bow foams with the clock.
-const STEEL_DECK = '#b9bec7', FOAM = 'rgba(255,255,255,.55)';
-const hullOf = (g, s, { x0, x1, deck, keel, bowRise = .05 }, c, dk, bb) => {
-  poly(g, s, [[x0, deck + bb], [x1 - .08, deck + bb], [x1, deck - bowRise + bb], [x1 - .13, keel + bb], [x0 + .06, keel + bb], [x0, keel - .07 + bb]], dk);
-  poly(g, s, [[x0 + .005, deck + bb], [x1 - .08, deck + bb], [x1, deck - bowRise + bb], [x1 - .035, deck + .06 + bb], [x0 + .01, deck + .07 + bb]], c);
-  box(g, s, x0 + .02, deck - .035 + bb, x1 - x0 - .08, .04, 2, STEEL_DECK);
-};
+// Kept deliberately plain: a dark hull with a band of faction colour, a few blocks for the superstructure and the guns. What tells
+// the ships apart at phone size is the SILHOUETTE: the destroyer is low and slim with one small gun and a radar dish; the cruiser
+// is mid-sized with a tall tower and big upward-raking flak guns; the battleship is the longest and heaviest, with a bow that
+// sweeps up and big twin-barrel turrets; the submarine is a low cigar with a fin. `b` (the bob) rocks them on the water.
+const FOAM = 'rgba(255,255,255,.55)', DARK = '#33363d';
 const wake = (g, s, x1, y, w, run, len = .14) => {
   const pulse = .7 + .3 * Math.sin(w * 4) * run;
   oval(g, s, x1 - .03, y, len * pulse, .032, FOAM); oval(g, s, x1 - .02 - len * .9, y + .012, len * .55, .022, 'rgba(255,255,255,.35)');
 };
-const barrels = (g, s, x, y, n, len, tilt, col = INK) => { for (let i = 0; i < n; i++) stroke(g, s, x, y + i * .03, x + len, y + i * .03 - tilt, Math.max(2, s * .03), col); };
-const turret = (g, s, x, y, big, dk, mid, len, tilt = .02) => {
-  box(g, s, x - big * .5, y - big * .42, big, big * .42, 3, mid);
-  box(g, s, x - big * .36, y - big * .7, big * .72, big * .34, 4, dk);
-  barrels(g, s, x + big * .3, y - big * .55, 2, len, tilt);
+/** Hull: flat deck at y = deck, keel at y = keel, stern at x0, bow at x1. `rise` lifts the bow: the stem sweeps up by that much. */
+const hullPath = (g, s, { x0, x1, deck, keel, rise = 0, sweep = .2 }, top = deck) => {
+  g.beginPath(); g.moveTo(x0 * s, top * s); g.lineTo((x1 - sweep) * s, top * s);
+  if (rise) g.quadraticCurveTo((x1 - sweep * .6) * s, top * s, x1 * s, (top - rise) * s); else g.lineTo(x1 * s, (top - .02) * s);
+  g.lineTo((x1 - .13) * s, keel * s); g.lineTo((x0 + .07) * s, keel * s); g.lineTo(x0 * s, (keel - .08) * s); g.closePath();
+};
+const hullOf = (g, s, h, c, dk, bb) => {
+  g.save(); g.translate(0, bb * s);
+  hullPath(g, s, h); g.fillStyle = dk; g.fill();
+  g.save(); hullPath(g, s, h); g.clip(); g.fillStyle = c; g.fillRect(h.x0 * s, (h.deck - .06) * s, (h.x1 - h.x0 + .1) * s, .1 * s); g.restore();   // colour band along the top
+  g.restore();
+};
+const gun = (g, s, x, y, w, len, tilt, n = 2, thick = .03) => {             // a turret block and its barrels
+  box(g, s, x - w * .5, y - w * .55, w, w * .55, 3, DARK);
+  for (let i = 0; i < n; i++) stroke(g, s, x + w * .2, y - w * .3 + (i - (n - 1) / 2) * thick * 1.3, x + w * .2 + len, y - w * .3 - tilt + (i - (n - 1) / 2) * thick * 1.3, Math.max(2, s * thick), INK);
 };
 
 const battleship = (g, { s, c, dk, w, run, b }) => {
   const bb = b * .6 / s;
   wake(g, s, .47, .2, w, run, .16);
-  hullOf(g, s, { x0: -.47, x1: .47, deck: .02, keel: .2 }, c, dk, bb);
-  box(g, s, -.3, -.3 + bb, .07, .16, 2, '#33363d');                                       // funnel
-  box(g, s, -.15, -.2 + bb, .24, .18, 3, c);                                              // deckhouse
-  box(g, s, -.1, -.3 + bb, .14, .1, 3, dk);                                               // bridge
-  box(g, s, -.085, -.27 + bb, .11, .03, 1, GLASS);
-  stroke(g, s, -.03, -.3 + bb, -.03, -.42 + bb, 2, INK);                                  // mast
-  turret(g, s, .3, .0 + bb, .15, dk, mix(c, dk, .5), .17);                                // two forward turrets, one aft
-  turret(g, s, .14, .0 + bb, .15, dk, mix(c, dk, .5), .17);
-  turret(g, s, -.36, .0 + bb, .15, dk, mix(c, dk, .5), .15);
+  hullOf(g, s, { x0: -.47, x1: .47, deck: .06, keel: .2, rise: .2, sweep: .5 }, c, dk, bb);   // long hull, bow sweeping up
+  g.save(); g.translate(0, bb * s);
+  box(g, s, -.22, -.12, .26, .18, 3, c);                                                        // superstructure: two blocks, mast and a funnel
+  box(g, s, -.16, -.25, .15, .13, 3, dk);
+  box(g, s, -.02, -.16, .06, .12, 2, DARK);
+  stroke(g, s, -.09, -.25, -.09, -.38, 2, INK);
+  gun(g, s, .19, .06, .22, .22, .03, 3, .034);                                                   // two big triple turrets, fore and aft
+  gun(g, s, -.36, .06, .2, .2, .02, 3, .034);
+  g.restore();
 };
 
 const cruiser = (g, { s, c, dk, w, run, b }) => {
   const bb = b * .7 / s;
-  wake(g, s, .43, .2, w, run, .14);
-  hullOf(g, s, { x0: -.43, x1: .43, deck: .03, keel: .2 }, c, dk, bb);
-  box(g, s, -.12, -.17 + bb, .22, .15, 3, c);                                              // deckhouse
-  box(g, s, -.07, -.27 + bb, .12, .1, 3, dk);                                              // bridge
-  box(g, s, -.055, -.245 + bb, .09, .03, 1, GLASS);
-  stroke(g, s, -.01, -.27 + bb, -.01, -.4 + bb, 2, INK); stroke(g, s, -.07, -.36 + bb, .06, -.36 + bb, 2, INK);   // mast and yard
-  turret(g, s, .27, .01 + bb, .13, dk, mix(c, dk, .5), .14);
-  turret(g, s, -.3, .01 + bb, .13, dk, mix(c, dk, .5), .12);
-  // anti-air mounts: short barrels raked up at the sky, forward of the deckhouse and on top of it
-  for (const [ax, ay] of [[.13, .0], [-.17, -.17]]) {
-    box(g, s, ax - .035, ay - .05 + bb, .07, .05, 2, '#3a3d45');
-    const a = Math.sin(w * 2.5 + ax * 9) * .1 * run;
-    g.save(); g.translate(ax * s, (ay - .06 + bb) * s); g.rotate(-1 + a); g.fillStyle = INK; g.fillRect(0, -s * .02, s * .13, s * .016); g.fillRect(0, s * .006, s * .13, s * .016); g.restore();
+  wake(g, s, .42, .2, w, run, .14);
+  hullOf(g, s, { x0: -.42, x1: .42, deck: .04, keel: .2, rise: .03, sweep: .15 }, c, dk, bb);
+  g.save(); g.translate(0, bb * s);
+  box(g, s, -.1, -.26, .17, .3, 3, c);                                                          // one tall tower
+  box(g, s, -.1, -.26, .17, .07, 3, dk);
+  stroke(g, s, -.02, -.26, -.02, -.38, 2, INK);
+  gun(g, s, .3, .04, .12, .14, .02, 1);                                                         // one modest forward gun
+  // flak: a big raked twin mount either side of the tower, barrels working up and down
+  for (const ax of [.16, -.27]) {
+    const aim = -.95 + Math.sin(w * 2.5 + ax * 9) * .12 * run;
+    box(g, s, ax - .055, -.06, .11, .1, 3, DARK);
+    g.save(); g.translate(ax * s, -.06 * s); g.rotate(aim);
+    g.fillStyle = INK; g.fillRect(0, -s * .03, s * .22, s * .022); g.fillRect(0, s * .004, s * .22, s * .022);
+    g.fillStyle = '#ffd24a'; g.fillRect(s * .2, -s * .03, s * .03, s * .022); g.fillRect(s * .2, s * .004, s * .03, s * .022);   // muzzle tips
+    g.restore();
   }
+  g.restore();
 };
 
 const destroyer = (g, { s, c, dk, w, run, b }) => {
   const bb = b * .8 / s;
   wake(g, s, .42, .19, w, run, .15);
-  hullOf(g, s, { x0: -.4, x1: .42, deck: .05, keel: .19, bowRise: .06 }, c, dk, bb);
-  box(g, s, -.03, -.15 + bb, .2, .12, 3, c);                                               // low deckhouse
-  box(g, s, .0, -.23 + bb, .11, .09, 3, dk);                                               // bridge
-  box(g, s, .015, -.205 + bb, .08, .025, 1, GLASS);
-  box(g, s, -.22, -.12 + bb, .05, .1, 2, '#33363d');                                       // funnel
-  turret(g, s, .28, .035 + bb, .1, dk, mix(c, dk, .5), .11, .015);                          // the single gun, forward
-  box(g, s, -.33, -.05 + bb, .1, .04, 2, '#3a3d45'); box(g, s, -.3, -.075 + bb, .07, .03, 2, dk);   // depth-charge rack aft
-  // the radar and sonar mast: a dish that turns with the clock (it is the ship that hears submarines)
-  stroke(g, s, .06, -.23 + bb, .06, -.33 + bb, 2, INK);
-  const sweep = Math.cos(w * 5 * (run ? 1 : 0) + 1);
-  oval(g, s, .06, -.345 + bb, .075 * Math.abs(sweep) + .012, .02, '#d8dce2');
+  hullOf(g, s, { x0: -.4, x1: .42, deck: .07, keel: .19, rise: .03, sweep: .18 }, c, dk, bb);   // low and slim
+  g.save(); g.translate(0, bb * s);
+  box(g, s, -.12, -.13, .2, .2, 3, c);                                                          // small bridge
+  box(g, s, -.1, -.1, .15, .03, 1, GLASS);
+  gun(g, s, .27, .07, .1, .11, .01, 1, .025);                                                   // the one small gun
+  stroke(g, s, -.02, -.13, -.02, -.25, 2, INK);                                                 // mast with a turning sonar/radar dish
+  oval(g, s, -.02, -.27, .08 * Math.abs(Math.cos(w * 5 * (run ? 1 : 0) + 1)) + .012, .02, '#d8dce2');
+  g.restore();
 };
 
 const submarine = (g, { s, c, dk, w, run, b }) => {
@@ -222,14 +229,11 @@ const submarine = (g, { s, c, dk, w, run, b }) => {
   wake(g, s, .44, .16, w, run, .13);
   box(g, s, -.44, -.01 + bb, .88, .17, s * .085, dk);                                      // round hull, riding low
   box(g, s, -.42, -.02 + bb, .84, .09, s * .05, c);                                        // faction colour along the top
-  poly(g, s, [[-.44, .0 + bb], [-.5, -.05 + bb], [-.5, .12 + bb], [-.44, .14 + bb]], mix(c, dk, .5));   // tapered stern and rudder
   box(g, s, -.06, -.16 + bb, .17, .15, 3, c);                                              // conning tower
   box(g, s, -.06, -.16 + bb, .17, .04, 2, dk);
   stroke(g, s, .07, -.16 + bb, .07, -.27 + bb, 2, INK); stroke(g, s, .07, -.27 + bb, .13, -.27 + bb, 2, INK);   // periscope
-  box(g, s, .2, .0 + bb, .14, .03, 1, mix(c, dk, .4));                                     // bow diving plane
   const spin = Math.sin(w * 18) * run;                                                     // propeller blur
-  stroke(g, s, -.5, .03 + bb - spin * .05, -.5, .09 + bb + spin * .05, 2, '#ccd');
-  disc(g, s, -.27, .13 + bb, .012, FOAM); disc(g, s, -.22, .1 + bb, .009, FOAM);           // a few bubbles
+  stroke(g, s, -.46, .03 + bb - spin * .05, -.46, .09 + bb + spin * .05, 2, '#ccd');
 };
 
 // stealth bomber (planned unit, not in the game yet): flying wing
@@ -246,7 +250,7 @@ const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, o); g.r
 export const SPRITES = {
   soldier: trooper('soldier'), mech: trooper('mech'), sniper: trooper('sniper'),
   recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, fighter, bomber, stealth_bomber: stealth,
-  destroyer: shrunk(destroyer, .84), submarine: shrunk(submarine, .86), cruiser: shrunk(cruiser, .84), battleship: shrunk(battleship, .8),
+  destroyer: shrunk(destroyer, .86), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .82),
 };
 
 // ---- shadows: each shape matches its unit's footprint ---------------------------------------------------------
@@ -265,5 +269,5 @@ export const SHADOWS = {
   bomber: airShadow(mirror([[.46, 0], [.4, -.05], [.1, -.07], [-.08, -.36], [-.2, -.36], [-.14, -.07], [-.3, -.06], [-.4, -.17], [-.46, -.17], [-.43, -.03], [-.46, 0]])),
   stealth_bomber: airShadow(mirror(stealthTop)),
   // ships: a dark patch of water under the hull
-  destroyer: ground(.4 * .84, .045, .215 * .84, .01), submarine: ground(.44 * .86, .04, .185 * .86), cruiser: ground(.43 * .84, .045, .22 * .84), battleship: ground(.47 * .8, .05, .225 * .8),
+  destroyer: ground(.4 * .86, .045, .215 * .86, .01), submarine: ground(.44 * .88, .04, .185 * .88), cruiser: ground(.43 * .86, .045, .22 * .86), battleship: ground(.47 * .82, .05, .225 * .82),
 };

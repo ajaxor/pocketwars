@@ -192,6 +192,10 @@ export class Renderer {
       }
       g.fill();
     }
+    if (view.deploy) {   // tiles a new unit can be launched onto, with a soft pulse so they read as a choice
+      g.fillStyle = `rgba(255,255,255,${.3 + .15 * Math.sin(now / 200)})`; g.strokeStyle = '#fff'; g.lineWidth = 3;
+      for (const t of view.deploy) { g.beginPath(); g.roundRect(...this.face(t.x, t.y, 1)); g.fill(); g.stroke(); }
+    }
     if (view.showTargets) {
       g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;
       view.targets.filter((e) => this.isShown(e)).forEach((e) => { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2.5)); g.stroke(); });

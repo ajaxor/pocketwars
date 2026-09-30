@@ -6,7 +6,7 @@
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
 //   barracks  two squarish canvas tents side by side (gabled roofs, open doors) and a flag out front
 //   airfield  a tapering runway, an arched hangar and a control tower
-//   shipyard  a concrete quay on the water's edge, a gantry crane over a half-built hull
+//   shipyard  a concrete quay slab, a gantry crane over a half-built hull
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
 import { luma, shade } from './color.js';
@@ -140,10 +140,6 @@ export const BUILDINGS = {
   shipyard(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
     const d = .08, dx = d * DX, dy = d * DY;
-    // wash along the quay edge, so the tile reads as a dock on the water and not a building floating on it
-    g.fillStyle = 'rgba(255,255,255,.3)';
-    g.fillRect(k.X(.03), k.Y(.93), .94 * S, Math.max(1, S * .02));
-    g.fillRect(k.X(.12), k.Y(.97), .7 * S, Math.max(1, S * .015));
     // the quay: a low concrete slab along the front, lit on top
     k.poly([[.06, .9], [.9, .9], [.9 + dx, .9 + dy], [.9 + dx + .02, .9 + dy + .05], [.06 + .09, .95], [.06, .95]], SHADOW);
     k.box(.04, .74, .84, .16, d, '#9aa1ab');

@@ -60,13 +60,14 @@ export const TERRAIN_ATTRIBUTES = {
   property: {
     label: 'Property',
     help: 'Can be owned and captured. It earns income and repairs units standing on it.',
-    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored each turn to units on it, if owned), builds (unit categories the owner may build here).',
+    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored each turn to units on it, if owned), builds (unit categories the owner may build here), deploy (optional: "on" puts a new unit on the property, the default; "adjacent" puts it on a free orthogonally adjacent tile it can enter, chosen by the player when there are several: a shipyard on the shore launches into the water).',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object');
       if (!Number.isInteger(v.income) || v.income < 0) fail('income must be a non-negative integer');
       if (!Number.isInteger(v.capturePoints) || v.capturePoints < 1) fail('capturePoints must be a positive integer');
       if (typeof v.repair !== 'number' || v.repair < 0) fail('repair must be a non-negative number');
       if (!Array.isArray(v.builds) || v.builds.some((c) => typeof c !== 'string')) fail('builds must be an array of unit category names');
+      if (v.deploy !== undefined && v.deploy !== 'on' && v.deploy !== 'adjacent') fail('deploy must be "on" or "adjacent"');
     },
   },
   blocksLineOfSight: {

@@ -72,6 +72,7 @@ export function validateTerrain(terrain, rules, problems, hasGround = false) {
     // render.base is the terrain's own ground colour (sea, road). Terrain without one is drawn on the map's ground (ground.json).
     if (!isObj(t.render) || (t.render.base !== undefined && !isColor(t.render.base))) problems.push(`terrain "${id}": render.base must be a hex color when given`);
     else if (t.render.base === undefined && !hasGround) problems.push(`terrain "${id}": render.base is required when there is no ground.json`);
+    else if (t.render.group !== undefined && !isStr(t.render.group)) problems.push(`terrain "${id}": render.group must be a name (terrains with the same group are drawn as one shape)`);
     else if (t.render.mini !== undefined && !isColor(t.render.mini)) problems.push(`terrain "${id}": render.mini (the colour on the map preview) must be a hex color`);
     checkAttributes('terrain', id, t, TERRAIN_ATTRIBUTES, problems);
   }
