@@ -12,7 +12,7 @@ test('it mounts one overlay on the page, with Start disabled while loading', () 
   assert.equal(doc.body.children[0], title.root);
   assert.equal(title.go.textContent, 'Loading');
   assert.equal(title.go.disabled, true);
-  assert.ok(title.root.find((e) => e.tag === 'h1' && e.textContent === 'Pocket Wars').length === 1);
+  assert.ok(title.root.find((e) => e.tag === 'h1' && e.children.map((c) => c.textContent).join(' ') === 'Pocket Wars').length === 1);
 });
 
 test('links become anchors under the Start button, in order', () => {

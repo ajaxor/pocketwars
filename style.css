@@ -200,18 +200,41 @@ canvas.unit-icon { display: block; flex: none; }
 @media (prefers-reduced-motion: reduce) { .win, .toast, .scrim { animation: none; } .btn { transition: none; } }
 
 /* ---- title screen (src/ui/title-screen.js) ---------------------------------------------------------------------------------- */
-.title { position: fixed; inset: 0; z-index: 10; display: flex; overflow-y: auto; padding: 24px 20px calc(24px + var(--safe-b)); background: radial-gradient(ellipse at 50% 30%, var(--bg-hi) 0%, var(--bg) 70%); color: var(--ink); text-align: center; }
-.title-body { margin: auto; display: flex; flex-direction: column; align-items: center; gap: 16px; }
-.title svg { width: min(78vw, 320px); height: auto; }
-.title h1 { margin: 0; font: 700 clamp(36px, 11vw, 58px)/1 var(--font); letter-spacing: .05em; text-transform: uppercase; text-shadow: 0 3px 0 #9a3f0e, 0 6px 0 rgba(0, 0, 0, .35); }
-.title .sub { opacity: .78; max-width: 300px; line-height: 1.4; }
+.title { position: fixed; top: 0; left: 0; width: 100%; height: 100vh; height: 100dvh; z-index: 10; display: flex; flex-direction: column; overflow-y: auto; background: #1d2436; color: var(--ink); text-align: center; }
+.title-scene { flex: none; width: 100%; height: clamp(170px, 34vh, 300px); overflow: hidden; background: linear-gradient(#1b2347 0%, #4a3670 48%, #c8604a 74%, #f0944e 100%); }
+.title-scene svg { display: block; width: 100%; height: 100%; }
+.title-body { flex: 1 0 auto; padding: 14px 20px calc(18px + var(--safe-b)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; background: linear-gradient(#2a3a3a, #1d2436 40%); }
+.title-logo { margin: 0; display: flex; flex-direction: column; align-items: center; gap: 2px; text-transform: uppercase; }
+.logo-top { font: 700 clamp(15px, 4.6vw, 20px)/1 var(--font); letter-spacing: .5em; padding-left: .5em; color: var(--gold); text-shadow: 0 2px 0 rgba(0, 0, 0, .4); }
+.logo-main { font: 700 clamp(56px, 19vw, 84px)/.95 var(--font); letter-spacing: .04em; text-shadow: 0 4px 0 #9a3f0e, 0 8px 0 rgba(0, 0, 0, .35); }
+.title .sub { opacity: .8; max-width: 290px; line-height: 1.4; font-size: 14px; }
 .title-prog { width: min(70vw, 260px); height: 10px; border-radius: 6px; background: rgba(0, 0, 0, .4); box-shadow: inset 0 0 0 2px var(--edge); overflow: hidden; }
 .title-fill { height: 100%; width: 0; background: var(--accent); transition: width .25s; }
 .title-status { min-height: 1.2em; font-size: 12px; opacity: .8; }
-.title-go { min-width: 200px; }
+.title-go { min-width: 220px; }
+.title-go:not(:disabled) { animation: title-pulse 1.8s ease-in-out infinite; }
 .title-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .title-upd { color: var(--edge); background: linear-gradient(#fff07a, #ffd93d); text-shadow: none; }
-.title-ver { position: fixed; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); font-size: 11px; opacity: .55; letter-spacing: .04em; pointer-events: none; }
+.title-ver { margin-top: 6px; font-size: 12px; opacity: .7; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
+.title-ver:empty { display: none; }
+
+/* the scene's motion */
+.t-cloud { fill: #f7c6b0; opacity: .35; animation: t-drift 40s linear infinite; }
+.t-cloud.c2 { animation-duration: 55s; animation-delay: -20s; }
+.t-cloud.c3 { animation-duration: 70s; animation-delay: -35s; opacity: .22; }
+.t-plane { animation: t-fly 15s linear infinite; }
+.t-unit { animation: t-idle 1.4s ease-in-out infinite; }
+.t-unit.u3 { animation-delay: -.5s; }
+.t-unit.u4 { animation-delay: -.9s; }
+.t-flash { opacity: 0; }
+.fire-l .t-flash { animation: t-flash 3.2s steps(1) infinite; }
+.fire-r .t-flash { animation: t-flash 3.2s steps(1) infinite 1.6s; }
+@keyframes t-drift { from { translate: -60px 0; } to { translate: 420px 0; } }
+@keyframes t-fly { from { translate: -40px 58px; } to { translate: 400px 40px; } }
+@keyframes t-idle { 50% { translate: 0 -1.5px; } }
+@keyframes t-flash { 0% { opacity: 1; } 12% { opacity: 0; } }
+@keyframes title-pulse { 50% { filter: brightness(1.12); } }
+@media (prefers-reduced-motion: reduce) { .t-cloud, .t-plane, .t-unit, .t-flash, .title-go { animation: none !important; } .t-plane { display: none; } }
 
 /* gear button and the in-game menu */
 .btn--icon { padding: 0; width: 40px; flex: none; }
