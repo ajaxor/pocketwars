@@ -1,9 +1,9 @@
 // Movement and range geometry. All costs come from terrain.moveCost[unit.moveClass]; a null cost means
 // impassable. Enemy units block movement, friendly units can be passed through but not stopped on.
 
-import { DIRS, distance, inBounds, inAttackRange, tileIndex, unitAt, unitDef, terrainAt } from './queries.js';
+import { DIRS, distance, inBounds, tileIndex, unitAt, unitDef, terrainAt } from './queries.js';
 import { hasAttribute } from './attributes.js';
-import { canTarget } from './combat.js';
+import { canAttackFrom, weaponsOf } from './combat.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
 export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveCost[moveClass];
@@ -110,28 +110,30 @@ export function distanceField(game, moveClass, goals) {
 }
 
 /**
- * Tiles the unit threatens from (x, y) as a Set of tile indexes. Direct-fire units include their own tile
- * so the drawn outline is a clean plus shape; units with a minimum range above 1 exclude the inner tiles.
+ * Tiles within reach of any of the unit's weapons from (x, y), as a Set of tile indexes (obstacles are not considered: see
+ * targetsFrom for what can actually be hit). Direct-fire units include their own tile so the drawn outline is a clean plus
+ * shape; weapons with a minimum range above 1 exclude the inner tiles.
  */
 export function attackTiles(game, unit, x = unit.x, y = unit.y) {
   const { map } = game;
-  const [lo, hi] = unitDef(game, unit).range;
   const out = new Set();
-  for (let dy = -hi; dy <= hi; dy++) {
-    for (let dx = -hi; dx <= hi; dx++) {
-      const d = Math.abs(dx) + Math.abs(dy);
-      const nx = x + dx;
-      const ny = y + dy;
-      if (d > hi || (d < lo && lo > 1) || !inBounds(map, nx, ny)) continue;
-      out.add(tileIndex(map, nx, ny));
+  for (const { range: [lo, hi] } of weaponsOf(game, unit)) {
+    for (let dy = -hi; dy <= hi; dy++) {
+      for (let dx = -hi; dx <= hi; dx++) {
+        const d = Math.abs(dx) + Math.abs(dy);
+        const nx = x + dx;
+        const ny = y + dy;
+        if (d > hi || (d < lo && lo > 1) || !inBounds(map, nx, ny)) continue;
+        out.add(tileIndex(map, nx, ny));
+      }
     }
   }
   return out;
 }
 
-/** Enemy units the unit could hit from (x, y) right now (layer, damage table and range all satisfied). */
+/** Enemy units the unit could hit from (x, y) right now (a weapon with the right target mode, range and line of sight). */
 export function targetsFrom(game, unit, x = unit.x, y = unit.y) {
-  return game.state.units.filter((e) => e.owner !== unit.owner && canTarget(game, unit, e) && inAttackRange(game, unit, x, y, e));
+  return game.state.units.filter((e) => e.owner !== unit.owner && canAttackFrom(game, unit, e, x, y));
 }
 
 /** Can this unit attack after moving? Indirect-fire units must fire from where they started. */
@@ -143,12 +145,10 @@ export const canFireAfterMoving = (game, unit) => !hasAttribute(unitDef(game, un
  */
 export function bestAttackTile(game, unit, target, reach) {
   const def = unitDef(game, unit);
-  const [lo, hi] = def.range;
   const candidates = hasAttribute(def, 'indirect') ? [{ x: unit.x, y: unit.y, cost: reach.costAt(unit.x, unit.y) ?? 0 }] : [...reach.tiles()];
   let best = null;
   for (const { x, y, cost } of candidates) {
-    const d = distance(x, y, target.x, target.y);
-    if (d < lo || d > hi) continue;
+    if (!canAttackFrom(game, unit, target, x, y)) continue;
     const score = (x === unit.x && y === unit.y ? 100 : 0) + terrainAt(game, x, y).defense * 3 - cost;
     if (!best || score > best.score) best = { x, y, score };
   }

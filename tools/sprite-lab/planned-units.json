@@ -7,11 +7,11 @@
     "cost": 22000,
     "move": 8,
     "moveClass": "air",
-    "range": [1, 1],
     "layer": "high_air",
-    "targetLayers": ["ground"],
+    "weapons": ["bombs"],
+    "toughness": 1,
+    "armor": 0.4,
     "attributes": { "ignoresTerrainDefense": true },
-    "damage": { "soldier": 120, "mech": 105, "sniper": 120, "recon": 115, "tank": 115, "heavy_tank": 105, "artillery": 115, "flak": 115 },
     "render": { "sprite": "stealth_bomber", "attackFx": "arc", "altitude": 0.13 }
   }
 }

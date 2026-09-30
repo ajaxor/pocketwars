@@ -3,8 +3,20 @@
   "neutralColor": "#b9b9b9",
   "moveClasses": ["foot", "vehicle", "air"],
   "layers": {
-    "ground":   { "label": null },
-    "low_air":  { "label": "low air",  "airborne": true },
-    "high_air": { "label": "high air", "airborne": true }
+    "ground":     { "label": null },
+    "low_air":    { "label": "low air",  "airborne": true },
+    "high_air":   { "label": "high air", "airborne": true },
+    "surface":    { "label": null },
+    "underwater": { "label": "submerged" },
+    "structure":  { "label": null }
+  },
+  "targetModes": {
+    "direct_ground":   { "layer": "ground", "lineOfSight": true },
+    "indirect_ground": { "layer": "ground" },
+    "low_air":         { "layer": "low_air" },
+    "high_air":        { "layer": "high_air" },
+    "surface":         { "layer": "surface" },
+    "underwater":      { "layer": "underwater" },
+    "structure":       { "layer": "structure" }
   }
 }

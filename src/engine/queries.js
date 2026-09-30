@@ -37,11 +37,4 @@ export function allProperties(game) {
 
 export const propertiesOwnedBy = (game, player) => allProperties(game).filter((p) => p.owner === player);
 export const layerInfo = (game, unit) => game.registry.rules.layers[unitDef(game, unit).layer];
-/** True when `target` lies within the unit type's [min, max] range of tile (x, y). */
-export function inAttackRange(game, unit, x, y, target) {
-  const [lo, hi] = unitDef(game, unit).range;
-  const d = distance(x, y, target.x, target.y);
-  return d >= lo && d <= hi;
-}
-
 export const factionOf = (game, player) => game.registry.faction(game.map.players[player].faction);

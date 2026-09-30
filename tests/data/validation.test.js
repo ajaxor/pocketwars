@@ -34,17 +34,43 @@ test('victoryOnCapture requires the property attribute', () => {
   has(problemsOf((d) => { d.terrain.plain.attributes.victoryOnCapture = true; }), /victoryOnCapture/);
 });
 
-test('units: unknown moveClass, layer, and bad range', () => {
+test('units: unknown moveClass and layer', () => {
   has(problemsOf((d) => { d.units.a.moveClass = 'swim'; }), /unknown moveClass "swim"/);
   has(problemsOf((d) => { d.units.a.layer = 'space'; }), /unknown layer "space"/);
-  has(problemsOf((d) => { d.units.a.range = [3, 1]; }), /range/);
 });
 
-test('damage table must agree with targetLayers', () => {
-  has(problemsOf((d) => { delete d.units.a.damage.b; }), /no damage entry vs "b"/);
-  has(problemsOf((d) => { d.units.a.damage.ghost = 10; }), /unknown unit "ghost"/);
-  has(problemsOf((d) => { d.units.a.damage.b = 0; }), /positive number/);
-  has(problemsOf((d) => { d.units.a.targetLayers = ['sky']; }), /cannot target layer "ground"/);
+test('units: weapons must exist; toughness and armor must be in range', () => {
+  has(problemsOf((d) => { d.units.a.weapons = ['ghost']; }), /unit "a": weapons must be a list of weapon ids/);
+  has(problemsOf((d) => { d.units.a.weapons = 'a'; }), /weapons must be a list/);
+  has(problemsOf((d) => { d.units.a.toughness = 0; }), /toughness must be a positive number/);
+  has(problemsOf((d) => { d.units.a.armor = 1.5; }), /armor must be a number from 0 to 1/);
+  has(problemsOf((d) => { d.units.a.armor = -0.1; }), /armor must be a number from 0 to 1/);
+  assert.deepEqual(problemsOf((d) => { d.units.a.weapons = []; d.units.a.toughness = 2.5; d.units.a.armor = 1; }), [], 'an unarmed, very tough unit is fine');
+});
+
+test('weapons: damage, armorPiercing, range and target modes are checked', () => {
+  has(problemsOf((d) => { d.weapons.a.damage = 0; }), /weapon "a": damage must be a positive number/);
+  has(problemsOf((d) => { d.weapons.a.name = ''; }), /weapon "a": name is required/);
+  has(problemsOf((d) => { d.weapons.a.armorPiercing = 1.2; }), /armorPiercing must be a number from 0 to 1/);
+  has(problemsOf((d) => { d.weapons.a.range = [3, 1]; }), /weapon "a": range/);
+  has(problemsOf((d) => { d.weapons.a.range = [0, 1]; }), /weapon "a": range/);
+  has(problemsOf((d) => { d.weapons.a.targets = []; }), /targets must be a non-empty list of known target modes/);
+  has(problemsOf((d) => { d.weapons.a.targets = ['moon']; }), /known: direct_ground, indirect_ground, sky/);
+  assert.deepEqual(problemsOf((d) => { delete d.weapons.a.armorPiercing; }), [], 'armorPiercing is optional');
+});
+
+test('rules: every target mode needs a known layer', () => {
+  has(problemsOf((d) => { d.rules.targetModes.weird = { layer: 'nowhere' }; }), /target mode "weird" refers to unknown layer "nowhere"/);
+  has(problemsOf((d) => { d.rules.targetModes.weird = { layer: 'ground', lineOfSight: 'yes' }; }), /lineOfSight must be a boolean/);
+  has(problemsOf((d) => { delete d.rules.targetModes; }), /targetModes must be a non-empty object/);
+});
+
+test('terrain: blocksLineOfSight and vantage must be positive numbers', () => {
+  for (const name of ['blocksLineOfSight', 'vantage']) {
+    has(problemsOf((d) => { d.terrain.plain.attributes[name] = 0; }), new RegExp(`${name}" must be a positive number`));
+    has(problemsOf((d) => { d.terrain.plain.attributes[name] = true; }), new RegExp(`${name}" must be a positive number`));
+    assert.deepEqual(problemsOf((d) => { d.terrain.plain.attributes[name] = 3; }), []);
+  }
 });
 
 test('ai profile: unknown unit, wrong category, unknown condition, bad max', () => {

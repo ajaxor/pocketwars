@@ -31,6 +31,14 @@ export function validateRules(rules, problems) {
       if (l.airborne !== undefined && typeof l.airborne !== 'boolean') problems.push(`rules: layer "${id}" airborne must be a boolean`);
     }
   }
+  if (!isObj(rules.targetModes) || !Object.keys(rules.targetModes).length) problems.push('rules: targetModes must be a non-empty object');
+  else {
+    for (const [id, m] of Object.entries(rules.targetModes)) {
+      if (!isObj(m)) { problems.push(`rules: target mode "${id}" must be an object`); continue; }
+      if (!isObj(rules.layers) || !(m.layer in rules.layers)) problems.push(`rules: target mode "${id}" refers to unknown layer "${m.layer}"`);
+      if (m.lineOfSight !== undefined && typeof m.lineOfSight !== 'boolean') problems.push(`rules: target mode "${id}" lineOfSight must be a boolean`);
+    }
+  }
 }
 
 export function validateFactions(factions, problems) {
@@ -65,9 +73,25 @@ export function validateTerrain(terrain, rules, problems) {
   }
 }
 
-export function validateUnits(units, terrain, rules, problems) {
+export function validateWeapons(weapons, rules, problems) {
+  if (!isObj(weapons)) return problems.push('weapons.json must be an object');
+  const modes = Object.keys(rules.targetModes || {});
+  for (const [id, w] of Object.entries(weapons)) {
+    if (!isObj(w)) { problems.push(`weapon "${id}" must be an object`); continue; }
+    if (!isStr(w.name)) problems.push(`weapon "${id}": name is required`);
+    if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
+    if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);
+    if (!Array.isArray(w.range) || w.range.length !== 2 || !w.range.every(Number.isInteger) || w.range[0] < 1 || w.range[0] > w.range[1]) {
+      problems.push(`weapon "${id}": range must be [min, max] integers with 1 <= min <= max`);
+    }
+    if (!Array.isArray(w.targets) || !w.targets.length || w.targets.some((m) => !modes.includes(m))) {
+      problems.push(`weapon "${id}": targets must be a non-empty list of known target modes (known: ${modes.join(', ')})`);
+    }
+  }
+}
+
+export function validateUnits(units, terrain, rules, weapons, problems) {
   if (!isObj(units) || !Object.keys(units).length) return problems.push('units.json must be a non-empty object');
-  const ids = Object.keys(units);
   const layers = Object.keys(rules.layers || {});
   for (const [id, u] of Object.entries(units)) {
     if (!isObj(u)) { problems.push(`unit "${id}" must be an object`); continue; }
@@ -76,35 +100,17 @@ export function validateUnits(units, terrain, rules, problems) {
     if (!Number.isInteger(u.cost) || u.cost < 1) problems.push(`unit "${id}": cost must be a positive integer`);
     if (!Number.isInteger(u.move) || u.move < 0) problems.push(`unit "${id}": move must be a non-negative integer`);
     if (!(rules.moveClasses || []).includes(u.moveClass)) problems.push(`unit "${id}": unknown moveClass "${u.moveClass}"`);
-    if (!Array.isArray(u.range) || u.range.length !== 2 || !u.range.every(Number.isInteger) || u.range[0] < 1 || u.range[0] > u.range[1]) {
-      problems.push(`unit "${id}": range must be [min, max] integers with 1 <= min <= max`);
-    }
     if (!layers.includes(u.layer)) problems.push(`unit "${id}": unknown layer "${u.layer}"`);
-    if (!Array.isArray(u.targetLayers) || !u.targetLayers.length || u.targetLayers.some((l) => !layers.includes(l))) {
-      problems.push(`unit "${id}": targetLayers must be a non-empty list of known layers`);
+    if (u.weapons !== undefined && (!Array.isArray(u.weapons) || u.weapons.some((w) => !isObj(weapons) || !weapons[w]))) {
+      problems.push(`unit "${id}": weapons must be a list of weapon ids from weapons.json`);
     }
-    if (u.maxHp !== undefined && !(Number.isInteger(u.maxHp) && u.maxHp >= 1 && u.maxHp <= rules.maxHp)) {
-      problems.push(`unit "${id}": maxHp must be an integer 1..${rules.maxHp} (omit it to use rules.maxHp)`);
+    if (u.toughness !== undefined && !(isNum(u.toughness) && u.toughness > 0)) problems.push(`unit "${id}": toughness must be a positive number (1 = no bonus)`);
+    if (u.armor !== undefined && !(isNum(u.armor) && u.armor >= 0 && u.armor <= 1)) problems.push(`unit "${id}": armor must be a number from 0 to 1`);
+    if (u.attributes && u.attributes.indirect && Array.isArray(u.weapons) && isObj(weapons)) {
+      for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
     }
-    if (!isObj(u.damage)) problems.push(`unit "${id}": damage must be an object keyed by target unit id`);
     if (!isObj(u.render) || !isStr(u.render.sprite)) problems.push(`unit "${id}": render.sprite is required`);
     checkAttributes('unit', id, u, UNIT_ATTRIBUTES, problems);
-  }
-  // Cross-checks that need every unit to have been read.
-  for (const [id, u] of Object.entries(units)) {
-    if (!isObj(u) || !isObj(u.damage) || !Array.isArray(u.targetLayers)) continue;
-    for (const [target, value] of Object.entries(u.damage)) {
-      if (!ids.includes(target)) { problems.push(`unit "${id}": damage references unknown unit "${target}"`); continue; }
-      if (!isNum(value) || value <= 0) problems.push(`unit "${id}": damage.${target} must be a positive number (omit the entry to forbid the attack)`);
-      if (!u.targetLayers.includes(units[target].layer)) {
-        problems.push(`unit "${id}": has damage vs "${target}" but cannot target layer "${units[target].layer}" (targetLayers)`);
-      }
-    }
-    for (const [target, t] of Object.entries(units)) {
-      if (u.targetLayers.includes(t.layer) && !(u.damage[target] > 0)) {
-        problems.push(`unit "${id}": can target layer "${t.layer}" but has no damage entry vs "${target}"`);
-      }
-    }
   }
   // Every category a property can build must contain at least one unit.
   const categories = new Set(Object.values(units).filter(isObj).map((u) => u.category));
@@ -132,14 +138,15 @@ export function validateAi(ai, units, problems) {
   }
 }
 
-/** Validate a full raw data bundle: { rules, factions, terrain, units, ai }. */
+/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai }. */
 export function validateData(raw) {
   const problems = [];
   validateRules(raw.rules, problems);
   const rules = isObj(raw.rules) ? raw.rules : {};
   validateFactions(raw.factions, problems);
   validateTerrain(raw.terrain, rules, problems);
-  validateUnits(raw.units, raw.terrain, rules, problems);
+  validateWeapons(raw.weapons, rules, problems);
+  validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);
   validateAi(raw.ai, raw.units, problems);
   return problems;
 }

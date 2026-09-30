@@ -11,10 +11,10 @@
 // knowing anything about drawing.
 
 import { canCapture, resolveCapture } from './capture.js';
-import { resolveAttack, canTarget } from './combat.js';
+import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach } from './movement.js';
-import { inAttackRange, inBounds, unitById } from './queries.js';
+import { inBounds, unitById } from './queries.js';
 import { createState, restoreState, snapshotState } from './state.js';
 import { evaluateVictory } from './victory.js';
 
@@ -59,7 +59,8 @@ export class Game {
       if (!target || target.owner === unit.owner) return fail('invalid-target');
       if (!canTarget(this, unit, target)) return fail('cannot-target');
       if (moved && !canFireAfterMoving(this, unit)) return fail('cannot-move-and-fire');
-      if (!inAttackRange(this, unit, to.x, to.y, target)) return fail('out-of-range');
+      const problem = attackProblem(this, unit, target, to.x, to.y);
+      if (problem) return fail(problem);
       return { ok: true, unit, reach, target };
     }
     return fail('unknown-action');

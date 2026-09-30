@@ -21,11 +21,10 @@ const ART = { SPRITES, SHADOWS };
  * @param {boolean} o.animate   idle animation on (false = static "already acted" pose)
  * @param {boolean} o.moving    drawn at double animation speed while sliding
  * @param {number} o.alpha      fade multiplier (dying units)
- * @param {number} o.maxHp      full health of this unit type; the HP digit shows whenever hp is below it (default 10)
  * @param {boolean} o.showHp    draw the HP digit when damaged
  */
 export function drawUnit(g, unit, o) {
-  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, maxHp = 10 } = o;
+  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp } = o;
   const run = animate ? 1 : 0;
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
@@ -33,7 +32,7 @@ export function drawUnit(g, unit, o) {
   drawFrameAlpha(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving }, alpha, run ? null : DISABLED_TINT);
   g.restore();
   const dh = Math.ceil(unit.hp - 1e-9);
-  if (showHp && dh < maxHp && dh > 0) {
+  if (showHp && dh < 10 && dh > 0) {
     const hx = px + s * .8, hy = py + s * .82, r = s * .3;
     drawFaded(g, alpha, hx - r, hy - r, r * 2, r * 2, (c) => {   // outline + digit as one image, so fading never greys the digit, and a unit that has acted keeps a clear white digit
       c.save(); c.fillStyle = '#fff'; c.textAlign = 'center'; c.textBaseline = 'middle';

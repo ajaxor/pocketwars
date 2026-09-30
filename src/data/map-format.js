@@ -120,8 +120,7 @@ export function parseMap(raw, registry) {
       if (!Number.isInteger(u.owner) || u.owner < 0 || u.owner >= playerCount) err(`${w}: owner must be a player index (0..${playerCount - 1})`);
       const inBounds = Number.isInteger(u.x) && Number.isInteger(u.y) && u.x >= 0 && u.y >= 0 && u.x < width && u.y < height;
       if (!inBounds) err(`${w}: position (${u.x}, ${u.y}) is outside the ${width}x${height} map`);
-      const maxHp = def ? registry.maxHpOf(u.type) : registry.rules.maxHp;
-      if (u.hp !== undefined && !(Number.isInteger(u.hp) && u.hp >= 1 && u.hp <= maxHp)) err(`${w}: hp must be an integer 1..${maxHp}`);
+      if (u.hp !== undefined && !(Number.isInteger(u.hp) && u.hp >= 1 && u.hp <= registry.rules.maxHp)) err(`${w}: hp must be an integer 1..${registry.rules.maxHp}`);
       if (def && inBounds && terrain[u.y] && terrain[u.y][u.x]) {
         const cost = registry.terrain[terrain[u.y][u.x]].moveCost[def.moveClass];
         if (cost === null) err(`${w}: ${def.name} cannot stand on ${registry.terrain[terrain[u.y][u.x]].name} at (${u.x}, ${u.y})`);

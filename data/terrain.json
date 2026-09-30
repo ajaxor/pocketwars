@@ -10,14 +10,14 @@
     "name": "Forest",
     "defense": 2,
     "moveCost": { "foot": 1, "vehicle": 2, "air": 1 },
-    "attributes": {},
+    "attributes": { "blocksLineOfSight": 1 },
     "render": { "base": "#86b95c", "decor": "forest" }
   },
   "mountain": {
     "name": "Mountain",
     "defense": 4,
     "moveCost": { "foot": 2, "vehicle": null, "air": 1 },
-    "attributes": {},
+    "attributes": { "blocksLineOfSight": 2, "vantage": 2 },
     "render": { "base": "#86b95c", "decor": "mountain" }
   },
   "road": {
@@ -38,7 +38,7 @@
     "name": "City",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] } },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "city" }
   },
   "hq": {
@@ -47,7 +47,8 @@
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": {
       "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
-      "victoryOnCapture": true
+      "victoryOnCapture": true,
+      "blocksLineOfSight": 2
     },
     "render": { "base": "#86b95c", "decor": "grass", "building": "hq" }
   },
@@ -55,21 +56,21 @@
     "name": "Factory",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] } },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "factory" }
   },
   "barracks": {
     "name": "Barracks",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] } },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "barracks" }
   },
   "airfield": {
     "name": "Airfield",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["aircraft"] } },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["aircraft"] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "airfield" }
   }
 }

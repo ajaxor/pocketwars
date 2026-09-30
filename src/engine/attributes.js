@@ -19,11 +19,8 @@ export const UNIT_ATTRIBUTES = {
     check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   indirect: {
-    doc: 'Artillery-style fire: cannot move and attack in the same turn, never counterattacks, and is never counterattacked by the unit it hits.',
-    check: (v, e, fail) => {
-      if (!isFlag(v)) fail('must be true');
-      if (e.range && e.range[0] < 2) fail('requires a minimum range of at least 2');
-    },
+    doc: 'Artillery-style fire: cannot move and attack in the same turn, never counterattacks, and is never counterattacked by the unit it hits. Every weapon of the unit needs a minimum range of at least 2 (checked with the weapons table). Unrelated to the weapon target modes direct_ground / indirect_ground, which decide whether obstacles block a shot.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   ignoresTerrainDefense: {
     doc: 'Terrain defense stars do not reduce damage this unit takes (e.g. aircraft).',
@@ -46,6 +43,14 @@ export const TERRAIN_ATTRIBUTES = {
       if (typeof v.repair !== 'number' || v.repair < 0) fail('repair must be a non-negative number');
       if (!Array.isArray(v.builds) || v.builds.some((c) => typeof c !== 'string')) fail('builds must be an array of unit category names');
     },
+  },
+  blocksLineOfSight: {
+    doc: 'An obstacle: direct fire cannot pass over this tile. The number is its height (forest 1, mountain and buildings 2); a firer standing on a tile whose `vantage` is higher shoots over it. The tiles at either end of a shot never block it, and units never block.',
+    check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
+  },
+  vantage: {
+    doc: 'A high position: a direct-fire unit standing here is not blocked by obstacles (blocksLineOfSight) lower than this number.',
+    check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
   },
   victoryOnCapture: {
     doc: 'Capturing this tile wins the game for the capturing player (an HQ). Requires the property attribute.',

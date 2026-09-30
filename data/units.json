@@ -5,12 +5,11 @@
     "cost": 1000,
     "move": 2,
     "moveClass": "foot",
-    "range": [1, 1],
-    "maxHp": 8,
     "layer": "ground",
-    "targetLayers": ["ground", "low_air"],
+    "weapons": ["rifle"],
+    "toughness": 1,
+    "armor": 0,
     "attributes": { "capture": true, "terrainDefenseMultiplier": 2 },
-    "damage": { "soldier": 55, "mech": 45, "sniper": 55, "recon": 12, "tank": 5, "heavy_tank": 1, "artillery": 15, "flak": 15, "copter": 10 },
     "render": { "sprite": "soldier", "attackFx": "lunge" }
   },
   "mech": {
@@ -19,11 +18,11 @@
     "cost": 3000,
     "move": 2,
     "moveClass": "foot",
-    "range": [1, 1],
     "layer": "ground",
-    "targetLayers": ["ground", "low_air"],
+    "weapons": ["bazooka"],
+    "toughness": 1.1,
+    "armor": 0,
     "attributes": { "capture": true },
-    "damage": { "soldier": 65, "mech": 55, "sniper": 65, "recon": 85, "tank": 55, "heavy_tank": 25, "artillery": 70, "flak": 70, "copter": 35 },
     "render": { "sprite": "mech", "attackFx": "shot" }
   },
   "sniper": {
@@ -32,11 +31,11 @@
     "cost": 2500,
     "move": 3,
     "moveClass": "foot",
-    "range": [2, 2],
     "layer": "ground",
-    "targetLayers": ["ground", "low_air"],
+    "weapons": ["sniper_rifle"],
+    "toughness": 1,
+    "armor": 0,
     "attributes": { "indirect": true },
-    "damage": { "soldier": 85, "mech": 75, "sniper": 85, "recon": 20, "tank": 8, "heavy_tank": 3, "artillery": 25, "flak": 35, "copter": 50 },
     "render": { "sprite": "sniper", "attackFx": "shot" }
   },
   "recon": {
@@ -45,11 +44,11 @@
     "cost": 4000,
     "move": 8,
     "moveClass": "vehicle",
-    "range": [1, 1],
     "layer": "ground",
-    "targetLayers": ["ground", "low_air"],
-    "attributes": {  },
-    "damage": { "soldier": 70, "mech": 60, "sniper": 70, "recon": 35, "tank": 8, "heavy_tank": 3, "artillery": 45, "flak": 40, "copter": 18 },
+    "weapons": ["machine_gun"],
+    "toughness": 1,
+    "armor": 0.65,
+    "attributes": {},
     "render": { "sprite": "recon", "attackFx": "shot" }
   },
   "tank": {
@@ -58,11 +57,11 @@
     "cost": 7000,
     "move": 6,
     "moveClass": "vehicle",
-    "range": [1, 1],
     "layer": "ground",
-    "targetLayers": ["ground", "low_air"],
-    "attributes": {  },
-    "damage": { "soldier": 75, "mech": 70, "sniper": 75, "recon": 85, "tank": 55, "heavy_tank": 35, "artillery": 70, "flak": 80, "copter": 12 },
+    "weapons": ["tank_cannon"],
+    "toughness": 1.3,
+    "armor": 0.85,
+    "attributes": {},
     "render": { "sprite": "tank", "attackFx": "shot" }
   },
   "heavy_tank": {
@@ -71,11 +70,11 @@
     "cost": 10000,
     "move": 5,
     "moveClass": "vehicle",
-    "range": [1, 1],
     "layer": "ground",
-    "targetLayers": ["ground", "low_air"],
-    "attributes": {  },
-    "damage": { "soldier": 90, "mech": 85, "sniper": 90, "recon": 105, "tank": 75, "heavy_tank": 55, "artillery": 95, "flak": 95, "copter": 20 },
+    "weapons": ["heavy_cannon"],
+    "toughness": 2,
+    "armor": 0.85,
+    "attributes": {},
     "render": { "sprite": "heavy_tank", "attackFx": "shot" }
   },
   "artillery": {
@@ -84,11 +83,11 @@
     "cost": 6000,
     "move": 5,
     "moveClass": "vehicle",
-    "range": [2, 3],
     "layer": "ground",
-    "targetLayers": ["ground"],
+    "weapons": ["howitzer"],
+    "toughness": 1,
+    "armor": 0.55,
     "attributes": { "indirect": true },
-    "damage": { "soldier": 90, "mech": 85, "sniper": 90, "recon": 80, "tank": 70, "heavy_tank": 45, "artillery": 75, "flak": 70 },
     "render": { "sprite": "artillery", "attackFx": "arc" }
   },
   "flak": {
@@ -97,11 +96,11 @@
     "cost": 6000,
     "move": 5,
     "moveClass": "vehicle",
-    "range": [1, 1],
     "layer": "ground",
-    "targetLayers": ["ground", "low_air", "high_air"],
-    "attributes": {  },
-    "damage": { "soldier": 80, "mech": 70, "sniper": 80, "recon": 50, "tank": 8, "heavy_tank": 4, "artillery": 40, "flak": 45, "copter": 105, "fighter": 65, "bomber": 70 },
+    "weapons": ["flak_cannon"],
+    "toughness": 1,
+    "armor": 0.55,
+    "attributes": {},
     "render": { "sprite": "flak", "attackFx": "shot" }
   },
   "copter": {
@@ -110,11 +109,11 @@
     "cost": 8000,
     "move": 6,
     "moveClass": "air",
-    "range": [1, 1],
     "layer": "low_air",
-    "targetLayers": ["ground", "low_air"],
+    "weapons": ["rocket_pods"],
+    "toughness": 1.8,
+    "armor": 0,
     "attributes": { "ignoresTerrainDefense": true },
-    "damage": { "soldier": 75, "mech": 70, "sniper": 75, "recon": 60, "tank": 45, "heavy_tank": 25, "artillery": 60, "flak": 50, "copter": 65 },
     "render": { "sprite": "copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "fighter": {
@@ -123,11 +122,11 @@
     "cost": 10000,
     "move": 9,
     "moveClass": "air",
-    "range": [1, 1],
     "layer": "high_air",
-    "targetLayers": ["low_air", "high_air"],
+    "weapons": ["air_missiles"],
+    "toughness": 1,
+    "armor": 0.5,
     "attributes": { "ignoresTerrainDefense": true },
-    "damage": { "copter": 100, "fighter": 55, "bomber": 100 },
     "render": { "sprite": "fighter", "attackFx": "shot", "altitude": 0.13 }
   },
   "bomber": {
@@ -136,11 +135,11 @@
     "cost": 12000,
     "move": 7,
     "moveClass": "air",
-    "range": [1, 1],
     "layer": "high_air",
-    "targetLayers": ["ground"],
+    "weapons": ["bombs"],
+    "toughness": 1,
+    "armor": 0.3,
     "attributes": { "ignoresTerrainDefense": true },
-    "damage": { "soldier": 110, "mech": 95, "sniper": 110, "recon": 105, "tank": 105, "heavy_tank": 95, "artillery": 105, "flak": 105 },
     "render": { "sprite": "bomber", "attackFx": "arc", "altitude": 0.13 }
   }
 }

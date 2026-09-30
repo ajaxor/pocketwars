@@ -2,7 +2,7 @@
 // isolation: two units that differ ONLY in the attribute under test must behave differently.
 //
 //   const game = makeGame({
-//     units: { attacker: { attributes: { capture: true } }, victim: {} },
+//     units: { attacker: { attributes: { capture: true } }, victim: {} },   // each unit gets one weapon of its own, see makeData
 //     rows: ['a.b'],                                  // map rows (see LEGEND)
 //     units_on_map: [['attacker', 0, 0, 0], ['victim', 1, 1, 0]],   // [type, owner, x, y]
 //   });
@@ -17,17 +17,17 @@ const flat = { foot: 1, wheel: 1, air: 1 };
 export const BASE_TERRAIN = {
   plain:    { name: 'Plain',    defense: 1, moveCost: { ...flat }, attributes: {}, render: { base: '#86b95c' } },
   road:     { name: 'Road',     defense: 0, moveCost: { ...flat }, attributes: {}, render: { base: '#cdbb8f' } },
-  forest:   { name: 'Forest',   defense: 2, moveCost: { foot: 1, wheel: 2, air: 1 }, attributes: {}, render: { base: '#86b95c' } },
-  mountain: { name: 'Mountain', defense: 4, moveCost: { foot: 2, wheel: null, air: 1 }, attributes: {}, render: { base: '#86b95c' } },
+  forest:   { name: 'Forest',   defense: 2, moveCost: { foot: 1, wheel: 2, air: 1 }, attributes: { blocksLineOfSight: 1 }, render: { base: '#86b95c' } },
+  mountain: { name: 'Mountain', defense: 4, moveCost: { foot: 2, wheel: null, air: 1 }, attributes: { blocksLineOfSight: 2, vantage: 2 }, render: { base: '#86b95c' } },
   sea:      { name: 'Sea',      defense: 0, moveCost: { foot: null, wheel: null, air: 1 }, attributes: {}, render: { base: '#3d7ec7' } },
-  city:     { name: 'City',     defense: 3, moveCost: { ...flat }, attributes: { property: property() }, render: { base: '#86b95c' } },
-  base:     { name: 'Base',     defense: 3, moveCost: { ...flat }, attributes: { property: property(['ground']) }, render: { base: '#86b95c' } },
-  hq:       { name: 'HQ',       defense: 4, moveCost: { ...flat }, attributes: { property: property(), victoryOnCapture: true }, render: { base: '#86b95c' } },
+  city:     { name: 'City',     defense: 3, moveCost: { ...flat }, attributes: { property: property(), blocksLineOfSight: 2 }, render: { base: '#86b95c' } },
+  base:     { name: 'Base',     defense: 3, moveCost: { ...flat }, attributes: { property: property(['ground']), blocksLineOfSight: 2 }, render: { base: '#86b95c' } },
+  hq:       { name: 'HQ',       defense: 4, moveCost: { ...flat }, attributes: { property: property(), victoryOnCapture: true, blocksLineOfSight: 2 }, render: { base: '#86b95c' } },
 };
 
 export const BASE_UNIT = {
-  name: 'Unit', category: 'ground', cost: 1000, move: 3, moveClass: 'foot', range: [1, 1], layer: 'ground',
-  targetLayers: ['ground'], attributes: {}, render: { sprite: 'soldier', attackFx: 'shot' },
+  name: 'Unit', category: 'ground', cost: 1000, move: 3, moveClass: 'foot', layer: 'ground',
+  attributes: {}, render: { sprite: 'soldier', attackFx: 'shot' },
 };
 
 /** Legend used by makeMap / makeGame rows. Owners: a/H/1 belong to player 0, b/h/2 to player 1. */
@@ -39,24 +39,27 @@ export const LEGEND = {
 };
 
 /**
- * Raw data bundle. `units` are specs merged over BASE_UNIT; `hits` (default 50) is expanded into a full
- * damage table over every unit the spec's targetLayers allows, then `damage` entries override it.
+ * Raw data bundle. A unit spec is merged over BASE_UNIT, and its weapon fields become a weapon of the same id:
+ *   hits (weapon damage, default 50), range ([1, 1]), targets (target modes, default ['direct_ground']), armorPiercing (0).
+ * `targetLayers: ['ground', 'sky']` is shorthand for targets: ['direct_ground', 'sky'] ("ground" means direct fire at ground units).
+ * The rest of the spec (toughness, armor, layer, attributes...) goes on the unit.
  */
-export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules } = {}) {
+export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules, weapons: extraWeapons = {} } = {}) {
   const merged = {};
-  for (const [id, spec] of Object.entries(units)) merged[id] = { ...structuredClone(BASE_UNIT), ...structuredClone(spec) };
-  for (const [id, u] of Object.entries(merged)) {
-    const hits = u.hits ?? 50;
-    delete u.hits;
-    const table = {};
-    for (const [tid, t] of Object.entries(merged)) if (u.targetLayers.includes(t.layer)) table[tid] = hits;
-    u.damage = { ...table, ...(u.damage || {}) };
-    for (const k of Object.keys(u.damage)) if (u.damage[k] === null) delete u.damage[k];
+  const weapons = {};
+  for (const [id, spec] of Object.entries(units)) {
+    const u = { ...structuredClone(BASE_UNIT), ...structuredClone(spec) };
+    const targets = u.targets ?? (u.targetLayers ? u.targetLayers.map((l) => (l === 'ground' ? 'direct_ground' : l)) : ['direct_ground']);
+    weapons[id] = { name: `${id} gun`, damage: u.hits ?? 50, armorPiercing: u.armorPiercing ?? 0, range: u.range ?? [1, 1], targets };
+    for (const k of ['hits', 'range', 'targets', 'targetLayers', 'armorPiercing']) delete u[k];
+    if (!u.weapons) u.weapons = [id];
+    merged[id] = u;
   }
   return {
     rules: rules || {
       maxHp: 10, neutralColor: '#999999', moveClasses: ['foot', 'wheel', 'air'],
       layers: { ground: { label: null }, sky: { label: 'sky', airborne: true } },
+      targetModes: { direct_ground: { layer: 'ground', lineOfSight: true }, indirect_ground: { layer: 'ground' }, sky: { layer: 'sky' } },
     },
     factions: {
       red: { name: 'Red', color: '#ff0000', dark: '#800000' },
@@ -64,6 +67,7 @@ export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules } =
       green: { name: 'Green', color: '#00ff00', dark: '#008000' },
     },
     terrain: { ...structuredClone(BASE_TERRAIN), ...structuredClone(terrain) },
+    weapons: { ...weapons, ...structuredClone(extraWeapons) },
     units: merged,
     ai: ai || {
       weights: { distanceToGoal: 2, unreachableDistance: 60, terrainDefense: 0.4, attackBase: 60, killBonus: 4, captureBase: 50, victoryCaptureBonus: 100, costUnit: 1000 },
@@ -84,8 +88,8 @@ export function rawMap({ rows = ['...'], unitsOnMap = [], players, legend = LEGE
 }
 
 /** Build a Game from a compact description. `unitsOnMap` entries are [type, owner, x, y, hp?]. */
-export function makeGame({ units, terrain, ai, rules, rows = ['.....'], unitsOnMap = [], players, legend } = {}) {
-  const registry = makeRegistry({ units, terrain, ai, rules });
+export function makeGame({ units, terrain, ai, rules, weapons, rows = ['.....'], unitsOnMap = [], players, legend } = {}) {
+  const registry = makeRegistry({ units, terrain, ai, rules, weapons });
   const map = parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry);
   return new Game(registry, map);
 }

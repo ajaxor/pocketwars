@@ -8,10 +8,10 @@
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
-import { calcDamage } from './combat.js';
+import { calcDamage, canAttackFrom } from './combat.js';
 import { buildProblem } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving } from './movement.js';
-import { allProperties, inAttackRange, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
+import { allProperties, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
 
 /**
  * Tiles worth walking toward: capturers head for properties they don't own, everyone else for enemy units.
@@ -49,8 +49,8 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
 
     if (mayFire(moved)) {
       for (const e of enemies) {
-        if (!inAttackRange(game, unit, x, y, e)) continue;
-        const dmg = calcDamage(game, unit, e);
+        if (!canAttackFrom(game, unit, e, x, y)) continue;
+        const dmg = calcDamage(game, unit, e, { x, y });
         if (dmg <= 0) continue;
         const value = (dmg * game.registry.unit(e.type).cost) / w.costUnit + (dmg >= e.hp ? w.killBonus : 0);
         if (!target || value > target.value) target = { e, value };

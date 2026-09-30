@@ -11,7 +11,7 @@
 //   pendingTargetId: number|null  enemy awaiting attack confirmation
 // }
 
-import { calcDamage, canTarget } from '../engine/combat.js';
+import { calcDamage, canAttackFrom } from '../engine/combat.js';
 import { tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { drawUnit } from './unit-sprites.js';
@@ -68,7 +68,7 @@ export class Renderer {
     const acted = u.done && u.owner === game.state.turn;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
-      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, maxHp: game.registry.maxHpOf(u.type),
+      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
     });
   }
 
@@ -158,7 +158,7 @@ export class Renderer {
     if (atk && sel) {
       g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;
       state.units.forEach((e) => {
-        if (e.owner !== sel.owner && atk.has(tileIndex(map, e.x, e.y)) && canTarget(game, sel, e)) { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2)); g.stroke(); }
+        if (e.owner !== sel.owner && atk.has(tileIndex(map, e.x, e.y)) && canAttackFrom(game, sel, e, this.logicalPos(sel, view).x, this.logicalPos(sel, view).y)) { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2)); g.stroke(); }
       });
     }
     const pending = view.pendingTargetId !== null && sel ? unitById(game, view.pendingTargetId) : null;
@@ -173,7 +173,7 @@ export class Renderer {
         const n = Math.sin(a);
         g.beginPath(); g.moveTo(ex + c * (r - S * .1), ey + n * (r - S * .1)); g.lineTo(ex + c * (r + S * .12), ey + n * (r + S * .12)); g.stroke();
       }
-      const n = calcDamage(game, sel, pending);
+      const n = calcDamage(game, sel, pending, this.logicalPos(sel, view));
       const cx = (pending.x + (pending.x < map.width - 1 ? 1.5 : -.5)) * S;
       const cy = (pending.y + .5) * S;
       const w = S * .82;

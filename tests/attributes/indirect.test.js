@@ -78,5 +78,5 @@ test('indirect: only its current tile is considered when choosing where to attac
 test('indirect: attribute requires a minimum range of at least 2 (data validation)', async () => {
   const { createRegistry } = await import('../../src/data/registry.js');
   const { makeData } = await import('../helpers/fixtures.js');
-  assert.throws(() => createRegistry(makeData({ units: { bad: { range: [1, 3], attributes: { indirect: true } } } })), /minimum range of at least 2/);
+  assert.throws(() => createRegistry(makeData({ units: { bad: { range: [1, 3], attributes: { indirect: true } } } })), /requires every weapon to have a minimum range of at least 2/);
 });

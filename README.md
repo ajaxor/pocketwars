@@ -23,8 +23,10 @@ npm run validate   # validates data/*.json and every map
 
 ES modules and `fetch` need a web server; opening `index.html` from `file://` does not work.
 
-- **Entities are data.** Units, terrain, factions, rules and AI tuning are JSON in `data/`. Special handling is an
+- **Entities are data.** Units, weapons, terrain, factions, rules and AI tuning are JSON in `data/`. Special handling is an
   *attribute* on the entity, each with tests: [docs/attributes.md](docs/attributes.md).
+- **Combat is stats.** Toughness and armor on units, damage and armor piercing on weapons, target modes and line of sight:
+  [docs/combat.md](docs/combat.md).
 - **Maps are files.** `data/maps/*.map.json`: [docs/map-format.md](docs/map-format.md).
 - **Code layout and deploy:** [docs/architecture.md](docs/architecture.md).
 
