@@ -51,7 +51,7 @@ export function validateFactions(factions, problems) {
   }
 }
 
-export function validateTerrain(terrain, rules, problems) {
+export function validateTerrain(terrain, rules, problems, hasGround = false) {
   if (!isObj(terrain) || !Object.keys(terrain).length) return problems.push('terrain.json must be a non-empty object');
   for (const [id, t] of Object.entries(terrain)) {
     if (!isObj(t)) { problems.push(`terrain "${id}" must be an object`); continue; }
@@ -68,10 +68,27 @@ export function validateTerrain(terrain, rules, problems) {
         if (!(rules.moveClasses || []).includes(mc)) problems.push(`terrain "${id}": moveCost has unknown move class "${mc}"`);
       }
     }
-    if (!isObj(t.render) || !isColor(t.render.base)) problems.push(`terrain "${id}": render.base must be a hex color`);
+    // render.base is the terrain's own ground colour (sea, road). Terrain without one is drawn on the map's ground (ground.json).
+    if (!isObj(t.render) || (t.render.base !== undefined && !isColor(t.render.base))) problems.push(`terrain "${id}": render.base must be a hex color when given`);
+    else if (t.render.base === undefined && !hasGround) problems.push(`terrain "${id}": render.base is required when there is no ground.json`);
     else if (t.render.mini !== undefined && !isColor(t.render.mini)) problems.push(`terrain "${id}": render.mini (the colour on the map preview) must be a hex color`);
     checkAttributes('terrain', id, t, TERRAIN_ATTRIBUTES, problems);
   }
+}
+
+/** ground.json (optional): the surface under a tile, which terrain without its own render.base is drawn on. */
+export function validateGround(ground, rules, problems) {
+  if (ground === undefined) return;
+  if (!isObj(ground) || !Object.keys(ground).length) return problems.push('ground.json must be a non-empty object');
+  for (const [id, gr] of Object.entries(ground)) {
+    if (!isObj(gr) || !isStr(gr.name)) { problems.push(`ground "${id}": name is required`); continue; }
+    if (!isObj(gr.render) || !isColor(gr.render.base)) problems.push(`ground "${id}": render.base must be a hex color`);
+    else {
+      if (gr.render.mini !== undefined && !isColor(gr.render.mini)) problems.push(`ground "${id}": render.mini must be a hex color`);
+      if (gr.render.decor !== undefined && !isStr(gr.render.decor)) problems.push(`ground "${id}": render.decor must be a name`);
+    }
+  }
+  if (!(rules.defaultGround in ground)) problems.push(`rules: defaultGround must name a ground in ground.json (got ${JSON.stringify(rules.defaultGround)})`);
 }
 
 export function validateWeapons(weapons, rules, problems) {
@@ -148,13 +165,14 @@ export function validateAi(ai, units, problems) {
   }
 }
 
-/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai }. */
+/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`. */
 export function validateData(raw) {
   const problems = [];
   validateRules(raw.rules, problems);
   const rules = isObj(raw.rules) ? raw.rules : {};
   validateFactions(raw.factions, problems);
-  validateTerrain(raw.terrain, rules, problems);
+  validateTerrain(raw.terrain, rules, problems, raw.ground !== undefined);
+  validateGround(raw.ground, rules, problems);
   validateWeapons(raw.weapons, rules, problems);
   validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);
   validateAi(raw.ai, raw.units, problems);

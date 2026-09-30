@@ -7,6 +7,7 @@ import { Game } from '../../src/engine/game.js';
 import { playTurn } from '../../src/engine/ai.js';
 import { allProperties, tileIndex } from '../../src/engine/queries.js';
 import { distanceField } from '../../src/engine/movement.js';
+import { parseMap, serializeMap } from '../../src/data/map-format.js';
 import { roadShape, TERRAIN_DECOR } from '../../src/render/terrain-art.js';
 
 const registry = await loadRegistry(readData);
@@ -20,7 +21,7 @@ test('movement classes: wheels, treads, foot and air', () => {
   for (const u of ['tank', 'heavy_tank', 'flak']) assert.equal(registry.unit(u).moveClass, 'tread', u);
   assert.equal(registry.unit('artillery').moveClass, 'wheels');
   for (const u of ['recon', 'tank', 'heavy_tank', 'artillery', 'flak']) assert.ok(registry.unit(u).move <= 6, `${u} is slow enough`);
-  assert.equal(registry.terrainDef('mountain').render.base, registry.terrainDef('rough').render.base, 'mountains sit on rough ground');
+  for (const t of ['plain', 'forest', 'mountain', 'rough', 'city']) assert.equal(registry.terrainDef(t).render.base, undefined, `${t} is drawn on the ground under it`);
 });
 
 test('roads favour wheels; forests and rough ground block wheels; treads pay extra in forests', () => {
@@ -32,6 +33,28 @@ test('roads favour wheels; forests and rough ground block wheels; treads pay ext
   assert.equal(cost('rough', 'wheels'), null);
   assert.equal(cost('rough', 'tread'), 1);
   assert.ok(cost('rough', 'foot') > 0);
+});
+
+test('ground: grass and dirt are separate data, with no functional difference', () => {
+  assert.deepEqual(registry.groundIds, ['grass', 'dirt']);
+  assert.equal(registry.defaultGround, 'grass');
+  assert.equal(registry.groundDef('dirt').name, 'Dirt');
+  assert.equal(registry.groundDef(null), null);
+  for (const id of ['grass', 'dirt']) assert.equal(typeof TERRAIN_DECOR[registry.ground[id].render.decor], 'function');
+});
+
+test('maps carry a ground layer: any tile can be dirt or grass, and a map without one is all grass', async () => {
+  const map = await loadMap(readData, registry, 'dust_bowl');
+  assert.equal(map.ground.length, map.height);
+  const kinds = new Set(map.ground.flat());
+  assert.deepEqual([...kinds].sort(), ['dirt', 'grass']);
+  const classic = await loadMap(readData, registry, 'classic');
+  assert.ok(classic.ground.flat().every((g) => g === 'grass'));
+  const raw = await readData('maps/dust_bowl.map.json');
+  assert.deepEqual(serializeMap(map).ground, raw.ground, 'serialize writes the ground back');
+  assert.equal(serializeMap(classic).ground, undefined, 'and leaves it out when it is all default');
+  assert.throws(() => parseMap({ ...raw, groundLegend: { g: 'lava' } }, registry), /unknown ground "lava"/);
+  assert.throws(() => parseMap({ ...raw, ground: ['g'] }, registry), /ground must be an array/);
 });
 
 test('rough ground gives no defense; only foot (and air) enter mountains', () => {

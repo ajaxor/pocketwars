@@ -40,6 +40,23 @@
     "MMM...c.rrrrrr.c...MMM",
     "MMM.FFF....c...FFF.MMM"
   ],
+  "groundLegend": { "g": "grass", "d": "dirt" },
+  "ground": [
+    "gggggggggggggggggggggg",
+    "gggggggggggggggggggggg",
+    "ggggddddgddddgddddgggg",
+    "ggggddddgddddgddddgggg",
+    "ggggddddgddddgddddgggg",
+    "ggggggddgddddgddgggggg",
+    "gggggggggddddgddgggggg",
+    "ggggggddgddddggggggggg",
+    "ggggggddgddddgddgggggg",
+    "ggggddddgddddgddddgggg",
+    "ggggddddgddddgddddgggg",
+    "ggggddddgddddgddddgggg",
+    "gggggggggggggggggggggg",
+    "gggggggggggggggggggggg"
+  ],
   "units": [
     { "type": "soldier", "owner": 0, "x": 3, "y": 6 },
     { "type": "soldier", "owner": 1, "x": 18, "y": 7 },

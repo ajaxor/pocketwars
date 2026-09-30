@@ -1,6 +1,7 @@
 {
   "maxHp": 10,
   "neutralColor": "#b9b9b9",
+  "defaultGround": "grass",
   "moveClasses": ["foot", "wheels", "tread", "air"],
   "layers": {
     "ground":     { "label": null },

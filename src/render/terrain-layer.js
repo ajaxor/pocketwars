@@ -33,12 +33,14 @@ export function backdrop(base, a, b, d) {
 /**
  * Paint one tile whose top-left pixel is (px, py). `nb` holds the base colour of the eight neighbours (null off the map).
  * `nb.inlay` (optional) says which of the four sides carry an inlaid terrain (terrain.render.inlay, the road).
- * `at` = { x, y, now, dimmed, link }: grid position and clock, for drawings that vary per tile or animate; `dimmed` draws the
+ * `at` = { x, y, now, dimmed, link, ground }: grid position and clock, for drawings that vary per tile or animate; `ground` is the ground definition under the tile (ground.json); `dimmed` draws the
  * building faintly; `link` says which of the eight neighbours carry on the same drawing (off the map counts as yes), which
  * is how roads know where to run. paintTile adds `radii`, the tile's corner radii, so a drawing can clip itself to the tile.
  */
 export function paintTile(g, px, py, S, terrain, ownerColor, nb, at) {
-  const base = terrain.render.base, r = S * CORNER;
+  // terrain without a colour of its own (plain, forest, mountain, rough, properties) is drawn on the ground under it
+  const ground = at.ground || null;
+  const base = terrain.render.base ?? ground?.render.base ?? '#86b95c', r = S * CORNER;
   const same = (c) => c === base;
   const joins = (c) => c === null || c === base;       // off the map counts as more of the same shape: flat along the edge
   // corner order matches roundRect's radii: top-left, top-right, bottom-right, bottom-left
@@ -60,6 +62,7 @@ export function paintTile(g, px, py, S, terrain, ownerColor, nb, at) {
   if (same(nb.s)) { g.moveTo(px, py + S); g.lineTo(px + S, py + S); }
   g.stroke();
   const { decor, building } = terrain.render;
+  if (terrain.render.base === undefined && ground?.render.decor) TERRAIN_DECOR[ground.render.decor]?.(g, px, py, S, at);
   if (decor) TERRAIN_DECOR[decor](g, px, py, S, at);
   if (building) {
     const draw = (c) => BUILDINGS[building](c, px, py, S, ownerColor);
@@ -71,9 +74,9 @@ export function paintTile(g, px, py, S, terrain, ownerColor, nb, at) {
 
 /**
  * Paint the whole terrain layer.
- * @param {{width:number,height:number,S:number,now?:number,terrainAt:(x:number,y:number)=>object,ownerColorAt:(x:number,y:number)=>string|null,dimmedAt?:(x:number,y:number)=>boolean,view?:{x0:number,y0:number,x1:number,y1:number}}} o
+ * @param {{width:number,height:number,S:number,now?:number,terrainAt:(x:number,y:number)=>object,ownerColorAt:(x:number,y:number)=>string|null,groundAt?:(x:number,y:number)=>object|null,dimmedAt?:(x:number,y:number)=>boolean,view?:{x0:number,y0:number,x1:number,y1:number}}} o
  */
-export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, ownerColorAt, dimmedAt = () => false, view = null }) {
+export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, ownerColorAt, dimmedAt = () => false, groundAt = () => null, view = null }) {
   // `view` = { x0, y0, x1, y1 } limits painting to those tiles (inclusive); big maps only pay for what is on screen. The rest of
   // the board is left alone, so callers that scroll must only look at the part they asked for.
   const x0 = view ? Math.max(0, view.x0) : 0, y0 = view ? Math.max(0, view.y0) : 0;
@@ -81,7 +84,7 @@ export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, owne
   g.fillStyle = BOARD_COLOR;
   g.fillRect(x0 * S, y0 * S, (x1 - x0 + 1) * S, (y1 - y0 + 1) * S);
   const off = (x, y) => x < 0 || y < 0 || x >= width || y >= height;
-  const baseAt = (x, y) => (off(x, y) ? null : terrainAt(x, y).render.base);
+  const baseAt = (x, y) => (off(x, y) ? null : terrainAt(x, y).render.base ?? groundAt(x, y)?.render.base ?? '#86b95c');
   const decorAt = (x, y) => (off(x, y) ? null : terrainAt(x, y).render.decor || null);
   for (let y = y0; y <= y1; y++) {
     for (let x = x0; x <= x1; x++) {
@@ -97,7 +100,7 @@ export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, owne
         n: same(0, -1), e: same(1, 0), s: same(0, 1), w: same(-1, 0),
         ne: same(1, -1), se: same(1, 1), sw: same(-1, 1), nw: same(-1, -1),
       };
-      paintTile(g, x * S, y * S, S, terrainAt(x, y), ownerColorAt(x, y), nb, { x, y, now, dimmed: dimmedAt(x, y), link });
+      paintTile(g, x * S, y * S, S, terrainAt(x, y), ownerColorAt(x, y), nb, { x, y, now, dimmed: dimmedAt(x, y), link, ground: groundAt(x, y) });
     }
   }
 }

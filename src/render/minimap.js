@@ -1,5 +1,5 @@
 // A small picture of a whole map for the skirmish page: one flat square per tile in the terrain's preview colour
-// (terrain.json -> render.mini, falling back to its base colour), properties marked with their owner's colour and HQs outlined.
+// (terrain.json -> render.mini, falling back to its base colour or the ground under it), properties marked with their owner's colour and HQs outlined.
 // It draws on any 2D context and keeps no state, so the page can redraw it when a player changes colour.
 
 /** The box a preview has to fit in, in CSS pixels. */
@@ -16,12 +16,12 @@ export const miniTile = (map, box = MINI_BOX) => Math.max(2, Math.min(14, Math.f
  * @param {number} [px]  pixels per tile (default: miniTile)
  */
 export function drawMinimap(g, map, registry, colorOf, px = miniTile(map)) {
-  const plain = registry.terrain.plain?.render.mini || registry.terrain.plain?.render.base || '#86b95c';
+  const groundColor = (x, y) => { const gr = registry.groundDef(map.ground?.[y]?.[x]); return gr ? gr.render.mini || gr.render.base : '#86b95c'; };
   for (let y = 0; y < map.height; y++) {
     for (let x = 0; x < map.width; x++) {
       const t = registry.terrainDef(map.terrain[y][x]);
       const isProperty = !!t.attributes.property;
-      g.fillStyle = isProperty ? plain : t.render.mini || t.render.base;
+      g.fillStyle = isProperty ? groundColor(x, y) : t.render.mini || t.render.base || groundColor(x, y);
       g.fillRect(x * px, y * px, px, px);
       if (!isProperty) continue;
       const pad = px >= 6 ? Math.round(px * .18) : 0;

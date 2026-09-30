@@ -28,7 +28,7 @@ const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
  * @typedef {{faction:string, controller:'human'|'ai', funds:number}} PlayerSetup
  * @typedef {{type:string, owner:number, x:number, y:number, hp?:number}} UnitSetup
  * @typedef {{id:string,name:string,description:string,width:number,height:number,
- *   terrain:string[][], owners:(number|null)[][], players:PlayerSetup[], units:UnitSetup[],
+ *   terrain:string[][], ground:(string|null)[][], owners:(number|null)[][], players:PlayerSetup[], units:UnitSetup[],
  *   legend:Object<string,{terrain:string,owner?:number}>}} GameMap
  */
 
@@ -107,6 +107,27 @@ export function parseMap(raw, registry) {
     });
   }
 
+  // ground (optional): a second grid under the terrain, with its own legend. Anything it does not cover is the default ground.
+  const dflt = registry.defaultGround ?? null;
+  const ground = terrain.map((row) => row.map(() => dflt));
+  if (raw.ground !== undefined || raw.groundLegend !== undefined) {
+    const gl = {};
+    if (!isObj(raw.groundLegend)) err('groundLegend must be an object (glyph -> ground id) when ground is given');
+    else {
+      for (const [glyph, gid] of Object.entries(raw.groundLegend)) {
+        if ([...glyph].length !== 1) err(`groundLegend "${glyph}": glyphs must be exactly one character`);
+        else if (!registry.ground?.[gid]) err(`groundLegend "${glyph}": unknown ground "${gid}"`);
+        else gl[glyph] = gid;
+      }
+    }
+    if (!Array.isArray(raw.ground) || raw.ground.length !== height) err(`ground must be an array of ${height} row strings, like tiles`);
+    else raw.ground.forEach((row, y) => {
+      const chars = typeof row === 'string' ? [...row] : [];
+      if (chars.length !== width) return err(`ground[${y}] must be a string of ${width} tiles`);
+      chars.forEach((ch, x) => { if (!gl[ch]) err(`ground[${y}][${x}]: glyph "${ch}" is not in groundLegend`); else ground[y][x] = gl[ch]; });
+    });
+  }
+
   // units
   const units = [];
   if (!Array.isArray(raw.units)) err('units must be an array (use [] for none)');
@@ -137,7 +158,7 @@ export function parseMap(raw, registry) {
   if (problems.length) throw new MapError(id, problems);
   return deepFreeze({
     id: raw.id, name: raw.name, description: typeof raw.description === 'string' ? raw.description : '',
-    width, height, terrain, owners, players, units, legend,
+    width, height, terrain, ground, owners, players, units, legend,
   });
 }
 
@@ -167,8 +188,17 @@ export function serializeMap(map) {
     legend[g] = owner === null ? { terrain: t } : { terrain: t, owner };
     return g;
   }).join(''));
-  return {
+  const out = {
     format: MAP_FORMAT, version: MAP_VERSION, id: map.id, name: map.name, description: map.description,
     players: map.players.map((p) => ({ ...p })), legend, tiles, units: map.units.map((u) => ({ ...u })),
   };
+  // ground is only written when some tile is not the default ground (the first id in the grid's most common value)
+  const ids = [...new Set((map.ground || []).flat().filter((g) => g != null))];
+  if (ids.length > 1) {
+    const glyphs = new Map();
+    for (const id of ids) glyphs.set(id, [...id, ...'0123456789'].find((c) => ![...glyphs.values()].includes(c)));
+    out.groundLegend = Object.fromEntries([...glyphs].map(([id, g]) => [g, id]));
+    out.ground = map.ground.map((row) => row.map((g) => glyphs.get(g)).join(''));
+  }
+  return out;
 }

@@ -131,3 +131,22 @@ test('ground stays square against an inlaid road, but a road still rounds its ow
   paintTile(ctx, 0, 0, 40, road, null, { ...all('#c9ccd2'), n: G, w: G, nw: G, inlay: { n: false, e: true, s: true, w: false } }, { x: 0, y: 0, now: 0 });
   assert.deepEqual(calls.find((c) => c.op === 'roundRect').args[4], [12, 0, 0, 0]);
 });
+
+test('terrain without its own colour takes the colour of the ground under it, and ground decor is drawn', () => {
+  const dirt = { render: { base: '#b59d6b', decor: 'dirt' } };
+  const { ctx, calls } = recorder();
+  paintTile(ctx, 0, 0, 40, registry.terrainDef('plain'), null, all('#b59d6b'), { x: 1, y: 1, now: 0, ground: dirt });
+  assert.equal(calls.find((c) => c.op === 'roundRect').fill, '#b59d6b');
+  assert.ok(calls.some((c) => c.op === 'ellipse'), 'dirt patches are drawn');
+  const sea = recorder();
+  paintTile(sea.ctx, 0, 0, 40, registry.terrainDef('sea'), null, all('#3d7ec7'), { x: 1, y: 1, now: 0, ground: dirt });
+  assert.equal(sea.calls.find((c) => c.op === 'roundRect').fill, registry.terrainDef('sea').render.base, 'sea keeps its own colour');
+});
+
+test('a mountain reaches the tile edges where the range carries on, and draws without links too', () => {
+  const xs = (link) => { const { ctx, calls } = recorder(); TERRAIN_DECOR.mountain(ctx, 0, 0, 100, { x: 2, y: 2, link }); return calls.filter((c) => c.op === 'lineTo' || c.op === 'moveTo').map((c) => c.args[0]); };
+  const free = xs(NB), joined = xs({ ...NB, w: true, e: true, n: true, s: true });
+  assert.ok(Math.min(...free) > 0 && Math.max(...free) < 100, 'a lone mountain stays inside its tile');
+  assert.equal(Math.min(...joined), 0);
+  assert.equal(Math.max(...joined), 100);
+});

@@ -16,7 +16,7 @@ const ATTACK_FX = ['lunge', 'shot', 'arc', 'drop'];
 
 test('shipped data passes validation', async () => {
   const raw = {};
-  for (const k of ['rules', 'factions', 'terrain', 'weapons', 'units', 'ai']) raw[k] = await readData(`${k}.json`);
+  for (const k of ['rules', 'factions', 'terrain', 'weapons', 'units', 'ai', 'ground']) raw[k] = await readData(`${k}.json`);
   assert.deepEqual(validateData(raw), []);
 });
 

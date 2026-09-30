@@ -42,10 +42,12 @@ export const TERRAIN_IDS = ['plain', 'forest', 'mountain', 'road', 'sea'].filter
 /** Paint one tile-sized backdrop. `bg` is a terrain id from data/terrain.json or a #rrggbb colour. */
 export function paintTile(g, bg, x, y, S) {
   const t = terrain[bg];
-  g.fillStyle = t ? t.render.base : bg; g.fillRect(x, y, S, S);
-  if (t && t.render.decor && TERRAIN_DECOR[t.render.decor]) TERRAIN_DECOR[t.render.decor](g, x, y, S, { x: 0, y: 0, now: 0 });
+  const decor = t ? t.render.decor || (t.render.base === undefined ? 'grass' : null) : null;   // terrain with no colour of its own sits on grass here
+  g.fillStyle = t ? t.render.base ?? GRASS : bg; g.fillRect(x, y, S, S);
+  if (decor && TERRAIN_DECOR[decor]) { if (t.render.base === undefined) TERRAIN_DECOR.grass(g, x, y, S, { x: 0, y: 0, now: 0 }); TERRAIN_DECOR[decor](g, x, y, S, { x: 0, y: 0, now: 0, link: {} }); }
 }
-export const baseColor = (bg) => (terrain[bg] ? terrain[bg].render.base : bg);
+const GRASS = '#86b95c';
+export const baseColor = (bg) => (terrain[bg] ? terrain[bg].render.base ?? GRASS : bg);
 
 // ---- styles ----------------------------------------------------------------------------------------------
 /** Wrap a game-compatible module ({ SPRITES, SHADOWS }) so it can be drawn like any other style. */

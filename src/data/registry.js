@@ -27,13 +27,18 @@ export function createRegistry(raw) {
   const terrain = deepFreeze(withIds(structuredClone(raw.terrain)));
   const units = deepFreeze(withDefaults(withIds(structuredClone(raw.units))));
   const weapons = deepFreeze(Object.fromEntries(Object.entries(structuredClone(raw.weapons)).map(([id, w]) => [id, { armorPiercing: 0, ...w, id }])));
+  const ground = deepFreeze(withIds(structuredClone(raw.ground || {})));
   const ai = deepFreeze(structuredClone(raw.ai));
   const unitIds = Object.keys(units); // JSON order = build-menu order
   const terrainIds = Object.keys(terrain);
+  const groundIds = Object.keys(ground);
   const factionIds = Object.keys(factions); // JSON order = the order colours are offered in
 
   return Object.freeze({
-    rules, factions, terrain, units, weapons, ai, unitIds, terrainIds, factionIds,
+    rules, factions, terrain, ground, units, weapons, ai, unitIds, terrainIds, groundIds, factionIds,
+    /** The ground under every tile that a map does not say otherwise about (null when the data has no ground at all). */
+    defaultGround: groundIds.includes(rules.defaultGround) ? rules.defaultGround : null,
+    groundDef: (id) => (id == null ? null : ground[id] || null),
     unit: (id) => { const u = units[id]; if (!u) throw new Error(`Unknown unit "${id}"`); return u; },
     terrainDef: (id) => { const t = terrain[id]; if (!t) throw new Error(`Unknown terrain "${id}"`); return t; },
     weapon: (id) => { const w = weapons[id]; if (!w) throw new Error(`Unknown weapon "${id}"`); return w; },

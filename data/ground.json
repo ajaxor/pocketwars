@@ -1,0 +1,10 @@
+{
+  "grass": {
+    "name": "Grass",
+    "render": { "base": "#86b95c", "decor": "grass", "mini": "#86b95c" }
+  },
+  "dirt": {
+    "name": "Dirt",
+    "render": { "base": "#b59d6b", "decor": "dirt", "mini": "#b59d6b" }
+  }
+}

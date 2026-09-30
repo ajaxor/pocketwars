@@ -167,6 +167,7 @@ export class Renderer {
       width: map.width, height: map.height, S, now, terrainAt,
       ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? this.colorsOf(state.owners[y][x]).color : null),
       dimmedAt: (x, y) => dimmed.has(tileIndex(map, x, y)),
+      groundAt: (x, y) => game.registry.groundDef(map.ground?.[y]?.[x]),
       view: seen,
     });
     if (view.reach) {

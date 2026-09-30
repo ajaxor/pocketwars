@@ -57,28 +57,15 @@ export const TERRAIN_DECOR = {
         g.fillStyle = i % 2 ? '#93c668' : '#76a94d'; g.beginPath(); g.ellipse(cx, cy, S * .09, S * .035, 0, 0, 7); g.fill();
       }
     },
-    // Light concrete-grey road (so units stand out against it) with a dark shoulder line along every side that does not meet another road, and a dashed centre line that runs
+    // Mid-grey road (light enough for units to stand out) with a dashed centre line that runs
     // through each tile in the same rhythm (two dashes a tile, gaps at the tile edges) so it carries on from tile to tile.
-    road(g, px, py, S, { x, y, link = NO_LINKS, radii = null }) {
-      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, i % 2 ? '#d9dce1' : '#b3b7bf');
-      const lw = Math.max(1, S * .04);
-      g.save();
-      if (radii) { g.beginPath(); g.roundRect(px, py, S, S, radii); g.clip(); }
-      g.strokeStyle = 'rgba(92,98,110,.55)'; g.lineWidth = lw; g.lineCap = 'butt'; g.beginPath();
-      const i = S * .075;
-      // a side counts as open when the neighbour there is not a road (off the map counts as road, so the edge stays plain)
-      if (!link.n) { g.moveTo(px, py + i); g.lineTo(px + S, py + i); }
-      if (!link.s) { g.moveTo(px, py + S - i); g.lineTo(px + S, py + S - i); }
-      if (!link.w) { g.moveTo(px + i, py); g.lineTo(px + i, py + S); }
-      if (!link.e) { g.moveTo(px + S - i, py); g.lineTo(px + S - i, py + S); }
-      g.stroke();
-      g.restore();
-
+    road(g, px, py, S, { x, y, link = NO_LINKS }) {
+      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, i % 2 ? '#a3a8b1' : '#7f848d');
       const { shape, arms } = roadShape(link);
       const cx = px + S / 2, cy = py + S / 2;
       // a dash on one arm, from `a` to `b` tiles out from the centre
       const dash = (dx, dy, a, b) => { g.moveTo(cx + dx * a * S, cy + dy * a * S); g.lineTo(cx + dx * b * S, cy + dy * b * S); };
-      g.strokeStyle = '#e3a91c'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
+      g.strokeStyle = '#f0e2a0'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
       const DIRS = [['n', 0, -1], ['e', 1, 0], ['s', 0, 1], ['w', -1, 0]];
       for (const [k, dx, dy] of DIRS) {
         if (!arms[k]) continue;
@@ -87,12 +74,15 @@ export const TERRAIN_DECOR = {
       }
       g.stroke();
     },
-    // Dry dirt with a few shaded rocks, pebbles and tufts.
-    rough(g, px, py, S, { x, y }) {
+    // Bare dirt: a few darker and lighter patches.
+    dirt(g, px, py, S, { x, y }) {
       for (let i = 0; i < 3; i++) {
         const cx = px + (.2 + .6 * rnd(x, y, i + 20)) * S, cy = py + (.2 + .6 * rnd(x, y, i + 24)) * S;
         g.fillStyle = i % 2 ? '#a88f5e' : '#c2ab7a'; g.beginPath(); g.ellipse(cx, cy, S * (.13 + .05 * rnd(x, y, i + 28)), S * .055, 0, 0, 7); g.fill();
       }
+    },
+    // A few shaded boulders and pebbles; what they lie on (grass or dirt) is the ground under the tile.
+    rough(g, px, py, S, { x, y }) {
       const rock = (cx, cy, r, seed) => {
         const pts = [], lit = [];
         for (let k = 0; k < 7; k++) {
@@ -107,7 +97,7 @@ export const TERRAIN_DECOR = {
       rock(px + (.26 + .1 * rnd(x, y, 1)) * S, py + (.36 + .08 * rnd(x, y, 2)) * S, S * .15, 1);
       rock(px + (.68 + .08 * rnd(x, y, 3)) * S, py + (.62 + .08 * rnd(x, y, 4)) * S, S * .2, 2);
       rock(px + (.36 + .1 * rnd(x, y, 5)) * S, py + (.82 + .05 * rnd(x, y, 6)) * S, S * .09, 3);
-      for (let i = 0; i < 4; i++) dot(g, px + (.1 + .8 * rnd(x, y, i + 40)) * S, py + (.1 + .8 * rnd(x, y, i + 44)) * S, S * .02, i % 2 ? '#d8c8a0' : '#8c7750');
+      for (let i = 0; i < 4; i++) dot(g, px + (.1 + .8 * rnd(x, y, i + 40)) * S, py + (.1 + .8 * rnd(x, y, i + 44)) * S, S * .02, i % 2 ? '#cfc9bb' : '#7d7667');
     },
     forest(g, px, py, S) {
       const pine = (cx, by, s) => {
@@ -121,13 +111,32 @@ export const TERRAIN_DECOR = {
       };
       pine(.27, .55, .95); pine(.73, .5, .95); pine(.5, .9, 1.1);
     },
-    mountain(g, px, py, S) {
+    // A peak that fills its tile. Its slopes run to the tile edges and its foot to the bottom edge wherever the next tile is a
+    // mountain too (`link`), so a block of mountains reads as one range; on a free side it ends in a rounded foothill.
+    mountain(g, px, py, S, { x, y, link = NO_LINKS }) {
       const P = (a, b) => [px + a * S, py + b * S];
-      poly(g, [P(.26, .42), P(.0, .9), P(.52, .9)], '#9a9284');
-      poly(g, [P(.26, .42), P(.52, .9), P(.32, .9)], '#847c6f');
-      poly(g, [P(.56, .12), P(.06, .92), P(.98, .92)], '#8a8275');
-      poly(g, [P(.56, .12), P(.98, .92), P(.6, .92)], '#6f695e');
-      poly(g, [P(.56, .12), P(.4, .38), P(.48, .33), P(.56, .43), P(.64, .33), P(.72, .4)], '#f2efe6');
+      const yb = link.s ? 1 : .96;
+      const xl = link.w ? 0 : .03, xr = link.e ? 1 : .97;
+      // where the slope meets each side: halfway down when a mountain (or more of the range, above) carries on there
+      const yl = link.w || link.n ? .52 : .89, yr = link.e || link.n ? .52 : .89;
+      const pk = .5 + (rnd(x, y, 60) - .5) * .18, top = .06 + rnd(x, y, 61) * .05, rx = pk + .08;
+      // the foot: ragged lumps of foothill along a free bottom edge (right to left), a straight line where the range carries on
+      const foot = link.s ? [] : [[.86, yb + .01], [.66, yb - .04 + rnd(x, y, 62) * .03], [.46, yb + .01], [.26, yb - .04 + rnd(x, y, 63) * .03]].map(([a, b]) => P(a, b));
+      const footBy = (lo, hi) => foot.filter((f) => f[0] > px + lo * S && f[0] < px + hi * S);
+      const yEdge = link.s ? 1 : yb - .06;
+      if (link.n) poly(g, [P(xl, 0), P(xr, 0), P(xr, .55), P(xl, .55)], '#8a8275');   // the range carries on above
+      poly(g, [P(xl, yl), P(pk, top), P(xr, yr), P(xr, yEdge), ...foot, P(xl, yEdge)], '#8a8275');
+      poly(g, [P(xl, yl), P(pk, top), P(rx, yb - .02), ...footBy(xl, rx), P(xl, yEdge)], '#a39b8c');
+      poly(g, [P(pk, top), P(xr, yr), P(xr, yEdge), ...footBy(rx, xr), P(rx, yb - .02)], '#6f685d');
+      // a few cracks on the lit face
+      g.strokeStyle = 'rgba(60,54,46,.22)'; g.lineWidth = Math.max(1, S * .025); g.lineCap = 'round'; g.beginPath();
+      for (let i = 0; i < 2; i++) { const cx = pk - .08 - i * .16 - rnd(x, y, 70 + i) * .05; g.moveTo(...P(cx, .34 + i * .14)); g.lineTo(...P(cx - .05, .5 + i * .16)); }
+      g.stroke();
+      // the snow cap follows the slopes down to a little below the summit
+      const sy = top + .3;
+      const lx = pk - (pk - xl) * ((sy - top) / (yl - top)), rxs = pk + (xr - pk) * ((sy - top) / (yr - top));
+      poly(g, [P(pk, top), P(lx, sy), P(pk - .09, sy - .05), P(pk, sy + .03), P(pk + .09, sy - .05), P(rxs, sy)], '#f2efe6');
+      poly(g, [P(pk, top), P(rxs, sy), P(pk + .09, sy - .05), P(pk, sy + .03)], '#d9d6cc');
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {

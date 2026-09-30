@@ -21,7 +21,7 @@ export function build() {
       note: `${u.planned ? 'PLANNED, not in the game · ' : ''}${u.category} · move ${u.move} · ${rangeNote(u)}`,
     })),
     factions: Object.entries(factions).map(([id, f]) => ({ id, name: f.name, color: f.color, dark: f.dark })),
-    terrain: { plain: terrain.plain.render.base, road: terrain.road.render.base, sea: terrain.sea.render.base },
+    terrain: { plain: terrain.plain.render.base ?? '#86b95c', road: terrain.road.render.base, sea: terrain.sea.render.base },
   };
   const page = `<!doctype html>
 <html lang="en">
