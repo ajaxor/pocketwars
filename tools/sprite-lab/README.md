@@ -51,6 +51,9 @@ pack and weapon, so any change to the body applies to all three.
 double speed, and the faded still Done pose), with controls for tile size and ground colour. It is published to
 GitHub Pages at `/gallery/`, and locally at `http://localhost:8080/gallery/` (`npm start`).
 `node lab.mjs gallery` regenerates the page shell; `gallery/preview.js` is hand-written.
+Like the game, it is cache-busted: `/gallery/index.html` is a tiny loader that reads `version.json` (fetched fresh) and imports
+`v/<hash>/gallery/preview.js`; the workflow publishes the gallery code, data and sprite modules under that folder, so a
+deploy shows up immediately instead of after the browser's cache expires.
 
 ## Adopting the sprites in the game
 

@@ -20,8 +20,8 @@ export function paintTile(g, { unit, faction, size, t, state, phase, bg }) {
 }
 
 // ---- page ----------------------------------------------------------------------------------------------------
-function boot() {
-  const DATA = JSON.parse(document.getElementById('data').textContent);
+async function boot() {
+  const DATA = await (await fetch(new URL('data.json', import.meta.url))).json();
   const $ = (sel) => document.querySelector(sel);
   const state = { mode: 'idle', size: 96, bg: 'plain', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
   let clock = 0, last = performance.now();
@@ -71,4 +71,4 @@ function boot() {
   syncPause(); resize(); requestAnimationFrame(frame);
 }
 
-if (typeof document !== 'undefined') boot();
+if (typeof document !== 'undefined') await boot();
