@@ -11,7 +11,7 @@ import { createCanvas } from '@napi-rs/canvas';
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { drawFrame } from '../../src/render/unit-frame.js';
+import { drawFrame, drawFrameAlpha } from '../../src/render/unit-frame.js';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(HERE, '../..');
@@ -47,7 +47,7 @@ export const baseColor = (bg) => (terrain[bg] ? terrain[bg].render.base : bg);
 // ---- styles ----------------------------------------------------------------------------------------------
 /** Wrap a game-compatible module ({ SPRITES, SHADOWS }) so it can be drawn like any other style. */
 export function gameStyle(mod) {
-  return { meta: mod.meta, kind: 'game', mod, draw: (g, id, o) => drawFrame(g, mod, id, o) };
+  return { meta: mod.meta, kind: 'game', mod, draw: (g, id, o) => drawFrameAlpha(g, mod, id, o, o.alpha ?? 1) };
 }
 
 export async function loadStyles() {

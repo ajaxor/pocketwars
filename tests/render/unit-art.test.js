@@ -5,7 +5,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { SPRITES, SHADOWS } from '../../src/render/unit-art.js';
-import { drawFrame } from '../../src/render/unit-frame.js';
+import { drawFrame, drawFrameAlpha } from '../../src/render/unit-frame.js';
 import { paintTile, STATES } from '../../gallery/preview.js';
 
 const readJson = (rel) => JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8'));
@@ -44,8 +44,22 @@ test('the gallery draws every unit in every state; a unit that has acted is fade
       const { ctx, calls, sets } = recorder();
       paintTile(ctx, { unit, faction: factions[0], size: 96, t: 1.7, state, phase: .4, bg: '#86b95c' });
       assert.ok(calls.length > 8, `${unit.sprite} in ${state}`);
-      assert.equal(sets.globalAlpha, STATES[state].alpha, `alpha for ${state}`);
+      if (STATES[state].alpha < 1) assert.equal(sets.globalAlpha, STATES[state].alpha, `alpha for ${state}`);
+      else assert.equal(sets.globalAlpha, undefined, `${state} draws at full opacity`);
     }
   }
   assert.ok(STATES.done.alpha < 1 && STATES.idle.alpha === 1);
+});
+
+test('a faded unit is drawn opaque into a scratch canvas and composited once, not blended part by part', () => {
+  const main = recorder(), layer = recorder();
+  const canvas = { width: 0, height: 0, getContext: () => layer.ctx };
+  const make = (w, h) => Object.assign(canvas, { width: w, height: h });
+  const o = { s: 48, c: '#e8712c', dk: '#8f3f10', alt: .13, w: 1, ph: 0, run: 0, make };
+  drawFrameAlpha(main.ctx, { SPRITES, SHADOWS }, 'bomber', o, .55);
+  assert.ok(layer.calls.length > 8, 'the whole unit was drawn into the scratch canvas');
+  assert.equal(layer.sets.globalAlpha, undefined, 'parts inside the scratch canvas are opaque');
+  assert.equal(main.calls.filter((c) => c === 'drawImage').length, 1, 'composited to the map exactly once');
+  assert.equal(main.sets.globalAlpha, .55);
+  assert.equal(main.calls.filter((c) => c === 'fill').length, 0, 'no unit parts are drawn straight onto the map');
 });

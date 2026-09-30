@@ -43,7 +43,9 @@ To try a new direction, add a sibling file in `variants/` (export `meta`, `SPRIT
 `styles/` (export `meta`, `draw(g, id, o)`), then `compare` it with `flat`. Sprite names match `data/units.json`.
 
 The art is deliberately simple: flat blocks, no outlines. The infantry family (infantry, mech, sniper) shares one body,
-head and walk cycle (`trooper`), differing only in pack and weapon. `variants/detailed.js` keeps the richer set the game
+head and walk cycle (`trooper`), differing only in pack and weapon. Fighter and bomber are drawn in a 3/4 view (near wing toward the viewer), the rest side-on. A unit that has acted is faded as
+one flattened image (`drawFrameAlpha` in `unit-frame.js`), so its parts never blend with each other; pass `alpha` to a lab
+style's `draw` to preview it. `variants/detailed.js` keeps the richer set the game
 briefly used, for comparison (`lab.mjs compare flat,detailed`).
 
 ## The gallery

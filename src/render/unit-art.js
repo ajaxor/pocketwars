@@ -43,9 +43,15 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, b }) => {
   if (kind === 'mech') {          // bazooka on the shoulder, tube clear of the body
     stroke(g, s, -.2, .04 + b / s, .3, -.2 + b / s + sw / s, Math.max(4, s * .11), OLIVE);
     disc(g, s, .3, -.2 + b / s + sw / s, .055, '#666');
-  } else if (kind === 'sniper') { // standing, long rifle with a scope
-    stroke(g, s, -.12, .06 + b / s, .4, -.06 + b / s + sw / s, Math.max(1.5, s * .035), INK);
-    box(g, s, .1, -.115 + b / s + sw / s * .4, .12, .045, 2, '#111'); disc(g, s, .22, -.093 + b / s + sw / s * .4, .02, '#7fd0ff');
+  } else if (kind === 'sniper') { // standing, long rifle with a big, clearly visible scope
+    const sy = b / s + sw / s * .5;
+    stroke(g, s, -.12, .06 + b / s, .42, -.07 + sy, Math.max(2.2, s * .045), INK);
+    g.save(); g.translate(s * .17, (-.055 + sy) * s); g.rotate(-.24);
+    box(g, s, -.1, -.04, .2, .075, 3, '#1b1b22');                                             // scope tube
+    box(g, s, -.115, -.05, .04, .095, 2, '#3a3a44'); box(g, s, .075, -.055, .05, .105, 2, '#3a3a44'); // eyepiece and objective bells
+    disc(g, s, .125, -.0025, .032, '#7fd0ff'); disc(g, s, .132, -.012, .012, '#ffffff');         // bright lens
+    box(g, s, -.05, .035, .03, .04, 1, STEEL); box(g, s, .03, .035, .03, .04, 1, STEEL);        // mounts
+    g.restore();
   } else {                        // rifle
     stroke(g, s, -.1, .04 + b / s, .26, -.12 + b / s + sw / s, Math.max(2, s * .05), INK);
   }
@@ -67,9 +73,22 @@ const recon = (g, { s, c, dk, w, run, j }) => {
 };
 
 const artillery = (g, { s, c, dk, w, ph, run, j }) => {
-  wheel(g, s, -.16, .21, .07, w, run, 6); wheel(g, s, .12, .21, .07, w, run, 6);
-  box(g, s, -.22, .02 + j / s, .4, .14, 3, c);
-  g.save(); g.translate(-s * .02, s * .03 + j); g.rotate(-.5 + Math.sin(w * 1.5 + ph) * .12 * run); g.fillStyle = dk; g.fillRect(0, -s * .035, s * .38, s * .07); g.restore();
+  const jj = j / s, bell = c === dk ? c : mix(c, dk, .5);
+  poly(g, s, [[-.16, .1 + jj], [-.35, .27], [-.3, .29], [-.1, .16 + jj]], dk);              // trail leg with spade
+  box(g, s, -.36, .255, .07, .04, 1, INK);
+  wheel(g, s, -.14, .21, .08, w, run, 6); wheel(g, s, .12, .21, .08, w, run, 6);
+  disc(g, s, -.14, .21, .03, '#8a8a8a'); disc(g, s, .12, .21, .03, '#8a8a8a');               // hubs
+  box(g, s, -.22, .0 + jj, .4, .16, 3, c);                                                   // carriage
+  box(g, s, -.2, -.05 + jj, .12, .07, 2, '#7a6a48'); box(g, s, -.19, -.035 + jj, .1, .012, 0, '#54482f'); // ammo crate
+  g.save(); g.translate(-s * .02, s * .03 + j); g.rotate(-.5 + Math.sin(w * 1.5 + ph) * .12 * run);
+  const kick = Math.max(0, Math.sin(w * 1.5 + ph)) * .02 * run;                              // slight recoil
+  g.translate(-kick * s, 0);
+  box(g, s, -.04, -.06, .07, .12, 2, dk);                                                    // breech block
+  box(g, s, .0, -.05, .17, .1, 2, bell);                                                     // recoil sleeve
+  box(g, s, .17, -.03, .24, .06, 1, dk);                                                     // barrel
+  box(g, s, .39, -.045, .05, .09, 1, INK);                                                   // muzzle brake
+  g.restore();
+  box(g, s, -.02, -.1 + jj, .04, .2, 2, '#3b3b3b');                                          // gun shield
 };
 
 const flak = (g, { s, c, dk, w, ph, run, j }) => {
@@ -89,26 +108,40 @@ const copter = (g, { s, c, dk, w, run }) => {
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, INK); g.fillStyle = INK; g.fillRect(-s * .02, -s * .21, s * .04, s * .08);
 };
 
+// Fighter and bomber are drawn in a 3/4 view from above and slightly ahead: the near wing sweeps down toward the viewer,
+// the far wing is shorter and darker behind the fuselage, and the tail fin stands up.
 const fighter = (g, { s, c, dk, w, run }) => {
-  const fl = (run ? .6 + .4 * Math.sin(w * 40) : .3) * s * .16, wing = mix(c, dk, .4);
-  poly(g, s, [[-.32, -.03], [-.32 - fl / s, 0], [-.32, .03]], '#ff9a2e');
-  both([[.12, -.03], [-.2, -.32], [-.27, -.32], [-.16, -.03]], (p) => poly(g, s, p, wing));    // swept wings
-  both([[-.26, -.03], [-.38, -.14], [-.33, -.03]], (p) => poly(g, s, p, wing));                // tailplanes
-  poly(g, s, [[.42, 0], [.05, -.07], [-.32, -.06], [-.32, .06], [.05, .07]], c);
-  oval(g, s, .14, 0, .08, .035, GLASS);
+  const fl = (run ? .6 + .4 * Math.sin(w * 40) : .3) * s * .1, far = mix(c, dk, .6), near = mix(c, dk, .3);
+  poly(g, s, [[-.36, -.02], [-.36 - fl / s, .01], [-.36, .04]], '#ff9a2e');                   // afterburner
+  poly(g, s, [[.0, -.05], [-.14, -.2], [-.22, -.2], [-.2, -.05]], far);                       // far wing
+  poly(g, s, [[-.3, -.05], [-.37, -.12], [-.41, -.12], [-.38, -.04]], far);                   // far tailplane
+  poly(g, s, [[-.16, -.05], [-.27, -.25], [-.34, -.25], [-.33, -.05]], dk);                   // tail fin
+  poly(g, s, [[.44, .01], [.2, -.06], [-.05, -.075], [-.36, -.06], [-.36, .05], [-.05, .075], [.2, .05]], c);   // fuselage
+  poly(g, s, [[.4, .02], [.2, .05], [-.05, .075], [-.36, .05], [-.36, .035], [-.05, .05], [.2, .03]], mix(c, dk, .45)); // belly shade
+  oval(g, s, .13, -.06, .075, .035, GLASS);                                                   // canopy
+  poly(g, s, [[.1, .04], [-.1, .3], [-.22, .3], [-.2, .04]], near);                           // near wing
+  poly(g, s, [[-.27, .04], [-.37, .14], [-.43, .14], [-.38, .04]], near);                     // near tailplane
+  box(g, s, -.38, -.03, .04, .08, 1, INK);                                                    // nozzle
+  poly(g, s, [[.2, .0], [.28, .01], [.2, .04]], INK);                                         // intake
 };
 
-// transport-style bomber: long fuselage, swept wings, four engines, tailplane
+// transport-style bomber: long fuselage, swept high wings, four engines, T-tail
 const bomber = (g, { s, c, dk, w, run }) => {
-  const wing = mix(c, dk, .35);
-  both([[.1, -.06], [-.08, -.36], [-.2, -.36], [-.14, -.06]], (p) => poly(g, s, p, wing));
-  both([[-.3, -.05], [-.4, -.17], [-.46, -.17], [-.43, -.03]], (p) => poly(g, s, p, wing));
-  for (const [ey, ex] of [[.14, -.01], [.26, -.07]]) for (const sy of [-1, 1]) {
-    box(g, s, ex, sy * ey - .035, .13, .07, 3, '#333');
-    const a = Math.sin(w * 25) * run; stroke(g, s, ex + .145, sy * ey - a * .05, ex + .145, sy * ey + a * .05, 1.5, '#ddd');
+  const far = mix(c, dk, .6), near = mix(c, dk, .3);
+  poly(g, s, [[.08, -.06], [-.06, -.21], [-.18, -.21], [-.14, -.06]], far);                   // far wing
+  box(g, s, -.1, -.15, .13, .05, 2, '#2a2a2a');                                               // far engine
+  poly(g, s, [[-.33, -.06], [-.4, -.13], [-.46, -.13], [-.44, -.05]], far);                   // far tailplane
+  poly(g, s, [[-.26, -.07], [-.36, -.28], [-.45, -.28], [-.44, -.06]], dk);                   // tail fin
+  box(g, s, -.46, -.08, .92, .16, s * .08, c);                                                // fuselage
+  box(g, s, -.42, .035, .82, .04, 2, mix(c, dk, .45));                                        // belly shade
+  box(g, s, .3, -.06, .11, .05, 2, GLASS);                                                    // cockpit windows
+  g.fillStyle = dk; g.fillRect(-s * .14, -s * .02, s * .22, s * .045);                        // cargo doors
+  poly(g, s, [[.12, .06], [-.1, .32], [-.26, .32], [-.16, .06]], near);                       // near wing
+  poly(g, s, [[-.32, .06], [-.4, .16], [-.46, .16], [-.44, .06]], near);                      // near tailplane
+  for (const [ey, ex] of [[.16, -.09], [.27, -.19]]) {                                        // near engines, hung under the wing
+    box(g, s, ex, ey - .035, .17, .07, 3, '#333'); box(g, s, ex + .155, ey - .03, .03, .06, 2, '#666');
+    const a = Math.sin(w * 25) * run; stroke(g, s, ex + .195, ey - a * .04, ex + .195, ey + a * .04, 1.5, '#ddd');
   }
-  box(g, s, -.46, -.07, .92, .14, s * .07, c); oval(g, s, .34, 0, .07, .04, GLASS);
-  g.fillStyle = dk; g.fillRect(-s * .12, -s * .03, s * .2, s * .06);                            // cargo doors
 };
 
 // stealth bomber (planned unit, not in the game yet): flying wing
