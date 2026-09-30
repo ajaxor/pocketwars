@@ -40,7 +40,7 @@ to `index.json`, run `npm run validate`.
 
 ## Terrain notes
 
-- Move classes are `foot`, `wheels`, `tread` and `air`. Roads cost wheels 0.5; forests cost treads 2 and block wheels; rough ground blocks
+- Move classes are `foot`, `wheels`, `tread`, `air`, `coastal` and `deep_sea`. Deep water (`sea`) admits both ship classes; `shallows` admits only `coastal` (destroyers) and land units cannot enter either. A shipyard admits everything. Deep-sea ships leave a shipyard only through deep water, so give each shipyard a deep-water neighbour. No transports exist yet, so every map needs a land route between HQs (tests enforce it). Roads cost wheels 0.5; forests cost treads 2 and block wheels; rough ground blocks
   wheels and costs treads 1; mountains admit only foot (and air).
 - `terrain.json -> render.base` is optional: terrain with none (plain, forest, mountain, rough, properties) takes the colour of the ground under it.
 - `terrain.json -> render.inlay` (true for roads): neighbouring ground stays square against it instead of rounding its corners.

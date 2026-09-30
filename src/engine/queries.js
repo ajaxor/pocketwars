@@ -1,5 +1,7 @@
 // Small read helpers over a game (registry + immutable map + mutable state). No rules live here.
 
+import { attributeConfig } from './attributes.js';
+
 export const DIRS = [[1, 0], [-1, 0], [0, 1], [0, -1]];
 
 export const round1 = (n) => Math.round(n * 10) / 10;
@@ -15,7 +17,7 @@ export const ownerAt = (game, x, y) => game.state.owners[y][x];
 export const removeUnit = (game, unit) => { game.state.units = game.state.units.filter((u) => u !== unit); };
 
 /** Plain copy of the fields the presentation layer needs, safe to keep after the unit changes or dies. */
-export const snapshotUnit = (u) => ({ id: u.id, type: u.type, owner: u.owner, x: u.x, y: u.y, hp: u.hp });
+export const snapshotUnit = (u) => ({ id: u.id, type: u.type, owner: u.owner, x: u.x, y: u.y, hp: u.hp, submerged: !!u.submerged });
 
 /** The `property` attribute config of the terrain at (x, y), or null when the tile is not a property. */
 export function propertyAt(game, x, y) {
@@ -36,5 +38,11 @@ export function allProperties(game) {
 }
 
 export const propertiesOwnedBy = (game, player) => allProperties(game).filter((p) => p.owner === player);
-export const layerInfo = (game, unit) => game.registry.rules.layers[unitDef(game, unit).layer];
+
+/** The id of the layer a unit is on right now: its own layer, or the one it dives into while it is submerged. */
+export function layerIdOf(game, unit) {
+  const def = unitDef(game, unit);
+  return unit.submerged ? attributeConfig(def, 'submerge')?.layer ?? def.layer : def.layer;
+}
+export const layerInfo = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)];
 export const factionOf = (game, player) => game.registry.faction(game.map.players[player].faction);

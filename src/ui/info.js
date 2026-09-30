@@ -3,12 +3,12 @@
 // state: no unit or terrain ids are compared here (labels for attributes live in the attribute catalogue).
 
 import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } from '../engine/attributes.js';
-import { calcDamage, terrainStars } from '../engine/combat.js';
+import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
 import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air' };
-const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft' };
+const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', coastal: 'Coastal', deep_sea: 'Deep sea' };
+const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft', naval: 'Ships' };
 /** "vehicle" -> "Vehicles": a unit category as a heading (unknown names are capitalised and pluralised). */
 const categoryLabel = (c) => CATEGORY_LABELS[c] || `${cap(c)}s`;
 /** A move class as a short word for the terrain's move-cost chips. */
@@ -75,6 +75,7 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
   const faction = unit.owner === null ? null : factionOf(game, unit.owner);
   const prop = propertyAt(game, at.x, at.y);
   const where = { ...unit, x: at.x, y: at.y };
+  const weapon = attacker ? weaponFor(game, attacker, where, attackerAt) : null;
   return {
     ...unitStats(game, def),
     unitId: unit.id, owner: unit.owner,
@@ -85,5 +86,6 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
     cover: terrainStars(game, where),
     capture: unit.capture && prop ? { progress: unit.capture, needed: prop.capturePoints } : null,
     forecast: attacker ? calcDamage(game, attacker, where, attackerAt) : null,
+    forecastWeapon: attacker && weapon && game.registry.unit(attacker.type).weapons.length > 1 ? weapon.name : null,
   };
 }

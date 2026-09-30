@@ -5,6 +5,9 @@
     "dust_bowl": "dust_bowl.map.json",
     "river_run": "river_run.map.json",
     "four_corners": "four_corners.map.json",
-    "tri_point": "tri_point.map.json"
+    "tri_point": "tri_point.map.json",
+    "harbor_front": "harbor_front.map.json",
+    "reef_raiders": "reef_raiders.map.json",
+    "twin_fleets": "twin_fleets.map.json"
   }
 }

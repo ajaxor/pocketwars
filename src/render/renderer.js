@@ -18,6 +18,7 @@
 
 import { calcDamage, canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
+import { canSee } from '../engine/detection.js';
 import { tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
@@ -32,6 +33,9 @@ export class Renderer {
     this.animator = animator;
     this.camera = new Camera(game.map.width, game.map.height);
     this.dpr = 1;
+    // The player whose eyes the board is drawn with: units hidden from them (a submerged enemy nobody has spotted) are not drawn
+    // and not outlined. null shows everything (tests, the sprite gallery). The session sets it each frame.
+    this.viewer = null;
     // until fit() learns the real window, the map is laid out whole at 40 px a tile (headless use and tests)
     this.camera.setViewport(game.map.width * 40, game.map.height * 40, 0);
   }
@@ -92,6 +96,9 @@ export class Renderer {
     return { x: Math.floor((clientX - r.left - ox) / this.S), y: Math.floor((clientY - r.top - oy) / this.S) };
   }
 
+  /** Is `u` drawn for the current viewer? */
+  isShown(u) { return this.viewer === null || canSee(this.game, this.viewer, u); }
+
   logicalPos(u, view) {
     return view.dest && u.id === view.selectedId ? view.dest : u;
   }
@@ -104,6 +111,7 @@ export class Renderer {
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
+      submerged: !!u.submerged,
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
     });
@@ -186,9 +194,9 @@ export class Renderer {
     }
     if (view.showTargets) {
       g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;
-      view.targets.forEach((e) => { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2.5)); g.stroke(); });
+      view.targets.filter((e) => this.isShown(e)).forEach((e) => { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2.5)); g.stroke(); });
     }
-    state.units.forEach((u) => this.drawUnitAt(g, u, view, now));
+    state.units.forEach((u) => { if (this.isShown(u)) this.drawUnitAt(g, u, view, now); });
     this.drawArrow(now);
 
     const atk = view.attackTiles;
@@ -211,7 +219,7 @@ export class Renderer {
     if (atk && sel) {
       g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;
       state.units.forEach((e) => {
-        if (e.owner !== sel.owner && atk.has(tileIndex(map, e.x, e.y)) && canAttackFrom(game, sel, e, this.logicalPos(sel, view).x, this.logicalPos(sel, view).y)) { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2)); g.stroke(); }
+        if (e.owner !== sel.owner && this.isShown(e) && atk.has(tileIndex(map, e.x, e.y)) && canAttackFrom(game, sel, e, this.logicalPos(sel, view).x, this.logicalPos(sel, view).y)) { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2)); g.stroke(); }
       });
     }
     const pending = view.pendingTargetId !== null && sel ? unitById(game, view.pendingTargetId) : null;

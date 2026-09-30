@@ -17,6 +17,7 @@ export function startTurn(game, player) {
   for (const u of state.units) {
     if (u.owner !== player) continue;
     u.done = false;
+    u.halted = null;
     const property = propertyAt(game, u.x, u.y);
     if (property && ownerAt(game, u.x, u.y) === player && u.hp < registry.rules.maxHp) {
       const from = u.hp;
@@ -53,7 +54,7 @@ export function buildUnit(game, player, x, y, typeId) {
   if (problem) return { ok: false, error: problem, events: [] };
   const { state, registry } = game;
   state.funds[player] -= registry.unit(typeId).cost;
-  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x, y, hp: registry.rules.maxHp, done: true, capture: 0 };
+  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x, y, hp: registry.rules.maxHp, done: true, capture: 0, submerged: false, halted: null };
   state.units.push(unit);
   return { ok: true, events: [{ type: 'build', unit: snapshotUnit(unit), cost: registry.unit(typeId).cost }] };
 }

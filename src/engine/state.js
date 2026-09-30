@@ -5,7 +5,9 @@
 //   day: number             starts at 1, increments each time play returns to player 0
 //   funds: number[]         per player
 //   owners: (number|null)[][]   owner of each tile ([y][x]); null = neutral / not a property
-//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture }
+//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture, submerged, halted }
+//                           submerged: diving (see submerge.js); halted: null, or { moved } after a move was interrupted by a hidden
+//                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped)
 //   defeated: boolean[]     per player
 //   winner: null | number | 'draw'
 //   nextUnitId: number
@@ -20,7 +22,7 @@ export function createState(map, registry) {
     owners: map.owners.map((row) => [...row]),
     units: map.units.map((u) => ({
       id: nextUnitId++, type: u.type, owner: u.owner, x: u.x, y: u.y,
-      hp: u.hp ?? registry.rules.maxHp, done: false, capture: 0,
+      hp: u.hp ?? registry.rules.maxHp, done: false, capture: 0, submerged: false, halted: null,
     })),
     defeated: map.players.map(() => false),
     winner: null,

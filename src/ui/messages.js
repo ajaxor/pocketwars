@@ -11,6 +11,12 @@ export function describeEvents(game, events) {
       text = `${name(ev.attacker)} hits ${name(ev.defender)} -${ev.damage}` + (ev.destroyed ? ' - destroyed!' : '');
     } else if (ev.type === 'strike' && ev.counter) {
       text += `, counter -${ev.damage}` + (ev.destroyed ? ' (attacker lost)' : '');
+    } else if (ev.type === 'interrupt') {
+      text = `Movement interrupted: hidden ${name(ev.blocker)}!`;
+    } else if (ev.type === 'dive') {
+      text = `${name(ev.unit)} submerges`;
+    } else if (ev.type === 'surface') {
+      text = ev.forced ? `${name(ev.unit)} is forced to surface` : `${name(ev.unit)} surfaces`;
     } else if (ev.type === 'capture') {
       text = ev.completed ? 'Captured!' : `Capturing ${ev.progress}/${ev.needed}`;
     } else if (ev.type === 'build') {

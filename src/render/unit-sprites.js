@@ -7,6 +7,9 @@ import { drawFaded } from './layer.js';
 import { font } from './font.js';
 
 export const UNIT_SPRITES = SPRITES;
+
+/** A submerged unit is seen through the water: faded, tinted blue and a little lower. */
+export const SUBMERGED_LOOK = { alpha: .62, tint: { color: '#1d5e9e', amount: .4 }, sink: .06 };
 const ART = { SPRITES, SHADOWS };
 
 /**
@@ -23,14 +26,16 @@ const ART = { SPRITES, SHADOWS };
  * @param {boolean} o.moving    drawn at double animation speed while sliding
  * @param {number} o.alpha      fade multiplier (dying units)
  * @param {boolean} o.showHp    draw the HP digit when damaged
+ * @param {boolean} o.submerged drawn as seen through water (SUBMERGED_LOOK)
  */
 export function drawUnit(g, unit, o) {
-  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp } = o;
+  const { def, colors, px, py, size: s, now, animate, moving, alpha: a0 = 1, showHp, submerged = false } = o;
+  const alpha = submerged ? a0 * SUBMERGED_LOOK.alpha : a0;
   const run = animate ? 1 : 0;
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
-  g.save(); g.translate(px + s / 2, py + s / 2);
-  drawFrameAlpha(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving }, alpha, run ? null : DISABLED_TINT);
+  g.save(); g.translate(px + s / 2, py + s / 2 + (submerged ? s * SUBMERGED_LOOK.sink : 0));
+  drawFrameAlpha(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving }, alpha, run ? (submerged ? SUBMERGED_LOOK.tint : null) : DISABLED_TINT);
   g.restore();
   const dh = Math.ceil(unit.hp - 1e-9);
   if (showHp && dh < 10 && dh > 0) {

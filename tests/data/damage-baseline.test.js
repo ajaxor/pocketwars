@@ -29,10 +29,10 @@ test('calcDamage matches the original implementation for every captured case', (
     const attacker = { id: 9001, type: c.a, owner: 0, x: 0, y: 5, hp: c.ahp, done: false, capture: 0 };
     const defender = { id: 9002, type: c.d, owner: 1, x, y, hp: c.dhp, done: false, capture: 0 };
     game.state.units = [attacker, defender];
-    // the formula on its own: the first weapon that covers the defender's layer, wherever the two stand (range and sight are tested elsewhere)
+    // the formula on its own: the strongest weapon that covers the defender's layer, wherever the two stand (range and sight are tested elsewhere)
     const layer = registry.unit(c.d).layer;
-    const weapon = weaponsOf(game, attacker).find((w) => w.targets.some((m) => registry.rules.targetModes[m].layer === layer));
-    const got = canTarget(game, attacker, defender) && weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
+    const dmgs = weaponsOf(game, attacker).filter((w) => w.targets.some((m) => registry.rules.targetModes[m].layer === layer)).map((w) => weaponDamage(game, w, attacker, defender));
+    const got = canTarget(game, attacker, defender) && dmgs.length ? Math.max(...dmgs) : 0;
     if (got !== c.dmg) failures.push(`${c.a}(${c.ahp}) -> ${c.d}(${c.dhp}) on ${c.t}: expected ${c.dmg}, got ${got}`);
   }
   assert.deepEqual(failures, []);

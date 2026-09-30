@@ -19,6 +19,12 @@ const TOAST_MS = 3600;
 
 const weaponRange = (w) => (w.min === w.max ? `${w.min}` : `${w.min}-${w.max}`);
 
+/** Weapon chips: Range and Attack for a one-weapon unit; one "Name  damage, range" chip per weapon when there are several. */
+function weaponChips(d, weapons) {
+  if (weapons.length === 1) return [chip(d, 'Range', weaponRange(weapons[0])), chip(d, 'Attack', weapons[0].damage)];
+  return weapons.map((w) => chip(d, w.name, `${w.damage} / ${weaponRange(w)}`));
+}
+
 const GEAR_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94a7.5 7.5 0 0 0 .05-.94 7.5 7.5 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.66 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.5 7.5 0 0 0-.05.94c0 .32.02.63.05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.09.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>';
 
 export class Hud {
@@ -176,7 +182,7 @@ export class Hud {
     const weapon = u.weapons[0];
     const stats = h(d, 'div', 'chips');
     stats.append(chip(d, 'Move', u.move));
-    if (weapon) stats.append(chip(d, 'Range', weaponRange(weapon)), chip(d, 'Attack', weapon.damage));
+    if (weapon) stats.append(...weaponChips(d, u.weapons));
     stats.append(chip(d, 'Armor', `${u.armor}%`));
     const cover = h(d, 'span', 'chip');
     cover.append(h(d, 'span', 'chip-k', 'Cover'), stars(d, u.cover));
@@ -186,7 +192,7 @@ export class Hud {
     if (u.layerLabel) tags.unshift(u.layerLabel);
     if (tags.length) col.append(this.#tags(tags));
     if (u.capture) col.append(h(d, 'div', 'note note--hot', `Capturing ${u.capture.progress}/${u.capture.needed}`));
-    if (u.forecast != null) col.append(h(d, 'div', 'note note--hot', u.forecast > 0 ? `Your attack: -${u.forecast} HP` : 'Cannot be hurt from here'));
+    if (u.forecast != null) col.append(h(d, 'div', 'note note--hot', u.forecast > 0 ? `Your attack: -${u.forecast} HP${u.forecastWeapon ? ` (${u.forecastWeapon})` : ''}` : 'Cannot be hurt from here'));
     else if (u.acted) col.append(h(d, 'div', 'note', 'Already moved'));
     w.body.append(col);
     return w.root;
@@ -280,7 +286,7 @@ export class Hud {
       const weapon = o.weapons[0];
       const chips = h(d, 'span', 'chips');
       chips.append(chip(d, 'Move', o.move));
-      if (weapon) chips.append(chip(d, 'Range', weaponRange(weapon)), chip(d, 'Attack', weapon.damage));
+      if (weapon) chips.append(...weaponChips(d, o.weapons));
       main.append(chips);
       row.append(main, h(d, 'span', 'build-cost', fmtMoney(o.cost)));
       list.append(row);

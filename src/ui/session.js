@@ -3,6 +3,7 @@
 
 import { buildPhase, chooseOrder } from '../engine/ai.js';
 import { hasAttribute } from '../engine/attributes.js';
+import { canSee } from '../engine/detection.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
 import { MoveAnimator } from '../render/animator.js';
 import { Effects } from '../render/effects.js';
@@ -149,6 +150,7 @@ export class Session {
     hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
     this.animator.update(now);
     const viewer = this.#viewer();
+    this.renderer.viewer = viewer;
     const faction = factionOf(game, game.currentPlayer);
     hud.status({ day: game.state.day, name: faction.name, color: faction.color, funds: game.state.funds[viewer], props: propertiesOwnedBy(game, viewer).length });
     hud.setEndDisabled(this.busy);
@@ -214,27 +216,53 @@ export class Session {
     } while (!this.#humanTurn());
   }
 
+  /**
+   * The part of an AI order's events the human may see. Something the computer does out of sight (a submarine moving or diving
+   * under water nobody is watching) must not show up as an animation, a ripple or a message, or it would give it away.
+   */
+  #visibleTo(viewer, events) {
+    const { game } = this;
+    const seen = (id) => { const u = unitById(game, id); return !u || canSee(game, viewer, u); };
+    return events.filter((ev) => {
+      if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
+      if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
+      return true;
+    });
+  }
+
   async #playAiTurn() {
     const { game, hud, animator, effects, presenter } = this;
     const player = game.currentPlayer;
+    const viewer = this.#viewer();
     for (const unit of game.state.units.filter((u) => u.owner === player)) {
       if (game.isOver || this.disposed) return;
       animator.arrow = null;
-      if (game.state.units.includes(unit)) {
+      let shown = false;   // did the human get to see this unit act?
+      // An order can be cut short by a hidden unit; the unit then gets a second order from where it stopped.
+      for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done; step++) {
         const order = chooseOrder(game, unit);
         // on a map bigger than the screen, bring the unit, where it is going and what it shoots at into view first
+        // (not for a submarine the human cannot see: the camera would point at it)
+        const visible = canSee(game, viewer, unit);
         const target = order.action.targetId ? unitById(game, order.action.targetId) : null;
-        this.renderer.reveal([[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])]);
-        if (this.renderer.camera.glide) await sleep(350);
+        if (visible) {
+          this.renderer.reveal([[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])]);
+          if (this.renderer.camera.glide) await sleep(350);
+        }
         if (game.isOver || this.disposed) return;
         const res = game.act(order);
         if (!res.ok) throw new Error(`AI produced an invalid order: ${res.error}`);
-        presenter.present(res.events, { now: this.#now() });
-        const text = describeEvents(game, res.events);
+        const events = this.#visibleTo(viewer, res.events);
+        shown = shown || visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);
+        presenter.present(events, { now: this.#now() });
+        const text = describeEvents(game, events);
         if (text) hud.message(text);
         this.#handleEvents(res.events);
+        if (!res.interrupted) break;
+        await sleep(Math.max(animator.active ? animator.current.d + 500 : 400, effects.lockUntil - this.#now() + 250));
       }
-      await sleep(Math.max(animator.active ? animator.current.d + 450 : 250, effects.lockUntil - this.#now() + 250));
+      // no waiting around for a unit the human could not see do anything (a pause would also give it away)
+      await sleep(!shown ? 0 : Math.max(animator.active ? animator.current.d + 450 : 250, effects.lockUntil - this.#now() + 250));
     }
     if (!game.isOver && !this.disposed) buildPhase(game);
   }

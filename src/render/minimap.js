@@ -21,7 +21,8 @@ export function drawMinimap(g, map, registry, colorOf, px = miniTile(map)) {
     for (let x = 0; x < map.width; x++) {
       const t = registry.terrainDef(map.terrain[y][x]);
       const isProperty = !!t.attributes.property;
-      g.fillStyle = isProperty ? groundColor(x, y) : t.render.mini || t.render.base || groundColor(x, y);
+      // a property sits on its ground, unless the terrain paints its own base (a shipyard on the water)
+      g.fillStyle = isProperty && !t.render.base ? groundColor(x, y) : t.render.mini || t.render.base || groundColor(x, y);
       g.fillRect(x * px, y * px, px, px);
       if (!isProperty) continue;
       const pad = px >= 6 ? Math.round(px * .18) : 0;

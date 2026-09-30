@@ -16,6 +16,8 @@ wrong kind of entity, fail validation.
 | `capture` | Can capture properties it stands on; progress per action = current HP. | `tests/attributes/capture.test.js` |
 | `indirect` | Cannot move and fire in the same turn; no counterattack either way. Every weapon needs `range[0] >= 2`. (Not the same as the `indirect_ground` target mode, which decides whether obstacles block a shot: see [combat.md](combat.md).) | `indirect.test.js` |
 | `ignoresTerrainDefense` | Terrain defense does not reduce damage this unit takes. | `ignoresTerrainDefense.test.js` |
+| `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer }` names the layer while down; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. | `tests/engine/naval.test.js` |
+| `sonar` | Detects hidden enemies within this many tiles (integer >= 2; adjacent units are always noticed). | `tests/engine/naval.test.js` |
 | `terrainDefenseMultiplier` | Multiplies the terrain defense this unit gets (`2` doubles it; must be > 1). No effect on 0-defense terrain, and `ignoresTerrainDefense` still wins. | `terrainDefenseMultiplier.test.js` |
 
 ## Terrain attributes
@@ -25,6 +27,7 @@ wrong kind of entity, fail validation.
 | `property` | Ownable, capturable tile: `income`, `capturePoints`, `repair`, `builds` (unit categories). | `property.test.js` |
 | `blocksLineOfSight` | Obstacle for direct fire; the number is its height (forest 1, mountain and buildings 2). | `sight.test.js` |
 | `vantage` | A firer standing here shoots over obstacles lower than this number (mountain 2). | `sight.test.js` |
+| `submergible` | Deep water: `submerge` units can dive here. | `tests/engine/naval.test.js` |
 | `victoryOnCapture` | Capturing it knocks its owner out of the game (HQ): their units leave the board and their properties go neutral. The last player left wins. Requires `property`. | `capture.test.js`, `turns.test.js` |
 
 ## Other data-driven stats (not attributes)

@@ -1,0 +1,206 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "harbor_front",
+  "name": "Harbor Front",
+  "description": "A bay between two armies. Fight over the land bridge in the north, or build a shipyard fleet and take the bay. Subs hide in the deep; destroyers hunt them in the shallows.",
+  "players": [
+    {
+      "faction": "orange_star",
+      "controller": "human",
+      "funds": 14000
+    },
+    {
+      "faction": "blue_moon",
+      "controller": "ai",
+      "funds": 14000
+    }
+  ],
+  "legend": {
+    ".": {
+      "terrain": "plain"
+    },
+    "F": {
+      "terrain": "forest"
+    },
+    "M": {
+      "terrain": "mountain"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "r": {
+      "terrain": "road"
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "s": {
+      "terrain": "shallows"
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "f": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "g": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "MM.FF..rrrrrrrr..FF.MM",
+    "M..c..rr......rr..c..M",
+    "...F..r........r..F...",
+    "..rrrrr..ssss..rrrrr..",
+    "..rO.fr.ss~~ss.rg.Br..",
+    "..r..cr.Y~~~~Z.rc..r..",
+    "FF.c..r.s~~~~s.r..c.FF",
+    "FF..rrr.s~ss~s.rrr..FF",
+    "FF..r.c.s~ss~s.c.r..FF",
+    "..r...r.s~~~~s.r...r..",
+    "..rrrrr.Y~~~~Z.rrrrr..",
+    "..rc..r.ss~~ss.r..cr..",
+    "M...F.r..s~~s..r.F...M",
+    "M..FF..r.ssss.r..FF..M",
+    "MM.FF..r..ss..r..FF.MM",
+    "MMM.F..rr....rr..F.MMM"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 3
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 4,
+      "y": 9
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 5,
+      "y": 6
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 2,
+      "y": 5
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 6,
+      "y": 9
+    },
+    {
+      "type": "destroyer",
+      "owner": 0,
+      "x": 9,
+      "y": 4
+    },
+    {
+      "type": "submarine",
+      "owner": 0,
+      "x": 9,
+      "y": 5
+    },
+    {
+      "type": "cruiser",
+      "owner": 0,
+      "x": 9,
+      "y": 10
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 18,
+      "y": 3
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 18,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 17,
+      "y": 9
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 19,
+      "y": 4
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 16,
+      "y": 6
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 19,
+      "y": 5
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 15,
+      "y": 9
+    },
+    {
+      "type": "destroyer",
+      "owner": 1,
+      "x": 12,
+      "y": 4
+    },
+    {
+      "type": "submarine",
+      "owner": 1,
+      "x": 12,
+      "y": 5
+    },
+    {
+      "type": "cruiser",
+      "owner": 1,
+      "x": 12,
+      "y": 10
+    }
+  ]
+}

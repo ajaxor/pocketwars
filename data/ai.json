@@ -8,7 +8,8 @@
     "captureBase": 50,
     "victoryCaptureBonus": 100,
     "costUnit": 1000,
-    "blockCapture": 6
+    "blockCapture": 6,
+    "crowFlies": 0.1
   },
   "build": {
     "infantry": [
@@ -20,6 +21,13 @@
       { "unit": "bomber",  "max": 1 },
       { "unit": "fighter", "max": 1 },
       { "unit": "copter",  "max": 2 }
+    ],
+    "naval": [
+      { "unit": "cruiser",    "max": 2, "when": "enemyHasAirborne" },
+      { "unit": "destroyer",  "max": 2 },
+      { "unit": "submarine",  "max": 2 },
+      { "unit": "cruiser",    "max": 1 },
+      { "unit": "battleship", "max": 1 }
     ],
     "vehicle": [
       { "unit": "flak",       "max": 2, "when": "enemyHasAirborne" },

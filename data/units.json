@@ -141,5 +141,57 @@
     "armor": 0.3,
     "attributes": { "ignoresTerrainDefense": true },
     "render": { "sprite": "bomber", "attackFx": "drop", "altitude": 0.13 }
+  },
+  "destroyer": {
+    "name": "Destroyer",
+    "category": "naval",
+    "cost": 7000,
+    "move": 7,
+    "moveClass": "coastal",
+    "layer": "surface",
+    "weapons": ["deck_gun", "depth_charges"],
+    "toughness": 1.3,
+    "armor": 0.45,
+    "attributes": { "sonar": 3 },
+    "render": { "sprite": "destroyer", "attackFx": "shot" }
+  },
+  "submarine": {
+    "name": "Submarine",
+    "category": "naval",
+    "cost": 9000,
+    "move": 5,
+    "moveClass": "deep_sea",
+    "layer": "surface",
+    "weapons": ["torpedoes"],
+    "toughness": 1.2,
+    "armor": 0.35,
+    "attributes": { "submerge": { "layer": "underwater" } },
+    "render": { "sprite": "submarine", "attackFx": "torpedo" }
+  },
+  "cruiser": {
+    "name": "Cruiser",
+    "category": "naval",
+    "cost": 12000,
+    "move": 6,
+    "moveClass": "deep_sea",
+    "layer": "surface",
+    "weapons": ["naval_cannon", "aa_battery"],
+    "toughness": 1.7,
+    "armor": 0.6,
+    "attributes": {},
+    "render": { "sprite": "cruiser", "attackFx": "arc" }
+  },
+  "battleship": {
+    "name": "Battleship",
+    "category": "naval",
+    "cost": 18000,
+    "move": 4,
+    "moveClass": "deep_sea",
+    "layer": "surface",
+    "weapons": ["main_guns"],
+    "toughness": 2.6,
+    "armor": 0.8,
+    "attributes": { "indirect": true },
+    "render": { "sprite": "battleship", "attackFx": "arc" }
   }
 }

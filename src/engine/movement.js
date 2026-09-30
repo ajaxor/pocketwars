@@ -1,9 +1,14 @@
 // Movement and range geometry. All costs come from terrain.moveCost[unit.moveClass]; a null cost means
 // impassable. Enemy units block movement, friendly units can be passed through but not stopped on.
+//
+// Only enemies the mover can SEE block the search. A hidden enemy (a submerged submarine nobody has noticed) is treated as open
+// water, so planning a move, or previewing one, never gives it away; it is found out when the move is carried out (game.js act).
+// A unit whose move was interrupted (`unit.halted`) has used its move: it can only act where it stands.
 
 import { DIRS, distance, inBounds, tileIndex, unitAt, unitDef, terrainAt } from './queries.js';
 import { hasAttribute } from './attributes.js';
 import { canAttackFrom, weaponsOf } from './combat.js';
+import { canSee } from './detection.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
 export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveCost[moveClass];
@@ -49,6 +54,7 @@ export function computeReach(game, unit) {
   const prev = new Map();
   const start = tileIndex(map, unit.x, unit.y);
   cost.set(start, 0);
+  if (unit.halted) return new ReachMap(map.width, [unit.x, unit.y], cost, prev);   // stopped by a hidden unit: no more moving this turn
   const queue = [[unit.x, unit.y, 0]];
   while (queue.length) {
     queue.sort((a, b) => a[2] - b[2]);
@@ -59,7 +65,7 @@ export function computeReach(game, unit) {
       const ny = y + dy;
       if (!inBounds(map, nx, ny)) continue;
       const occupant = unitAt(game, nx, ny);
-      if (occupant && occupant.owner !== unit.owner) continue;
+      if (occupant && occupant.owner !== unit.owner && canSee(game, unit.owner, occupant)) continue;   // a hidden enemy does not block the plan
       const step = moveCostAt(game, def.moveClass, nx, ny);
       if (step === null) continue;
       const nc = c + step;
@@ -72,10 +78,10 @@ export function computeReach(game, unit) {
       }
     }
   }
-  // Can pass through friends but not end the move on them.
+  // Can pass through friends but not end the move on them. (A hidden enemy is not known to be there, so its tile stays on offer.)
   for (const k of [...cost.keys()]) {
     const occupant = unitAt(game, k % map.width, Math.floor(k / map.width));
-    if (occupant && occupant !== unit) cost.delete(k);
+    if (occupant && occupant !== unit && occupant.owner === unit.owner) cost.delete(k);
   }
   return new ReachMap(map.width, [unit.x, unit.y], cost, prev);
 }
@@ -131,13 +137,16 @@ export function attackTiles(game, unit, x = unit.x, y = unit.y) {
   return out;
 }
 
-/** Enemy units the unit could hit from (x, y) right now (a weapon with the right target mode, range and line of sight). */
+/** Enemy units the unit could hit from (x, y) right now (visible ones, with a weapon of the right target mode, range and line of sight). */
 export function targetsFrom(game, unit, x = unit.x, y = unit.y) {
-  return game.state.units.filter((e) => e.owner !== unit.owner && canAttackFrom(game, unit, e, x, y));
+  return game.state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e) && canAttackFrom(game, unit, e, x, y));
 }
 
 /** Can this unit attack after moving? Indirect-fire units must fire from where they started. */
 export const canFireAfterMoving = (game, unit) => !hasAttribute(unitDef(game, unit), 'indirect');
+
+/** Has this unit already moved this turn (only known for a unit whose move was interrupted; a fresh order says so itself)? */
+export const hasMovedAlready = (unit) => !!unit.halted && unit.halted.moved;
 
 /**
  * Best tile to attack `target` from: prefers staying put, then high-defense terrain, then short moves.

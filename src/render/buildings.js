@@ -6,6 +6,7 @@
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
 //   barracks  two squarish canvas tents side by side (gabled roofs, open doors) and a flag out front
 //   airfield  a tapering runway, an arched hangar and a control tower
+//   shipyard  a concrete quay on the water's edge, a gantry crane over a half-built hull
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
 import { luma, shade } from './color.js';
@@ -134,5 +135,32 @@ export const BUILDINGS = {
     k.box(.68, .34, .09, .3, .06, owner);
     k.box(.63, .22, .19, .12, .06, owner);
     k.rect(.65, .245, .15, .06, '#cfe6f5');
+  },
+
+  shipyard(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    const d = .08, dx = d * DX, dy = d * DY;
+    // wash along the quay edge, so the tile reads as a dock on the water and not a building floating on it
+    g.fillStyle = 'rgba(255,255,255,.3)';
+    g.fillRect(k.X(.03), k.Y(.93), .94 * S, Math.max(1, S * .02));
+    g.fillRect(k.X(.12), k.Y(.97), .7 * S, Math.max(1, S * .015));
+    // the quay: a low concrete slab along the front, lit on top
+    k.poly([[.06, .9], [.9, .9], [.9 + dx, .9 + dy], [.9 + dx + .02, .9 + dy + .05], [.06 + .09, .95], [.06, .95]], SHADOW);
+    k.box(.04, .74, .84, .16, d, '#9aa1ab');
+    for (let i = 1; i < 6; i++) k.rect(.04 + i * .84 / 6, .74, .008, .16, 'rgba(0,0,0,.12)');   // expansion joints
+    // the hull on the slip: steel, with the owner's colour as a waterline stripe and ribs still showing above the deck
+    k.poly([[.4, .5], [.86, .5], [.9, .56], [.82, .74], [.46, .74]], '#59606c');
+    k.poly([[.44, .64], [.86, .64], [.84, .7], [.47, .7]], owner);
+    k.poly([[.4, .5], [.86, .5], [.87, .53], [.41, .53]], '#7d8592');
+    for (let i = 0; i < 4; i++) k.rect(.47 + i * .13, .36 + (i % 2) * .03, .02, .15 - (i % 2) * .03, '#4a505a');   // ribs
+    // the gantry crane: two legs on the quay, a long jib over the hull, a hook on a line
+    k.box(.1, .22, .055, .52, .05, owner);
+    k.box(.27, .22, .055, .52, .05, owner);
+    k.box(.08, .13, .66, .07, .06, owner);
+    k.rect(.12, .13, .03, .07, shade(owner, -.35));
+    k.line([[.66, .2], [.66, .4]], '#20232a', .014);
+    k.rect(.63, .4, .06, .05, '#ffd24a');
+    k.rect(.16, .36, .1, .05, '#20232a');     // crane cab
+    k.rect(.17, .37, .08, .03, '#cfe6f5');
   },
 };

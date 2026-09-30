@@ -21,8 +21,9 @@ const lines = baseline.cases.map((c) => {
   const defender = { id: 9002, type: c.d, owner: 1, x, y, hp: c.dhp, done: false, capture: 0 };
   game.state.units = [attacker, defender];
   const layer = registry.unit(c.d).layer;
-  const weapon = weaponsOf(game, attacker).find((w) => w.targets.some((m) => registry.rules.targetModes[m].layer === layer));
-  const dmg = canTarget(game, attacker, defender) && weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
+  // range is ignored here: of the weapons that can hit the layer, the strongest counts (as the game picks the best weapon)
+  const dmgs = weaponsOf(game, attacker).filter((w) => w.targets.some((m) => registry.rules.targetModes[m].layer === layer)).map((w) => weaponDamage(game, w, attacker, defender));
+  const dmg = canTarget(game, attacker, defender) && dmgs.length ? Math.max(...dmgs) : 0;
   if (dmg !== c.dmg) changed++;
   return JSON.stringify({ a: c.a, d: c.d, t: c.t, ahp: c.ahp, dhp: c.dhp, dmg });
 });

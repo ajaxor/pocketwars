@@ -1,0 +1,178 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "reef_raiders",
+  "name": "Reef Raiders",
+  "description": "Small and mean: two island bases, a shallow reef and a deep trench. Every shipyard opens on the trench, so the sea decides it.",
+  "players": [
+    {
+      "faction": "orange_star",
+      "controller": "human",
+      "funds": 12000
+    },
+    {
+      "faction": "blue_moon",
+      "controller": "ai",
+      "funds": 12000
+    }
+  ],
+  "legend": {
+    ".": {
+      "terrain": "plain"
+    },
+    "F": {
+      "terrain": "forest"
+    },
+    "M": {
+      "terrain": "mountain"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "r": {
+      "terrain": "road"
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "s": {
+      "terrain": "shallows"
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "f": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "g": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "MM.FFrrrrrrrrFF.MM",
+    "M.cO.frr..rrg.Bc.M",
+    "..rrrr..ss..rrrr..",
+    "F.r.c.ssssss.c.r.F",
+    "..r.Y~~~~~~~~Z.r..",
+    "..rc.s~ssss~s.cr..",
+    "F.r..s~ssss~s..r.F",
+    "..r.Y~~~~~~~~Z.r..",
+    "..rr.ssssssss.rr..",
+    "M..F.ssssssss.F..M",
+    "MM.FF.ssssss.FF.MM",
+    "MMM.F.ssssss.F.MMM"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 2
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 2,
+      "y": 2
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 3,
+      "y": 3
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "destroyer",
+      "owner": 0,
+      "x": 5,
+      "y": 4
+    },
+    {
+      "type": "submarine",
+      "owner": 0,
+      "x": 6,
+      "y": 7
+    },
+    {
+      "type": "cruiser",
+      "owner": 0,
+      "x": 5,
+      "y": 7
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 14,
+      "y": 2
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 15,
+      "y": 3
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 15,
+      "y": 2
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 14,
+      "y": 3
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 15,
+      "y": 4
+    },
+    {
+      "type": "destroyer",
+      "owner": 1,
+      "x": 12,
+      "y": 4
+    },
+    {
+      "type": "submarine",
+      "owner": 1,
+      "x": 11,
+      "y": 7
+    },
+    {
+      "type": "cruiser",
+      "owner": 1,
+      "x": 12,
+      "y": 7
+    }
+  ]
+}

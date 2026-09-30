@@ -1,0 +1,165 @@
+// Naval play on the shipped data: hidden submarines, sonar, interrupted moves, best-weapon choice, diving rules.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { readData } from '../helpers/node-io.js';
+import { loadRegistry } from '../../src/data/loader.js';
+import { parseMap } from '../../src/data/map-format.js';
+import { Game } from '../../src/engine/game.js';
+import { rawMap } from '../helpers/fixtures.js';
+import { canSee, hiddenFrom } from '../../src/engine/detection.js';
+import { computeReach, targetsFrom } from '../../src/engine/movement.js';
+import { calcDamage, weaponFor } from '../../src/engine/combat.js';
+import { chooseOrder } from '../../src/engine/ai.js';
+import { unitAt } from '../../src/engine/queries.js';
+
+const registry = await loadRegistry(readData);
+const legend = {
+  '~': { terrain: 'sea' }, s: { terrain: 'shallows' }, '.': { terrain: 'plain' },
+  H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 },
+};
+const players = [{ faction: 'orange_star', controller: 'human', funds: 10000 }, { faction: 'blue_moon', controller: 'human', funds: 10000 }];
+function sea(rows, unitsOnMap) {
+  return new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend: legend }), registry));
+}
+const at = (g, x, y) => unitAt(g, x, y);
+
+test('a submarine can only dive on deep water, and diving hides it', () => {
+  const g = sea(['H.~~~~~h', '........'], [['submarine', 0, 3, 0], ['recon', 1, 7, 1]]);
+  const sub = g.state.units[0];
+  assert.equal(g.act({ unitId: sub.id, to: { x: 3, y: 0 }, action: { type: 'submerge' } }).ok, true);
+  assert.equal(sub.submerged, true);
+  assert.equal(canSee(g, 1, sub), false, 'the enemy cannot see it');
+  assert.equal(canSee(g, 0, sub), true, 'its owner can');
+  assert.deepEqual(hiddenFrom(g, 1), [sub.id]);
+});
+
+test('shallows: deep-sea ships stay out, destroyers go in, and a sub cannot dive there', () => {
+  const g = sea(['~~ss~~~h', '........'], [['destroyer', 0, 1, 0], ['submarine', 0, 0, 0]]);
+  const reach = (u) => computeReach(g, u);
+  assert.ok(reach(g.state.units[0]).has(2, 0), 'destroyer enters shallows');
+  assert.ok(!reach(g.state.units[1]).has(2, 0), 'submarine does not');
+  const bad = g.act({ unitId: g.state.units[0].id, to: { x: 2, y: 0 }, action: { type: 'submerge' } });
+  assert.equal(bad.error, 'cannot-submerge', 'a destroyer has no dive');
+});
+
+test('a submerged unit is noticed when adjacent, and by sonar within its range', () => {
+  const g = sea(['~~~~~~~~~', '.........'], [['submarine', 1, 4, 0], ['destroyer', 0, 0, 0], ['recon', 0, 4, 1]]);
+  const sub = g.state.units[0];
+  sub.submerged = true;
+  assert.equal(canSee(g, 0, sub), true, 'the recon is next to it');
+  g.state.units[2].y = 1; g.state.units[2].x = 8;
+  assert.equal(canSee(g, 0, sub), false, 'destroyer at 4 tiles: out of sonar range');
+  g.state.units[1].x = 1;
+  assert.equal(canSee(g, 0, sub), true, 'destroyer sonar 3 reaches it');
+});
+
+test('hidden units cannot be targeted, and reach planning ignores them', () => {
+  const g = sea(['~~~~~~~~', '........'], [['cruiser', 0, 0, 0], ['submarine', 1, 3, 0]]);
+  const cruiser = g.state.units[0];
+  g.state.units[1].submerged = true;
+  assert.deepEqual(targetsFrom(g, cruiser, 0, 0).map((u) => u.id), []);
+  assert.ok(computeReach(g, cruiser).has(3, 0), 'the planner is not told about the sub: its tile still looks reachable');
+  const direct = g.act({ unitId: cruiser.id, to: { x: 0, y: 0 }, action: { type: 'attack', targetId: g.state.units[1].id } });
+  assert.equal(direct.ok, false);
+});
+
+test('a move into a hidden unit is interrupted, reveals it, and allows an attack', () => {
+  const g = sea(['~~~~~~~~', '........'], [['cruiser', 0, 0, 0], ['submarine', 1, 4, 0]]);
+  const cruiser = g.state.units[0];
+  const sub = g.state.units[1];
+  sub.submerged = true;
+  g.endTurn(); g.endTurn();   // a fresh turn for player 0
+  const res = g.act({ unitId: cruiser.id, to: { x: 5, y: 0 }, action: { type: 'wait' } });
+  assert.equal(res.ok, true);
+  assert.ok(res.interrupted, 'flagged as interrupted');
+  assert.deepEqual([cruiser.x, cruiser.y], [3, 0], 'stopped one tile short');
+  assert.equal(cruiser.done, false, 'the unit still has its action');
+  assert.deepEqual(res.events.map((e) => e.type), ['move', 'interrupt']);
+  assert.equal(g.canUndo, false, 'no taking it back once something was found');
+  assert.equal(canSee(g, 0, sub), true, 'adjacent now');
+  const reach = computeReach(g, cruiser);
+  assert.deepEqual([...reach.tiles()].map((t) => [t.x, t.y]), [[3, 0]], 'it cannot move again');
+  assert.equal(g.act({ unitId: cruiser.id, to: { x: 3, y: 0 }, action: { type: 'attack', targetId: sub.id } }).ok, false, 'a cruiser has nothing that hits a submerged sub');
+  assert.equal(g.act({ unitId: cruiser.id, to: { x: 3, y: 0 }, action: { type: 'wait' } }).ok, true);
+  assert.equal(cruiser.done, true);
+});
+
+test('an interrupted unit that could fire can do so, and the sub answers', () => {
+  const g = sea(['~~~~~~~~', '........'], [['destroyer', 0, 0, 0], ['submarine', 1, 4, 0]]);
+  const d = g.state.units[0], sub = g.state.units[1];
+  sub.submerged = true;
+  const res = g.act({ unitId: d.id, to: { x: 5, y: 0 }, action: { type: 'wait' } });
+  assert.ok(res.interrupted);
+  const hit = g.act({ unitId: d.id, to: { x: d.x, y: d.y }, action: { type: 'attack', targetId: sub.id } });
+  assert.equal(hit.ok, true);
+  const strike = hit.events.find((e) => e.type === 'strike' && !e.counter);
+  assert.equal(strike.weapon, 'depth_charges');
+  assert.ok(sub.hp < 10);
+  assert.ok(hit.events.some((e) => e.type === 'strike' && e.counter), 'the torpedoes answer');
+});
+
+test('an interrupted battleship cannot fire after the tile it did move, but waiting is fine', () => {
+  const g = sea(['~~~~~~~~', '~~~~~~~~'], [['battleship', 0, 0, 0], ['submarine', 1, 3, 0], ['cruiser', 1, 4, 1]]);
+  g.state.units[1].submerged = true;
+  const res = g.act({ unitId: g.state.units[0].id, to: { x: 4, y: 0 }, action: { type: 'wait' } });
+  assert.ok(res.interrupted);
+  assert.equal(g.state.units[0].x, 2);
+  const shot = g.act({ unitId: g.state.units[0].id, to: { x: 2, y: 0 }, action: { type: 'attack', targetId: g.state.units[2].id } });
+  assert.equal(shot.error, 'cannot-move-and-fire');
+  assert.equal(g.act({ unitId: g.state.units[0].id, to: { x: 2, y: 0 }, action: { type: 'wait' } }).ok, true);
+});
+
+test('a ship the planner sends over a hidden unit never passes through it', () => {
+  const g = sea(['~~~~~~~~', '........'], [['cruiser', 0, 0, 0], ['submarine', 1, 3, 0]]);
+  g.state.units[1].submerged = true;
+  const res = g.act({ unitId: g.state.units[0].id, to: { x: 5, y: 0 }, action: { type: 'wait' } });
+  assert.ok(res.interrupted);
+  assert.equal(at(g, 3, 0).type, 'submarine');
+  assert.equal(g.state.units[0].x, 2);
+});
+
+test('a submerged submarine stays down while it moves through deep water, and can surface by order', () => {
+  const g = sea(['~~~ss~~~', '........'], [['submarine', 0, 2, 0], ['recon', 1, 7, 1]]);
+  const sub = g.state.units[0];
+  sub.submerged = true;
+  assert.equal(g.act({ unitId: sub.id, to: { x: 1, y: 0 }, action: { type: 'wait' } }).ok, true);
+  assert.equal(sub.submerged, true, 'still deep: stays down');
+  g.endTurn(); g.endTurn();
+  const up = g.act({ unitId: sub.id, to: { x: 1, y: 0 }, action: { type: 'surface' } });
+  assert.deepEqual(up.events.map((e) => e.type), ['surface']);
+  assert.equal(sub.submerged, false);
+  assert.equal(g.act({ unitId: sub.id, to: { x: 1, y: 0 }, action: { type: 'surface' } }).error, 'unit-already-acted');
+});
+
+test('the best weapon is chosen automatically: depth charges on a sub, deck gun on a ship', () => {
+  const g = sea(['~~~~~~', '~~~~~~'], [['destroyer', 0, 0, 0], ['submarine', 1, 1, 0], ['cruiser', 1, 0, 1]]);
+  const d = g.state.units[0];
+  g.state.units[1].submerged = true;
+  assert.equal(weaponFor(g, d, g.state.units[1]).name, registry.weapon('depth_charges').name, 'only the charges reach a dived sub');
+  const onShip = weaponFor(g, d, g.state.units[2]);
+  assert.equal(onShip.name, registry.weapon('deck_gun').name, 'the gun does more to a surface ship than charges do');
+  assert.ok(calcDamage(g, d, g.state.units[1]) > 0);
+  g.state.units[1].submerged = false;
+  assert.equal(weaponFor(g, g.state.units[1], d).name, registry.weapon('torpedoes').name);
+});
+
+test('a cruiser shoots flak at aircraft and cannon at ships: it picks whichever hurts more', () => {
+  const g = sea(['~~~~', '....'], [['cruiser', 0, 0, 0], ['copter', 1, 1, 0]]);
+  assert.equal(weaponFor(g, g.state.units[0], g.state.units[1]).name, registry.weapon('aa_battery').name);
+});
+
+test('sonar is a destroyer trait: the AI does not chase what it cannot see', () => {
+  const g = sea(['~~~~~~~~', '........'], [['destroyer', 0, 0, 0], ['submarine', 1, 7, 0]]);
+  g.state.units[1].submerged = true;
+  const order = chooseOrder(g, g.state.units[0]);
+  assert.ok(order.to, 'still gives an order');
+  assert.notEqual(order.action.type, 'attack');
+});
+
+test('the AI dives a submarine when it has nothing better to do', () => {
+  const g = sea(['~~~~~~~~', '........'], [['submarine', 1, 7, 0], ['recon', 0, 0, 1]]);
+  g.state.turn = 1;
+  const order = chooseOrder(g, g.state.units[0]);
+  assert.ok(['submerge', 'wait'].includes(order.action.type));
+});
+

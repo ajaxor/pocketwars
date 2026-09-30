@@ -12,7 +12,7 @@ import { Game } from '../../src/engine/game.js';
 import { canTarget } from '../../src/engine/combat.js';
 
 const registry = await loadRegistry(readData);
-const ATTACK_FX = ['lunge', 'shot', 'arc', 'drop'];
+const ATTACK_FX = ['lunge', 'shot', 'arc', 'drop', 'torpedo', 'depth'];
 
 test('shipped data passes validation', async () => {
   const raw = {};
@@ -39,13 +39,16 @@ test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
   assert.deepEqual(withAttr('capture'), ['mech', 'soldier']);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['soldier']);
-  assert.deepEqual(withAttr('indirect'), ['artillery', 'sniper']);
+  assert.deepEqual(withAttr('indirect'), ['artillery', 'battleship', 'sniper']);
+  assert.deepEqual(withAttr('submerge'), ['submarine']);
+  assert.deepEqual(withAttr('sonar'), ['destroyer']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter']);
 });
 
 test('terrain attributes: properties, income and the HQ victory condition', () => {
   const props = Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'property')).sort();
-  assert.deepEqual(props, ['airfield', 'barracks', 'city', 'factory', 'hq']);
+  assert.deepEqual(props, ['airfield', 'barracks', 'city', 'factory', 'hq', 'shipyard']);
+  assert.deepEqual(Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'submergible')), ['sea']);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'victoryOnCapture')), ['hq']);
   for (const id of props) assert.equal(registry.terrainDef(id).attributes.property.capturePoints, 20);
 });
@@ -95,7 +98,8 @@ test('obstacles: forests, mountains and buildings block direct fire; only mounta
   assert.equal(height('forest'), 1);
   assert.equal(height('mountain'), 2);
   for (const id of ['city', 'hq', 'factory', 'barracks', 'airfield']) assert.equal(height(id), 2, id);
-  for (const id of ['plain', 'road', 'sea']) assert.equal(height(id), undefined, id);
+  assert.equal(height('shipyard'), 1, 'cranes and slips block less than a hall');
+  for (const id of ['plain', 'road', 'sea', 'shallows']) assert.equal(height(id), undefined, id);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => registry.terrainDef(id).attributes.vantage), ['mountain']);
   assert.ok(registry.terrainDef('mountain').attributes.vantage > height('forest'), 'a mountain sees over forests');
   assert.ok(!(registry.terrainDef('mountain').attributes.vantage > height('mountain')), 'but not over other mountains');

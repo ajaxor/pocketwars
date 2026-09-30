@@ -6,16 +6,20 @@
 //        damage = weapon.damage x (attackerHP/10) x (1 - armor x (1 - armorPiercing)) / toughness x (1 - stars x defenderHP/100) / 10
 //   - ignoresTerrainDefense on the DEFENDER removes the terrain-star reduction
 //   - terrainDefenseMultiplier on the DEFENDER scales the terrain stars it gets
-//   - indirect on either side disables counterattacks
+//   - indirect on either side disables counterattacks, and so does not being able to see the attacker (hidden, see detection.js)
+//   - a unit may carry several weapons: of those that can legally fire at the defender from where the attacker stands, the one
+//     that would do the most damage is used (weaponFor), for the order, the forecast and the counterattack alike
 // Every function returns plain data / event objects; nothing here knows about drawing.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { hasLineOfSight } from './sight.js';
-import { distance, removeUnit, round1, snapshotUnit, terrainAt, unitDef } from './queries.js';
+import { canSee } from './detection.js';
+import { distance, layerIdOf, removeUnit, round1, snapshotUnit, terrainAt, unitDef } from './queries.js';
 
 export const weaponsOf = (game, unit) => unitDef(game, unit).weapons.map((id) => game.registry.weapon(id));
 const modesOf = (game, weapon) => weapon.targets.map((m) => game.registry.rules.targetModes[m]);
-const layerOf = (game, unit) => unitDef(game, unit).layer;
+// the layer a unit is on right now: a submerged submarine is on another layer than a surfaced one
+const layerOf = (game, unit) => layerIdOf(game, unit);
 
 /** Could `attacker` ever damage `defender`? (Some weapon has a target mode for the defender's layer; position is ignored.) */
 export function canTarget(game, attacker, defender) {
@@ -24,15 +28,22 @@ export function canTarget(game, attacker, defender) {
 }
 
 /**
- * The weapon `attacker` would fire at `defender` if it stood on tile `from` (default: where it is): the first of its weapons
- * whose range and target mode fit, with a clear line of sight when the mode needs one. null when none can.
+ * The weapon `attacker` would fire at `defender` if it stood on tile `from` (default: where it is). Of its weapons, those whose
+ * range and target mode fit are candidates (a direct mode also needs a clear line of sight); the one that would do the most damage
+ * to this defender, where it stands, wins. A tie goes to the weapon listed first. null when no weapon can fire.
  */
 export function weaponFor(game, attacker, defender, from = attacker) {
   const d = distance(from.x, from.y, defender.x, defender.y);
   const layer = layerOf(game, defender);
-  return weaponsOf(game, attacker).find((w) => d >= w.range[0] && d <= w.range[1] && modesOf(game, w).some(
-    (m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)),
-  )) ?? null;
+  let best = null;
+  let bestDamage = -1;
+  for (const w of weaponsOf(game, attacker)) {
+    if (d < w.range[0] || d > w.range[1]) continue;
+    if (!modesOf(game, w).some((m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)))) continue;
+    const damage = rawDamage(game, w, attacker, defender);
+    if (damage > bestDamage) { best = w; bestDamage = damage; }
+  }
+  return best;
 }
 
 /** Can `attacker`, standing on (x, y), hit `defender` right now? */
@@ -65,26 +76,33 @@ export function calcDamage(game, attacker, defender, from = attacker) {
   return weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
 }
 
-/** The damage formula alone (weapon.damage is scaled by weapon.targetMultipliers for the defender's target mode): HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands. */
-export function weaponDamage(game, weapon, attacker, defender) {
+/** The damage formula before rounding. weapon.damage is scaled by weapon.targetMultipliers for the target mode that reaches the defender's layer. */
+function rawDamage(game, weapon, attacker, defender) {
   const d = unitDef(game, defender);
   const stars = terrainStars(game, defender);
   const toughness = (1 - d.armor * (1 - weapon.armorPiercing)) / d.toughness;
   // the weapon's multiplier for the target mode that reaches the defender's layer (1 when it lists none)
-  const mode = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === d.layer);
+  const layer = layerOf(game, defender);
+  const mode = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === layer);
   const vs = weapon.targetMultipliers?.[mode] ?? 1;
-  const v = (weapon.damage * vs * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
+  return (weapon.damage * vs * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
+}
+
+/** The damage formula alone: HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands (whole HP, or one decimal below 1). */
+export function weaponDamage(game, weapon, attacker, defender) {
+  const v = rawDamage(game, weapon, attacker, defender);
   return v < 1 ? round1(v) : Math.round(v);
 }
 
-const strike = (attacker, defender, damage, { counter, destroyed }) => ({
-  type: 'strike', attacker: snapshotUnit(attacker), defender: snapshotUnit(defender), damage, counter, destroyed,
+const strike = (attacker, defender, damage, { counter, destroyed, weapon }) => ({
+  type: 'strike', attacker: snapshotUnit(attacker), defender: snapshotUnit(defender), damage, counter, destroyed, weapon: weapon ? weapon.id : null,
 });
 
-/** Does `defender` hit back at `attacker` after surviving? */
+/** Does `defender` hit back at `attacker` after surviving? (Not when either is indirect, or when it cannot see what hit it.) */
 export function canCounter(game, defender, attacker) {
   return !hasAttribute(unitDef(game, attacker), 'indirect')
     && !hasAttribute(unitDef(game, defender), 'indirect')
+    && canSee(game, defender.owner, attacker)
     && canAttackFrom(game, defender, attacker, defender.x, defender.y);
 }
 
@@ -94,20 +112,22 @@ export function canCounter(game, defender, attacker) {
  */
 export function resolveAttack(game, attacker, defender) {
   const events = [];
-  const dealt = calcDamage(game, attacker, defender);
+  const weapon = weaponFor(game, attacker, defender);
+  const dealt = weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
   defender.hp = round1(defender.hp - dealt);
   if (defender.hp <= 0) {
     removeUnit(game, defender);
-    events.push(strike(attacker, defender, dealt, { counter: false, destroyed: true }));
+    events.push(strike(attacker, defender, dealt, { counter: false, destroyed: true, weapon }));
     return events;
   }
-  events.push(strike(attacker, defender, dealt, { counter: false, destroyed: false }));
+  events.push(strike(attacker, defender, dealt, { counter: false, destroyed: false, weapon }));
   if (canCounter(game, defender, attacker)) {
-    const back = calcDamage(game, defender, attacker);
+    const reply = weaponFor(game, defender, attacker);
+    const back = reply ? weaponDamage(game, reply, defender, attacker) : 0;
     attacker.hp = round1(attacker.hp - back);
     const destroyed = attacker.hp <= 0;
     if (destroyed) removeUnit(game, attacker);
-    events.push(strike(defender, attacker, back, { counter: true, destroyed }));
+    events.push(strike(defender, attacker, back, { counter: true, destroyed, weapon: reply }));
   }
   return events;
 }

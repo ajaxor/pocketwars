@@ -23,7 +23,8 @@ export class Effects {
   /** Queue an attack (or counterattack). Returns the time the next strike in a sequence should start. */
   strike(ev, t0) {
     const { attacker: a, defender: d, damage, destroyed } = ev;
-    const fx = this.registry.unit(a.type).render.attackFx;
+    // a weapon can name its own effect (depth charges, torpedoes); otherwise the unit's attack look is used
+    const fx = (ev.weapon && this.registry.weapon(ev.weapon).fx) || this.registry.unit(a.type).render.attackFx;
     const [x0, y0] = tileCentre(a);
     const [x1, y1] = tileCentre(d);
     let hit;
@@ -33,6 +34,15 @@ export class Effects {
     } else if (fx === 'drop') {
       // bombs fall straight down onto the target from above
       this.list.push({ k: 'bomb', x: x1, y: y1, t0, d: 520 });
+      hit = t0 + 520;
+    } else if (fx === 'torpedo') {
+      // a wake racing just under the surface to the target
+      const dur = 620;
+      this.list.push({ k: 'torpedo', x0, y0, x1, y1, t0, d: dur });
+      hit = t0 + dur;
+    } else if (fx === 'depth') {
+      // the charge drops onto the target and goes off below it: a ring of water instead of a flash
+      this.list.push({ k: 'depth', x: x1, y: y1, t0, d: 700 });
       hit = t0 + 520;
     } else {
       const arc = fx === 'arc';
@@ -59,6 +69,21 @@ export class Effects {
     );
     if (ev.completed) this.list.push({ k: 'burst', x: cx, y: cy, t0: t0 + 1000, d: 700, big: true, c: color });
     this.lockUntil = Math.max(this.lockUntil, t0 + (ev.completed ? 1700 : 1400));
+  }
+
+  /** A move cut short by something hidden: a red ring where the unit stopped and a call-out over what it ran into. */
+  interrupt(ev, t0) {
+    this.list.push(
+      { k: 'ping', x: ev.blocker.x + .5, y: ev.blocker.y + .5, t0, d: 900 },
+      { k: 'txt', x: ev.blocker.x + .5, y: ev.blocker.y + .5, s: 'Contact!', sz: .34, c: '#ffd166', t0: t0 + 150, d: 1100 },
+    );
+    this.lockUntil = Math.max(this.lockUntil, t0 + 900);
+  }
+
+  /** A unit diving or coming up: ripples on the water. `down` is true for a dive. */
+  dive(ev, t0, down) {
+    this.list.push({ k: 'ripple', x: ev.unit.x + .5, y: ev.unit.y + .5, down, t0, d: 800 });
+    this.lockUntil = Math.max(this.lockUntil, t0 + 500);
   }
 
   /** Income floating up from each property as a turn begins (ev = a turnStart event). Does not lock input. */
@@ -93,6 +118,32 @@ export class Effects {
         if (p < .3) { g.fillStyle = 'rgba(255,240,170,' + (1 - p / .3) + ')'; g.beginPath(); g.arc(f.x0 * S, f.y0 * S, S * .18 * (1 - p / .3), 0, 7); g.fill(); }
         g.fillStyle = '#ffe45c'; g.beginPath(); g.arc(x, y, S * .09, 0, 7); g.fill();
         g.fillStyle = f.color; g.beginPath(); g.arc(x, y, S * .05, 0, 7); g.fill();
+      } else if (f.k === 'torpedo') {
+        const x = (f.x0 + (f.x1 - f.x0) * p) * S, y = (f.y0 + (f.y1 - f.y0) * p) * S;
+        const a = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
+        g.save(); g.translate(x, y); g.rotate(a); g.lineCap = 'round';
+        g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineWidth = S * .07; g.beginPath(); g.moveTo(0, 0); g.lineTo(-S * .55, 0); g.stroke();
+        g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = S * .16; g.beginPath(); g.moveTo(-S * .1, 0); g.lineTo(-S * .8, 0); g.stroke();
+        g.fillStyle = '#c9ced6'; g.beginPath(); g.ellipse(0, 0, S * .13, S * .05, 0, 0, 7); g.fill(); g.restore();
+      } else if (f.k === 'depth') {
+        const drop = Math.min(1, p / .7);
+        if (p < .7) { g.fillStyle = '#2b2f36'; g.beginPath(); g.arc(f.x * S, f.y * S - (1 - drop * drop) * S * .7, S * .09, 0, 7); g.fill(); }
+        else {
+          const q = (p - .7) / .3;
+          g.save(); g.globalAlpha = 1 - q; g.strokeStyle = '#e8f6ff'; g.lineWidth = S * .06;
+          g.beginPath(); g.arc(f.x * S, f.y * S, S * (.15 + .4 * q), 0, 7); g.stroke();
+          g.fillStyle = '#e8f6ff'; g.beginPath(); g.ellipse(f.x * S, f.y * S - S * .3 * q, S * .1, S * .35 * (1 - q * .5), 0, 0, 7); g.fill(); g.restore();
+        }
+      } else if (f.k === 'ping') {
+        g.save(); g.globalAlpha = 1 - p; g.strokeStyle = '#ff5a4d'; g.lineWidth = 3;
+        for (let i = 0; i < 2; i++) { const q = Math.min(1, p * 1.4 - i * .25); if (q > 0) { g.beginPath(); g.arc(f.x * S, f.y * S, S * (.15 + .55 * q), 0, 7); g.stroke(); } }
+        g.restore();
+      } else if (f.k === 'ripple') {
+        g.save(); g.globalAlpha = (1 - p) * .9; g.strokeStyle = '#e8f6ff'; g.lineWidth = S * .05;
+        const r = f.down ? S * (.55 - .4 * p) : S * (.15 + .45 * p);
+        g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, r, r * .45, 0, 0, 7); g.stroke();
+        g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, r * .6, r * .27, 0, 0, 7); g.stroke();
+        g.restore();
       } else if (f.k === 'bomb') {
         // a growing shadow on the ground and a bomb accelerating down onto it
         const by = f.y * S - (1 - p * p) * S * 1.1;

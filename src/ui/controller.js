@@ -9,14 +9,19 @@
 //   act   the unit sits at its previewed tile; pick Wait / Capture / an enemy (tap twice to attack)
 //   build the build menu is open
 //
+// An order can come back INTERRUPTED (the path ran into a hidden unit, see engine/game.js): the unit has already moved, so the
+// controller plays the partial move and goes straight to the act menu for it ('resume'); the player then attacks or waits.
+//
 // Moves are only PREVIEWED (kept in `dest`): game state is untouched until an order is committed with
 // game.act(), so cancelling is free and the engine never sees half-finished moves.
 
 import { canCapture } from '../engine/capture.js';
 import { canTarget } from '../engine/combat.js';
+import { canSee } from '../engine/detection.js';
 import { buildOptions } from '../engine/economy.js';
-import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, targetsFrom } from '../engine/movement.js';
-import { ownerAt } from '../engine/queries.js';
+import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, hasMovedAlready, targetsFrom } from '../engine/movement.js';
+import { ownerAt, unitById } from '../engine/queries.js';
+import { canSubmergeAt, canSurface } from '../engine/submerge.js';
 import { buildMenuModel, defaultChoice } from './build-menu.js';
 import { terrainInfo, unitInfo } from './info.js';
 import { describeEvents } from './messages.js';
@@ -66,7 +71,11 @@ export class Controller {
 
   // The selected unit is drawn at `dest` while previewing, so hit-testing uses that position too.
   #posOf(u) { return this.sel && u.id === this.sel.id && this.dest ? this.dest : u; }
-  #unitAt(x, y) { return this.game.state.units.find((u) => { const p = this.#posOf(u); return p.x === x && p.y === y; }); }
+  // Units the player cannot see are not there as far as taps are concerned: a tap must never confirm a hidden submarine.
+  #unitAt(x, y) {
+    const { game } = this;
+    return game.state.units.find((u) => { const p = this.#posOf(u); return p.x === x && p.y === y && canSee(game, game.currentPlayer, u); });
+  }
   #selPos() { return this.dest || { x: this.sel.x, y: this.sel.y }; }
   #msg(text) { this.hud.message(text); }
 
@@ -186,6 +195,7 @@ export class Controller {
     this.mode = 'move';
     this.hud.message(null);
     this.#showSelected();
+    if (u.halted) { this.#actMenu(); return; }   // it already used its move (an interrupted one): only an action is left
     this.#selectOrders();
   }
 
@@ -222,7 +232,7 @@ export class Controller {
   #actMenu() {
     const { game, sel } = this;
     const pos = this.#selPos();
-    const blocked = !!this.dest && !canFireAfterMoving(game, sel); // indirect fire cannot follow a move
+    const blocked = (!!this.dest || hasMovedAlready(sel)) && !canFireAfterMoving(game, sel); // indirect fire cannot follow a move
     this.mode = 'act';
     this.attack = blocked ? null : attackTiles(game, sel, pos.x, pos.y);
     this.targets = blocked ? [] : targetsFrom(game, sel, pos.x, pos.y);
@@ -239,6 +249,8 @@ export class Controller {
     const items = [];
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
     if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
+    if (canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
+    if (canSurface(sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
     items.push({ label: 'Wait', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
     items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
@@ -255,11 +267,38 @@ export class Controller {
     const { game, sel } = this;
     const res = game.act({ unitId: sel.id, to: this.#selPos(), action });
     if (!res.ok) { this.cancelAll(); this.#msg(`That order is not allowed (${res.error}).`); return; }
+    if (res.interrupted) { this.#interrupted(res); return; }
     this.presenter.present(res.events, { now: performance.now(), animateMoves: false }); // move was already previewed
     const text = describeEvents(game, res.events);
     this.cancelAll();
     if (text) this.#msg(text);
     this.onEvents(res.events);
+  }
+
+  /** The move hit something hidden: slide the unit as far as it got, then let the player give it an order from there. */
+  #interrupted(res) {
+    const { game, hud } = this;
+    const unit = unitById(game, res.interrupted.unitId);
+    const text = describeEvents(game, res.events);
+    this.animator.arrow = null;
+    this.reset();
+    hud.clear();
+    this.mode = 'anim';
+    this.presenter.present(res.events, {
+      now: performance.now(), animateMoves: true,
+      onMoveDone: () => this.#resume(unit, text),
+    });
+    if (!res.events.some((e) => e.type === 'move')) this.#resume(unit, text);   // it could not even leave its tile
+    else if (text) this.#msg(text);
+    this.onEvents(res.events);
+  }
+
+  #resume(unit, text) {
+    if (this.mode !== 'anim') return;
+    if (!this.game.state.units.includes(unit) || unit.done) { this.mode = 'idle'; return; }
+    this.animator.arrow = null;
+    this.#select(unit);
+    if (text) this.#msg(text);
   }
 
   #buildMenu(x, y) {

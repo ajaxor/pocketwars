@@ -31,9 +31,10 @@ damage (HP) = weapon.damage x targetMultiplier x (attackerHP / 10) x (1 - armor 
 Terrain stars: terrain `defense`, times the unit's `terrainDefenseMultiplier` if it has one, or 0 with `ignoresTerrainDefense`.
 Results under 1 HP keep one decimal; otherwise they round to whole HP.
 
-A unit can carry several weapons. When it attacks, the **first weapon in its list** whose target mode, range and line of
-sight fit the defender from the tile it stands on is the one fired (and the one used for the damage preview and for the
-counterattack check).
+A unit can carry several weapons. When it attacks, every weapon whose target mode, range and line of sight fit the defender from
+the tile it stands on is a candidate, and the one that would do the **most damage** to that defender wins (ties go to the weapon
+listed first). That weapon is fired, named in the damage preview, and used for the counterattack. A weapon can also set `fx`
+(`torpedo`, `depth`, ...) to override the unit's `attackFx` animation.
 
 ## Target modes
 
@@ -45,7 +46,7 @@ A weapon lists the modes it can fire at.
 | `direct_ground` | ground units | needed |
 | `indirect_ground` | ground units | not needed (artillery, bombs) |
 | `low_air`, `high_air` | air units on that layer | not needed |
-| `surface`, `underwater` | ships / submarines (reserved, no such units yet) | not needed |
+| `surface`, `underwater` | ships / submerged submarines | not needed |
 | `structure` | structures (reserved, see below) | not needed |
 
 Adding a mode is a data change: a new entry in `targetModes`, pointing at a layer in `rules.layers`.
@@ -73,3 +74,15 @@ are reserved for when structures become their own entities that can be damaged, 
 
 `tests/data/damage-baseline.json` pins the damage of ~240 matchups. After a deliberate change to `units.json` or
 `weapons.json`, run `node tools/regen-damage-baseline.mjs` and review the diff.
+
+## Hidden units and detection
+
+The `underwater` layer is marked `hidden` in `rules.json`. A unit with the `submerge` attribute is on that layer while
+`unit.submerged` is true. A hidden enemy is visible to a player only when one of that player's units is adjacent, or within
+`sonar` tiles (destroyers: 3): see `src/engine/detection.js`. There is no memory, so a sub that is no longer noticed is hidden again.
+
+What "invisible" means: not drawn, tapping the tile shows nothing, it cannot be targeted and the AI ignores it, and it does not
+block a move that was *planned* by a player who cannot see it. Previewing never reveals anything (the engine is not involved);
+only carrying the order out does. If the path runs into a hidden unit, `Game.act` stops the mover on the last free tile, emits
+an `interrupt` event, marks `unit.halted`, and returns `interrupted` without carrying out the action; the caller then issues a
+second order from where the unit stands. A halted unit cannot move again this turn.

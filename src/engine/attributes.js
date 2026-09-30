@@ -38,6 +38,21 @@ export const UNIT_ATTRIBUTES = {
     doc: 'Multiplies the terrain defense this unit gets (e.g. 2 doubles it). Does nothing on 0-defense terrain, and is moot with ignoresTerrainDefense.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 1) fail('must be a number greater than 1'); },
   },
+  submerge: {
+    label: 'Submerges',
+    help: 'Can dive in deep water. A submerged unit is hidden from enemies unless one of them is next to it (or has sonar in range), and only weapons that can reach submerged targets can hit it.',
+    doc: 'Can dive as an order (after moving), and surface again. Config: { layer } names the layer the unit is on while submerged (rules.json -> layers). If that layer is `hidden`, the unit is invisible to other players unless one of their units is adjacent or within `sonar` range. Diving needs a tile with the terrain attribute `submergible`; ending a move on any other tile brings the unit back up.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "layer": "underwater" }');
+      if (typeof v.layer !== 'string' || !v.layer) fail('layer must name a layer from rules.json');
+    },
+  },
+  sonar: {
+    label: (v) => `Sonar ${v}`,
+    help: (v) => `Spots submerged enemies up to ${v} tiles away.`,
+    doc: 'Detects hidden (submerged) enemy units within this many tiles. Every unit already notices hidden units on an adjacent tile; sonar extends that. The number is the range in tiles.',
+    check: (v, e, fail) => { if (!Number.isInteger(v) || v < 2) fail('must be a whole number of tiles, at least 2 (adjacent units are always noticed)'); },
+  },
 };
 
 /** Attributes that may appear in terrain.json -> attributes. */
@@ -65,6 +80,12 @@ export const TERRAIN_ATTRIBUTES = {
     help: 'High ground: a direct-fire unit standing here can shoot over obstacles lower than this.',
     doc: 'A high position: a direct-fire unit standing here is not blocked by obstacles (blocksLineOfSight) lower than this number.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
+  },
+  submergible: {
+    label: 'Deep water',
+    help: 'Deep enough for submarines to dive.',
+    doc: 'A unit with the `submerge` attribute can only dive on tiles with this attribute (deep water). It is brought back up when its move ends anywhere else.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   victoryOnCapture: {
     label: 'Capture to win',

@@ -4,14 +4,19 @@
 //   planBuild(game, x, y)    -> unit type id to build on that property, or null
 //   buildPhase(game)         -> builds everything the profile wants; returns the events
 //   playTurn(game)           -> whole turn synchronously (used by tests and headless simulation)
+//
+// The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
+// hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
 import { calcDamage, canAttackFrom } from './combat.js';
+import { canSee } from './detection.js';
 import { buildProblem } from './economy.js';
-import { computeReach, distanceField, canFireAfterMoving } from './movement.js';
-import { allProperties, ownerAt, propertyAt, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
+import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
+import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
+import { canSubmergeAt } from './submerge.js';
 
 /**
  * Tiles worth walking toward: capturers head for properties they don't own, everyone else for enemy units.
@@ -23,7 +28,7 @@ function goalTiles(game, unit) {
     const props = allProperties(game).filter((p) => p.owner !== unit.owner).map((p) => [p.x, p.y]);
     if (props.length) return props;
   }
-  const enemies = state.units.filter((e) => e.owner !== unit.owner).map((e) => [e.x, e.y]);
+  const enemies = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e)).map((e) => [e.x, e.y]);
   if (enemies.length) return enemies;
   const hqs = allProperties(game).filter((p) => p.owner !== unit.owner && hasAttribute(p.terrain, 'victoryOnCapture')).map((p) => [p.x, p.y]);
   if (hqs.length) return hqs;
@@ -35,16 +40,20 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   const w = ai.weights;
   const def = unitDef(game, unit);
   const reach = computeReach(game, unit);
-  const enemies = state.units.filter((e) => e.owner !== unit.owner);
-  const field = distanceField(game, def.moveClass, goalTiles(game, unit));
-  const mayFire = (moved) => !moved || canFireAfterMoving(game, unit);
+  const enemies = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e));
+  const goals = goalTiles(game, unit);
+  const field = distanceField(game, def.moveClass, goals);
+  const movedAlready = hasMovedAlready(unit);   // an interrupted move counts: indirect weapons cannot fire after it
+  const mayFire = (moved) => !(moved || movedAlready) || canFireAfterMoving(game, unit);
+  // Where no route to a goal exists for this kind of unit (a ship whose enemy is inland), it still closes in as the crow flies.
+  const fallback = (x, y) => w.unreachableDistance + Math.min(...goals.map(([gx, gy]) => distance(x, y, gx, gy))) * (w.crowFlies ?? .1);
 
   let best = null;
   for (const { x, y } of reach.tiles()) {
     const moved = x !== unit.x || y !== unit.y;
     // cover only matters to a unit that gets it (aircraft ignore it)
     const defense = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
-    let score = -(field.get(tileIndex(map, x, y)) ?? w.unreachableDistance) * w.distanceToGoal + defense * w.terrainDefense;
+    let score = -(field.get(tileIndex(map, x, y)) ?? fallback(x, y)) * w.distanceToGoal + defense * w.terrainDefense;
     let target = null;
     let capture = false;
 
@@ -70,7 +79,9 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
     if (!best || score > best.score) best = { x, y, score, target, capture };
   }
 
-  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : { type: 'wait' };
+  // with nothing to shoot or capture, a submarine goes under (it cannot be hunted there without sonar, and it can still strike from there)
+  const dive = !best.target && !best.capture && canSubmergeAt(game, unit, best.x, best.y);
+  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : { type: 'wait' };
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
 
@@ -110,9 +121,14 @@ export function playTurn(game) {
   for (const unit of game.state.units.filter((u) => u.owner === player)) {
     if (game.isOver) return events;
     if (!game.state.units.includes(unit)) continue; // died to a counterattack earlier this turn
-    const result = game.act(chooseOrder(game, unit));
+    let result = game.act(chooseOrder(game, unit));
     if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
     events.push(...result.events);
+    if (result.interrupted) {   // ran into something hidden: it has moved, now it decides what to do about it
+      result = game.act(chooseOrder(game, unit));
+      if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
+      events.push(...result.events);
+    }
   }
   if (!game.isOver) events.push(...buildPhase(game));
   return events;

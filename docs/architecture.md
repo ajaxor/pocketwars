@@ -27,9 +27,12 @@ gallery/         live preview pages published next to the game: unit art (index.
   (`DataError`). Nothing in the engine reads raw JSON.
 - **Engine.** `Game` is the only thing the UI and AI mutate through:
   `act({unitId, to, action})`, `build(x, y, type)`, `endTurn()`, `undo()`. Each returns `{ok, error?, events}`.
-  Events (`move`, `strike`, `capture`, `build`, `turnStart`, `eliminated`, `gameOver`) are plain data; the engine never animates or draws.
+  Events (`move`, `interrupt`, `dive`, `surface`, `strike`, `capture`, `build`, `turnStart`, `eliminated`, `gameOver`) are plain data; the engine never animates or draws.
 - **Render / UI.** The `Presenter` turns events into animations. The `Controller` keeps move previews in its own state
   (`dest`), so the engine never sees half-finished moves.
+- **Hidden information.** `src/engine/detection.js` (who sees a submerged unit) and `submerge.js` (diving rules) are the only places that
+  know; movement, combat, AI, the renderer (`Renderer.viewer`) and the controller all ask `canSee`. A move that hits a hidden unit is
+  *interrupted* (see combat.md); the Controller resumes the unit in its act menu and the AI issues a second order.
 - **Special handling is data.** Engine code asks `hasAttribute(def, 'capture')`; it never compares unit ids.
   See `docs/attributes.md`.
 
@@ -66,7 +69,7 @@ the tokens at the top of `style.css`, so a new window looks like the rest withou
 
 `src/render/terrain-layer.js` paints the map: tiles of the same base colour join into one shape and only the outer corners are
 rounded (each corner is filled with the colour it opens onto). What is drawn on a tile is in `src/render/terrain-art.js`:
-`terrain.json -> render.decor` names a drawing (`road`, `forest`, `mountain`, `rough`, `sea`; ground.json names `grass` and `dirt`) and `TERRAIN_DECOR` supplies one
+`terrain.json -> render.decor` names a drawing (`road`, `forest`, `mountain`, `rough`, `sea`, `shallows`; ground.json names `grass` and `dirt`) and `TERRAIN_DECOR` supplies one
 function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-tile variation and `now` twinkles the sea. A test
 requires a drawing for every decor name the data uses. Buildings (`buildings.js`: flat-shaded boxes seen from the front-left
 with a soft ground shadow, one silhouette per kind; the barracks is a pair of squat canvas tents with a flag) are drawn on top.

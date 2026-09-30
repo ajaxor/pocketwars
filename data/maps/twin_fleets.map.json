@@ -1,0 +1,216 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "twin_fleets",
+  "name": "Twin Fleets",
+  "description": "A wide sea with a reef island in the middle and a road along the north shore. Start with fleets, and build more: battleships win the open water, subs win the ambush.",
+  "players": [
+    {
+      "faction": "orange_star",
+      "controller": "human",
+      "funds": 20000
+    },
+    {
+      "faction": "blue_moon",
+      "controller": "ai",
+      "funds": 20000
+    }
+  ],
+  "legend": {
+    ".": {
+      "terrain": "plain"
+    },
+    "F": {
+      "terrain": "forest"
+    },
+    "M": {
+      "terrain": "mountain"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "r": {
+      "terrain": "road"
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "s": {
+      "terrain": "shallows"
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "f": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "g": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "MM.FF..rrrrrrrrrrrr..FF.MM",
+    "M.cOfrr..c......c..rrgBc.M",
+    "..rr..ssss~~~~~~ssss..rr..",
+    "F.r.Y~~~ss~~~~~~ss~~~Z.r.F",
+    "..rc.~~s~~~~~~~~~~s~~.cr..",
+    "..r.Y~sss~~~~~~~~sss~Z.r..",
+    "F.rc.~s.Fs~~~~~~sF.s~.cr.F",
+    "..r..~s..s~~~~~~s..s~..r..",
+    "F.r.Y~sss~~~~~~~~sss~Z.r.F",
+    "..rc.~~~~~~~~~~~~~~~~.cr..",
+    "..rr..~~ss~~~~~~ss~~..rr..",
+    "M.r..ssss.~~~~~~.ssss..r.M",
+    "MM.FF.sss~~~~~~~~sss.FF.MM",
+    "MMM.F..ss~~~~~~~~ss..F.MMM"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 2
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 2
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 3,
+      "y": 4
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 2,
+      "y": 5
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 3,
+      "y": 9
+    },
+    {
+      "type": "destroyer",
+      "owner": 0,
+      "x": 5,
+      "y": 4
+    },
+    {
+      "type": "destroyer",
+      "owner": 0,
+      "x": 5,
+      "y": 8
+    },
+    {
+      "type": "submarine",
+      "owner": 0,
+      "x": 5,
+      "y": 5
+    },
+    {
+      "type": "submarine",
+      "owner": 0,
+      "x": 5,
+      "y": 9
+    },
+    {
+      "type": "cruiser",
+      "owner": 0,
+      "x": 5,
+      "y": 3
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 22,
+      "y": 2
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 23,
+      "y": 2
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 23,
+      "y": 3
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 22,
+      "y": 4
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 23,
+      "y": 5
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 22,
+      "y": 9
+    },
+    {
+      "type": "destroyer",
+      "owner": 1,
+      "x": 20,
+      "y": 4
+    },
+    {
+      "type": "destroyer",
+      "owner": 1,
+      "x": 20,
+      "y": 8
+    },
+    {
+      "type": "submarine",
+      "owner": 1,
+      "x": 20,
+      "y": 5
+    },
+    {
+      "type": "submarine",
+      "owner": 1,
+      "x": 20,
+      "y": 9
+    },
+    {
+      "type": "cruiser",
+      "owner": 1,
+      "x": 20,
+      "y": 3
+    }
+  ]
+}

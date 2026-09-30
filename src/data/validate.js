@@ -29,6 +29,7 @@ export function validateRules(rules, problems) {
       if (!isObj(l)) { problems.push(`rules: layer "${id}" must be an object`); continue; }
       if (l.label !== null && !isStr(l.label)) problems.push(`rules: layer "${id}" label must be a string or null`);
       if (l.airborne !== undefined && typeof l.airborne !== 'boolean') problems.push(`rules: layer "${id}" airborne must be a boolean`);
+      if (l.hidden !== undefined && typeof l.hidden !== 'boolean') problems.push(`rules: layer "${id}" hidden must be a boolean`);
     }
   }
   if (!isObj(rules.targetModes) || !Object.keys(rules.targetModes).length) problems.push('rules: targetModes must be a non-empty object');
@@ -97,6 +98,7 @@ export function validateWeapons(weapons, rules, problems) {
   for (const [id, w] of Object.entries(weapons)) {
     if (!isObj(w)) { problems.push(`weapon "${id}" must be an object`); continue; }
     if (!isStr(w.name)) problems.push(`weapon "${id}": name is required`);
+    if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
     if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
     if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);
     if (w.targetMultipliers !== undefined) {
@@ -134,6 +136,11 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
       for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
     }
     if (!isObj(u.render) || !isStr(u.render.sprite)) problems.push(`unit "${id}": render.sprite is required`);
+    const dive = u.attributes && u.attributes.submerge;
+    if (isObj(dive) && isStr(dive.layer)) {
+      if (!layers.includes(dive.layer)) problems.push(`unit "${id}": attribute "submerge" names unknown layer "${dive.layer}"`);
+      else if (dive.layer === u.layer) problems.push(`unit "${id}": attribute "submerge" must name a layer other than the unit's own ("${u.layer}")`);
+    }
     checkAttributes('unit', id, u, UNIT_ATTRIBUTES, problems);
   }
   // Every category a property can build must contain at least one unit.
@@ -151,6 +158,7 @@ export function validateAi(ai, units, problems) {
   else {
     for (const k of weightKeys) if (!isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
     if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push('ai: weights.blockCapture must be a number');
+    if (ai.weights.crowFlies !== undefined && !isNum(ai.weights.crowFlies)) problems.push('ai: weights.crowFlies must be a number');
   }
   if (!isObj(ai.build)) return problems.push('ai: build must be an object keyed by unit category');
   for (const [category, rules] of Object.entries(ai.build)) {

@@ -1,5 +1,5 @@
 // The terrain art: what is drawn ON a tile. terrain.json -> render.decor names a drawing (grass, road, rough, forest, mountain,
-// sea) and TERRAIN_DECOR supplies one function per name:
+// sea, shallows) and TERRAIN_DECOR supplies one function per name:
 //     decor(g, px, py, S, { x, y, now, link, radii })
 // (px, py) is the tile's top-left pixel, S its size, (x, y) its grid position (so tiles can vary without randomness) and
 // `now` the clock in ms (so the sea can twinkle). `link` ({n, e, s, w, ne, se, sw, nw}, booleans) tells which neighbours carry
@@ -168,6 +168,18 @@ export const TERRAIN_DECOR = {
         peak(cx2, w2, top + .16 + r(8) * .1, yb - .04, cx2 + (r(5) - .5) * .06, true);
       }
       peak(cx, w, top, yb, pkx, false);
+    },
+    // Shallow water is lighter than the open sea, with pale sandbars showing through it and fewer, fainter glints: it reads as
+    // "you could wade here" at a glance, so nobody sends a battleship into it.
+    shallows(g, px, py, S, { x, y, now }) {
+      for (let i = 0; i < 2; i++) {
+        const cx = px + (.22 + .56 * rnd(x, y, i + 10)) * S, cy = py + (.26 + .48 * rnd(x, y, i + 13)) * S;
+        g.fillStyle = i ? 'rgba(244,232,186,.4)' : 'rgba(244,232,186,.6)';
+        g.beginPath(); g.ellipse(cx, cy, S * (.11 + .1 * rnd(x, y, i + 16)), S * (.04 + .04 * rnd(x, y, i + 19)), (rnd(x, y, i + 22) - .5) * .7, 0, 7); g.fill();
+      }
+      const t = now / 1000;
+      const a = Math.max(0, Math.sin(t * 1.1 + rnd(x, y, 5) * 6.28));
+      if (a > .05) { g.fillStyle = `rgba(255,255,255,${(a * .55).toFixed(2)})`; g.fillRect(px + (.15 + .6 * rnd(x, y, 7)) * S, py + (.6 + .2 * rnd(x, y, 8)) * S, S * .08, Math.max(1, S * .026)); }
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {

@@ -2,13 +2,13 @@
   "maxHp": 10,
   "neutralColor": "#b9b9b9",
   "defaultGround": "grass",
-  "moveClasses": ["foot", "wheels", "tread", "air"],
+  "moveClasses": ["foot", "wheels", "tread", "air", "coastal", "deep_sea"],
   "layers": {
     "ground":     { "label": null },
     "low_air":    { "label": "low air",  "airborne": true },
     "high_air":   { "label": "high air", "airborne": true },
     "surface":    { "label": null },
-    "underwater": { "label": "submerged" },
+    "underwater": { "label": "submerged", "hidden": true },
     "structure":  { "label": null }
   },
   "targetModes": {

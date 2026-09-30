@@ -7,11 +7,15 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 ## How to play
 
 - Tap any tile to see what is on it (unit and terrain info cards). Tap one of your units to select it, tap a highlighted tile to move, then choose Capture or Wait, or tap an enemy and press Attack (tapping it again also confirms).
-- Tap a factory, barracks or airfield you own to open its build menu: tap a unit to select it, then tap it again (or press Build) to build.
+- Tap a factory, barracks, airfield or shipyard you own to open its build menu: tap a unit to select it, then tap it again (or press Build) to build.
 - Units with the `capture` attribute (Soldier, Mech) capture properties: 20 points, each turn adds the unit's HP.
 - Units on owned properties heal each turn, and each property earns funds.
 - Win by capturing the enemy HQ or by destroying all enemy units when they cannot rebuild.
-- Undo reverts your last order; it is cleared when you build or end your turn.
+- Undo reverts your last order; it is cleared when you build, end your turn, or when an order runs into or reveals a hidden unit.
+- **Ships** are built at shipyards on the coast: Destroyer (sonar, depth charges), Submarine, Cruiser (cannon and flak) and Battleship (long-range guns). Deep-sea ships sail deep water only; destroyers can also enter shallows.
+- **Submarines dive** on deep water (Submerge / Surface in the order window). A submerged sub is invisible to the enemy unless one of their units is next to it, or a destroyer is within 3 tiles. Only depth charges and torpedoes can hit it.
+- **Interrupted moves:** a move is planned without knowing about hidden units. If it runs into one, the unit stops on the last free tile, the hidden unit is revealed, and the unit can still attack or wait from there (it cannot fire indirect weapons, as it has moved).
+- Units with several weapons pick the one that does the most damage to the target automatically; the damage preview names it.
 - Large maps scroll: drag to pan, pinch (or ctrl + wheel) to zoom.
 - Skirmish on the title screen lets you pick a map, set up to 4 teams (player or computer, colour) and the starting funds.
 - The gear in the status bar opens a menu: resume, reset the mission, or quit back to the title screen.
@@ -37,4 +41,4 @@ Deploys run through GitHub Actions on every push to `main`: tests and data valid
 published under `v/<commit>/` with a no-cache `version.json` pointing at it. One-time setup: Settings -> Pages -> Source:
 **GitHub Actions**.
 
-The undo feature must be removed if fog of war is ever added, because undoing a move would give free scouting.
+Undo and hidden units: an order that is interrupted by, or reveals, a hidden unit clears the undo snapshot (otherwise undo would be free scouting). If real fog of war is ever added, undo must be removed entirely.
