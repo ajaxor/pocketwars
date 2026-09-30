@@ -54,7 +54,7 @@ test('rnd is deterministic, in [0, 1) and varies with position and index', () =>
 });
 
 test('animated themes change with the clock and the others do not', () => {
-  const sea = registry.terrainDef('sea'), nb = { n: null, e: null, s: null, w: null, ne: null, se: null, sw: null, nw: null };
+  const sea = registry.terrainDef('sea'), nb = { n: '#3d8a3d', e: null, s: null, w: null, ne: null, se: null, sw: null, nw: null };
   const ops = (theme, now) => { const { ctx, calls } = recorder(); paintTile(ctx, 0, 0, 40, sea, null, nb, theme, { x: 2, y: 3, now }); return JSON.stringify(calls); };
   assert.notEqual(ops(terrainThemeById('pines'), 0), ops(terrainThemeById('pines'), 700));
   assert.equal(ops(terrainThemeById('flat'), 0), ops(terrainThemeById('flat'), 700));

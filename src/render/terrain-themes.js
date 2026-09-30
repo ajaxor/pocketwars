@@ -29,9 +29,9 @@ const flat = {
   decor: TERRAIN_DECOR,
 };
 
-// ---- pines: pointed pine trees, shaded two-tone mountains, and waves that drift ----------------------------------------
+// ---- pines: pointed pine trees, shaded two-tone mountains, and calm water ----------------------------------------
 const pines = {
-  id: 'pines', name: 'Pines', note: 'Pine trees, shaded two-tone mountains with jagged snow, flowing waves with glints and shoreline foam.',
+  id: 'pines', name: 'Pines', note: 'Pine trees, shaded two-tone mountains with jagged snow, calm water with twinkling glints and a faint breathing shoreline.',
   decor: {
     grass(g, px, py, S, { x, y }) {
       for (let i = 0; i < 3; i++) {
@@ -67,25 +67,17 @@ const pines = {
     sea(g, px, py, S, { x, y, now, nb, base }) {
       const t = now / 1000;
       g.lineCap = 'round'; g.lineJoin = 'round';
-      const wave = (row, amp, speed, phase, color, width) => {
-        g.strokeStyle = color; g.lineWidth = width; g.beginPath();
-        for (let i = 0; i <= 8; i++) {
-          const u = i / 8, yy = py + (row + amp * Math.sin((x + u) * 6.2832 + t * speed + phase)) * S;
-          if (i) g.lineTo(px + u * S, yy); else g.moveTo(px, yy);
-        }
-        g.stroke();
-      };
-      wave(.3, .045, 1.1, y * 1.9, '#9ccbf2', lw(S, .05));
-      wave(.68, .05, .9, y * 1.9 + 2.4, '#79b0e6', lw(S, .045));
       for (let i = 0; i < 2; i++) {
         const a = Math.max(0, Math.sin(t * 1.3 + rnd(x, y, i) * 6.28));
         if (a > .05) { g.fillStyle = `rgba(255,255,255,${(a * .75).toFixed(2)})`; g.fillRect(px + (.15 + .6 * rnd(x, y, i + 3)) * S, py + (.45 + .15 * i + .1 * rnd(x, y, i + 6)) * S, S * .09, Math.max(1, S * .028)); }
       }
       const land = (c) => c != null && c !== base;
-      g.strokeStyle = 'rgba(236,246,255,.85)'; g.lineWidth = lw(S, .05);
-      const foam = (x0, y0, x1, y1) => { const w = Math.sin(t * 1.6 + x * 2 + y * 3) * S * .012; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2 + w, (y0 + y1) / 2 + w, x1, y1); g.stroke(); };
+      // A faint edge that breathes in and out: one phase for the whole map, so the shore stays continuous between tiles.
+      const swell = Math.sin(t * 1.2);
+      g.strokeStyle = `rgba(236,246,255,${(.26 + .16 * swell).toFixed(2)})`; g.lineWidth = lw(S, .035);
+      const foam = (x0, y0, x1, y1) => { g.beginPath(); g.moveTo(x0, y0); g.lineTo(x1, y1); g.stroke(); };
       // Foam runs the full tile where the shore carries on into the next tile, and curves round the rounded corners.
-      const m = S * .07, R = S * .3;
+      const m = S * (.07 + .022 * swell), R = S * .3;
       const ends = (p, pd, q, qd) => [land(p) ? R : land(pd) ? 0 : S * .16, land(q) ? S - R : land(qd) ? S : S * .84];
       if (land(nb.n)) { const [a, b] = ends(nb.w, nb.nw, nb.e, nb.ne); foam(px + a, py + m, px + b, py + m); }
       if (land(nb.s)) { const [a, b] = ends(nb.w, nb.sw, nb.e, nb.se); foam(px + a, py + S - m, px + b, py + S - m); }

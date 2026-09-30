@@ -4,7 +4,7 @@
 //   city      three blocks of different heights
 //   hq        a stepped tower with a flag and a star
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
-//   barracks  a low hut with a brown gabled roof, a star over the door and sandbags
+//   barracks  a canvas tent with an open door, a star, a pennant and sandbags
 //   airfield  a tapering runway, an arched hangar and a control tower
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
@@ -93,18 +93,21 @@ export const BUILDINGS = {
 
   barracks(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
-    const dx = .16 * DX, dy = .16 * DY;
-    k.boxShadow(.16, .56, .5, .3, .16);
-    k.poly([[.66, .56], [.66 + dx, .56 + dy], [.66 + dx, .86 + dy], [.66, .86]], shade(owner, -.3));          // right wall
-    k.poly([[.41, .36], [.41 + dx, .36 + dy], [.66 + dx, .56 + dy], [.66, .56]], '#6b4a2c');                   // roof slope
-    k.rect(.16, .56, .5, .3, owner);
-    k.poly([[.16, .56], [.66, .56], [.41, .36]], owner);                                                        // gable
-    k.line([[.14, .58], [.41, .34], [.68, .58]], '#4a3320', .045);                                              // roof edge
-    k.rect(.34, .68, .14, .18, '#3a2a1c');
-    k.star(.41, .5, .06, '#ffe45c');
-    for (const [cx, cy] of [[.74, .86], [.84, .86], [.79, .8]]) {                                               // sandbags
-      g.fillStyle = '#b39b6d'; g.beginPath(); g.ellipse(k.X(cx), k.Y(cy), S * .058, S * .036, 0, 0, 7); g.fill();
-      g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(k.X(cx), k.Y(cy + .012), S * .05, S * .02, 0, 0, Math.PI); g.fill();
+    const dx = .22 * DX, dy = .22 * DY;
+    k.poly([[.1, .88], [.7, .88], [.7 + dx, .88 + dy], [.7 + dx + .1, .88 + dy + .05], [.8, .93], [.1, .93]], SHADOW);   // ground shadow
+    k.poly([[.4, .3], [.4 + dx, .3 + dy], [.7 + dx, .88 + dy], [.7, .88]], shade(owner, -.3));                          // right slope
+    k.poly([[.1, .88], [.7, .88], [.4, .3]], owner);                                                                    // front canvas
+    k.poly([[.4, .3], [.25, .88], [.4, .88]], shade(owner, .12));                                                       // lit left panel
+    k.poly([[.4, .52], [.29, .88], [.51, .88]], '#2a2a35');                                                             // open door
+    k.line([[.4, .52], [.29, .88]], shade(owner, -.35), .025);
+    k.line([[.4, .52], [.51, .88]], shade(owner, -.35), .025);
+    k.line([[.1, .88], [.4, .3], [.7, .88]], shade(owner, -.4), .03);                                                   // seams
+    k.star(.4, .43, .05, '#ffe45c');
+    k.line([[.4 + dx, .3 + dy], [.4 + dx, .3 + dy - .13]], '#222', .025);                                               // pole and pennant
+    k.poly([[.4 + dx, .3 + dy - .13], [.4 + dx + .16, .3 + dy - .09], [.4 + dx, .3 + dy - .05]], owner);
+    for (const [cx, cy] of [[.8, .9], [.9, .9], [.85, .84]]) {                                                          // sandbags
+      g.fillStyle = '#b39b6d'; g.beginPath(); g.ellipse(k.X(cx), k.Y(cy), S * .055, S * .034, 0, 0, 7); g.fill();
+      g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(k.X(cx), k.Y(cy + .012), S * .048, S * .02, 0, 0, Math.PI); g.fill();
     }
   },
 
