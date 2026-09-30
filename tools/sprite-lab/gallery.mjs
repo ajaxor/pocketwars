@@ -10,7 +10,7 @@ export function build() {
   const data = {
     units: Object.entries(units).map(([id, u]) => ({
       id, name: u.name, sprite: u.render.sprite, altitude: u.render.altitude || 0,
-      note: `${u.category} · move ${u.move} · range ${u.range[0] === u.range[1] ? u.range[0] : `${u.range[0]}–${u.range[1]}`}`,
+      note: `${u.planned ? 'PLANNED, not in the game · ' : ''}${u.category} · move ${u.move} · range ${u.range[0] === u.range[1] ? u.range[0] : `${u.range[0]}–${u.range[1]}`}`,
     })),
     factions: Object.entries(factions).map(([id, f]) => ({ id, name: f.name, color: f.color, dark: f.dark })),
     terrain: { plain: terrain.plain.render.base, road: terrain.road.render.base, sea: terrain.sea.render.base },

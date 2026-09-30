@@ -16,7 +16,9 @@ import { drawFrame } from './variants/frame.js';
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(HERE, '../..');
 const readJson = (p) => JSON.parse(readFileSync(path.join(REPO, p), 'utf8'));
-export const units = readJson('data/units.json');
+// Units drawn but not yet in the game live in planned-units.json (kept out of data/ so the game never loads them).
+const planned = JSON.parse(readFileSync(path.join(HERE, 'planned-units.json'), 'utf8'));
+export const units = { ...readJson('data/units.json'), ...planned };
 export const factions = readJson('data/factions.json');
 export const terrain = readJson('data/terrain.json');
 export const UNIT_IDS = Object.keys(units);

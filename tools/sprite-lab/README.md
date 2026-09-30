@@ -55,6 +55,13 @@ Like the game, it is cache-busted: `/gallery/index.html` is a tiny loader that r
 `v/<hash>/gallery/preview.js`; the workflow publishes the gallery code, data and sprite modules under that folder, so a
 deploy shows up immediately instead of after the browser's cache expires.
 
+## Planned units
+
+`planned-units.json` holds units that are drawn but not in the game yet (currently `stealth_bomber`, the flying-wing
+sprite that used to be the bomber). It lives here, not in `data/`, so the game never loads it. The lab and the gallery
+include these units (marked PLANNED); the plain `bomber` is now a four-engine transport-style jet. To ship one, move its
+entry into `data/units.json`, fill in its balance numbers and add its damage rows.
+
 ## Adopting the sprites in the game
 
 Sprite names already match `data/units.json`, so no data changes are needed.

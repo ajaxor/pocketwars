@@ -8,7 +8,9 @@ import { SPRITES, SHADOWS } from '../../tools/sprite-lab/variants/flat.js';
 import { drawFrame } from '../../tools/sprite-lab/variants/frame.js';
 import { paintTile, STATES } from '../../gallery/preview.js';
 
-const units = JSON.parse(readFileSync(new URL('../../data/units.json', import.meta.url), 'utf8'));
+const readJson = (rel) => JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8'));
+// game units plus the planned ones that are drawn but not yet in the game
+const units = { ...readJson('../../data/units.json'), ...readJson('../../tools/sprite-lab/planned-units.json') };
 const factions = Object.values(JSON.parse(readFileSync(new URL('../../data/factions.json', import.meta.url), 'utf8')));
 
 function recorder() {

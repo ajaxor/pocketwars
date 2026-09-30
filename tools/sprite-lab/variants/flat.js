@@ -233,10 +233,37 @@ function build() {
       fighterParts(g, U, c, dk, w, run);
     }),
 
-    // ---- bomber: flying-wing stealth bomber in plan view ----------------------------------------------
+    // ---- bomber: four-engine military transport-style jet in plan view: swept high wings, T-tail, cargo fuselage ----
     bomber: wrap((g, U, { c, dk, w, run }) => {
       g.scale(BOMBER_FIT[0], BOMBER_FIT[1]);
-      const wingPts = bomberOutline();
+      const wingC = mix(c, dk, .3), wing = [[14, -7], [-4, -40], [-13, -40], [-16, -7]];
+      for (const sy of [-1, 1]) {
+        U.poly(wing.map(([x, y]) => [x, y * -sy]), wingC);                                                // wings
+        U.poly([[-31, sy * 6], [-40, sy * 19], [-46, sy * 19], [-44, sy * 5]], wingC);                     // tailplanes
+        U.line(-5, sy * 39.6, -12, sy * 39.6, 1.4, lighten(c, .4));                                        // wingtip edge
+      }
+      // engine nacelles: two per wing, hung forward of the leading edge
+      for (const sy of [-1, 1]) for (const ey of [17, 30]) {
+        const x0 = 14 - (ey - 7) * (18 / 33) + 6;                                                           // leading edge x at this span
+        U.rect(x0 - 17, sy * ey - 2.9, 17, 5.8, 2.9, N.steel); U.rect(x0 - 17, sy * ey - 2.9, 17, 2, 1, lighten(N.steel, .3));
+        U.rect(x0 - 2, sy * ey - 2.5, 3, 5, 1.5, N.ink);                                                   // intake lip
+        U.rect(x0 - 20, sy * ey - 2, 4, 4, 1.5, N.steelD);                                               // exhaust cone
+      }
+      U.ell(0, 0, 47, 8, c);                                                                                // fuselage
+      U.poly([[-30, -6], [-48, -1.8], [-48, 1.8], [-30, 6]], c);                                            // tail cone
+      U.rect(-46, -1, 20, 2, 1, dk);                                                                        // tail fin (seen from above)
+      U.rect(-20, -3.4, 30, 6.8, 2, dk);                                                                    // cargo / bomb-bay doors
+      U.line(-5, -3.4, -5, 3.4, 1, c); U.line(-15, -3.4, -15, 3.4, 1, c);
+      U.poly([[33, -3], [42, -1.6], [42, 1.6], [33, 3]], N.glass); U.line(37.5, -2.4, 37.5, 2.4, 1, dk);   // cockpit glazing
+      U.rect(20, -1, 8, 2, 1, lighten(c, .3));                                                              // spine highlight
+      const blink = run ? (Math.sin(w * 6) > 0) : true;                                                     // wingtip strobes, alternating
+      U.circ(-8.5, -39.6, 1.9, blink ? '#ff5a4a' : dk); U.circ(-8.5, 39.6, 1.9, blink ? dk : '#7dffb0');
+    }),
+
+    // ---- stealth_bomber: flying-wing stealth bomber in plan view (planned unit, not in the game yet) --------
+    stealth_bomber: wrap((g, U, { c, dk, w, run }) => {
+      g.scale(STEALTH_FIT[0], STEALTH_FIT[1]);
+      const wingPts = stealthOutline();
       U.poly(wingPts, mix(c, dk, .38));                                                          // outer wing
       U.poly(mirror([[35, 0], [8, -13], [-8, -20], [-18, -12], [-17, 0]]), c);                     // lighter centre section
       for (const sy of [-1, 1]) {
@@ -254,9 +281,13 @@ function build() {
   function fighterOutline() {
     return mirror([[42, 0], [31, -3.5], [22, -6], [12, -9], [-8, -31], [-19, -31], [-23, -11], [-27, -9], [-38, -19], [-43, -19], [-39, -8], [-40, -4], [-40, 0]]);
   }
-  const BOMBER_FIT = [1.22, .78];
-  const COPTER_FIT = { k: .87, dx: 5, dy: 3 };
+  const STEALTH_FIT = [1.22, .78];
+  const BOMBER_FIT = [.98, .84];
   function bomberOutline() {
+    return mirror([[47, 0], [40, -5], [30, -7.5], [14, -8], [-4, -40], [-13, -40], [-16, -8], [-31, -7], [-40, -19], [-46, -19], [-45, -4], [-48, 0]]);
+  }
+  const COPTER_FIT = { k: .87, dx: 5, dy: 3 };
+  function stealthOutline() {
     return mirror([[35, 0], [-22, -46], [-27, -44], [-9, -34], [-21, -27], [-7, -17], [-27, -8], [-17, 0]]);
   }
   function fighterParts(g, U, c, dk, w, run) {
@@ -299,6 +330,7 @@ function build() {
     flak: ground(.39, .05, .29),
     copter: airShadow(() => copterOutline().map(([x, y]) => [x * COPTER_FIT.k + COPTER_FIT.dx, y * COPTER_FIT.k]), 1),
     fighter: airShadow(fighterOutline),
+    stealth_bomber: airShadow(() => stealthOutline().map(([x, y]) => [x * STEALTH_FIT[0], y * STEALTH_FIT[1]])),
     bomber: airShadow(() => bomberOutline().map(([x, y]) => [x * BOMBER_FIT[0], y * BOMBER_FIT[1]])),
   };
   return { SPRITES, SHADOWS };
