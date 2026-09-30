@@ -10,3 +10,22 @@ button:disabled{opacity:.4}
 canvas{touch-action:none;display:block;border-radius:4px}
 #msg{min-height:38px;padding:8px 10px;text-align:center;width:100%;max-width:440px;box-sizing:border-box}
 #btns{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;padding:0 10px}
+
+/* title screen (src/ui/title-screen.js) */
+.title{position:fixed;inset:0;z-index:10;display:flex;overflow-y:auto;box-sizing:border-box;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));background:radial-gradient(ellipse at 50% 30%,#2f3b5e 0%,#1d2436 70%);color:var(--ink);font:600 14px ui-monospace,Menlo,monospace;text-align:center;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+.title-body{margin:auto;display:flex;flex-direction:column;align-items:center;gap:16px}
+.title svg{width:min(78vw,320px);height:auto}
+.title h1{margin:0;font:900 clamp(34px,11vw,54px)/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 3px 0 #9a3f0e,0 6px 0 rgba(0,0,0,.35)}
+.title .sub{opacity:.75;max-width:300px;line-height:1.4}
+.title-prog{width:min(70vw,260px);height:6px;border-radius:3px;background:#0005;overflow:hidden}
+.title-fill{height:100%;width:0;background:var(--or);transition:width .25s}
+.title-status{min-height:1.2em;font-size:12px;opacity:.8}
+.title-go{font:800 20px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:var(--or);border:3px solid var(--ink);border-radius:10px;padding:12px 40px;min-height:52px;min-width:180px}
+.title-go:active{background:#c95a1a}
+.title-go:disabled{opacity:.45}
+.title-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.title-links a{font:700 13px ui-monospace,Menlo,monospace;letter-spacing:.04em;color:var(--ink);text-decoration:none;border:2px solid #f3ecd666;border-radius:8px;padding:12px 16px;background:#0003}
+.title-links a:active{background:var(--or);border-color:var(--ink)}
+.title-upd{font:700 13px ui-monospace,Menlo,monospace;color:var(--bg);background:#ffe45c;border:2px solid var(--ink);border-radius:8px;padding:8px 14px;min-height:40px}
+.title-upd[hidden]{display:none}
+.title-ver{position:fixed;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));font-size:11px;opacity:.55;letter-spacing:.04em;pointer-events:none}

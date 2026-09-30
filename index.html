@@ -12,88 +12,41 @@
 <meta property="og:type" content="website">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d2436'/%3E%3Crect x='6' y='16' width='20' height='8' rx='2' fill='%23e8712c'/%3E%3Crect x='11' y='10' width='10' height='7' rx='2' fill='%239a3f0e'/%3E%3Crect x='19' y='12' width='9' height='2' fill='%23f3ecd6'/%3E%3C/svg%3E">
 <title>Pocket Wars</title>
-<!-- Shell: stays tiny and stable. The loader below reads version.json (fetched with no-store) and loads the
-     game from that build's own directory (v/<hash>/), so every module and data file a reload touches is new. -->
+<!-- Shell: stays tiny and stable. It reads version.json (fetched with no-store) to find the build folder (v/<hash>/, see
+     .github/workflows/pages.yml) and hands over to src/launcher.js from that build, so every module, style and data file a
+     reload touches is new. The title screen, its styles and the loading logic all live in that build (src/launcher.js,
+     src/ui/title-screen.js, style.css), not here. -->
 <style>
 html,body{height:100%;margin:0;background:#1d2436}
-#tl{position:fixed;inset:0;z-index:10;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;box-sizing:border-box;padding:24px 20px calc(24px + env(safe-area-inset-bottom,0px));background:radial-gradient(ellipse at 50% 30%,#2f3b5e 0%,#1d2436 70%);color:#f3ecd6;font:600 14px ui-monospace,Menlo,monospace;text-align:center;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
-#tl svg{width:min(78vw,320px);height:auto}
-#tl h1{margin:0;font:900 clamp(34px,11vw,54px)/1 ui-monospace,Menlo,monospace;letter-spacing:.06em;text-transform:uppercase;text-shadow:0 3px 0 #9a3f0e,0 6px 0 rgba(0,0,0,.35)}
-#tl .sub{opacity:.75;max-width:300px;line-height:1.4}
-#tl-prog{width:min(70vw,260px);height:6px;border-radius:3px;background:#0005;overflow:hidden}
-#tl-fill{height:100%;width:0;background:#e8712c;transition:width .25s}
-#tl-status{min-height:1.2em;font-size:12px;opacity:.8}
-#tl-go{font:800 20px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#f3ecd6;background:#e8712c;border:3px solid #f3ecd6;border-radius:10px;padding:12px 40px;min-height:52px;min-width:180px}
-#tl-go:active{background:#c95a1a}
-#tl-go:disabled{opacity:.45}
-#tl-gal{display:flex;gap:10px;justify-content:center}
-#tl-gal a{font:700 13px ui-monospace,Menlo,monospace;letter-spacing:.04em;color:#f3ecd6;text-decoration:none;border:2px solid #f3ecd666;border-radius:8px;padding:9px 14px;min-height:20px;background:#0003}
-#tl-gal a:active{background:#e8712c;border-color:#f3ecd6}
-#tl-upd{font:700 13px ui-monospace,Menlo,monospace;color:#1d2436;background:#ffe45c;border:2px solid #f3ecd6;border-radius:8px;padding:8px 14px;min-height:40px}
-#tl-upd[hidden]{display:none}
-#tl-ver{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));font-size:11px;opacity:.55;letter-spacing:.04em}
-</style></head><body>
+body.loading>:not(#boot){visibility:hidden}
+#boot{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;color:#f3ecd6;font:600 14px ui-monospace,Menlo,monospace;text-align:center;padding:24px;box-sizing:border-box}
+#boot button{font:800 16px ui-monospace,Menlo,monospace;color:#f3ecd6;background:#e8712c;border:3px solid #f3ecd6;border-radius:10px;padding:10px 28px}
+</style></head><body class="loading">
+<div id="boot"><div id="boot-msg">Loading...</div></div>
 <div id="hud"><div><div id="t"></div><div id="f"></div></div><div id="bar"><button id="undo" disabled>Undo</button><button id="end">End turn</button></div></div>
 <canvas id="c"></canvas><div id="msg"></div><div id="btns"></div>
-
-<div id="tl">
-<svg viewBox="0 0 320 120" aria-hidden="true">
-<rect x="0" y="100" width="320" height="6" rx="3" fill="#86b95c"/>
-<g><rect x="14" y="86" width="104" height="18" rx="9" fill="#2b2b2b"/><rect x="22" y="66" width="88" height="26" rx="6" fill="#e8712c"/><rect x="44" y="46" width="44" height="24" rx="6" fill="#9a3f0e"/><rect x="84" y="53" width="50" height="7" fill="#222"/></g>
-<g><rect x="202" y="86" width="104" height="18" rx="9" fill="#2b2b2b"/><rect x="210" y="66" width="88" height="26" rx="6" fill="#3c74d6"/><rect x="232" y="46" width="44" height="24" rx="6" fill="#1e3f80"/><rect x="186" y="53" width="50" height="7" fill="#222"/></g>
-<circle cx="160" cy="58" r="5" fill="#ffe45c"/><path d="M150 58h-10M170 58h10M160 48v-10M160 68v10" stroke="#ffe45c" stroke-width="3" stroke-linecap="round"/>
-</svg>
-<h1>Pocket Wars</h1>
-<div class="sub">Build your army, capture properties, and take the enemy HQ.</div>
-<div><div id="tl-prog"><div id="tl-fill"></div></div><div id="tl-status">Starting...</div></div>
-<button id="tl-go" disabled>Loading</button>
-<div id="tl-gal"><a href="gallery/">Unit art</a><a href="gallery/terrain.html">Terrain art</a></div>
-<button id="tl-upd" hidden>New version available - tap to update</button>
-<div id="tl-ver"></div>
-</div>
 
 <script>
 (()=>{
 // BUILD is replaced with the short commit hash by the deploy workflow. Unreplaced = local/dev copy.
 const BUILD='__BUILD__',DEV=BUILD.startsWith('__');
-const $=id=>document.getElementById(id);
-const fill=$('tl-fill'),status=$('tl-status'),go=$('tl-go'),ver=$('tl-ver'),upd=$('tl-upd');
-let loaded=null,latest=null,ready=false,started=false;
-const prog=(p,t)=>{fill.style.width=p+'%';status.textContent=t};
 const getVersion=async()=>{try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return await r.json()}catch(e){return null}};
-const loadCss=href=>new Promise((ok,no)=>{const el=document.createElement('link');el.rel='stylesheet';el.href=href;el.onload=ok;el.onerror=()=>no(new Error(href));document.head.appendChild(el)});
 const goTo=h=>{const q=new URLSearchParams(location.search);q.set('v',h);location.replace(location.pathname+'?'+q)};
-
-async function boot(){
-  prog(10,'Checking for updates...');
+(async()=>{
   const v=await getVersion();
   // The shell itself may be a stale cached copy: jump to a fresh URL once if the build differs.
   if(v&&!DEV&&v.hash!==BUILD&&new URLSearchParams(location.search).get('v')!==v.hash){goTo(v.hash);return}
-  loaded=v?v.hash:'dev';latest=loaded;
-  ver.textContent='build '+(v?v.hash+(v.built?' - '+v.built.slice(0,10):''):'dev');
-  // Deployed builds live in v/<hash>/ (see .github/workflows/pages.yml); a local checkout serves from the repo root.
+  // Deployed builds live in v/<hash>/; a local checkout (or a site without version.json) serves from the repo root.
   const base=v&&!DEV?'v/'+v.hash+'/':'./',tag=v&&!DEV?v.hash:String(Date.now());
   try{
-    if(!v&&!DEV)throw new Error('version.json is missing');
-    prog(35,'Loading styles...');await loadCss(base+'style.css?v='+tag);
-    prog(70,'Loading game...');const game=await import(new URL(base+'src/main.js?v='+tag,location.href).href);await game.boot();
-    prog(100,'Ready');ready=true;go.disabled=false;go.textContent='Start';
+    const m=await import(new URL(base+'src/launcher.js?v='+tag,location.href).href);
+    await m.launch({base,tag,hash:v?v.hash:'dev',built:v&&v.built,getVersion,goTo});
   }catch(e){
     console.error(e);
-    prog(0,'Could not load the game: '+String(e.message||e).split('\n')[0].slice(0,120));go.disabled=false;go.textContent='Retry';
+    document.body.classList.remove('loading');
+    document.getElementById('boot-msg').textContent='Could not load the game: '+String(e.message||e).split('\n')[0].slice(0,120);
+    const b=document.createElement('button');b.textContent='Retry';b.onclick=()=>location.reload();document.getElementById('boot').append(b);
   }
-}
-go.onclick=()=>{
-  if(ready){started=true;$('tl').remove();return}
-  location.reload();
-};
-// Coming back to the tab while still on the title screen: check for a newer deploy.
-document.addEventListener('visibilitychange',async()=>{
-  if(document.hidden||started||!ready||loaded=='dev')return;
-  const v=await getVersion();
-  if(v&&v.hash!==loaded){latest=v.hash;upd.hidden=false}
-});
-upd.onclick=()=>goTo(latest);
-boot();
+})();
 })();
 </script></body></html>

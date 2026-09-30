@@ -11,7 +11,9 @@ src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js
                  (alternative terrain art), effects, move animator
 src/ui/          controller (taps -> orders), hud, presenter (events -> animations), session (frame loop, AI pacing)
 src/main.js      boot(): load data + map, create Game, start Session
-index.html       title screen and cache-busting loader (imports src/main.js from the current build folder)
+src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Start
+src/ui/title-screen.js  the title screen view (logo, progress, Start, gallery links, update button); styles are `.title*` in style.css
+index.html       tiny shell: the game's DOM plus a few lines that find the build folder and hand over to src/launcher.js
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
 gallery/         live preview pages published next to the game: unit art (index.html) and terrain art themes (terrain.html);
@@ -45,9 +47,13 @@ The game picks a theme from `?terrain=<id>`, otherwise from the choice saved by 
 
 ## Loading and deploy
 
-`index.html` fetches `version.json` (never cached) and imports `v/<hash>/src/main.js`. The workflow publishes
-`src/`, `data/` and `style.css` under `v/<hash>/`, so module imports and JSON fetches (all relative) are cache-busted
-together. In dev there is no `version.json`; the loader uses `./` with a timestamp query.
+`index.html` is a tiny shell. It fetches `version.json` (never cached) and imports `v/<hash>/src/launcher.js`, which loads
+`style.css`, shows the title screen and imports `src/main.js` behind it. The workflow publishes `src/`, `data/` and `style.css`
+under `v/<hash>/`, so module imports and JSON fetches (all relative) are cache-busted together. Because the title screen lives in
+the build and not in the shell, a stale cached `index.html` cannot hide changes to it. In dev, and on a site served without
+`version.json`, the loader uses `./` with a timestamp query and the title screen shows "build dev" (no update button).
+
+To add a button to the title screen, add an entry to `GALLERIES` in `src/launcher.js`.
 
 ES modules and `fetch` do not work from `file://`; run `npm start`.
 
