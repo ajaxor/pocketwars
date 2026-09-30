@@ -26,6 +26,9 @@ html,body{height:100%;margin:0;background:#1d2436}
 #tl-go{font:800 20px ui-monospace,Menlo,monospace;letter-spacing:.08em;text-transform:uppercase;color:#f3ecd6;background:#e8712c;border:3px solid #f3ecd6;border-radius:10px;padding:12px 40px;min-height:52px;min-width:180px}
 #tl-go:active{background:#c95a1a}
 #tl-go:disabled{opacity:.45}
+#tl-gal{display:flex;gap:10px;justify-content:center}
+#tl-gal a{font:700 13px ui-monospace,Menlo,monospace;letter-spacing:.04em;color:#f3ecd6;text-decoration:none;border:2px solid #f3ecd666;border-radius:8px;padding:9px 14px;min-height:20px;background:#0003}
+#tl-gal a:active{background:#e8712c;border-color:#f3ecd6}
 #tl-upd{font:700 13px ui-monospace,Menlo,monospace;color:#1d2436;background:#ffe45c;border:2px solid #f3ecd6;border-radius:8px;padding:8px 14px;min-height:40px}
 #tl-upd[hidden]{display:none}
 #tl-ver{position:absolute;left:0;right:0;bottom:calc(10px + env(safe-area-inset-bottom,0px));font-size:11px;opacity:.55;letter-spacing:.04em}
@@ -44,6 +47,7 @@ html,body{height:100%;margin:0;background:#1d2436}
 <div class="sub">Build your army, capture properties, and take the enemy HQ.</div>
 <div><div id="tl-prog"><div id="tl-fill"></div></div><div id="tl-status">Starting...</div></div>
 <button id="tl-go" disabled>Loading</button>
+<div id="tl-gal"><a href="gallery/">Unit art</a><a href="gallery/terrain.html">Terrain art</a></div>
 <button id="tl-upd" hidden>New version available - tap to update</button>
 <div id="tl-ver"></div>
 </div>

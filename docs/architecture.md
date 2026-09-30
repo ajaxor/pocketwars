@@ -15,7 +15,7 @@ index.html       title screen and cache-busting loader (imports src/main.js from
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
 gallery/         live preview pages published next to the game: unit art (index.html) and terrain art themes (terrain.html);
-                 both run the game's own render code on canvas
+                 both run the game's own render code on canvas and are linked from the title screen
 ```
 
 ## Layers
