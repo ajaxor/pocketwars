@@ -68,9 +68,10 @@ function build() {
     infantry: {
       pack(U, { dk, b }) { U.rect(-22, -9 + b, 10, 23, 3.5, dk); U.rect(-23, -13 + b, 12, 6, 3, N.oliveL); },
       weapon(g, U, { c, b, sw }) {
-        U.line(-11, 7 + b, -3, 3.5 + b, 6, N.brown);
-        U.line(-8, 6 + b, 30, -12 + b + sw, 3.4, N.ink); U.rect(4, -2.5 + b, 3, 6, 1, N.ink);
-        U.line(-2, -1 + b, 17, -6.5 + b + sw * .5, 7, c); U.circ(19.5, -7 + b + sw * .5, 3.3, N.skin);
+        U.line(-2, 2 + b, 15, 4 + b + sw * .5, 6.5, c);                                          // arm, under the rifle
+        U.line(-12, 8 + b, -3, 4 + b, 6, N.brown);
+        U.line(-9, 5 + b, 33, -9.5 + b + sw, 3.4, N.ink); U.rect(6, 0 + b, 3, 6, 1, N.ink);      // rifle stays fully visible
+        U.circ(17, 1.6 + b + sw * .6, 3.2, N.skin);                                              // hand grips from below
       },
     },
     // mech: rocket pack and a bazooka resting on the shoulder
@@ -96,13 +97,14 @@ function build() {
       },
       weapon(g, U, { c, b, sw }) {
         const sy = sw * .5;
+        U.line(-2, 2 + b, 20, 3 + b + sy, 6.5, c);                                               // arm, under the rifle
         U.line(-13, 7.5 + b, -5, 4 + b, 6, N.brown);
         U.line(-10, 6 + b, 47, -14.4 + b + sy, 3, N.ink); U.rect(44, -17.8 + b + sy, 4, 6, 1.2, N.steelD);
         g.save(); g.translate(19, -9.4 + b + sy * .3); g.rotate(-.34);
         U.rect(-10.5, -2.6, 21, 5.2, 2.6, '#15151b'); U.circ(10.5, 0, 2.8, '#7fd0ff'); U.circ(-10.5, 0, 2.3, '#3a3a44'); U.rect(-4, 2.4, 3, 3, .8, N.steelD); U.rect(3, 2.4, 3, 3, .8, N.steelD);
         g.restore();
         U.line(38, -11 + b + sy, 42, -5.5 + b, 1.6, '#333'); U.line(39, -11 + b + sy, 36, -5.5 + b, 1.6, '#333');
-        U.line(-2, -1 + b, 20, -5.6 + b + sy, 7, c); U.circ(22.5, -6.2 + b + sy, 3.3, N.skin);
+        U.circ(22, -.6 + b + sy, 3.2, N.skin);                                                   // hand grips from below
       },
     },
   };
@@ -212,9 +214,9 @@ function build() {
       U.ell(2, 1, 25, 10.5, c); U.poly([[18, -6], [41, 4.5], [33, 10.5], [14, 10.5]], c);
       U.rect(-14, -11, 22, 6, 3, dk); U.rect(-16, -9, 5, 3, 1.5, N.ink);
       U.rect(-8, 6, 24, 4, 2, dk);
-      // tandem canopy: gunner low in front, pilot high behind
-      U.poly([[3, -6], [8, -14], [17, -14], [19, -6]], N.glass); U.poly([[21, -3], [26, -10], [33, -8.5], [36, 1]], N.glass);
-      U.line(20, -5, 24, -9.5, 1.2, dk); U.line(5, -7, 6, -13, 1.1, dk);
+      // single canopy
+      U.poly([[12, -5], [19, -13], [30, -10.5], [38, 2], [14, 1]], N.glass);
+      U.line(24, -11.5, 26, 0.5, 1.2, dk);
       // stub wing with rocket pod and missiles
       U.rect(-5, 9, 22, 3.5, 1.5, dk); U.rect(-2, 12, 16, 6, 3, N.steelD); U.rect(12, 13.2, 6, 3.6, 1.8, N.pad); U.circ(-1, 15, 2.2, N.ink);
       U.line(31, 10, 43, 12, 2.8, N.ink);                                                     // chin gun
@@ -235,10 +237,8 @@ function build() {
     bomber: wrap((g, U, { c, dk, w, run }) => {
       g.scale(BOMBER_FIT[0], BOMBER_FIT[1]);
       const wingPts = bomberOutline();
-      U.poly(wingPts, c);
-      g.save(); g.beginPath(); wingPts.forEach((p, i) => (i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1]))); g.closePath(); g.clip();
-      g.fillStyle = dk; g.beginPath(); g.moveTo(10, 0); g.lineTo(-30, -60); g.lineTo(-60, -60); g.lineTo(-60, 60); g.lineTo(-30, 60); g.closePath(); g.fill();
-      g.restore();
+      U.poly(wingPts, mix(c, dk, .38));                                                          // outer wing
+      U.poly(mirror([[35, 0], [8, -13], [-8, -20], [-18, -12], [-17, 0]]), c);                     // lighter centre section
       for (const sy of [-1, 1]) {
         U.poly([[12, sy * 7], [22, sy * 4.5], [22, sy * 9], [13, sy * 11]], N.ink);               // intake mouths
         U.poly([[-2, sy * 4], [-16, sy * 4], [-17, sy * 8], [-4, sy * 9]], mix(dk, '#000', .35));   // engine bays
@@ -264,11 +264,11 @@ function build() {
     for (const sy of [-1, 1]) {
       U.poly([[-40, sy * 2], [-40 - fl, sy * 3.2], [-40, sy * 4.4]], N.flame); U.poly([[-40, sy * 2.8], [-40 - fl * .55, sy * 3.2], [-40, sy * 3.7]], N.flameL);
     }
-    const top = [[12, -9], [-8, -31], [-19, -31], [-23, -11]];
-    U.poly(top, dk); U.poly(top.map(([x, y]) => [x, -y]), dk);                                        // wings
+    const wingC = mix(c, dk, .38), top = [[12, -9], [-8, -31], [-19, -31], [-23, -11]];
+    U.poly(top, wingC); U.poly(top.map(([x, y]) => [x, -y]), wingC);                                        // wings
     for (const sy of [-1, 1]) {
-      U.poly([[-27, sy * 9], [-38, sy * 19], [-43, sy * 19], [-39, sy * 8]], dk);                       // tailplanes
-      U.poly([[-24, sy * 5], [-37, sy * 7], [-37, sy * 4.4], [-24, sy * 3]], mix(dk, '#000', .25));   // canted fins
+      U.poly([[-27, sy * 9], [-38, sy * 19], [-43, sy * 19], [-39, sy * 8]], wingC);                       // tailplanes
+      U.poly([[-24, sy * 5], [-37, sy * 7], [-37, sy * 4.4], [-24, sy * 3]], mix(dk, '#000', .15));   // canted fins
       U.poly([[-9, sy * 26], [-16, sy * 26.5], [-17, sy * 30], [-10, sy * 29.5]], c);                  // wingtip flashes
     }
     U.poly(mirror([[42, 0], [31, -3.5], [22, -6], [12, -9], [-8, -10], [-24, -9], [-27, -8], [-39, -6], [-40, -3], [-40, 0]]).map(([x, y]) => [x, y]), c); // fuselage
