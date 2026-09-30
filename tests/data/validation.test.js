@@ -30,6 +30,12 @@ test('property attribute config is checked', () => {
   has(problemsOf((d) => { d.terrain.base.attributes.property.builds = ['nonexistent']; }), /unknown unit category "nonexistent"/);
 });
 
+test('terrain render.height is optional but must be between 0 and 1', () => {
+  assert.deepEqual(problemsOf((d) => { d.terrain.plain.render.height = 0.5; }), []);
+  has(problemsOf((d) => { d.terrain.plain.render.height = 2; }), /render\.height/);
+  has(problemsOf((d) => { d.terrain.plain.render.height = 'tall'; }), /render\.height/);
+});
+
 test('victoryOnCapture requires the property attribute', () => {
   has(problemsOf((d) => { d.terrain.plain.attributes.victoryOnCapture = true; }), /victoryOnCapture/);
 });

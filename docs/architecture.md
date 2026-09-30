@@ -6,13 +6,15 @@ Plain ES modules, no bundler, no runtime dependencies. Node 22+ is only needed f
 data/            game content as JSON (units, terrain, factions, rules, ai) and data/maps/*.map.json
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
 src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, capture, economy, victory, ai
-src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, terrain sprites, effects, move animator
+src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, terrain sprites (decor and
+                 buildings), terrain-styles.js (tile shape and finish, several styles), effects, move animator
 src/ui/          controller (taps -> orders), hud, presenter (events -> animations), session (frame loop, AI pacing)
 src/main.js      boot(): load data + map, create Game, start Session
 index.html       title screen and cache-busting loader (imports src/main.js from the current build folder)
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
-gallery/         live unit-art preview page published next to the game (runs the game's own src/render/unit-art.js on canvas)
+gallery/         live preview pages published next to the game: unit art (index.html) and terrain styles (terrain.html);
+                 both run the game's own render code on canvas
 ```
 
 ## Layers
@@ -26,6 +28,17 @@ gallery/         live unit-art preview page published next to the game (runs the
   (`dest`), so the engine never sees half-finished moves.
 - **Special handling is data.** Engine code asks `hasAttribute(def, 'capture')`; it never compares unit ids.
   See `docs/attributes.md`.
+
+## Terrain tile styles
+
+`src/render/terrain-styles.js` decides how a tile looks (shape, gap, gradient, outline); the decorations and buildings drawn on it
+are in `terrain-sprites.js` and are shared by every style. A style is one object in `TILE_STYLES`
+(`id`, `name`, `note`, `board`, `face(S)`, `paint(...)`), and `drawTerrainLayer` paints the map with it. The renderer takes the
+style id as an option and also uses `face(S)` to shape the reach, target and selection highlights.
+
+The game picks a style from `?tiles=<id>`, otherwise from the choice saved by the gallery (`localStorage`, key
+`pocketwars.tiles`), otherwise `DEFAULT_TILE_STYLE`. Compare styles at `gallery/terrain.html`.
+`render.height` in `data/terrain.json` (0 to 1, default 1) is how raised a tile is in styles that show height (Tabletop).
 
 ## Loading and deploy
 

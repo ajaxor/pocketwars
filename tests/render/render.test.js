@@ -8,6 +8,7 @@ import { Game } from '../../src/engine/game.js';
 import { Effects } from '../../src/render/effects.js';
 import { MoveAnimator } from '../../src/render/animator.js';
 import { Renderer } from '../../src/render/renderer.js';
+import { TILE_STYLES, DEFAULT_TILE_STYLE } from '../../src/render/terrain-styles.js';
 import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
 import { drawUnit } from '../../src/render/unit-sprites.js';
@@ -51,7 +52,7 @@ test('every unit sprite draws without throwing, for both factions and every HP',
 test('the board draws every tile and every unit', () => {
   const { renderer, calls, game } = rig();
   renderer.draw(emptyView, 1000);
-  assert.ok(calls.filter((c) => c === 'fillRect').length >= game.map.width * game.map.height);
+  assert.ok(calls.filter((c) => c === 'fill').length >= game.map.width * game.map.height);
 });
 
 test('selection overlays draw (reach, attack outline, targets, pending target)', () => {
@@ -60,6 +61,27 @@ test('selection overlays draw (reach, attack outline, targets, pending target)',
   const enemy = game.state.units.find((u) => u.owner === 1);
   const attack = new Set([0, 1, 2, 12]);
   renderer.draw({ ...emptyView, selectedId: unit.id, attackTiles: attack, targets: [enemy], showTargets: true, pendingTargetId: enemy.id }, 1000);
+});
+
+test('the board and its selection overlays draw in every tile style', () => {
+  for (const style of TILE_STYLES) {
+    const game = new Game(registry, classic);
+    const { ctx } = recorder();
+    const effects = new Effects(registry, (o) => registry.faction(game.map.players[o].faction));
+    const renderer = new Renderer(canvasWith(ctx), game, effects, new MoveAnimator(), { tileStyle: style.id });
+    assert.equal(renderer.tileStyle.id, style.id);
+    const unit = game.state.units.find((u) => u.owner === 0);
+    const enemy = game.state.units.find((u) => u.owner === 1);
+    const reach = { tiles: () => [{ x: 1, y: 1 }, { x: 2, y: 1 }] };
+    renderer.draw({ ...emptyView, selectedId: unit.id, reach, attackTiles: new Set([0, 1]), targets: [enemy], showTargets: true, pendingTargetId: enemy.id }, 1000);
+  }
+});
+
+test('a renderer without a style, or with an unknown one, uses the default style', () => {
+  const game = new Game(registry, classic);
+  const mk = (opts) => new Renderer(canvasWith(recorder().ctx), game, null, null, opts);
+  assert.equal(mk().tileStyle.id, DEFAULT_TILE_STYLE);
+  assert.equal(mk({ tileStyle: 'nope' }).tileStyle.id, DEFAULT_TILE_STYLE);
 });
 
 test('effects run their whole lifecycle from real combat events', () => {

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Wars: terrain styles</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
+  header, main { max-width: 1100px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 20px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  p { margin: 4px 0 12px; color: #b9b5a8; }
+  .controls { position: sticky; top: 0; z-index: 2; background: #16181dee; backdrop-filter: blur(6px); border-bottom: 1px solid #2a2d35; }
+  .controls-inner { max-width: 1100px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  .ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b9b5a8; }
+  input[type=range] { width: 150px; accent-color: #e8712c; }
+  #pause, .use { background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  #pause[aria-pressed="true"] { background: #3c74d6; color: #fff; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, calc(var(--w) + 22px)), 1fr)); gap: 12px; padding: 16px 0 24px; justify-items: start; }
+  .card { background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 10px; max-width: 100%; }
+  .card.on { border-color: #e8712c; }
+  .head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .name { font-weight: 600; }
+  .tag { font-size: 11px; color: #e8712c; text-transform: uppercase; letter-spacing: .05em; }
+  .note { font-size: 12px; color: #8a877c; margin-bottom: 8px; max-width: var(--w); min-height: 2.9em; }
+  canvas { display: block; border-radius: 6px; max-width: 100%; height: auto !important; }
+  .use { margin-top: 8px; width: 100%; }
+  .use[aria-pressed="true"] { background: #e8712c; border-color: #e8712c; color: #fff; }
+  .hint { font-size: 13px; color: #8a877c; }
+  a { color: #8fc2ee; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Terrain styles</h1>
+  <p>The game's real renderer drawing the classic map, once per style. Pick one with the button under it: the game uses it from then on (on this device).</p>
+</header>
+<div class="controls"><div class="controls-inner">
+  <div class="ctl">Tile size <input id="size" type="range" min="24" max="64" step="2" value="34" aria-label="Tile size"><output id="sizeOut">34 px</output></div>
+  <button id="pause" aria-pressed="false">Pause</button>
+</div></div>
+<main>
+  <div id="grid"></div>
+  <p class="hint">40 px is a phone tile at 1x; try 24 to see the worst case. To try a style without saving it, open the game with <code>?tiles=&lt;id&gt;</code>, for example <code>?tiles=merged</code>.</p>
+  <p class="hint"><a href="../">Back to the game</a> · <a href="./">Unit art</a></p>
+</main>
+<script type="module">
+// Same cache-busting as the game: find the current build via version.json (fetched fresh), then load that build's copy of
+// the gallery code, so a new deploy shows up immediately. In dev there is no version.json and the local files are used.
+let base = './terrain.js?t=' + Date.now();
+try {
+  const r = await fetch('../version.json', { cache: 'no-store' });
+  if (r.ok) base = '../v/' + (await r.json()).hash + '/gallery/terrain.js';
+} catch {}
+await import(base);
+</script>
+</body>
+</html>

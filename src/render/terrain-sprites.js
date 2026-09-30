@@ -1,5 +1,6 @@
 // Procedural terrain drawing. terrain.json -> render.base is the tile colour, render.decor names a
-// decoration below and render.building names a building drawn on properties.
+// decoration below and render.building names a building drawn on properties. Each function draws into a square
+// (px, py, S) and knows nothing about the tile under it: the tile's shape and finish belong to terrain-styles.js.
 
 const tri = (g, a, b, c, d, e, f) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.lineTo(e, f); g.fill(); };
 
@@ -49,17 +50,3 @@ export const BUILDINGS = {
     g.fillStyle = owner; g.fillRect(px + S * .53, py + S * .06, S * .18, S * .12);
   },
 };
-
-/**
- * Draw the tile at grid position (x, y).
- * @param {object} terrain terrain definition
- * @param {string|null} ownerColor colour of the owning faction / neutral colour, or null when the tile is not a property
- */
-export function drawTile(g, x, y, S, terrain, ownerColor) {
-  const px = x * S;
-  const py = y * S;
-  g.fillStyle = terrain.render.base; g.fillRect(px, py, S, S);
-  if (terrain.render.decor) TERRAIN_DECOR[terrain.render.decor](g, px, py, S);
-  if (terrain.render.building) BUILDINGS[terrain.render.building](g, px, py, S, ownerColor);
-  g.strokeStyle = '#0002'; g.lineWidth = 1; g.strokeRect(px, py, S, S);
-}

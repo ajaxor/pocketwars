@@ -25,14 +25,14 @@
     "defense": 0,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#cdbb8f" }
+    "render": { "base": "#cdbb8f", "height": 0.5 }
   },
   "sea": {
     "name": "Sea",
     "defense": 0,
     "moveCost": { "foot": null, "vehicle": null, "air": 1 },
     "attributes": {},
-    "render": { "base": "#3d7ec7", "decor": "sea" }
+    "render": { "base": "#3d7ec7", "decor": "sea", "height": 0 }
   },
   "city": {
     "name": "City",

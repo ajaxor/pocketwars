@@ -13,20 +13,25 @@
 
 import { calcDamage, canTarget } from '../engine/combat.js';
 import { tileIndex, unitById } from '../engine/queries.js';
-import { drawTile } from './terrain-sprites.js';
+import { drawTerrainLayer, faceRect, tileStyleById } from './terrain-styles.js';
 import { drawUnit } from './unit-sprites.js';
 
 export class Renderer {
-  constructor(canvas, game, effects, animator) {
+  /** @param {{tileStyle?:string}} [opts] id of a style in terrain-styles.js (unknown = the default) */
+  constructor(canvas, game, effects, animator, { tileStyle } = {}) {
     this.cv = canvas;
     this.g = canvas.getContext('2d');
     this.game = game;
     this.effects = effects;
     this.animator = animator;
     this.S = 40;
+    this.tileStyle = tileStyleById(tileStyle);
   }
 
   get tileSize() { return this.S; }
+
+  /** [x, y, w, h, radius] of the face of tile (x, y) in the current style, for outlines and highlights. */
+  face(x, y, margin = 0) { return faceRect(this.tileStyle, x, y, this.S, margin); }
 
   colorsOf(owner) {
     const { registry, map } = this.game;
@@ -100,19 +105,19 @@ export class Renderer {
     const sel = view.selectedId !== null ? unitById(game, view.selectedId) : null;
     const anim = this.animator.active;
 
-    for (let y = 0; y < map.height; y++) {
-      for (let x = 0; x < map.width; x++) {
-        const terrain = game.registry.terrainDef(map.terrain[y][x]);
-        drawTile(g, x, y, S, terrain, terrain.attributes.property ? this.colorsOf(state.owners[y][x]).color : null);
-      }
-    }
+    const terrainAt = (x, y) => game.registry.terrainDef(map.terrain[y][x]);
+    drawTerrainLayer(g, {
+      width: map.width, height: map.height, S, style: this.tileStyle, terrainAt,
+      ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? this.colorsOf(state.owners[y][x]).color : null),
+    });
     if (view.reach) {
-      g.fillStyle = 'rgba(255,255,255,.38)';
-      for (const { x, y } of view.reach.tiles()) g.fillRect(x * S, y * S, S, S);
+      g.fillStyle = 'rgba(255,255,255,.38)'; g.beginPath();
+      for (const { x, y } of view.reach.tiles()) g.roundRect(...this.face(x, y));
+      g.fill();
     }
     if (view.showTargets) {
       g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;
-      view.targets.forEach((e) => g.strokeRect(e.x * S + 2.5, e.y * S + 2.5, S - 5, S - 5));
+      view.targets.forEach((e) => { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2.5)); g.stroke(); });
     }
     state.units.forEach((u) => this.drawUnitAt(g, u, view, now));
     this.drawArrow(now);
@@ -137,7 +142,7 @@ export class Renderer {
     if (atk && sel) {
       g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;
       state.units.forEach((e) => {
-        if (e.owner !== sel.owner && atk.has(tileIndex(map, e.x, e.y)) && canTarget(game, sel, e)) g.strokeRect(e.x * S + 2, e.y * S + 2, S - 4, S - 4);
+        if (e.owner !== sel.owner && atk.has(tileIndex(map, e.x, e.y)) && canTarget(game, sel, e)) { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2)); g.stroke(); }
       });
     }
     const pending = view.pendingTargetId !== null && sel ? unitById(game, view.pendingTargetId) : null;
@@ -162,7 +167,7 @@ export class Renderer {
     }
     if (sel && !anim) {
       const p = this.logicalPos(sel, view);
-      g.strokeStyle = '#fff'; g.lineWidth = 3; g.strokeRect(p.x * S + 1, p.y * S + 1, S - 2, S - 2);
+      g.strokeStyle = '#fff'; g.lineWidth = 3; g.beginPath(); g.roundRect(...this.face(p.x, p.y, 1)); g.stroke();
     }
     this.effects.draw(g, now, S, (unit, alpha) => this.drawUnitAt(g, unit, view, now, { dying: true, alpha }));
   }
