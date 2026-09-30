@@ -6,7 +6,7 @@ import { loadRegistry, loadMapIndex, loadMap } from '../../src/data/loader.js';
 import { validateData } from '../../src/data/validate.js';
 import { hasAttribute } from '../../src/engine/attributes.js';
 import { UNIT_SPRITES } from '../../src/render/unit-sprites.js';
-import { BUILDINGS } from '../../src/render/terrain-sprites.js';
+import { BUILDINGS } from '../../src/render/buildings.js';
 import { TERRAIN_THEMES } from '../../src/render/terrain-themes.js';
 import { Game } from '../../src/engine/game.js';
 import { canTarget } from '../../src/engine/combat.js';

@@ -1,8 +1,9 @@
 // Terrain themes: alternative drawings for what sits on a tile. terrain.json -> render.decor names the drawing
 // (grass, road, forest, mountain, sea) and every theme supplies one function per name:
-//     decor(g, px, py, S, { x, y, now })
+//     decor(g, px, py, S, { x, y, now, nb, base })
 // (px, py) is the tile's top-left pixel, S its size, (x, y) its grid position (so a theme can vary tiles without
-// randomness) and `now` the clock in ms (so the sea can move). Themes never draw the tile shape (terrain-layer.js) or
+// randomness), `now` the clock in ms (so the sea can move), `nb` the base colours of the eight neighbours (n, e, s, w, ne,
+// se, sw, nw; null off the map) and `base` the tile's own colour. Themes never draw the tile shape (terrain-layer.js) or
 // buildings (terrain-sprites.js). Add a theme by adding an object to TERRAIN_THEMES; the gallery, `?terrain=<id>` and the
 // tests pick it up. The test suite requires every theme to cover every decor name the terrain data uses.
 
@@ -30,7 +31,7 @@ const flat = {
 
 // ---- pines: pointed pine trees, shaded two-tone mountains, and waves that drift ----------------------------------------
 const pines = {
-  id: 'pines', name: 'Pines', note: 'Pine trees, shaded two-tone mountains with jagged snow, gently drifting waves.',
+  id: 'pines', name: 'Pines', note: 'Pine trees, shaded two-tone mountains with jagged snow, flowing waves with glints and shoreline foam.',
   decor: {
     grass(g, px, py, S, { x, y }) {
       for (let i = 0; i < 3; i++) {
@@ -61,13 +62,37 @@ const pines = {
       poly(g, [P(.56, .12), P(.98, .92), P(.6, .92)], '#6f695e');
       poly(g, [P(.56, .12), P(.4, .38), P(.48, .33), P(.56, .43), P(.64, .33), P(.72, .4)], '#f2efe6');
     },
-    sea(g, px, py, S, { x, y, now }) {
-      g.strokeStyle = '#8fc2ee'; g.lineWidth = lw(S, .05); g.lineCap = 'round';
-      for (const [row, ph] of [[.36, 0], [.7, 1.7]]) {
-        const dx = Math.sin(now / 900 + x * .7 + y * .5 + ph) * S * .05, yy = py + row * S;
-        g.beginPath(); g.moveTo(px + S * .12 + dx, yy);
-        g.quadraticCurveTo(px + S * .3 + dx, yy - S * .13, px + S * .5 + dx, yy);
-        g.quadraticCurveTo(px + S * .7 + dx, yy + S * .13, px + S * .88 + dx, yy); g.stroke();
+    // Waves are a function of the tile's world position, so the lines run on unbroken from tile to tile and drift together;
+    // white glints twinkle, and a pale foam line follows the shore wherever the water meets land.
+    sea(g, px, py, S, { x, y, now, nb, base }) {
+      const t = now / 1000;
+      g.lineCap = 'round'; g.lineJoin = 'round';
+      const wave = (row, amp, speed, phase, color, width) => {
+        g.strokeStyle = color; g.lineWidth = width; g.beginPath();
+        for (let i = 0; i <= 8; i++) {
+          const u = i / 8, yy = py + (row + amp * Math.sin((x + u) * 6.2832 + t * speed + phase)) * S;
+          if (i) g.lineTo(px + u * S, yy); else g.moveTo(px, yy);
+        }
+        g.stroke();
+      };
+      wave(.3, .045, 1.1, y * 1.9, '#9ccbf2', lw(S, .05));
+      wave(.68, .05, .9, y * 1.9 + 2.4, '#79b0e6', lw(S, .045));
+      for (let i = 0; i < 2; i++) {
+        const a = Math.max(0, Math.sin(t * 1.3 + rnd(x, y, i) * 6.28));
+        if (a > .05) { g.fillStyle = `rgba(255,255,255,${(a * .75).toFixed(2)})`; g.fillRect(px + (.15 + .6 * rnd(x, y, i + 3)) * S, py + (.45 + .15 * i + .1 * rnd(x, y, i + 6)) * S, S * .09, Math.max(1, S * .028)); }
+      }
+      const land = (c) => c != null && c !== base;
+      g.strokeStyle = 'rgba(236,246,255,.85)'; g.lineWidth = lw(S, .05);
+      const foam = (x0, y0, x1, y1) => { const w = Math.sin(t * 1.6 + x * 2 + y * 3) * S * .012; g.beginPath(); g.moveTo(x0, y0); g.quadraticCurveTo((x0 + x1) / 2 + w, (y0 + y1) / 2 + w, x1, y1); g.stroke(); };
+      // Foam runs the full tile where the shore carries on into the next tile, and curves round the rounded corners.
+      const m = S * .07, R = S * .3;
+      const ends = (p, pd, q, qd) => [land(p) ? R : land(pd) ? 0 : S * .16, land(q) ? S - R : land(qd) ? S : S * .84];
+      if (land(nb.n)) { const [a, b] = ends(nb.w, nb.nw, nb.e, nb.ne); foam(px + a, py + m, px + b, py + m); }
+      if (land(nb.s)) { const [a, b] = ends(nb.w, nb.sw, nb.e, nb.se); foam(px + a, py + S - m, px + b, py + S - m); }
+      if (land(nb.w)) { const [a, b] = ends(nb.n, nb.nw, nb.s, nb.sw); foam(px + m, py + a, px + m, py + b); }
+      if (land(nb.e)) { const [a, b] = ends(nb.n, nb.ne, nb.s, nb.se); foam(px + S - m, py + a, px + S - m, py + b); }
+      for (const [cx, cy, a0, sideA, sideB] of [[R, R, Math.PI, nb.n, nb.w], [S - R, R, Math.PI * 1.5, nb.n, nb.e], [S - R, S - R, 0, nb.s, nb.e], [R, S - R, Math.PI / 2, nb.s, nb.w]]) {
+        if (land(sideA) && land(sideB)) { g.beginPath(); g.arc(px + cx, py + cy, R - m, a0, a0 + Math.PI / 2); g.stroke(); }
       }
     },
   },
@@ -188,7 +213,7 @@ const muted = {
 };
 
 export const TERRAIN_THEMES = [flat, pines, storybook, grain, muted];
-export const DEFAULT_TERRAIN_THEME = 'flat';
+export const DEFAULT_TERRAIN_THEME = 'pines';
 /** localStorage key under which the gallery remembers the chosen theme for the game. */
 export const TERRAIN_THEME_KEY = 'pocketwars.terrain';
 

@@ -6,8 +6,9 @@ Plain ES modules, no bundler, no runtime dependencies. Node 22+ is only needed f
 data/            game content as JSON (units, terrain, factions, rules, ai) and data/maps/*.map.json
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
 src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, capture, economy, victory, ai
-src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, terrain sprites (buildings,
-                 flat decor), terrain-layer.js (rounded merged tiles), terrain-themes.js (alternative terrain art), effects, move animator
+src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, buildings.js, color.js,
+                 terrain-sprites.js (the original flat decor), terrain-layer.js (rounded merged tiles), terrain-themes.js
+                 (alternative terrain art), effects, move animator
 src/ui/          controller (taps -> orders), hud, presenter (events -> animations), session (frame loop, AI pacing)
 src/main.js      boot(): load data + map, create Game, start Session
 index.html       title screen and cache-busting loader (imports src/main.js from the current build folder)
@@ -35,11 +36,12 @@ gallery/         live preview pages published next to the game: unit art (index.
 rounded (each corner is filled with the colour it opens onto). What is drawn on a tile is a *theme*
 (`src/render/terrain-themes.js`): `terrain.json -> render.decor` names a drawing (`grass`, `road`, `forest`, `mountain`, `sea`)
 and every theme supplies one function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-tile variation and
-`now` animates the sea. Buildings (`terrain-sprites.js`) are the same in every theme. A test requires every theme to cover
+`now` animates the sea; themes also get the neighbours' colours (the Pines sea draws shoreline foam with them). Buildings
+(`buildings.js`: flat-shaded boxes seen from the front-left with a soft ground shadow, one silhouette per kind) are the same in every theme. A test requires every theme to cover
 every decor name the data uses, so a new decor name means adding it to every theme.
 
 The game picks a theme from `?terrain=<id>`, otherwise from the choice saved by the gallery (`localStorage`, key
-`pocketwars.terrain`), otherwise `DEFAULT_TERRAIN_THEME`. Compare themes at `gallery/terrain.html`.
+`pocketwars.terrain`), otherwise `DEFAULT_TERRAIN_THEME` (Pines). Compare themes at `gallery/terrain.html`.
 
 ## Loading and deploy
 

@@ -2,7 +2,7 @@
 // outer corners of each shape are rounded. A rounded corner is filled with the colour of whatever it opens onto.
 // What is drawn ON the tile (trees, mountains, waves...) comes from a theme (terrain-themes.js).
 
-import { BUILDINGS } from './terrain-sprites.js';
+import { BUILDINGS } from './buildings.js';
 
 /** Colour under the whole layer; it only shows at the outer corners of the map. */
 export const BOARD_COLOR = '#141a28';
@@ -27,7 +27,8 @@ export function backdrop(base, a, b, d) {
 
 /**
  * Paint one tile whose top-left pixel is (px, py). `nb` holds the base colour of the eight neighbours (null off the map).
- * `at` = { x, y, now }: grid position and clock, for themes that vary or animate their drawings.
+ * `at` = { x, y, now }: grid position and clock, for themes that vary or animate their drawings. Themes also get the
+ * neighbours (`nb`) and the tile's own base colour (`base`), e.g. to draw foam where water meets land.
  */
 export function paintTile(g, px, py, S, terrain, ownerColor, nb, theme, at) {
   const base = terrain.render.base, r = S * CORNER;
@@ -47,7 +48,7 @@ export function paintTile(g, px, py, S, terrain, ownerColor, nb, theme, at) {
   if (same(nb.s)) { g.moveTo(px, py + S); g.lineTo(px + S, py + S); }
   g.stroke();
   const { decor, building } = terrain.render;
-  if (decor) theme.decor[decor](g, px, py, S, at);
+  if (decor) theme.decor[decor](g, px, py, S, { x: at.x, y: at.y, now: at.now, nb, base });
   if (building) BUILDINGS[building](g, px, py, S, ownerColor);
 }
 
