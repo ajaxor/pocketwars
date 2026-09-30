@@ -143,10 +143,20 @@ test('terrain without its own colour takes the colour of the ground under it, an
   assert.equal(sea.calls.find((c) => c.op === 'roundRect').fill, registry.terrainDef('sea').render.base, 'sea keeps its own colour');
 });
 
-test('a mountain reaches the tile edges where the range carries on, and draws without links too', () => {
-  const xs = (link) => { const { ctx, calls } = recorder(); TERRAIN_DECOR.mountain(ctx, 0, 0, 100, { x: 2, y: 2, link }); return calls.filter((c) => c.op === 'lineTo' || c.op === 'moveTo').map((c) => c.args[0]); };
-  const free = xs(NB), joined = xs({ ...NB, w: true, e: true, n: true, s: true });
-  assert.ok(Math.min(...free) > 0 && Math.max(...free) < 100, 'a lone mountain stays inside its tile');
-  assert.equal(Math.min(...joined), 0);
-  assert.equal(Math.max(...joined), 100);
+test('mountains and forests vary with the tile position but repeat exactly for the same tile', () => {
+  const ops = (id, x, y) => { const { ctx, calls } = recorder(); TERRAIN_DECOR[id](ctx, 0, 0, 80, { x, y, link: NB }); return JSON.stringify(calls); };
+  for (const id of ['mountain', 'forest']) {
+    assert.equal(ops(id, 3, 4), ops(id, 3, 4));
+    const seen = new Set();
+    for (let x = 0; x < 6; x++) for (let y = 0; y < 6; y++) seen.add(ops(id, x, y));
+    assert.ok(seen.size > 30, `${id}: most of 36 tiles differ`);
+  }
+});
+
+test('a mountain stays (nearly) inside its tile', () => {
+  for (let x = 0; x < 8; x++) {
+    const { ctx, calls } = recorder(); TERRAIN_DECOR.mountain(ctx, 0, 0, 100, { x, y: 2, link: NB });
+    const xs = calls.filter((c) => ['moveTo', 'lineTo', 'quadraticCurveTo'].includes(c.op)).flatMap((c) => c.args.filter((_, i) => i % 2 === 0));
+    assert.ok(Math.min(...xs) > -8 && Math.max(...xs) < 108, `x=${x}`);   // curve control points may bulge a little
+  }
 });

@@ -32,7 +32,7 @@
     "defense": 0,
     "moveCost": { "foot": 1, "wheels": 0.5, "tread": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#9096a1", "decor": "road", "inlay": true, "mini": "#9096a1" }
+    "render": { "base": "#7d838e", "decor": "road", "inlay": true, "mini": "#7d838e" }
   },
   "sea": {
     "name": "Sea",

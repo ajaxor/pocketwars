@@ -65,7 +65,7 @@ export const TERRAIN_DECOR = {
       const cx = px + S / 2, cy = py + S / 2;
       // a dash on one arm, from `a` to `b` tiles out from the centre
       const dash = (dx, dy, a, b) => { g.moveTo(cx + dx * a * S, cy + dy * a * S); g.lineTo(cx + dx * b * S, cy + dy * b * S); };
-      g.strokeStyle = '#f0e2a0'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
+      g.strokeStyle = '#ffffff'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
       const DIRS = [['n', 0, -1], ['e', 1, 0], ['s', 0, 1], ['w', -1, 0]];
       for (const [k, dx, dy] of DIRS) {
         if (!arms[k]) continue;
@@ -99,44 +99,67 @@ export const TERRAIN_DECOR = {
       rock(px + (.36 + .1 * rnd(x, y, 5)) * S, py + (.82 + .05 * rnd(x, y, 6)) * S, S * .09, 3);
       for (let i = 0; i < 4; i++) dot(g, px + (.1 + .8 * rnd(x, y, i + 40)) * S, py + (.1 + .8 * rnd(x, y, i + 44)) * S, S * .02, i % 2 ? '#cfc9bb' : '#7d7667');
     },
-    forest(g, px, py, S) {
-      const pine = (cx, by, s) => {
-        const u = S * s;
-        g.fillStyle = '#5a4028'; g.fillRect(px + cx * S - u * .03, py + by * S - u * .1, u * .06, u * .1);
-        for (const [hw, y0, y1] of [[.19, .08, .34], [.14, .24, .52]]) {
-          const ax = px + cx * S, ay = py + by * S;
-          poly(g, [[ax - hw * u, ay - y0 * u], [ax + hw * u, ay - y0 * u], [ax, ay - y1 * u]], '#2f6b34');
-          poly(g, [[ax - hw * u, ay - y0 * u], [ax, ay - y0 * u], [ax, ay - y1 * u]], '#3d8443');
+    // Pines: how many, where, how big, how many tiers and which green all come from the tile's position (rnd), so every forest
+    // tile differs but each one looks the same every time it is drawn.
+    forest(g, px, py, S, { x, y }) {
+      const GREENS = [['#2f6b34', '#3d8443'], ['#2a6330', '#37793e'], ['#37733a', '#47904b'], ['#2c6a3c', '#3b8450']];
+      const pine = (cx, by, s, k) => {
+        const u = S * s, ax = px + cx * S, ay = py + by * S;
+        const [dark, lit] = GREENS[Math.floor(rnd(x, y, 90 + k) * GREENS.length)];
+        g.fillStyle = 'rgba(0,0,0,.14)'; g.beginPath(); g.ellipse(ax, ay, u * .2, u * .05, 0, 0, 7); g.fill();
+        g.fillStyle = '#5a4028'; g.fillRect(ax - u * .03, ay - u * .1, u * .06, u * .1);
+        const tiers = rnd(x, y, 100 + k) < .35 ? [[.2, .06, .3], [.15, .2, .44], [.1, .34, .6]] : [[.19, .08, .34], [.14, .24, .52]];
+        for (const [hw, y0, y1] of tiers) {
+          poly(g, [[ax - hw * u, ay - y0 * u], [ax + hw * u, ay - y0 * u], [ax, ay - y1 * u]], dark);
+          poly(g, [[ax - hw * u, ay - y0 * u], [ax, ay - y0 * u], [ax, ay - y1 * u]], lit);
         }
       };
-      pine(.27, .55, .95); pine(.73, .5, .95); pine(.5, .9, 1.1);
+      // three or four slots, each nudged, drawn back to front
+      const slots = [[.27, .55], [.73, .5], [.5, .9]];
+      if (rnd(x, y, 80) < .4) slots.push(rnd(x, y, 81) < .5 ? [.12, .92] : [.9, .92]);
+      slots.map(([cx, by], k) => [cx + (rnd(x, y, 82 + k) - .5) * .1, by + (rnd(x, y, 86 + k) - .5) * .08, .8 + rnd(x, y, 110 + k) * .35, k])
+        .sort((a, b) => a[1] - b[1]).forEach(([cx, by, sc, k]) => pine(cx, Math.min(by, .95), sc, k));
     },
-    // A peak that fills its tile. Its slopes run to the tile edges and its foot to the bottom edge wherever the next tile is a
-    // mountain too (`link`), so a block of mountains reads as one range; on a free side it ends in a rounded foothill.
-    mountain(g, px, py, S, { x, y, link = NO_LINKS }) {
+    // One rounded mountain, centred in its tile. Its width, height, summit position, snow and a smaller companion peak all come
+    // from the tile's position (rnd), so a range of them is varied but never changes between draws.
+    mountain(g, px, py, S, { x, y }) {
+      const r = (i) => rnd(x, y, 60 + i);
       const P = (a, b) => [px + a * S, py + b * S];
-      const yb = link.s ? 1 : .96;
-      const xl = link.w ? 0 : .03, xr = link.e ? 1 : .97;
-      // where the slope meets each side: halfway down when a mountain (or more of the range, above) carries on there
-      const yl = link.w || link.n ? .52 : .89, yr = link.e || link.n ? .52 : .89;
-      const pk = .5 + (rnd(x, y, 60) - .5) * .18, top = .06 + rnd(x, y, 61) * .05, rx = pk + .08;
-      // the foot: ragged lumps of foothill along a free bottom edge (right to left), a straight line where the range carries on
-      const foot = link.s ? [] : [[.86, yb + .01], [.66, yb - .04 + rnd(x, y, 62) * .03], [.46, yb + .01], [.26, yb - .04 + rnd(x, y, 63) * .03]].map(([a, b]) => P(a, b));
-      const footBy = (lo, hi) => foot.filter((f) => f[0] > px + lo * S && f[0] < px + hi * S);
-      const yEdge = link.s ? 1 : yb - .06;
-      if (link.n) poly(g, [P(xl, 0), P(xr, 0), P(xr, .55), P(xl, .55)], '#8a8275');   // the range carries on above
-      poly(g, [P(xl, yl), P(pk, top), P(xr, yr), P(xr, yEdge), ...foot, P(xl, yEdge)], '#8a8275');
-      poly(g, [P(xl, yl), P(pk, top), P(rx, yb - .02), ...footBy(xl, rx), P(xl, yEdge)], '#a39b8c');
-      poly(g, [P(pk, top), P(xr, yr), P(xr, yEdge), ...footBy(rx, xr), P(rx, yb - .02)], '#6f685d');
-      // a few cracks on the lit face
-      g.strokeStyle = 'rgba(60,54,46,.22)'; g.lineWidth = Math.max(1, S * .025); g.lineCap = 'round'; g.beginPath();
-      for (let i = 0; i < 2; i++) { const cx = pk - .08 - i * .16 - rnd(x, y, 70 + i) * .05; g.moveTo(...P(cx, .34 + i * .14)); g.lineTo(...P(cx - .05, .5 + i * .16)); }
-      g.stroke();
-      // the snow cap follows the slopes down to a little below the summit
-      const sy = top + .3;
-      const lx = pk - (pk - xl) * ((sy - top) / (yl - top)), rxs = pk + (xr - pk) * ((sy - top) / (yr - top));
-      poly(g, [P(pk, top), P(lx, sy), P(pk - .09, sy - .05), P(pk, sy + .03), P(pk + .09, sy - .05), P(rxs, sy)], '#f2efe6');
-      poly(g, [P(pk, top), P(rxs, sy), P(pk + .09, sy - .05), P(pk, sy + .03)], '#d9d6cc');
+      // one peak: centre cx, half-width w, summit height `top`, foot line `yb`; `shade` darkens a peak that stands behind
+      const peak = (cx, w, top, yb, pkx, shade) => {
+        const xl = cx - w, xr = cx + w, h = yb - top;
+        const bulge = .07 * Math.min(1, h / .6);
+        const outline = () => {
+          g.beginPath(); g.moveTo(...P(xl, yb));
+          g.quadraticCurveTo(...P((xl + pkx) / 2 - bulge * .9, (yb + top) / 2 - bulge * .3), ...P(pkx - .035, top + .03));
+          g.quadraticCurveTo(...P(pkx, top - .03), ...P(pkx + .035, top + .03));
+          g.quadraticCurveTo(...P((xr + pkx) / 2 + bulge * .9, (yb + top) / 2 - bulge * .3), ...P(xr, yb));
+          g.quadraticCurveTo(...P(cx, yb + .09), ...P(xl, yb));
+          g.closePath();
+        };
+        g.fillStyle = 'rgba(0,0,0,.15)'; g.beginPath(); g.ellipse(...P(cx, yb + .02), w * S * 1.02, S * .05, 0, 0, 7); g.fill();
+        g.save(); outline(); g.clip();
+        g.fillStyle = shade ? '#928a7c' : '#a39b8c'; g.fillRect(...P(xl - .05, top - .05), (w * 2 + .1) * S, (h + .2) * S);
+        // the shaded right face, split by a ridge that runs down from the summit with a little kink
+        const kink = pkx + .05 + (r(9) - .5) * .05;
+        poly(g, [P(pkx, top - .03), P(xr + .05, top - .03), P(xr + .05, yb + .12), P(cx + .02, yb + .12), P(kink, yb - h * .4)], shade ? '#6c655a' : '#72695e');
+        g.strokeStyle = 'rgba(60,54,46,.22)'; g.lineWidth = Math.max(1, S * .025); g.lineCap = 'round'; g.beginPath();
+        for (let i = 0; i < 2; i++) { const cx2 = pkx - w * (.3 + i * .25) - r(10 + i) * .03; g.moveTo(...P(cx2, top + h * (.38 + i * .12))); g.lineTo(...P(cx2 - .05, top + h * (.55 + i * .14))); }
+        g.stroke();
+        // snow: from the summit down to a scalloped line, deeper on taller peaks
+        const sy = top + h * (.26 + r(12) * .14);
+        const snow = [P(pkx - .2, sy + .02), P(pkx - .11, sy - .035), P(pkx - .03, sy + .03), P(pkx + .05, sy - .03), P(pkx + .12, sy + .02), P(pkx + .22, sy + .02)];
+        poly(g, [P(pkx - .25, top - .04), P(pkx + .25, top - .04), ...snow.reverse()], shade ? '#dcd9d0' : '#f2efe6');
+        poly(g, [P(pkx, top - .04), P(pkx + .25, top - .04), P(pkx + .22, sy + .02), P(pkx + .12, sy + .02), P(pkx + .05, sy - .03), P(pkx, sy + .01)], shade ? '#bdbab1' : '#d9d6cc');
+        g.restore();
+      };
+      const cx = .5 + (r(1) - .5) * .06, w = .33 + r(0) * .12, yb = .82 + r(2) * .06, top = .1 + r(3) * .1, pkx = cx + (r(4) - .5) * .14;
+      if (r(6) > .4) {   // a smaller companion behind, on the side the summit leans away from
+        const side = pkx > cx ? -1 : 1, w2 = .14 + r(7) * .06;
+        const cx2 = Math.max(w2 + .03, Math.min(.97 - w2, cx + side * (w + .02 - w2 * .3)));
+        peak(cx2, w2, top + .16 + r(8) * .1, yb - .04, cx2 + (r(5) - .5) * .06, true);
+      }
+      peak(cx, w, top, yb, pkx, false);
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {
