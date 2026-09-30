@@ -12,10 +12,12 @@
 //   cursor: {x,y}|null            tile the player last tapped (outlined while nothing is selected)
 // }
 //
-// The canvas covers the whole window; the map is centred in it (see fit()) and everything below draws in map pixels, so the
-// frame starts by clearing the window and moving the origin to the map's top-left corner.
+// The canvas covers the whole window. A Camera (camera.js) decides which part of the map is on screen: a small map is centred
+// whole, a big one scrolls. Everything below draws in map pixels, so the frame starts by clearing the window and moving the
+// origin to the map's top-left corner (which may be off-screen), and only the tiles that are on screen are painted.
 
 import { calcDamage, canAttackFrom } from '../engine/combat.js';
+import { Camera } from './camera.js';
 import { tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
@@ -28,11 +30,20 @@ export class Renderer {
     this.game = game;
     this.effects = effects;
     this.animator = animator;
-    this.S = 40;
-    this.layout = { W: game.map.width * this.S, H: game.map.height * this.S, ox: 0, oy: 0, d: 1 };
+    this.camera = new Camera(game.map.width, game.map.height);
+    this.dpr = 1;
+    // until fit() learns the real window, the map is laid out whole at 40 px a tile (headless use and tests)
+    this.camera.setViewport(game.map.width * 40, game.map.height * 40, 0);
   }
 
-  get tileSize() { return this.S; }
+  get S() { return this.camera.S; }
+  get tileSize() { return this.camera.S; }
+
+  /** The window size, the map's window-pixel origin and the device pixel ratio. */
+  get layout() {
+    const { ox, oy } = this.camera.origin();
+    return { W: this.camera.W, H: this.camera.H, ox, oy, d: this.dpr };
+  }
 
   /** [x, y, w, h, radius] of tile (x, y), for outlines and highlights that follow the rounded tiles. */
   face(x, y, margin = 0) { return faceRect(x, y, this.S, margin); }
@@ -43,24 +54,30 @@ export class Renderer {
   }
 
   /**
-   * Make the canvas cover the window and pick the biggest whole-pixel tile size that fits the whole map into the space below
-   * `top` px (the status bar). The map is centred in that space; the windows float over the canvas, not beside it.
+   * Make the canvas cover the window and tell the camera how much of it the map may use: everything below `top` px (the status
+   * bar). A map that fits at a comfortable tile size is shown whole and centred; a bigger one scrolls (see camera.js).
    */
   fit({ top = 0 } = {}) {
-    const { map } = this.game;
     const W = innerWidth, H = innerHeight;
-    const availH = Math.max(1, H - top);
-    const S = Math.max(16, Math.floor(Math.min(W / map.width, availH / map.height)));
     const d = globalThis.devicePixelRatio || 1;
-    const ox = Math.floor((W - map.width * S) / 2);
-    const oy = Math.floor(top + (availH - map.height * S) / 2);
-    this.S = S;
-    this.layout = { W, H, ox, oy, d };
+    this.dpr = d;
+    this.camera.setViewport(W, H, top);
     this.cv.width = Math.round(W * d);
     this.cv.height = Math.round(H * d);
     this.cv.style.width = W + 'px';
     this.cv.style.height = H + 'px';
   }
+
+  /** Drag the map by (dx, dy) window pixels. */
+  pan(dx, dy) { this.camera.panBy(dx, dy); }
+  /** Zoom by `factor` around a window point (pinch, wheel). */
+  zoom(factor, x, y) { this.camera.zoomBy(factor, x, y); }
+  /** Put a tile in the middle of the window now. */
+  centerOn(x, y) { this.camera.centerOn(x, y); }
+  /** Bring tiles ([[x, y], ...]) on screen by easing the camera, if they are not already. */
+  reveal(points) { this.camera.reveal(points); }
+  /** Advance the camera's easing; call once a frame with the frame time in ms. */
+  updateCamera(ms) { this.camera.step(ms); }
 
   /** Tile (x, y)'s rectangle in window pixels: where the windows look to decide which edge to sit on. */
   tileRect(x, y) {
@@ -139,6 +156,7 @@ export class Renderer {
     const sel = view.selectedId !== null ? unitById(game, view.selectedId) : null;
     const anim = this.animator.active;
     const { W, H, ox, oy, d } = this.layout;
+    const seen = this.camera.visible(1);
     g.setTransform(d, 0, 0, d, 0, 0);
     g.clearRect(0, 0, W, H);
     g.setTransform(d, 0, 0, d, ox * d, oy * d);
@@ -149,6 +167,7 @@ export class Renderer {
       width: map.width, height: map.height, S, now, terrainAt,
       ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? this.colorsOf(state.owners[y][x]).color : null),
       dimmedAt: (x, y) => dimmed.has(tileIndex(map, x, y)),
+      view: seen,
     });
     if (view.reach) {
       g.fillStyle = 'rgba(255,255,255,.38)'; g.beginPath();

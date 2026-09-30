@@ -74,7 +74,7 @@ test('capture: cannot capture a property you already own, or a tile that is not 
   assert.equal(capture(game, 0, { x: 0, y: 0 }).error, 'cannot-capture');
 });
 
-test('victoryOnCapture: capturing an HQ wins the game; capturing an ordinary city does not', () => {
+test('victoryOnCapture: capturing an HQ knocks its owner out (the last player left wins); capturing an ordinary city does not', () => {
   const game = makeGame({
     units: { taker: { attributes: { capture: true } } },
     rows: ['ch..'], unitsOnMap: [['taker', 0, 0, 0], ['taker', 0, 1, 0], ['taker', 1, 3, 0]],

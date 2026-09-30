@@ -30,9 +30,10 @@ export function createRegistry(raw) {
   const ai = deepFreeze(structuredClone(raw.ai));
   const unitIds = Object.keys(units); // JSON order = build-menu order
   const terrainIds = Object.keys(terrain);
+  const factionIds = Object.keys(factions); // JSON order = the order colours are offered in
 
   return Object.freeze({
-    rules, factions, terrain, units, weapons, ai, unitIds, terrainIds,
+    rules, factions, terrain, units, weapons, ai, unitIds, terrainIds, factionIds,
     unit: (id) => { const u = units[id]; if (!u) throw new Error(`Unknown unit "${id}"`); return u; },
     terrainDef: (id) => { const t = terrain[id]; if (!t) throw new Error(`Unknown terrain "${id}"`); return t; },
     weapon: (id) => { const w = weapons[id]; if (!w) throw new Error(`Unknown weapon "${id}"`); return w; },

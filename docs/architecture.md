@@ -27,7 +27,7 @@ gallery/         live preview pages published next to the game: unit art (index.
   (`DataError`). Nothing in the engine reads raw JSON.
 - **Engine.** `Game` is the only thing the UI and AI mutate through:
   `act({unitId, to, action})`, `build(x, y, type)`, `endTurn()`, `undo()`. Each returns `{ok, error?, events}`.
-  Events (`move`, `strike`, `capture`, `build`, `turnStart`, `gameOver`) are plain data; the engine never animates or draws.
+  Events (`move`, `strike`, `capture`, `build`, `turnStart`, `eliminated`, `gameOver`) are plain data; the engine never animates or draws.
 - **Render / UI.** The `Presenter` turns events into animations. The `Controller` keeps move previews in its own state
   (`dest`), so the engine never sees half-finished moves.
 - **Special handling is data.** Engine code asks `hasAttribute(def, 'capture')`; it never compares unit ids.
@@ -52,6 +52,15 @@ What the windows show is computed as plain data in `src/ui/info.js` and `src/ui/
 hands those models to the Hud, which owns all DOM. Buttons, windows, chips, stars and meters come from `src/ui/kit.js` and are styled by
 the tokens at the top of `style.css`, so a new window looks like the rest without new CSS. Attribute names shown to the player are the
 `label` of each attribute in the catalogue (`src/engine/attributes.js`).
+
+## Camera, gestures and skirmish
+
+- `src/render/camera.js` is pure arithmetic: tile size, the map point at the centre, clamping, zoom around a point, `reveal` and easing.
+  A map that fits at 36px or more is shown whole; a bigger one scrolls. `Renderer` owns a `Camera` and only draws the visible tiles.
+- `src/ui/gestures.js` turns pointer and wheel events into `onTap`, `onPan` and `onZoom`; the session decides what they do.
+- `src/data/skirmish.js` holds the skirmish rules (colours, who plays, funds); `src/ui/skirmish-screen.js` shows them with map
+  previews from `src/render/minimap.js`. `boot()` returns `{registry, map, maps, defaultMapId, play(map)}` and the launcher calls `play`.
+- With three or more players, capturing an HQ eliminates its owner (`eliminate` in `victory.js`); the last player left wins.
 
 ## Terrain drawing
 

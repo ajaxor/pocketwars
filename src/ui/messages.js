@@ -15,6 +15,8 @@ export function describeEvents(game, events) {
       text = ev.completed ? 'Captured!' : `Capturing ${ev.progress}/${ev.needed}`;
     } else if (ev.type === 'build') {
       text = 'Built ' + name(ev.unit);
+    } else if (ev.type === 'eliminated') {
+      text = `${factionOf(game, ev.player).name} is out of the game!`;
     } else if (ev.type === 'gameOver') {
       text = ev.winner === 'draw' ? 'Draw!' : `${factionOf(game, ev.winner).name} wins!`;
     }

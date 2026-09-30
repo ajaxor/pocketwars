@@ -1,7 +1,10 @@
 // The launcher runs once the shell (index.html) has picked the build folder. It loads the stylesheet, shows the title screen
-// and loads the game behind it (src/main.js), then waits for Start. It also watches for a newer deploy while the title screen
-// is up. The shell stays tiny and stable so a stale cached copy of it cannot hide changes to any of this.
+// and loads the game behind it (src/main.js), then waits for Start (the default mission, already set up behind the title screen)
+// or Skirmish (the setup page, which starts a fresh game with the map and teams that were chosen). It also watches for a newer
+// deploy while the title screen is up. The shell stays tiny and stable so a stale cached copy of it cannot hide changes to any of this.
 
+import { applySkirmish } from './data/skirmish.js';
+import { SkirmishScreen } from './ui/skirmish-screen.js';
 import { TitleScreen } from './ui/title-screen.js';
 
 /** Extra buttons on the title screen. */
@@ -26,7 +29,8 @@ const defaultLoadGame = async (href, opts) => (await import(new URL(href, locati
  * @param {(hash:string) => void} o.goTo                    reloads the page on that build
  * @param {() => void} [o.reload]
  * @param {Document} [o.doc]
- * @param {Function} [o.loadCss] @param {Function} [o.loadGame]  replaceable for tests
+ * @param {Function} [o.loadCss] @param {Function} [o.loadGame]  replaceable for tests; loadGame resolves to the game's
+ *   handle { registry, maps, defaultMapId, play(map) } (src/main.js), or to nothing in tests that do not run a game
  * @returns {Promise<TitleScreen>} resolves once the game has loaded (or failed) behind the title screen
  */
 export async function launch({
@@ -38,7 +42,7 @@ export async function launch({
   doc.body.classList.remove('loading');
 
   const version = 'build ' + (hash === 'dev' ? 'dev' : hash + (built ? ' - ' + built.slice(0, 10) : ''));
-  let title = null, started = false, ready = false, failed = null;
+  let title = null, started = false, ready = false, failed = null, game = null, skirmish = null;
 
   // The title screen can come back (Quit to title), so it is built by a function.
   const show = () => {
@@ -46,8 +50,25 @@ export async function launch({
     const t = title = new TitleScreen(doc, { links: GALLERIES });
     t.setVersion(version);
     t.onStart = () => { if (t.ready) { started = true; t.remove(); } else reload(); };
-    if (ready) t.setReady(); else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
+    t.onSkirmish = () => openSkirmish(t);
+    if (ready) { t.setReady(); t.setSkirmish(canSkirmish()); } else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
     return t;
+  };
+  const canSkirmish = () => !!(game && game.maps && game.maps.length && game.play);
+
+  // The skirmish page sits on top of the title screen; Back removes it, Start plays the chosen setup and removes both.
+  const openSkirmish = (t) => {
+    if (!t.ready || !canSkirmish() || skirmish) return;
+    skirmish = new SkirmishScreen(doc, {
+      registry: game.registry, maps: game.maps, selectedId: game.defaultMapId,
+      onBack: () => { skirmish.remove(); skirmish = null; },
+      onStart: (map, settings) => {
+        skirmish.remove(); skirmish = null;
+        game.play(applySkirmish(map, settings));
+        started = true; t.remove();
+      },
+    });
+    doc.body.append(skirmish.root);
   };
   show();
 
@@ -59,9 +80,10 @@ export async function launch({
   });
 
   try {
-    await loadGame(base + 'src/main.js?v=' + tag, { onQuit: show });
+    game = (await loadGame(base + 'src/main.js?v=' + tag, { onQuit: show })) || null;
     ready = true;
     title.setReady();
+    title.setSkirmish(canSkirmish());
   } catch (e) {
     console.error(e);
     failed = String(e.message || e).split('\n')[0].slice(0, 120);

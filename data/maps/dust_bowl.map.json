@@ -1,0 +1,61 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "dust_bowl",
+  "name": "Dust Bowl",
+  "description": "A 22x14 desert. Roads and rough ground: wheels stay on the asphalt, treads cut across the rough, and only infantry can climb the mountain plug in the middle.",
+  "players": [
+    { "faction": "orange_star", "controller": "human", "funds": 8000 },
+    { "faction": "blue_moon", "controller": "ai", "funds": 8000 }
+  ],
+  "legend": {
+    ".": { "terrain": "plain" },
+    ":": { "terrain": "rough" },
+    "F": { "terrain": "forest" },
+    "M": { "terrain": "mountain" },
+    "c": { "terrain": "city" },
+    "r": { "terrain": "road" },
+    "B": { "terrain": "hq", "owner": 1 },
+    "K": { "terrain": "barracks", "owner": 1 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "V": { "terrain": "airfield", "owner": 1 },
+    "b": { "terrain": "factory", "owner": 1 },
+    "k": { "terrain": "barracks", "owner": 0 },
+    "o": { "terrain": "factory", "owner": 0 },
+    "v": { "terrain": "airfield", "owner": 0 }
+  },
+  "tiles": [
+    "MMM.FFF...c....FFF.MMM",
+    "MMM...c.rrrrrr.c...MMM",
+    "M...::::r::::r::::...M",
+    "FF..:c::r::::r::c:..FF",
+    "FFor::::r::::r::::..FF",
+    "...r..::rMMMMr::..rKFF",
+    "vOrrrrrrrMMMMr::..r...",
+    "...r..::rMMMMrrrrrrrBV",
+    "FFkr..::rMMMMr::..r...",
+    "FF..::::r::::r::::rbFF",
+    "FF..:c::r::::r::c:..FF",
+    "M...::::r::::r::::...M",
+    "MMM...c.rrrrrr.c...MMM",
+    "MMM.FFF....c...FFF.MMM"
+  ],
+  "units": [
+    { "type": "soldier", "owner": 0, "x": 3, "y": 6 },
+    { "type": "soldier", "owner": 1, "x": 18, "y": 7 },
+    { "type": "soldier", "owner": 0, "x": 3, "y": 5 },
+    { "type": "soldier", "owner": 1, "x": 18, "y": 8 },
+    { "type": "soldier", "owner": 0, "x": 3, "y": 7 },
+    { "type": "soldier", "owner": 1, "x": 18, "y": 6 },
+    { "type": "mech", "owner": 0, "x": 4, "y": 6 },
+    { "type": "mech", "owner": 1, "x": 17, "y": 7 },
+    { "type": "tank", "owner": 0, "x": 5, "y": 6 },
+    { "type": "tank", "owner": 1, "x": 16, "y": 7 },
+    { "type": "recon", "owner": 0, "x": 4, "y": 5 },
+    { "type": "recon", "owner": 1, "x": 17, "y": 8 },
+    { "type": "artillery", "owner": 0, "x": 2, "y": 6 },
+    { "type": "artillery", "owner": 1, "x": 19, "y": 7 },
+    { "type": "sniper", "owner": 0, "x": 4, "y": 7 },
+    { "type": "sniper", "owner": 1, "x": 17, "y": 6 }
+  ]
+}

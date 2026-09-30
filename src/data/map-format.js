@@ -12,7 +12,7 @@ export const MAP_FORMAT = 'pocketwars-map';
 export const MAP_VERSION = 1;
 export const CONTROLLERS = ['human', 'ai'];
 const MAX_SIZE = 64;
-const MAX_PLAYERS = 8;
+const MAX_PLAYERS = 4;
 
 export class MapError extends Error {
   constructor(id, problems) {

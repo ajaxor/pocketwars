@@ -1,10 +1,16 @@
 // Entry point, loaded by the loader in index.html after it has picked the cache-busted build directory.
-// Loads the entity data and the chosen map, builds a Game and starts a Session.
+// Loads the entity data and the maps, sets up the default mission behind the title screen and hands the launcher a handle to
+// start other games (the skirmish page does that).
 //
-//   boot({onQuit})    onQuit() is called when the player leaves to the title screen; resolves once the game is running behind the title screen
-//   ?map=<id>         URL parameter to pick another map from data/maps/index.json
+//   boot({onQuit})    onQuit() is called when the player leaves to the title screen; resolves once the game is running behind it
+//   ?map=<id>         URL parameter to pick another map from data/maps/index.json for the default mission
+//
+// boot() resolves to { registry, map, maps, defaultMapId, play(map) }:
+//   map / maps        the default mission's map / every map in the index (parsed, in index order)
+//   play(map)         throw away the running game and start a fresh one on `map` (a GameMap, e.g. from applySkirmish)
 
 import { fetchReader, loadMap, loadMapIndex, loadRegistry } from './data/loader.js';
+import { parseMap } from './data/map-format.js';
 import { Game } from './engine/game.js';
 import { Session } from './ui/session.js';
 
@@ -14,19 +20,29 @@ export async function boot({ onQuit } = {}) {
   const index = await loadMapIndex(readJson);
   const params = new URLSearchParams(location.search);
   const wanted = params.get('map');
-  const mapId = wanted && index.maps[wanted] ? wanted : index.default;
-  const map = await loadMap(readJson, registry, mapId);
+  const defaultMapId = wanted && index.maps[wanted] ? wanted : index.default;
+  const map = await loadMap(readJson, registry, defaultMapId);
+
+  // every map, for the skirmish page; one that fails to load is left out rather than breaking the game
+  const maps = (await Promise.all(Object.entries(index.maps).map(async ([id, file]) => {
+    if (id === defaultMapId) return map;
+    try { return parseMap(await readJson(`maps/${file}`), registry); } catch (e) { console.error(`Skipping map "${id}":`, e); return null; }
+  }))).filter(Boolean);
 
   const canvas = document.getElementById('c');
   let session = null;
-  // quit: set the mission up fresh behind the title screen, then let the host show that screen
-  const quit = () => { launch(); onQuit?.(); };
+  let current = map;            // the map being played: restart replays it, quitting goes back to the default mission
+  // quit: set the default mission up fresh behind the title screen, then let the host show that screen
+  const quit = () => { current = map; launch(); onQuit?.(); };
   const launch = () => {
     if (session) session.dispose();
-    session = new Session(new Game(registry, map), { canvas, doc: document, restart: launch, quit });
+    session = new Session(new Game(registry, current), { canvas, doc: document, restart: launch, quit });
     session.start();
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   launch();
-  return { registry, map };
+  return {
+    registry, map, maps, defaultMapId,
+    play(next) { current = next; launch(); },
+  };
 }

@@ -1,8 +1,9 @@
 // Capturing properties. Governed by the unit attribute `capture` and the terrain attribute `property`
-// (capturePoints to flip owner) plus `victoryOnCapture` (ends the game).
+// (capturePoints to flip owner) plus `victoryOnCapture` (capturing it knocks its owner out; the last player left wins).
 
 import { hasAttribute } from './attributes.js';
 import { ownerAt, propertyAt, snapshotUnit, terrainAt, unitDef } from './queries.js';
+import { eliminate } from './victory.js';
 
 /** Could `unit` capture the tile at (x, y) if it stood there? */
 export function canCapture(game, unit, x = unit.x, y = unit.y) {
@@ -11,7 +12,8 @@ export function canCapture(game, unit, x = unit.x, y = unit.y) {
 
 /**
  * Add the unit's HP (rounded up) to its capture progress on its current tile; flip the owner when the
- * property's capturePoints are reached. Returns a single 'capture' event (plus 'gameOver' on an HQ).
+ * property's capturePoints are reached. Returns a 'capture' event, plus on an HQ an 'eliminated' event for the owner it was taken
+ * from, or 'gameOver' when that leaves the capturer as the only player.
  * The caller is responsible for having reset `unit.capture` if the unit moved to this tile.
  */
 export function resolveCapture(game, unit) {
@@ -26,11 +28,11 @@ export function resolveCapture(game, unit) {
     progress: unit.capture, needed: property.capturePoints,
   }];
   if (completed) {
+    const previous = game.state.owners[y][x];
     game.state.owners[y][x] = unit.owner;
     unit.capture = 0;
-    if (hasAttribute(terrainAt(game, x, y), 'victoryOnCapture')) {
-      game.state.winner = unit.owner;
-      events.push({ type: 'gameOver', winner: unit.owner, reason: 'hq' });
+    if (hasAttribute(terrainAt(game, x, y), 'victoryOnCapture') && previous !== null && previous !== unit.owner) {
+      events.push(...eliminate(game, previous, 'hq'));
     }
   }
   return events;

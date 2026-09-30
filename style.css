@@ -2,7 +2,7 @@
    src/ui/kit.js and the layout by src/ui/hud.js. To restyle the game, change the tokens first.
 
    Layers, back to front:  body (backdrop)  <  canvas#c (the map, covers the window)  <  #ui (status bar, dock, game-over box)
-                                                                                     <  .title (the title screen) */
+                                                                                     <  .title (the title screen)  <  .sk (the skirmish page) */
 
 @font-face {
   font-family: Fredoka;
@@ -218,6 +218,55 @@ canvas.unit-icon { display: block; flex: none; }
 .title-upd { color: var(--edge); background: linear-gradient(#fff07a, #ffd93d); text-shadow: none; }
 .title-ver { margin-top: 6px; font-size: 12px; opacity: .7; letter-spacing: .04em; font-variant-numeric: tabular-nums; }
 .title-ver:empty { display: none; }
+
+/* ---- skirmish page (src/ui/skirmish-screen.js) ------------------------------------------------------------------------------- */
+.sk { position: fixed; inset: 0; z-index: 11; display: flex; flex-direction: column; background: linear-gradient(#2a3a3a, #1d2436 30%); color: var(--ink); }
+.sk-head { flex: none; display: flex; align-items: center; gap: 12px; padding: calc(10px + var(--safe-t)) calc(12px + var(--safe-r)) 10px calc(12px + var(--safe-l)); background: linear-gradient(180deg, #2a3553, #1f2742); border-bottom: 3px solid var(--accent); box-shadow: 0 4px 0 rgba(0, 0, 0, .3); }
+.sk-title { margin: 0; font: 700 22px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; }
+.sk-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; -webkit-overflow-scrolling: touch; padding: 14px calc(14px + var(--safe-r)) 18px calc(14px + var(--safe-l)); display: flex; flex-direction: column; gap: 18px; max-width: 640px; width: 100%; margin: 0 auto; }
+.sk-sec { display: flex; flex-direction: column; gap: 10px; }
+.sk-sec-title { margin: 0; color: var(--dim); font: 700 12px/1 var(--font); letter-spacing: .14em; text-transform: uppercase; }
+.sk-foot { flex: none; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px calc(14px + var(--safe-r)) calc(12px + var(--safe-b)) calc(14px + var(--safe-l)); background: rgba(10, 14, 26, .7); border-top: 3px solid var(--edge); }
+.sk-foot .btn { min-width: 240px; }
+.sk-note { min-height: 1.2em; color: var(--gold); font-size: 13px; font-weight: 600; }
+.sk-note:empty { display: none; }
+
+.sk-maps { display: flex; gap: 8px; overflow-x: auto; padding: 2px 2px 8px; margin: 0 -2px; scroll-snap-type: x proximity; overscroll-behavior-x: contain; touch-action: pan-x; }
+.sk-map { flex: none; width: 150px; display: flex; flex-direction: column; align-items: stretch; gap: 6px; padding: 8px; scroll-snap-align: start; text-align: left; font: inherit; color: var(--ink); cursor: pointer; background: linear-gradient(#303c60, #242e4b); border: 3px solid var(--edge); border-radius: 12px; box-shadow: inset 0 0 0 2px rgba(243, 236, 214, .12), 0 3px 0 var(--edge); touch-action: manipulation; }
+.sk-map.is-picked { border-color: var(--gold); box-shadow: inset 0 0 0 2px rgba(255, 228, 92, .4), 0 3px 0 var(--edge); background: linear-gradient(#46548a, #36416a); }
+.sk-map:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.sk-thumb { display: block; margin: 0 auto; image-rendering: pixelated; border-radius: 4px; box-shadow: 0 0 0 2px rgba(0, 0, 0, .4); max-width: 100%; height: auto; }
+.sk-map-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.sk-map-name { font-weight: 700; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sk-map-meta { color: var(--dim); font-size: 11px; font-weight: 600; }
+
+.sk-preview { display: flex; gap: 12px; align-items: flex-start; padding: 10px; border-radius: 12px; background: rgba(0, 0, 0, .22); }
+.sk-big { flex: none; display: block; image-rendering: pixelated; border-radius: 4px; box-shadow: 0 0 0 2px rgba(0, 0, 0, .4); max-width: 55%; height: auto; }
+.sk-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sk-info-name { font-weight: 700; font-size: 16px; }
+.sk-desc { color: var(--dim); font-size: 13px; line-height: 1.35; }
+
+.sk-teams { display: flex; flex-direction: column; gap: 8px; }
+.sk-slot { display: flex; flex-direction: column; gap: 8px; padding: 10px 10px 10px 16px; position: relative; border-radius: 12px; background: linear-gradient(180deg, var(--panel-hi), var(--panel)); border: 3px solid var(--edge); box-shadow: inset 0 0 0 2px rgba(243, 236, 214, .12); }
+.sk-slot::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 7px; background: var(--accent); border-radius: 9px 0 0 9px; }
+.sk-slot-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.sk-slot-name { display: inline-flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: 15px; }
+.sk-slot-faction { color: var(--dim); font-size: 11px; font-weight: 600; }
+.sk-swatches { display: flex; gap: 10px; }
+.sk-swatch { flex: none; width: 44px; height: 44px; padding: 0; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--swatch) 70%, #fff), var(--swatch) 55%, var(--swatch-dark)); border: 3px solid var(--edge); box-shadow: 0 3px 0 var(--edge); touch-action: manipulation; }
+.sk-swatch:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge); }
+.sk-swatch.is-picked { box-shadow: 0 0 0 3px var(--gold), 0 3px 0 3px var(--edge); }
+.sk-swatch:focus-visible { outline: 3px solid var(--gold); outline-offset: 3px; }
+
+.sk-rules { display: flex; flex-direction: column; gap: 10px; }
+.sk-rule { display: flex; flex-direction: column; gap: 6px; }
+.sk-rule-name { font-weight: 700; font-size: 14px; }
+.sk-seg { display: inline-flex; flex-wrap: wrap; border-radius: 10px; overflow: hidden; border: 3px solid var(--edge); background: rgba(0, 0, 0, .3); align-self: flex-start; }
+.sk-opt { font: 700 13px/1 var(--font); color: var(--dim); background: none; border: 0; padding: 11px 12px; min-height: 40px; cursor: pointer; touch-action: manipulation; }
+.sk-opt + .sk-opt { border-left: 2px solid var(--edge); }
+.sk-opt.is-picked { background: linear-gradient(#f28c47, #d6601d); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
+.sk-opt:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
+.title-skirmish { min-width: 220px; }
 
 /* the scene's motion */
 .t-cloud { fill: #f7c6b0; opacity: .35; animation: t-drift 40s linear infinite; }

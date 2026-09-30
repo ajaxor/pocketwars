@@ -69,6 +69,7 @@ export function validateTerrain(terrain, rules, problems) {
       }
     }
     if (!isObj(t.render) || !isColor(t.render.base)) problems.push(`terrain "${id}": render.base must be a hex color`);
+    else if (t.render.mini !== undefined && !isColor(t.render.mini)) problems.push(`terrain "${id}": render.mini (the colour on the map preview) must be a hex color`);
     checkAttributes('terrain', id, t, TERRAIN_ATTRIBUTES, problems);
   }
 }
@@ -130,7 +131,10 @@ export function validateAi(ai, units, problems) {
   if (!isObj(ai)) return problems.push('ai.json must be an object');
   const weightKeys = ['distanceToGoal', 'unreachableDistance', 'terrainDefense', 'attackBase', 'killBonus', 'captureBase', 'victoryCaptureBonus', 'costUnit'];
   if (!isObj(ai.weights)) problems.push('ai: weights must be an object');
-  else for (const k of weightKeys) if (!isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
+  else {
+    for (const k of weightKeys) if (!isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
+    if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push('ai: weights.blockCapture must be a number');
+  }
   if (!isObj(ai.build)) return problems.push('ai: build must be an object keyed by unit category');
   for (const [category, rules] of Object.entries(ai.build)) {
     if (!Array.isArray(rules)) { problems.push(`ai: build.${category} must be an array`); continue; }

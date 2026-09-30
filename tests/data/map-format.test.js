@@ -25,7 +25,7 @@ test('header problems: format, version, id, name', () => {
 
 test('players: count, faction, duplicates, controller, funds', () => {
   const p = (o) => rawMap({ players: o });
-  has(p([{ faction: 'red', controller: 'human', funds: 0 }]), /2 to 8/);
+  has(p([{ faction: 'red', controller: 'human', funds: 0 }]), /2 to 4/);
   has(p([{ faction: 'red', controller: 'human', funds: 0 }, { faction: 'zzz', controller: 'ai', funds: 0 }]), /unknown faction "zzz"/);
   has(p([{ faction: 'red', controller: 'human', funds: 0 }, { faction: 'red', controller: 'ai', funds: 0 }]), /more than one player/);
   has(p([{ faction: 'red', controller: 'robot', funds: 0 }, { faction: 'blue', controller: 'ai', funds: 0 }]), /controller must be/);

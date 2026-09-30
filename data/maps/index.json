@@ -1,6 +1,10 @@
 {
   "default": "classic",
   "maps": {
-    "classic": "classic.map.json"
+    "classic": "classic.map.json",
+    "dust_bowl": "dust_bowl.map.json",
+    "river_run": "river_run.map.json",
+    "four_corners": "four_corners.map.json",
+    "tri_point": "tri_point.map.json"
   }
 }

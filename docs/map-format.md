@@ -24,7 +24,7 @@ reports every problem at once.
 }
 ```
 
-- `players`: 2-8 entries, unique factions from `data/factions.json`; `controller` is `human` or `ai`; player index = position.
+- `players`: 2-4 entries (each gets its own colour), unique factions from `data/factions.json`; `controller` is `human` or `ai`; player index = position.
   Player 0 moves first.
 - `legend`: one character -> terrain id (+ optional `owner` player index, only on terrain with the `property` attribute).
 - `tiles`: equal-length rows of legend glyphs; up to 64x64.
@@ -34,3 +34,10 @@ reports every problem at once.
 
 `serializeMap(map)` is the inverse of `parseMap` (for a future editor). To add a map: drop the file in `data/maps/`, add it
 to `index.json`, run `npm run validate`.
+
+## Terrain notes
+
+- Move classes are `foot`, `wheels`, `tread` and `air`. Roads cost wheels 0.5; forests cost treads 2 and block wheels; rough ground blocks
+  wheels and costs treads 1; mountains admit only foot (and air).
+- `terrain.json -> render.mini` (optional hex colour) is the flat colour used by the skirmish page's map preview.
+- Maps larger than the screen scroll; any size up to 64x64 works.

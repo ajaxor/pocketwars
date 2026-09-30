@@ -1,0 +1,60 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "river_run",
+  "name": "River Run",
+  "description": "A 26x16 river valley. Two bridges are the only ground crossings, so the road nets on each bank decide who gets there first; only air can cross anywhere else.",
+  "players": [
+    { "faction": "orange_star", "controller": "human", "funds": 8000 },
+    { "faction": "blue_moon", "controller": "ai", "funds": 8000 }
+  ],
+  "legend": {
+    ".": { "terrain": "plain" },
+    ":": { "terrain": "rough" },
+    "F": { "terrain": "forest" },
+    "M": { "terrain": "mountain" },
+    "c": { "terrain": "city" },
+    "r": { "terrain": "road" },
+    "~": { "terrain": "sea" },
+    "B": { "terrain": "hq", "owner": 1 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "V": { "terrain": "airfield", "owner": 1 },
+    "v": { "terrain": "airfield", "owner": 0 }
+  },
+  "tiles": [
+    "MMM:::.....F~~F.....:::MMM",
+    "MM.:::..c..F~~F..c..:::.MM",
+    "FF.:::..FFFF~~FFFF..:::.FF",
+    "FF......FFFF~~FFFF......FF",
+    "FF....rrrrrrrrrrrrrr....FF",
+    "...rc.r..::.~~.::..r.c....",
+    "...r..rMM::.~~.::MMr..r.V.",
+    ".OrrrrrMM::.~~.::MMr..r...",
+    "...r..rMM::.~~.::MMrrrrrB.",
+    ".v.r..rMM::.~~.::MMr..r...",
+    "....c.r..::.~~.::..r.cr...",
+    "FF....rrrrrrrrrrrrrr....FF",
+    "FF......FFFF~~FFFF......FF",
+    "FF.:::..FFFF~~FFFF..:::.FF",
+    "MM.:::..c..F~~F..c..:::.MM",
+    "MMM:::.....F~~F.....:::MMM"
+  ],
+  "units": [
+    { "type": "soldier", "owner": 0, "x": 4, "y": 6 },
+    { "type": "soldier", "owner": 1, "x": 21, "y": 9 },
+    { "type": "soldier", "owner": 0, "x": 4, "y": 8 },
+    { "type": "soldier", "owner": 1, "x": 21, "y": 7 },
+    { "type": "soldier", "owner": 0, "x": 5, "y": 7 },
+    { "type": "soldier", "owner": 1, "x": 20, "y": 8 },
+    { "type": "mech", "owner": 0, "x": 4, "y": 7 },
+    { "type": "mech", "owner": 1, "x": 21, "y": 8 },
+    { "type": "tank", "owner": 0, "x": 3, "y": 7 },
+    { "type": "tank", "owner": 1, "x": 22, "y": 8 },
+    { "type": "recon", "owner": 0, "x": 5, "y": 6 },
+    { "type": "recon", "owner": 1, "x": 20, "y": 9 },
+    { "type": "artillery", "owner": 0, "x": 2, "y": 7 },
+    { "type": "artillery", "owner": 1, "x": 23, "y": 8 },
+    { "type": "sniper", "owner": 0, "x": 5, "y": 8 },
+    { "type": "sniper", "owner": 1, "x": 20, "y": 7 }
+  ]
+}

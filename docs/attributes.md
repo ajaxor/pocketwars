@@ -25,7 +25,7 @@ wrong kind of entity, fail validation.
 | `property` | Ownable, capturable tile: `income`, `capturePoints`, `repair`, `builds` (unit categories). | `property.test.js` |
 | `blocksLineOfSight` | Obstacle for direct fire; the number is its height (forest 1, mountain and buildings 2). | `sight.test.js` |
 | `vantage` | A firer standing here shoots over obstacles lower than this number (mountain 2). | `sight.test.js` |
-| `victoryOnCapture` | Capturing it wins the game (HQ). Requires `property`. | `property.test.js` |
+| `victoryOnCapture` | Capturing it knocks its owner out of the game (HQ): their units leave the board and their properties go neutral. The last player left wins. Requires `property`. | `capture.test.js`, `turns.test.js` |
 
 ## Other data-driven stats (not attributes)
 

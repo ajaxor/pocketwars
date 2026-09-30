@@ -2,49 +2,56 @@
   "plain": {
     "name": "Plain",
     "defense": 0,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#86b95c", "decor": "grass" }
+    "render": { "base": "#86b95c", "decor": "grass", "mini": "#86b95c" }
   },
   "forest": {
     "name": "Forest",
     "defense": 2,
-    "moveCost": { "foot": 1, "vehicle": 2, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": null, "tread": 2, "air": 1 },
     "attributes": { "blocksLineOfSight": 1 },
-    "render": { "base": "#86b95c", "decor": "forest" }
+    "render": { "base": "#86b95c", "decor": "forest", "mini": "#3d7f43" }
   },
   "mountain": {
     "name": "Mountain",
     "defense": 4,
-    "moveCost": { "foot": 2, "vehicle": null, "air": 1 },
+    "moveCost": { "foot": 2, "wheels": null, "tread": null, "air": 1 },
     "attributes": { "blocksLineOfSight": 2, "vantage": 2 },
-    "render": { "base": "#86b95c", "decor": "mountain" }
+    "render": { "base": "#86b95c", "decor": "mountain", "mini": "#8f877a" }
+  },
+  "rough": {
+    "name": "Rough",
+    "defense": 0,
+    "moveCost": { "foot": 2, "wheels": null, "tread": 1, "air": 1 },
+    "attributes": {},
+    "render": { "base": "#b59d6b", "decor": "rough", "mini": "#b59d6b" }
   },
   "road": {
     "name": "Road",
     "defense": 0,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 0.5, "tread": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#cdbb8f", "decor": "road" }
+    "render": { "base": "#5d626b", "decor": "road", "mini": "#5d626b" }
   },
   "sea": {
     "name": "Sea",
     "defense": 0,
-    "moveCost": { "foot": null, "vehicle": null, "air": 1 },
+    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1 },
     "attributes": {},
-    "render": { "base": "#3d7ec7", "decor": "sea" }
+    "render": { "base": "#3d7ec7", "decor": "sea", "mini": "#3d7ec7" }
   },
   "city": {
     "name": "City",
     "defense": 3,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "city" }
   },
   "hq": {
     "name": "HQ",
     "defense": 4,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1 },
     "attributes": {
       "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
       "victoryOnCapture": true,
@@ -55,21 +62,21 @@
   "factory": {
     "name": "Factory",
     "defense": 3,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "factory" }
   },
   "barracks": {
     "name": "Barracks",
     "defense": 3,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "barracks" }
   },
   "airfield": {
     "name": "Airfield",
     "defense": 3,
-    "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["aircraft"] }, "blocksLineOfSight": 2 },
     "render": { "base": "#86b95c", "decor": "grass", "building": "airfield" }
   }

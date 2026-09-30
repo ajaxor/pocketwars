@@ -2,11 +2,13 @@
 // the End-turn button and the AI's turns with their pacing delays.
 
 import { buildPhase, chooseOrder } from '../engine/ai.js';
-import { propertiesOwnedBy, factionOf } from '../engine/queries.js';
+import { hasAttribute } from '../engine/attributes.js';
+import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
 import { MoveAnimator } from '../render/animator.js';
 import { Effects } from '../render/effects.js';
 import { Renderer } from '../render/renderer.js';
 import { Controller } from './controller.js';
+import { Gestures } from './gestures.js';
 import { Hud } from './hud.js';
 import { describeEvents } from './messages.js';
 import { Presenter } from './presenter.js';
@@ -37,16 +39,36 @@ export class Session {
       colorsOf: (owner) => this.renderer.colorsOf(owner), onEvents: (events) => this.#handleEvents(events),
     });
 
-    this.onPointerDown = (e) => {
-      e.preventDefault();
-      if (!this.#inputAllowed()) return;
-      const { x, y } = this.renderer.tileAt(e.clientX, e.clientY);
-      this.controller.tap(x, y);
-    };
+    // Touch, mouse and trackpad on the map: a tap selects, a drag scrolls, a pinch (or ctrl + wheel) zooms. Scrolling and zooming
+    // work at any time (also while the computer moves); only taps are held back until it is a human's turn.
+    this.gestures = new Gestures({
+      onTap: (cx, cy) => {
+        if (!this.#inputAllowed()) return;
+        const { x, y } = this.renderer.tileAt(cx, cy);
+        this.controller.tap(x, y);
+      },
+      onPan: (dx, dy) => this.renderer.pan(dx, dy),
+      onZoom: (factor, x, y) => this.renderer.zoom(factor, x, y),
+    });
+    this.onPointerDown = (e) => { e.preventDefault(); this.canvas.setPointerCapture?.(e.pointerId); this.gestures.down(e); };
+    this.onPointerMove = (e) => this.gestures.move(e);
+    this.onPointerUp = (e) => this.gestures.up(e);
+    this.onPointerCancel = (e) => this.gestures.cancel(e);
+    this.onWheel = (e) => { e.preventDefault(); this.gestures.wheel(e); };
     this.onResize = () => this.#fit();
+    this.lastFrame = 0;
   }
 
   #fit() { this.renderer.fit({ top: this.hud.barHeight() }); }
+
+  /** On a map bigger than the screen, open on the viewing player's HQ (or their first unit). */
+  #centerOnStart() {
+    const { game } = this;
+    const viewer = this.#viewer();
+    const home = allProperties(game).find((p) => p.owner === viewer && hasAttribute(p.terrain, 'victoryOnCapture'))
+      || game.state.units.find((u) => u.owner === viewer);
+    if (home) this.renderer.centerOn(home.x, home.y);
+  }
 
   /** The dock floats over the map on the edge away from the tile being worked on: the top half of the screen -> bottom edge. */
   #placeDock() {
@@ -63,7 +85,12 @@ export class Session {
   start() {
     const { hud, game } = this;
     this.#fit();
+    this.#centerOnStart();
     this.canvas.addEventListener('pointerdown', this.onPointerDown);
+    this.canvas.addEventListener('pointermove', this.onPointerMove);
+    this.canvas.addEventListener('pointerup', this.onPointerUp);
+    this.canvas.addEventListener('pointercancel', this.onPointerCancel);
+    this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     addEventListener('resize', this.onResize);
     hud.onEnd(() => this.#onEndTurn());
     hud.onUndo(() => this.#onUndo());
@@ -76,6 +103,10 @@ export class Session {
   dispose() {
     this.disposed = true;
     this.canvas.removeEventListener('pointerdown', this.onPointerDown);
+    this.canvas.removeEventListener('pointermove', this.onPointerMove);
+    this.canvas.removeEventListener('pointerup', this.onPointerUp);
+    this.canvas.removeEventListener('pointercancel', this.onPointerCancel);
+    this.canvas.removeEventListener('wheel', this.onWheel);
     removeEventListener('resize', this.onResize);
     this.hud.onEnd(null);
     this.hud.onUndo(null);
@@ -113,6 +144,8 @@ export class Session {
     if (this.disposed) return;
     const { game, hud, controller } = this;
     const now = this.#now();
+    this.renderer.updateCamera(this.lastFrame ? Math.min(50, now - this.lastFrame) : 0);
+    this.lastFrame = now;
     hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
     this.animator.update(now);
     const viewer = this.#viewer();
@@ -188,7 +221,13 @@ export class Session {
       if (game.isOver || this.disposed) return;
       animator.arrow = null;
       if (game.state.units.includes(unit)) {
-        const res = game.act(chooseOrder(game, unit));
+        const order = chooseOrder(game, unit);
+        // on a map bigger than the screen, bring the unit, where it is going and what it shoots at into view first
+        const target = order.action.targetId ? unitById(game, order.action.targetId) : null;
+        this.renderer.reveal([[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])]);
+        if (this.renderer.camera.glide) await sleep(350);
+        if (game.isOver || this.disposed) return;
+        const res = game.act(order);
         if (!res.ok) throw new Error(`AI produced an invalid order: ${res.error}`);
         presenter.present(res.events, { now: this.#now() });
         const text = describeEvents(game, res.events);

@@ -68,8 +68,8 @@ export const TERRAIN_ATTRIBUTES = {
   },
   victoryOnCapture: {
     label: 'Capture to win',
-    help: 'Capture it to win the game.',
-    doc: 'Capturing this tile wins the game for the capturing player (an HQ). Requires the property attribute.',
+    help: 'Capture it to knock its owner out of the game.',
+    doc: 'Capturing this tile eliminates the player it was taken from (an HQ): their units leave the board and their properties go neutral. The last player left wins. Requires the property attribute.',
     check: (v, e, fail) => {
       if (!isFlag(v)) fail('must be true');
       if (!e.attributes || !e.attributes.property) fail('requires the property attribute');

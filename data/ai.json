@@ -7,7 +7,8 @@
     "killBonus": 4,
     "captureBase": 50,
     "victoryCaptureBonus": 100,
-    "costUnit": 1000
+    "costUnit": 1000,
+    "blockCapture": 6
   },
   "build": {
     "infantry": [

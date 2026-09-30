@@ -96,7 +96,7 @@ test('a terrain window for a property shows its owner and income; impassable mov
   let sea = null;
   game.map.terrain.forEach((row, y) => row.forEach((t, x) => { if (t === 'sea') sea = { x, y }; }));
   hud.info({ terrain: terrainInfo(game, sea.x, sea.y) });
-  assert.equal(byClass('chip--no').length, 2, 'foot and wheels cannot enter the sea');
+  assert.equal(byClass('chip--no').length, 3, 'foot, wheels and treads cannot enter the sea');
 });
 
 test('the capture and attack-forecast lines appear only when they apply', () => {

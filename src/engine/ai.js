@@ -11,7 +11,7 @@ import { canCapture } from './capture.js';
 import { calcDamage, canAttackFrom } from './combat.js';
 import { buildProblem } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving } from './movement.js';
-import { allProperties, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
+import { allProperties, ownerAt, propertyAt, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
 
 /**
  * Tiles worth walking toward: capturers head for properties they don't own, everyone else for enemy units.
@@ -42,7 +42,8 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   let best = null;
   for (const { x, y } of reach.tiles()) {
     const moved = x !== unit.x || y !== unit.y;
-    const defense = terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
+    // cover only matters to a unit that gets it (aircraft ignore it)
+    const defense = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
     let score = -(field.get(tileIndex(map, x, y)) ?? w.unreachableDistance) * w.distanceToGoal + defense * w.terrainDefense;
     let target = null;
     let capture = false;
@@ -62,6 +63,9 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
       capture = true;
       const winsGame = hasAttribute(terrainAt(game, x, y), 'victoryOnCapture');
       score = w.captureBase + (winsGame ? w.victoryCaptureBonus : 0);
+    } else if (propertyAt(game, x, y) && ownerAt(game, x, y) !== unit.owner) {
+      // a unit parked on someone else's property keeps everyone from capturing it: leave those tiles to the units that can
+      score -= w.blockCapture ?? 0;
     }
     if (!best || score > best.score) best = { x, y, score, target, capture };
   }

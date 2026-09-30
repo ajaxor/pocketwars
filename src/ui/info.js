@@ -7,7 +7,7 @@ import { calcDamage, terrainStars } from '../engine/combat.js';
 import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const MOVE_LABELS = { foot: 'Foot', vehicle: 'Wheels', air: 'Air' };
+const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air' };
 const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft' };
 /** "vehicle" -> "Vehicles": a unit category as a heading (unknown names are capitalised and pluralised). */
 const categoryLabel = (c) => CATEGORY_LABELS[c] || `${cap(c)}s`;
