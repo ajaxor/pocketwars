@@ -7,7 +7,7 @@ import { validateData } from '../../src/data/validate.js';
 import { hasAttribute } from '../../src/engine/attributes.js';
 import { UNIT_SPRITES } from '../../src/render/unit-sprites.js';
 import { BUILDINGS } from '../../src/render/buildings.js';
-import { TERRAIN_THEMES } from '../../src/render/terrain-themes.js';
+import { TERRAIN_DECOR } from '../../src/render/terrain-art.js';
 import { Game } from '../../src/engine/game.js';
 import { canTarget } from '../../src/engine/combat.js';
 
@@ -31,7 +31,7 @@ test('every unit has a sprite and a known attack effect', () => {
 test('every property terrain has a building drawing; decor names exist', () => {
   for (const [id, t] of Object.entries(registry.terrain)) {
     if (hasAttribute(t, 'property')) assert.ok(BUILDINGS[t.render.building], `${id}: render.building "${t.render.building}" has no drawing`);
-    if (t.render.decor) for (const theme of TERRAIN_THEMES) assert.equal(typeof theme.decor[t.render.decor], 'function', `${id}: theme "${theme.id}" has no drawing for decor "${t.render.decor}"`);
+    if (t.render.decor) assert.equal(typeof TERRAIN_DECOR[t.render.decor], 'function', `${id}: no drawing for decor "${t.render.decor}"`);
   }
 });
 

@@ -7,7 +7,6 @@ import { TitleScreen } from './ui/title-screen.js';
 /** Extra buttons on the title screen. */
 export const GALLERIES = [
   { label: 'Unit art', href: 'gallery/' },
-  { label: 'Terrain art', href: 'gallery/terrain.html' },
 ];
 
 const defaultLoadCss = (doc, href) => new Promise((ok, no) => {

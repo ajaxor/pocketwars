@@ -16,9 +16,9 @@ test('it mounts one overlay on the page, with Start disabled while loading', () 
 });
 
 test('links become anchors under the Start button, in order', () => {
-  const { title } = make([{ label: 'Unit art', href: 'gallery/' }, { label: 'Terrain art', href: 'gallery/terrain.html' }]);
+  const { title } = make([{ label: 'Unit art', href: 'gallery/' }]);
   const anchors = title.links.children;
-  assert.deepEqual(anchors.map((a) => [a.tag, a.textContent, a.attrs.href]), [['a', 'Unit art', 'gallery/'], ['a', 'Terrain art', 'gallery/terrain.html']]);
+  assert.deepEqual(anchors.map((a) => [a.tag, a.textContent, a.attrs.href]), [['a', 'Unit art', 'gallery/']]);
 });
 
 test('with no links the link row is empty, not missing', () => assert.equal(make().title.links.children.length, 0));

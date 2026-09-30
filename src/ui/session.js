@@ -16,9 +16,9 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class Session {
   /**
    * @param {import('../engine/game.js').Game} game
-   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void, terrainTheme?:string}} host
+   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void}} host
    */
-  constructor(game, { canvas, doc, restart, terrainTheme }) {
+  constructor(game, { canvas, doc, restart }) {
     this.game = game;
     this.canvas = canvas;
     this.restart = restart;
@@ -28,7 +28,7 @@ export class Session {
     this.animator = new MoveAnimator();
     this.renderer = null;
     this.effects = new Effects(game.registry, (owner) => this.renderer.colorsOf(owner));
-    this.renderer = new Renderer(canvas, game, this.effects, this.animator, { terrainTheme });
+    this.renderer = new Renderer(canvas, game, this.effects, this.animator);
     this.hud = new Hud(doc);
     this.presenter = new Presenter({ effects: this.effects, animator: this.animator });
     this.controller = new Controller({

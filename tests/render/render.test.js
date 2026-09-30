@@ -8,7 +8,6 @@ import { Game } from '../../src/engine/game.js';
 import { Effects } from '../../src/render/effects.js';
 import { MoveAnimator } from '../../src/render/animator.js';
 import { Renderer } from '../../src/render/renderer.js';
-import { TERRAIN_THEMES, DEFAULT_TERRAIN_THEME } from '../../src/render/terrain-themes.js';
 import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
 import { drawUnit } from '../../src/render/unit-sprites.js';
@@ -63,25 +62,15 @@ test('selection overlays draw (reach, attack outline, targets, pending target)',
   renderer.draw({ ...emptyView, selectedId: unit.id, attackTiles: attack, targets: [enemy], showTargets: true, pendingTargetId: enemy.id }, 1000);
 });
 
-test('the board and its selection overlays draw with every terrain theme', () => {
-  for (const theme of TERRAIN_THEMES) {
-    const game = new Game(registry, classic);
-    const { ctx } = recorder();
-    const effects = new Effects(registry, (o) => registry.faction(game.map.players[o].faction));
-    const renderer = new Renderer(canvasWith(ctx), game, effects, new MoveAnimator(), { terrainTheme: theme.id });
-    assert.equal(renderer.theme.id, theme.id);
-    const unit = game.state.units.find((u) => u.owner === 0);
-    const enemy = game.state.units.find((u) => u.owner === 1);
-    const reach = { tiles: () => [{ x: 1, y: 1 }, { x: 2, y: 1 }] };
-    renderer.draw({ ...emptyView, selectedId: unit.id, reach, attackTiles: new Set([0, 1]), targets: [enemy], showTargets: true, pendingTargetId: enemy.id }, 1000);
-  }
-});
-
-test('a renderer without a theme, or with an unknown one, uses the default theme', () => {
+test('the board and its selection overlays draw', () => {
   const game = new Game(registry, classic);
-  const mk = (opts) => new Renderer(canvasWith(recorder().ctx), game, null, null, opts);
-  assert.equal(mk().theme.id, DEFAULT_TERRAIN_THEME);
-  assert.equal(mk({ terrainTheme: 'nope' }).theme.id, DEFAULT_TERRAIN_THEME);
+  const { ctx } = recorder();
+  const effects = new Effects(registry, (o) => registry.faction(game.map.players[o].faction));
+  const renderer = new Renderer(canvasWith(ctx), game, effects, new MoveAnimator());
+  const unit = game.state.units.find((u) => u.owner === 0);
+  const enemy = game.state.units.find((u) => u.owner === 1);
+  const reach = { tiles: () => [{ x: 1, y: 1 }, { x: 2, y: 1 }] };
+  renderer.draw({ ...emptyView, selectedId: unit.id, reach, attackTiles: new Set([0, 1]), targets: [enemy], showTargets: true, pendingTargetId: enemy.id }, 1000);
 });
 
 test('effects run their whole lifecycle from real combat events', () => {

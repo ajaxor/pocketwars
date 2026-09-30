@@ -1,7 +1,8 @@
 // The terrain layer: paints every tile of the map. Tiles of the same base colour join up into one shape, and only the
 // outer corners of each shape are rounded. A rounded corner is filled with the colour of whatever it opens onto.
-// What is drawn ON the tile (trees, mountains, waves...) comes from a theme (terrain-themes.js).
+// What is drawn ON the tile (trees, mountains, waves...) comes from terrain-art.js.
 
+import { TERRAIN_DECOR } from './terrain-art.js';
 import { BUILDINGS } from './buildings.js';
 
 /** Colour under the whole layer; it only shows at the outer corners of the map. */
@@ -27,10 +28,9 @@ export function backdrop(base, a, b, d) {
 
 /**
  * Paint one tile whose top-left pixel is (px, py). `nb` holds the base colour of the eight neighbours (null off the map).
- * `at` = { x, y, now }: grid position and clock, for themes that vary or animate their drawings. Themes also get the
- * neighbours (`nb`) and the tile's own base colour (`base`), e.g. to draw foam where water meets land.
+ * `at` = { x, y, now }: grid position and clock, for drawings that vary per tile or animate.
  */
-export function paintTile(g, px, py, S, terrain, ownerColor, nb, theme, at) {
+export function paintTile(g, px, py, S, terrain, ownerColor, nb, at) {
   const base = terrain.render.base, r = S * CORNER;
   const same = (c) => c === base;
   // corner order matches roundRect's radii: top-left, top-right, bottom-right, bottom-left
@@ -48,15 +48,15 @@ export function paintTile(g, px, py, S, terrain, ownerColor, nb, theme, at) {
   if (same(nb.s)) { g.moveTo(px, py + S); g.lineTo(px + S, py + S); }
   g.stroke();
   const { decor, building } = terrain.render;
-  if (decor) theme.decor[decor](g, px, py, S, { x: at.x, y: at.y, now: at.now, nb, base });
+  if (decor) TERRAIN_DECOR[decor](g, px, py, S, at);
   if (building) BUILDINGS[building](g, px, py, S, ownerColor);
 }
 
 /**
  * Paint the whole terrain layer.
- * @param {{width:number,height:number,S:number,theme:object,now?:number,terrainAt:(x:number,y:number)=>object,ownerColorAt:(x:number,y:number)=>string|null}} o
+ * @param {{width:number,height:number,S:number,now?:number,terrainAt:(x:number,y:number)=>object,ownerColorAt:(x:number,y:number)=>string|null}} o
  */
-export function drawTerrainLayer(g, { width, height, S, theme, now = 0, terrainAt, ownerColorAt }) {
+export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, ownerColorAt }) {
   g.fillStyle = BOARD_COLOR; g.fillRect(0, 0, width * S, height * S);
   const baseAt = (x, y) => (x < 0 || y < 0 || x >= width || y >= height ? null : terrainAt(x, y).render.base);
   for (let y = 0; y < height; y++) {
@@ -65,7 +65,7 @@ export function drawTerrainLayer(g, { width, height, S, theme, now = 0, terrainA
         n: baseAt(x, y - 1), e: baseAt(x + 1, y), s: baseAt(x, y + 1), w: baseAt(x - 1, y),
         ne: baseAt(x + 1, y - 1), se: baseAt(x + 1, y + 1), sw: baseAt(x - 1, y + 1), nw: baseAt(x - 1, y - 1),
       };
-      paintTile(g, x * S, y * S, S, terrainAt(x, y), ownerColorAt(x, y), nb, theme, { x, y, now });
+      paintTile(g, x * S, y * S, S, terrainAt(x, y), ownerColorAt(x, y), nb, { x, y, now });
     }
   }
 }

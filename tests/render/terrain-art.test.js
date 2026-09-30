@@ -1,10 +1,10 @@
-// Terrain themes and the merged terrain layer.
+// The terrain art and the merged terrain layer.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { loadRegistry, loadMap } from '../../src/data/loader.js';
 import { BOARD_COLOR, backdrop, drawTerrainLayer, faceRect, paintTile } from '../../src/render/terrain-layer.js';
-import { DEFAULT_TERRAIN_THEME, TERRAIN_THEMES, rnd, terrainThemeById } from '../../src/render/terrain-themes.js';
+import { TERRAIN_DECOR, rnd } from '../../src/render/terrain-art.js';
 
 const registry = await loadRegistry(readData);
 const classic = await loadMap(readData, registry, 'classic');
@@ -20,29 +20,16 @@ function recorder() {
   return { ctx, calls };
 }
 
-const layer = (theme, S, now) => {
+const NB = { n: null, e: null, s: null, w: null, ne: null, se: null, sw: null, nw: null };
+const layer = (S, now) => {
   const { ctx, calls } = recorder();
   const terrainAt = (x, y) => registry.terrainDef(classic.terrain[y][x]);
-  drawTerrainLayer(ctx, { width: classic.width, height: classic.height, S, theme, now, terrainAt, ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? '#e8712c' : null) });
+  drawTerrainLayer(ctx, { width: classic.width, height: classic.height, S, now, terrainAt, ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? '#e8712c' : null) });
   return calls;
 };
 
-test('every theme paints the whole classic map at several sizes and times', () => {
-  for (const theme of TERRAIN_THEMES) {
-    for (const S of [24, 40, 120]) for (const now of [0, 1234.5]) assert.ok(layer(theme, S, now).length > classic.width * classic.height, `${theme.id} @${S}`);
-  }
-});
-
-test('theme ids are unique, each has a name and note, and the default exists', () => {
-  const ids = TERRAIN_THEMES.map((t) => t.id);
-  assert.equal(new Set(ids).size, ids.length);
-  for (const t of TERRAIN_THEMES) assert.ok(t.name && t.note, t.id);
-  assert.ok(ids.includes(DEFAULT_TERRAIN_THEME));
-});
-
-test('an unknown or missing theme id falls back to the default', () => {
-  for (const id of ['nope', undefined, null]) assert.equal(terrainThemeById(id).id, DEFAULT_TERRAIN_THEME);
-  assert.equal(terrainThemeById('pines').id, 'pines');
+test('the classic map paints at several sizes and times', () => {
+  for (const S of [24, 40, 120]) for (const now of [0, 1234.5]) assert.ok(layer(S, now).length > classic.width * classic.height, `@${S}`);
 });
 
 test('rnd is deterministic, in [0, 1) and varies with position and index', () => {
@@ -53,11 +40,18 @@ test('rnd is deterministic, in [0, 1) and varies with position and index', () =>
   assert.notEqual(rnd(1, 1, 0), rnd(1, 1, 1));
 });
 
-test('animated themes change with the clock and the others do not', () => {
-  const sea = registry.terrainDef('sea'), nb = { n: '#3d8a3d', e: null, s: null, w: null, ne: null, se: null, sw: null, nw: null };
-  const ops = (theme, now) => { const { ctx, calls } = recorder(); paintTile(ctx, 0, 0, 40, sea, null, nb, theme, { x: 2, y: 3, now }); return JSON.stringify(calls); };
-  assert.notEqual(ops(terrainThemeById('pines'), 0), ops(terrainThemeById('pines'), 700));
-  assert.equal(ops(terrainThemeById('flat'), 0), ops(terrainThemeById('flat'), 700));
+test('the sea twinkles with the clock and the ground does not', () => {
+  const ops = (id, now) => { const { ctx, calls } = recorder(); paintTile(ctx, 0, 0, 40, registry.terrainDef(id), null, NB, { x: 2, y: 3, now }); return JSON.stringify(calls); };
+  const over = (id) => new Set([0, 500, 1000, 1500, 2000, 2500, 3000].map((t) => ops(id, t))).size;
+  assert.ok(over('sea') > 1);
+  assert.equal(over('plain'), 1);
+});
+
+test('the sea draws the same beside land as in open water (no shoreline effect)', () => {
+  const at = { x: 2, y: 3, now: 500 }, sea = registry.terrainDef('sea');
+  const ops = (nb) => { const { ctx, calls } = recorder(); TERRAIN_DECOR.sea(ctx, 0, 0, 40, { ...at, nb }); return calls.length; };
+  assert.equal(ops({ ...NB, n: '#3d8a3d' }), ops(NB));
+  assert.ok(sea);
 });
 
 test('faceRect keeps outlines inside the tile', () => {
@@ -71,7 +65,7 @@ test('faceRect keeps outlines inside the tile', () => {
 const G = '#86b95c', R = '#cdbb8f', SEA = '#3d7ec7';
 const grass = { render: { base: G } };   // no decor: only the tile shape is under test
 const all = (c) => ({ n: c, e: c, s: c, w: c, ne: c, se: c, sw: c, nw: c });
-const paint = (nb) => { const { ctx, calls } = recorder(); paintTile(ctx, 0, 0, 40, grass, null, nb, terrainThemeById(), { x: 0, y: 0, now: 0 }); return calls; };
+const paint = (nb) => { const { ctx, calls } = recorder(); paintTile(ctx, 0, 0, 40, grass, null, nb, { x: 0, y: 0, now: 0 }); return calls; };
 const radiiOf = (nb) => paint(nb).find((c) => c.op === 'roundRect').args[4];
 
 test('merged: a tile inside a shape has square corners', () => assert.deepEqual(radiiOf(all(G)), [0, 0, 0, 0]));

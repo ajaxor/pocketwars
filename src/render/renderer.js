@@ -14,19 +14,16 @@
 import { calcDamage, canTarget } from '../engine/combat.js';
 import { tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
-import { terrainThemeById } from './terrain-themes.js';
 import { drawUnit } from './unit-sprites.js';
 
 export class Renderer {
-  /** @param {{terrainTheme?:string}} [opts] id of a theme in terrain-themes.js (unknown = the default) */
-  constructor(canvas, game, effects, animator, { terrainTheme } = {}) {
+  constructor(canvas, game, effects, animator) {
     this.cv = canvas;
     this.g = canvas.getContext('2d');
     this.game = game;
     this.effects = effects;
     this.animator = animator;
     this.S = 40;
-    this.theme = terrainThemeById(terrainTheme);
   }
 
   get tileSize() { return this.S; }
@@ -108,7 +105,7 @@ export class Renderer {
 
     const terrainAt = (x, y) => game.registry.terrainDef(map.terrain[y][x]);
     drawTerrainLayer(g, {
-      width: map.width, height: map.height, S, theme: this.theme, now, terrainAt,
+      width: map.width, height: map.height, S, now, terrainAt,
       ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? this.colorsOf(state.owners[y][x]).color : null),
     });
     if (view.reach) {

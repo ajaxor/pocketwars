@@ -4,7 +4,7 @@
 //   city      three blocks of different heights
 //   hq        a stepped tower with a flag and a star
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
-//   barracks  a canvas tent with an open door, a star, a pennant and sandbags
+//   barracks  three canvas tent peaks in a row (the middle one taller) with open doors, a star and a pennant
 //   airfield  a tapering runway, an arched hangar and a control tower
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
@@ -93,22 +93,20 @@ export const BUILDINGS = {
 
   barracks(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
-    const dx = .22 * DX, dy = .22 * DY;
-    k.poly([[.1, .88], [.7, .88], [.7 + dx, .88 + dy], [.7 + dx + .1, .88 + dy + .05], [.8, .93], [.1, .93]], SHADOW);   // ground shadow
-    k.poly([[.4, .3], [.4 + dx, .3 + dy], [.7 + dx, .88 + dy], [.7, .88]], shade(owner, -.3));                          // right slope
-    k.poly([[.1, .88], [.7, .88], [.4, .3]], owner);                                                                    // front canvas
-    k.poly([[.4, .3], [.25, .88], [.4, .88]], shade(owner, .12));                                                       // lit left panel
-    k.poly([[.4, .52], [.29, .88], [.51, .88]], '#2a2a35');                                                             // open door
-    k.line([[.4, .52], [.29, .88]], shade(owner, -.35), .025);
-    k.line([[.4, .52], [.51, .88]], shade(owner, -.35), .025);
-    k.line([[.1, .88], [.4, .3], [.7, .88]], shade(owner, -.4), .03);                                                   // seams
-    k.star(.4, .43, .05, '#ffe45c');
-    k.line([[.4 + dx, .3 + dy], [.4 + dx, .3 + dy - .13]], '#222', .025);                                               // pole and pennant
-    k.poly([[.4 + dx, .3 + dy - .13], [.4 + dx + .16, .3 + dy - .09], [.4 + dx, .3 + dy - .05]], owner);
-    for (const [cx, cy] of [[.8, .9], [.9, .9], [.85, .84]]) {                                                          // sandbags
-      g.fillStyle = '#b39b6d'; g.beginPath(); g.ellipse(k.X(cx), k.Y(cy), S * .055, S * .034, 0, 0, 7); g.fill();
-      g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(k.X(cx), k.Y(cy + .012), S * .048, S * .02, 0, 0, Math.PI); g.fill();
+    const dx = .1 * DX, dy = .1 * DY, base = .88;
+    const tents = [[.04, .32, .52], [.32, .6, .38], [.6, .88, .52]];        // [left, right, apex height]: three peaks, the middle one taller
+    k.poly([[.04, base], [.88, base], [.88 + dx, base + dy], [.88 + dx + .02, base + dy + .04], [.93, base + .05], [.04, base + .05]], SHADOW);
+    for (const [l, r, h] of tents) k.poly([[(l + r) / 2, h], [(l + r) / 2 + dx, h + dy], [r + dx, base + dy], [r, base]], shade(owner, -.22));   // right slopes first
+    for (const [l, r, h] of tents) {
+      const m = (l + r) / 2, w = r - l;
+      k.poly([[l, base], [r, base], [m, h]], owner);                                                                          // front canvas
+      k.poly([[l, base], [m, base], [m, h]], shade(owner, .12));                                                              // lit left half
+      k.poly([[m, base - (base - h) * .5], [m - w * .17, base], [m + w * .17, base]], '#2a2a35');                              // open door
+      k.line([[l, base], [m, h], [r, base]], shade(owner, -.4), .025);                                                        // seams
     }
+    k.star(.46, .56, .05, '#ffe45c');
+    k.line([[.46, .38], [.46, .16]], '#222', .025);                                                                              // pole and pennant
+    k.poly([[.46, .16], [.64, .2], [.46, .24]], owner);
   },
 
   airfield(g, px, py, S, owner) {

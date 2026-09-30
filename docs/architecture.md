@@ -7,8 +7,7 @@ data/            game content as JSON (units, terrain, factions, rules, ai) and 
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
 src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, capture, economy, victory, ai
 src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, buildings.js, color.js,
-                 terrain-sprites.js (the original flat decor), terrain-layer.js (rounded merged tiles), terrain-themes.js
-                 (alternative terrain art), effects, move animator
+                 terrain-art.js (trees, mountains, sea), terrain-layer.js (rounded merged tiles), effects, move animator
 src/ui/          controller (taps -> orders), hud, presenter (events -> animations), session (frame loop, AI pacing)
 src/main.js      boot(): load data + map, create Game, start Session
 src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Start
@@ -16,8 +15,8 @@ src/ui/title-screen.js  the title screen view (logo, progress, Start, gallery li
 index.html       tiny shell: the game's DOM plus a few lines that find the build folder and hand over to src/launcher.js
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
-gallery/         live preview pages published next to the game: unit art (index.html) and terrain art themes (terrain.html);
-                 both run the game's own render code on canvas and are linked from the title screen
+gallery/         live preview pages published next to the game: unit art (index.html), which runs the game's own
+                 render code on canvas and is linked from the title screen
 ```
 
 ## Layers
@@ -35,15 +34,11 @@ gallery/         live preview pages published next to the game: unit art (index.
 ## Terrain drawing
 
 `src/render/terrain-layer.js` paints the map: tiles of the same base colour join into one shape and only the outer corners are
-rounded (each corner is filled with the colour it opens onto). What is drawn on a tile is a *theme*
-(`src/render/terrain-themes.js`): `terrain.json -> render.decor` names a drawing (`grass`, `road`, `forest`, `mountain`, `sea`)
-and every theme supplies one function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-tile variation and
-`now` animates the sea; themes also get the neighbours' colours (the Pines sea draws shoreline foam with them). Buildings
-(`buildings.js`: flat-shaded boxes seen from the front-left with a soft ground shadow, one silhouette per kind) are the same in every theme. A test requires every theme to cover
-every decor name the data uses, so a new decor name means adding it to every theme.
-
-The game picks a theme from `?terrain=<id>`, otherwise from the choice saved by the gallery (`localStorage`, key
-`pocketwars.terrain`), otherwise `DEFAULT_TERRAIN_THEME` (Pines). Compare themes at `gallery/terrain.html`.
+rounded (each corner is filled with the colour it opens onto). What is drawn on a tile is in `src/render/terrain-art.js`:
+`terrain.json -> render.decor` names a drawing (`grass`, `road`, `forest`, `mountain`, `sea`) and `TERRAIN_DECOR` supplies one
+function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-tile variation and `now` twinkles the sea. A test
+requires a drawing for every decor name the data uses. Buildings (`buildings.js`: flat-shaded boxes seen from the front-left
+with a soft ground shadow, one silhouette per kind; the barracks is a three-peaked tent) are drawn on top.
 
 ## Loading and deploy
 
