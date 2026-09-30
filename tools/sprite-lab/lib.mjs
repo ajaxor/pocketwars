@@ -8,10 +8,10 @@
 // draw(g, id, o) paints one unit centred on (0,0) of a tile of size o.s
 //   o = { s, c, dk, alt, w, ph, run, make, only }   only: 'body' | 'shadow' (game-compatible styles only)
 import { createCanvas } from '@napi-rs/canvas';
-import { readFileSync, readdirSync } from 'node:fs';
+import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import path from 'node:path';
-import { drawFrame } from './variants/frame.js';
+import { drawFrame } from '../../src/render/unit-frame.js';
 
 export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(HERE, '../..');
@@ -53,6 +53,7 @@ export function gameStyle(mod) {
 export async function loadStyles() {
   const out = {};
   const load = async (dir, test) => {
+    if (!existsSync(path.join(HERE, dir))) return;
     for (const f of readdirSync(path.join(HERE, dir)).sort()) {
       if (!/\.m?js$/.test(f)) continue;
       const m = await import(pathToFileURL(path.join(HERE, dir, f)).href);

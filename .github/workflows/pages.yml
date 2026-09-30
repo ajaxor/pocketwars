@@ -43,11 +43,9 @@ jobs:
           cp -r src data style.css "_site/v/${SHORT}/"
           cp index.html .nojekyll _site/
           # the gallery is versioned like the game: /gallery/ is a tiny loader that finds the current build via
-          # version.json, and the code and data it runs live under v/<hash>/ (same relative layout as the repo)
+          # version.json, and the code and data it runs live under v/<hash>/ (it imports the game's own src/render/unit-art.js)
           cp -r gallery _site/gallery
           cp -r gallery "_site/v/${SHORT}/gallery"
-          mkdir -p "_site/v/${SHORT}/tools/sprite-lab"
-          cp -r tools/sprite-lab/variants "_site/v/${SHORT}/tools/sprite-lab/variants"
           sed -i "s/__BUILD__/${SHORT}/g" _site/index.html
           printf '{"hash":"%s","full":"%s","built":"%s"}\n' \
             "$SHORT" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > _site/version.json

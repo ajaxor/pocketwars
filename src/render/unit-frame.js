@@ -1,6 +1,6 @@
-// One frame of one unit, composed exactly as drawUnit() in src/render/unit-sprites.js does it: ground shadow first,
-// then the sprite lifted by its altitude with the same bob and jitter. Browser-safe (no imports); shared by the
-// sprite lab (Node) and the live gallery page (browser) so the two can never drift apart.
+// One frame of one unit, composed the way the game draws it (drawUnit in unit-sprites.js calls this): ground shadow first,
+// then the sprite lifted by its altitude with the same bob and jitter. Browser-safe (no imports); used by the game,
+// the sprite lab (Node) and the live gallery page (browser), so all three draw identically.
 //
 //   mod  a sprite set: { SPRITES, SHADOWS }
 //   o    { s: tile px, c, dk: faction colours, alt: altitude fraction, w: animation clock (s),

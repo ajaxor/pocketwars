@@ -1,11 +1,11 @@
-// The flat sprite set (tools/sprite-lab/variants/flat.js) must stay drop-in compatible with the game, and the live
+// The flat sprite set (src/render/unit-art.js) must stay drop-in compatible with the game, and the live
 // gallery page must be able to draw every unit in every animation state. Recording context: catches crashes and
 // missing sprites, not pixels (see tools/sprite-lab for pixel-level review).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { SPRITES, SHADOWS } from '../../tools/sprite-lab/variants/flat.js';
-import { drawFrame } from '../../tools/sprite-lab/variants/frame.js';
+import { SPRITES, SHADOWS } from '../../src/render/unit-art.js';
+import { drawFrame } from '../../src/render/unit-frame.js';
 import { paintTile, STATES } from '../../gallery/preview.js';
 
 const readJson = (rel) => JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8'));

@@ -15,8 +15,7 @@ createServer(async (req, res) => {
     let path = normalize(decodeURIComponent(new URL(req.url, 'http://x').pathname));
     if (path.endsWith('/')) path += 'index.html';
     const file = join(ROOT, path);
-    const shared = path.startsWith('/tools/sprite-lab/variants/');   // browser-safe sprite modules used by /gallery/
-    if (!file.startsWith(ROOT) || (!shared && /(^|[\\/])(\.git|node_modules|tests|tools)([\\/]|$)/.test(path))) throw new Error('forbidden');
+    if (!file.startsWith(ROOT) || /(^|[\\/])(\.git|node_modules|tests|tools)([\\/]|$)/.test(path)) throw new Error('forbidden');
     if (!(await stat(file)).isFile()) throw new Error('not a file');
     res.writeHead(200, { 'content-type': TYPES[extname(file)] || 'application/octet-stream', 'cache-control': 'no-store' });
     res.end(await readFile(file));

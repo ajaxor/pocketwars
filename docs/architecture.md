@@ -6,13 +6,13 @@ Plain ES modules, no bundler, no runtime dependencies. Node 22+ is only needed f
 data/            game content as JSON (units, terrain, factions, rules, ai) and data/maps/*.map.json
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
 src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, capture, economy, victory, ai
-src/render/      canvas drawing: renderer, unit/terrain sprites, effects, move animator
+src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, terrain sprites, effects, move animator
 src/ui/          controller (taps -> orders), hud, presenter (events -> animations), session (frame loop, AI pacing)
 src/main.js      boot(): load data + map, create Game, start Session
 index.html       title screen and cache-busting loader (imports src/main.js from the current build folder)
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
-gallery/         live unit-art preview page published next to the game (runs tools/sprite-lab/variants/flat.js on canvas)
+gallery/         live unit-art preview page published next to the game (runs the game's own src/render/unit-art.js on canvas)
 ```
 
 ## Layers

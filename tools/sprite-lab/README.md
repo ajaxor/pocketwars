@@ -15,8 +15,8 @@ Images land in `tools/sprite-lab/out/` (git-ignored).
 ```
 node lab.mjs list                                  all styles found
 node lab.mjs sheet flat                            every unit x both factions (detail view, 176 px tiles)
-node lab.mjs compare current,flat                  styles stacked for side-by-side (120 px = a phone tile on a 3x screen)
-node lab.mjs units current,flat sniper,flak        before/after: chosen units, styles as columns
+node lab.mjs compare flat,mystyle                  styles stacked for side-by-side (120 px = a phone tile on a 3x screen)
+node lab.mjs units flat,mystyle sniper,flak        before/after: chosen units, styles as columns
 node lab.mjs zoom flat flak                        one unit large + phone size + 1x, on every terrain
 node lab.mjs anim flat flak                        animation filmstrip (spinning radar, recoil, running gear...)
 node lab.mjs check flat                            numbers: size, tile overflow, shadow fit
@@ -32,22 +32,22 @@ Details that vanish at 40 are not worth the pixels; silhouette and faction colou
 `check` catches what eyes miss: a unit wider than its tile, a shadow that is the wrong width or detached from the
 body, an unexpectedly small unit. Run it after every edit.
 
-## The flat sprite set
+## The game's unit art
 
-`variants/flat.js` is the unit art: one game-compatible module exporting `SPRITES` and `SHADOWS`, with the same
-signature as `src/render/unit-sprites.js` (plus a shadow per unit). It is self-contained and browser-safe.
-`variants/frame.js` composes one frame exactly as the game's `drawUnit` does; the lab and the gallery both use it.
+The art is `src/render/unit-art.js` (exports `SPRITES` and `SHADOWS`); `src/render/unit-frame.js` composes one frame
+(shadow, altitude, bob and jitter) and `src/render/unit-sprites.js` `drawUnit` calls it. The lab, the gallery and the
+game all run those same files, so what you review is what ships. `variants/flat.js` just re-exports the game art so the lab
+can render it as the style `flat`.
 
-`lab.mjs` also discovers any other file in `variants/` (game-compatible, exports `meta`, `SPRITES`, `SHADOWS`) or
-`styles/` (free-form, exports `meta` and `draw(g, id, o)`), so a new direction can be prototyped beside it and compared
-with `compare`. `current` is the game's own sprites, for before/after.
+To try a new direction, add a sibling file in `variants/` (export `meta`, `SPRITES`, `SHADOWS`) or a free-form one in
+`styles/` (export `meta`, `draw(g, id, o)`), then `compare` it with `flat`. Sprite names match `data/units.json`.
 
 The infantry family (infantry, mech, sniper) shares one body, head and walk cycle; each unit's `KIT` supplies only its
 pack and weapon, so any change to the body applies to all three.
 
 ## The gallery
 
-`gallery/index.html` is a live page: it runs `flat.js` on canvas with the game's animation states (Idle, Moving at
+`gallery/index.html` is a live page: it runs the game's `unit-art.js` on canvas with the game's animation states (Idle, Moving at
 double speed, and the faded still Done pose), with controls for tile size and ground colour. It is published to
 GitHub Pages at `/gallery/`, and locally at `http://localhost:8080/gallery/` (`npm start`).
 `node lab.mjs gallery` regenerates the page shell; `gallery/preview.js` is hand-written.
@@ -61,14 +61,6 @@ deploy shows up immediately instead of after the browser's cache expires.
 sprite that used to be the bomber). It lives here, not in `data/`, so the game never loads it. The lab and the gallery
 include these units (marked PLANNED); the plain `bomber` is now a four-engine transport-style jet. To ship one, move its
 entry into `data/units.json`, fill in its balance numbers and add its damage rows.
-
-## Adopting the sprites in the game
-
-Sprite names already match `data/units.json`, so no data changes are needed.
-
-1. Copy `variants/flat.js` to `src/render/` and use its `SPRITES` in place of the table in `unit-sprites.js`.
-2. In `drawUnit`, replace the generic shadow ellipse with `SHADOWS[def.render.sprite](g, { s, alt, w, ph, run })`,
-   drawn before the altitude translation so aircraft shadows stay on the ground. `variants/frame.js` shows the order.
 
 ## Notes for design work
 
