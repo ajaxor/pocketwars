@@ -81,6 +81,12 @@ export function validateWeapons(weapons, rules, problems) {
     if (!isStr(w.name)) problems.push(`weapon "${id}": name is required`);
     if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
     if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);
+    if (w.targetMultipliers !== undefined) {
+      const m = w.targetMultipliers;
+      if (!isObj(m) || Object.entries(m).some(([mode, f]) => !(Array.isArray(w.targets) && w.targets.includes(mode)) || !isNum(f) || f <= 0)) {
+        problems.push(`weapon "${id}": targetMultipliers must map target modes the weapon can fire at to positive numbers`);
+      }
+    }
     if (!Array.isArray(w.range) || w.range.length !== 2 || !w.range.every(Number.isInteger) || w.range[0] < 1 || w.range[0] > w.range[1]) {
       problems.push(`weapon "${id}": range must be [min, max] integers with 1 <= min <= max`);
     }

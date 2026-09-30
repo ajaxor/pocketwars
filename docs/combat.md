@@ -19,11 +19,12 @@ filling in a row and a column.
 |---|---|
 | `damage` | Percent of a full-HP unit removed by a full-HP attacker at `toughness 1`, no armor, no terrain (60 = 6 HP). |
 | `armorPiercing` | `0..1`, default `0`. The fraction of the defender's `armor` this weapon ignores. |
+| `targetMultipliers` | Optional `{ targetMode: factor }`. Scales `damage` when the defender is reached through that mode, so a weapon can be strong against one layer (flak `low_air: 1.9`). Modes not listed use `1`. Each key must be one of the weapon's `targets`. |
 | `range` | `[min, max]` tiles (Manhattan). |
 | `targets` | Target modes it can fire at, see below. |
 
 ```
-damage (HP) = weapon.damage x (attackerHP / 10) x (1 - armor x (1 - armorPiercing)) / toughness
+damage (HP) = weapon.damage x targetMultiplier x (attackerHP / 10) x (1 - armor x (1 - armorPiercing)) / toughness
               x (1 - terrainStars x defenderHP / 100) / 10
 ```
 

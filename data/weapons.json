@@ -6,8 +6,8 @@
   "tank_cannon":   { "name": "Tank cannon",   "damage": 80,  "armorPiercing": 1,   "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "heavy_cannon":  { "name": "Heavy cannon",  "damage": 100, "armorPiercing": 1,   "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "howitzer":      { "name": "Howitzer",      "damage": 90,  "armorPiercing": 0.8, "range": [2, 3], "targets": ["indirect_ground"] },
-  "flak_cannon":   { "name": "Flak cannon",   "damage": 90,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air", "high_air"] },
+  "flak_cannon":   { "name": "Flak cannon",   "damage": 90,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air", "high_air"], "targetMultipliers": { "low_air": 1.9, "high_air": 1.6 } },
   "rocket_pods":   { "name": "Rocket pods",   "damage": 85,  "armorPiercing": 0.5, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
-  "air_missiles":  { "name": "Air missiles",  "damage": 150, "armorPiercing": 0,   "range": [1, 1], "targets": ["low_air", "high_air"] },
+  "air_missiles":  { "name": "Air missiles",  "damage": 150, "armorPiercing": 0,   "range": [1, 1], "targets": ["low_air", "high_air"], "targetMultipliers": { "low_air": 1.2 } },
   "bombs":         { "name": "Bombs",         "damage": 115, "armorPiercing": 1,   "range": [1, 1], "targets": ["indirect_ground"] }
 }

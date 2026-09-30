@@ -90,6 +90,13 @@ test('toughness divides all incoming damage; 1 is the baseline', () => {
   assert.equal(hit({}, { toughness: 0.5 }), 11, 'a soft unit takes more than the weapon\'s nominal damage: 10.8');
 });
 
+test('targetMultipliers scale damage for the target mode that reaches the defender', () => {
+  // weapon 60, plain 1 star: 60 * 0.9 / 10 = 5.4 -> 5; with x1.5 -> 8.1 -> 8
+  assert.equal(hit({ targets: ['direct_ground', 'sky'], targetLayers: undefined, targetMultipliers: { direct_ground: 1.5 } }, {}), 8);
+  assert.equal(hit({ targets: ['direct_ground', 'sky'], targetMultipliers: { sky: 3 } }, {}), 5, 'a multiplier for another mode is ignored');
+  assert.equal(hit({ targets: ['direct_ground'], targetMultipliers: { direct_ground: 0.5 } }, {}), 3, 'can also reduce: 2.7');
+});
+
 test('armor cuts incoming damage by that fraction', () => {
   assert.equal(hit({}, { armor: 0 }), 5);
   assert.equal(hit({}, { armor: 0.5 }), 3, '60 * 0.5 * 0.9 / 10 = 2.7');

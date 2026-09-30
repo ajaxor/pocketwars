@@ -65,12 +65,15 @@ export function calcDamage(game, attacker, defender, from = attacker) {
   return weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
 }
 
-/** The damage formula alone: HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands. */
+/** The damage formula alone (weapon.damage is scaled by weapon.targetMultipliers for the defender's target mode): HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands. */
 export function weaponDamage(game, weapon, attacker, defender) {
   const d = unitDef(game, defender);
   const stars = terrainStars(game, defender);
   const toughness = (1 - d.armor * (1 - weapon.armorPiercing)) / d.toughness;
-  const v = (weapon.damage * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
+  // the weapon's multiplier for the target mode that reaches the defender's layer (1 when it lists none)
+  const mode = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === d.layer);
+  const vs = weapon.targetMultipliers?.[mode] ?? 1;
+  const v = (weapon.damage * vs * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
   return v < 1 ? round1(v) : Math.round(v);
 }
 

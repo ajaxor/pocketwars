@@ -50,7 +50,7 @@ export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules, we
   for (const [id, spec] of Object.entries(units)) {
     const u = { ...structuredClone(BASE_UNIT), ...structuredClone(spec) };
     const targets = u.targets ?? (u.targetLayers ? u.targetLayers.map((l) => (l === 'ground' ? 'direct_ground' : l)) : ['direct_ground']);
-    weapons[id] = { name: `${id} gun`, damage: u.hits ?? 50, armorPiercing: u.armorPiercing ?? 0, range: u.range ?? [1, 1], targets };
+    weapons[id] = { name: `${id} gun`, damage: u.hits ?? 50, armorPiercing: u.armorPiercing ?? 0, range: u.range ?? [1, 1], targets, ...(u.targetMultipliers && { targetMultipliers: u.targetMultipliers }) };
     for (const k of ['hits', 'range', 'targets', 'targetLayers', 'armorPiercing']) delete u[k];
     if (!u.weapons) u.weapons = [id];
     merged[id] = u;
