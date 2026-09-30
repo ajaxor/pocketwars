@@ -4,7 +4,7 @@
 //   city      three blocks of different heights
 //   hq        a stepped tower with a flag and a star
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
-//   barracks  three canvas tent peaks in a row (the middle one taller) with open doors, a star and a pennant
+//   barracks  one big rectangular tent held up by poles (peaked canvas roof), an open front and a flag out front
 //   airfield  a tapering runway, an arched hangar and a control tower
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
@@ -93,20 +93,26 @@ export const BUILDINGS = {
 
   barracks(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
-    const dx = .1 * DX, dy = .1 * DY, base = .88;
-    const tents = [[.04, .32, .52], [.32, .6, .38], [.6, .88, .52]];        // [left, right, apex height]: three peaks, the middle one taller
-    k.poly([[.04, base], [.88, base], [.88 + dx, base + dy], [.88 + dx + .02, base + dy + .04], [.93, base + .05], [.04, base + .05]], SHADOW);
-    for (const [l, r, h] of tents) k.poly([[(l + r) / 2, h], [(l + r) / 2 + dx, h + dy], [r + dx, base + dy], [r, base]], shade(owner, -.22));   // right slopes first
-    for (const [l, r, h] of tents) {
-      const m = (l + r) / 2, w = r - l;
-      k.poly([[l, base], [r, base], [m, h]], owner);                                                                          // front canvas
-      k.poly([[l, base], [m, base], [m, h]], shade(owner, .12));                                                              // lit left half
-      k.poly([[m, base - (base - h) * .5], [m - w * .17, base], [m + w * .17, base]], '#2a2a35');                              // open door
-      k.line([[l, base], [m, h], [r, base]], shade(owner, -.4), .025);                                                        // seams
-    }
-    k.star(.46, .56, .05, '#ffe45c');
-    k.line([[.46, .38], [.46, .16]], '#222', .025);                                                                              // pole and pennant
-    k.poly([[.46, .16], [.64, .2], [.46, .24]], owner);
+    const d = .14, dx = d * DX, dy = d * DY;
+    const L = .06, R = .7, wall = .62, base = .88;                                   // one big rectangular tent, its flag out front
+    const peaks = [[.2, .48], [.38, .4], [.56, .48]];                                // pole tips holding the canvas up: [x, y]
+    k.boxShadow(L, wall, R - L, base - wall, d);
+    k.box(L, wall, R - L, base - wall, d, owner);                                    // walls, and the flat back of the roof
+    k.poly([[R, wall], [R - .06, .5], [R - .06 + dx, .5 + dy], [R + dx, wall + dy]], shade(owner, -.12));           // roof slope at the right end
+    // canvas roof, lifted into soft peaks by the poles inside
+    g.beginPath(); g.moveTo(k.X(L), k.Y(wall));
+    g.lineTo(k.X(L + .05), k.Y(.52));
+    for (const [x, y] of peaks) { g.quadraticCurveTo(k.X(x - .08), k.Y(.53), k.X(x), k.Y(y)); g.quadraticCurveTo(k.X(x + .08), k.Y(.53), k.X(x + .1), k.Y(.54)); }
+    g.lineTo(k.X(R - .06), k.Y(.52)); g.lineTo(k.X(R), k.Y(wall)); g.closePath();
+    g.fillStyle = shade(owner, .2); g.fill();
+    for (const [x, y] of peaks) k.line([[x, y + .02], [x, y - .07]], '#2a2a35', .03);                                // pole tips
+    for (const x of [.28, .47, .63]) k.line([[x, wall], [x, base]], shade(owner, -.18), .012);                       // seams in the wall
+    k.rect(.34, .69, .18, .19, '#2a2a35');                                                                           // open front
+    k.poly([[.34, .69], [.43, .69], [.34, .88]], shade(owner, -.25));                                                // tied-back flap
+    k.poly([[.52, .69], [.43, .69], [.52, .88]], shade(owner, -.35));
+    k.line([[.84, .93], [.84, .26]], '#2a2a35', .03);                                                                // flagpole out front
+    k.poly([[.84, .27], [.98, .32], [.84, .4]], owner);
+    k.star(.9, .33, .03, '#ffe45c');
   },
 
   airfield(g, px, py, S, owner) {

@@ -38,7 +38,7 @@ rounded (each corner is filled with the colour it opens onto). What is drawn on 
 `terrain.json -> render.decor` names a drawing (`grass`, `road`, `forest`, `mountain`, `sea`) and `TERRAIN_DECOR` supplies one
 function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-tile variation and `now` twinkles the sea. A test
 requires a drawing for every decor name the data uses. Buildings (`buildings.js`: flat-shaded boxes seen from the front-left
-with a soft ground shadow, one silhouette per kind; the barracks is a three-peaked tent) are drawn on top.
+with a soft ground shadow, one silhouette per kind; the barracks is one big pole-supported tent with a flag) are drawn on top.
 
 ## Loading and deploy
 
