@@ -20,6 +20,12 @@ const poly = (g, pts, fill) => {
 };
 const dot = (g, x, y, r, fill) => { g.fillStyle = fill; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); };
 
+/** Paint the dashed centre line on roads (off for now, to see the plain look). */
+const ROAD_LINES = false;
+
+/** Paint the dashed centre line on roads. Off for now, to see how plain roads look; roadShape and the dash code are kept. */
+const ROAD_CENTRE_LINE = false;
+
 const NO_LINKS = Object.freeze({ n: false, e: false, s: false, w: false, ne: false, se: false, sw: false, nw: false });
 
 /**
@@ -61,6 +67,8 @@ export const TERRAIN_DECOR = {
     // through each tile in the same rhythm (two dashes a tile, gaps at the tile edges) so it carries on from tile to tile.
     road(g, px, py, S, { x, y, link = NO_LINKS }) {
       for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, i % 2 ? '#a3a8b1' : '#7f848d');
+      if (!ROAD_LINES) return;
+      if (!ROAD_CENTRE_LINE) return;
       const { shape, arms } = roadShape(link);
       const cx = px + S / 2, cy = py + S / 2;
       // a dash on one arm, from `a` to `b` tiles out from the centre
@@ -118,7 +126,7 @@ export const TERRAIN_DECOR = {
       const slots = [[.27, .55], [.73, .5], [.5, .9]];
       if (rnd(x, y, 80) < .4) slots.push(rnd(x, y, 81) < .5 ? [.12, .92] : [.9, .92]);
       slots.map(([cx, by], k) => [cx + (rnd(x, y, 82 + k) - .5) * .1, by + (rnd(x, y, 86 + k) - .5) * .08, .8 + rnd(x, y, 110 + k) * .35, k])
-        .sort((a, b) => a[1] - b[1]).forEach(([cx, by, sc, k]) => pine(cx, Math.min(by, .95), sc, k));
+        .sort((a, b) => a[1] - b[1]).forEach(([cx, by, sc, k]) => pine(Math.max(.21 * sc + .02, Math.min(1 - .21 * sc - .02, cx)), Math.min(by, .95), sc, k));
     },
     // One rounded mountain, centred in its tile. Its width, height, summit position, snow and a smaller companion peak all come
     // from the tile's position (rnd), so a range of them is varied but never changes between draws.
