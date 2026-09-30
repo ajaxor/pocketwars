@@ -122,6 +122,9 @@ test('effects.strike schedules the right animation for each attackFx', () => {
   }
   assert.ok(effects.list.find((f) => f.k === 'shot').arc, 'artillery shells arc');
   effects.clear();
+  effects.strike({ attacker: at('bomber'), defender: def, damage: 3, destroyed: false }, 0);
+  assert.ok(effects.list.some((f) => f.k === 'bomb'), 'bombers drop bombs');
+  effects.clear();
   effects.strike({ attacker: at('tank'), defender: def, damage: 10, destroyed: true }, 0);
   assert.ok(effects.list.some((f) => f.k === 'die'));
 });

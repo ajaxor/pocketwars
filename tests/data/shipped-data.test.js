@@ -12,7 +12,7 @@ import { Game } from '../../src/engine/game.js';
 import { canTarget } from '../../src/engine/combat.js';
 
 const registry = await loadRegistry(readData);
-const ATTACK_FX = ['lunge', 'shot', 'arc'];
+const ATTACK_FX = ['lunge', 'shot', 'arc', 'drop'];
 
 test('shipped data passes validation', async () => {
   const raw = {};

@@ -128,7 +128,16 @@ export class Renderer {
     });
     if (view.reach) {
       g.fillStyle = 'rgba(255,255,255,.38)'; g.beginPath();
-      for (const { x, y } of view.reach.tiles()) g.roundRect(...this.face(x, y));
+      const tiles = [...view.reach.tiles()];
+      const has = new Set(tiles.map(({ x, y }) => y * map.width + x));
+      const at = (x, y) => x >= 0 && y >= 0 && x < map.width && y < map.height && has.has(y * map.width + x);
+      const r = this.face(0, 0)[4];
+      for (const { x, y } of tiles) {
+        // only the outer corners of the merged shape are rounded (order: top-left, top-right, bottom-right, bottom-left)
+        const round = (a, b) => (!a && !b ? r : 0);
+        const n = at(x, y - 1), e = at(x + 1, y), s = at(x, y + 1), w = at(x - 1, y);
+        g.roundRect(x * S, y * S, S, S, [round(n, w), round(n, e), round(s, e), round(s, w)]);
+      }
       g.fill();
     }
     if (view.showTargets) {

@@ -119,7 +119,8 @@ const fighter = (g, { s, c, dk, w, run }) => {
   poly(g, s, [[-.36, -.02], [-.36 - fl / s, .01], [-.36, .04]], '#ff9a2e');                   // afterburner
   poly(g, s, [[.0, -.05], [-.14, -.2], [-.22, -.2], [-.2, -.05]], far);                       // far wing
   poly(g, s, [[-.3, -.05], [-.37, -.12], [-.41, -.12], [-.38, -.04]], far);                   // far tailplane
-  poly(g, s, [[-.16, -.05], [-.27, -.25], [-.34, -.25], [-.33, -.05]], dk);                   // tail fin
+  poly(g, s, [[-.12, -.05], [-.25, -.26], [-.33, -.26], [-.34, -.05]], mix(c, dk, .15));      // tail fin (side face, lit like the body)
+  poly(g, s, [[-.25, -.26], [-.33, -.26], [-.335, -.22], [-.26, -.22]], mix(c, dk, .5));      // fin cap, turned away from the light
   poly(g, s, [[.44, .01], [.2, -.06], [-.05, -.075], [-.36, -.06], [-.36, .05], [-.05, .075], [.2, .05]], c);   // fuselage
   poly(g, s, [[.4, .02], [.2, .05], [-.05, .075], [-.36, .05], [-.36, .035], [-.05, .05], [.2, .03]], mix(c, dk, .45)); // belly shade
   oval(g, s, .13, -.06, .075, .035, GLASS);                                                   // canopy
@@ -135,7 +136,8 @@ const bomber = (g, { s, c, dk, w, run }) => {
   poly(g, s, [[.08, -.06], [-.06, -.21], [-.18, -.21], [-.14, -.06]], far);                   // far wing
   box(g, s, -.1, -.15, .13, .05, 2, '#2a2a2a');                                               // far engine
   poly(g, s, [[-.33, -.06], [-.4, -.13], [-.46, -.13], [-.44, -.05]], far);                   // far tailplane
-  poly(g, s, [[-.26, -.07], [-.36, -.28], [-.45, -.28], [-.44, -.06]], dk);                   // tail fin
+  poly(g, s, [[-.22, -.07], [-.36, -.29], [-.45, -.29], [-.45, -.06]], mix(c, dk, .15));      // tail fin (side face, lit like the body)
+  poly(g, s, [[-.36, -.29], [-.45, -.29], [-.45, -.25], [-.365, -.25]], mix(c, dk, .5));      // fin cap, turned away from the light
   box(g, s, -.46, -.08, .92, .16, s * .08, c);                                                // fuselage
   box(g, s, -.42, .035, .82, .04, 2, mix(c, dk, .45));                                        // belly shade
   box(g, s, .3, -.06, .11, .05, 2, GLASS);                                                    // cockpit windows

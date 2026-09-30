@@ -29,6 +29,10 @@ export class Effects {
     if (fx === 'lunge') {
       this.list.push({ k: 'lunge', id: a.id, dx: d.x - a.x, dy: d.y - a.y, t0, d: 360 });
       hit = t0 + 180;
+    } else if (fx === 'drop') {
+      // bombs fall straight down onto the target from above
+      this.list.push({ k: 'bomb', x: x1, y: y1, t0, d: 520 });
+      hit = t0 + 520;
     } else {
       const arc = fx === 'arc';
       const dur = arc ? 480 : 200;
@@ -81,6 +85,12 @@ export class Effects {
         if (p < .3) { g.fillStyle = 'rgba(255,240,170,' + (1 - p / .3) + ')'; g.beginPath(); g.arc(f.x0 * S, f.y0 * S, S * .18 * (1 - p / .3), 0, 7); g.fill(); }
         g.fillStyle = '#ffe45c'; g.beginPath(); g.arc(x, y, S * .09, 0, 7); g.fill();
         g.fillStyle = f.color; g.beginPath(); g.arc(x, y, S * .05, 0, 7); g.fill();
+      } else if (f.k === 'bomb') {
+        // a growing shadow on the ground and a bomb accelerating down onto it
+        const by = f.y * S - (1 - p * p) * S * 2.2;
+        g.fillStyle = 'rgba(0,0,0,' + (.1 + .25 * p) + ')'; g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, S * (.1 + .22 * p), S * (.05 + .1 * p), 0, 0, 7); g.fill();
+        g.save(); g.translate(f.x * S, by); g.fillStyle = '#2b2f36'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .12, 0, 0, 7); g.fill();
+        g.fillStyle = '#ffe45c'; g.fillRect(-S * .05, -S * .16, S * .1, S * .04); g.restore();
       } else if (f.k === 'burst') {
         const r = S * (f.big ? .75 : .45) * (.25 + .75 * p);
         g.save(); g.translate(f.x * S, f.y * S); g.globalAlpha = 1 - p;

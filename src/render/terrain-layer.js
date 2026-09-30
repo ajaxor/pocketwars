@@ -12,7 +12,7 @@ export const BOARD_COLOR = '#141a28';
 const CORNER = .3;    // corner radius of a shape, in tiles
 const FACE = .2;      // corner radius used by highlights drawn on a single tile
 /** How solid a building is drawn while a unit of its owner stands on it (so the unit stands out). */
-export const DIMMED_ALPHA = .35;
+export const DIMMED_ALPHA = .5;
 
 /** [x, y, w, h, radius] of tile (x, y), for highlights. `margin` keeps an outline that many pixels inside the tile. */
 export function faceRect(x, y, S, margin = 0) {
