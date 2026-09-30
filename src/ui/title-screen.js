@@ -4,7 +4,7 @@
 //
 //   setProgress(pct, text)   progress bar and status line
 //   setVersion(text)         small build label at the bottom
-//   setReady()               the game has loaded: Start is enabled
+//   setReady()               the game has loaded: Start is enabled and the progress bar fades away
 //   setFailed(message)       loading failed: the button becomes Retry
 //   showUpdate(onClick)      show the "new version available" button
 //   remove()                 take the overlay away (the game is underneath)
@@ -65,22 +65,21 @@ export class TitleScreen {
     this.upd.addEventListener('click', () => this.onUpdate());
     this.ver = h('div', 'title-ver');
 
-    const loading = h('div', 'title-loading');   // the progress bar and its status line travel together
+    const loading = this.loading = h('div', 'title-loading');   // the progress bar and its status line travel together
     loading.append(progress, this.status);
 
     const body = h('div', 'title-body');
     const logo = h('h1', 'title-logo');
     logo.append(h('span', 'logo-top', 'Pocket'), h('span', 'logo-main', 'Wars'));
-    body.append(logo, h('div', 'sub', 'Build your army, capture properties, and take the enemy HQ.'),
-      loading, this.go, this.links, this.upd, this.ver);
+    body.append(logo, loading, this.go, this.links, this.upd, this.ver);
     this.root = h('div', 'title');
     this.root.append(art, body);
     doc.body.append(this.root);
   }
 
-  setProgress(pct, text) { this.fill.style.width = pct + '%'; this.status.textContent = text; }
+  setProgress(pct, text) { this.loading.classList.remove('is-done'); this.fill.style.width = pct + '%'; this.status.textContent = text; }
   setVersion(text) { this.ver.textContent = text; }
-  setReady() { this.ready = true; this.go.disabled = false; this.go.textContent = 'Start'; this.setProgress(100, 'Ready'); }
+  setReady() { this.ready = true; this.go.disabled = false; this.go.textContent = 'Start'; this.setProgress(100, 'Ready'); this.loading.classList.add('is-done'); }
   setFailed(message) { this.ready = false; this.go.disabled = false; this.go.textContent = 'Retry'; this.setProgress(0, 'Could not load the game: ' + message); }
   showUpdate(onClick) { this.onUpdate = onClick; this.upd.hidden = false; }
   remove() { this.root.remove(); }

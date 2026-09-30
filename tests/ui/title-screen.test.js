@@ -57,3 +57,13 @@ test('remove takes the overlay off the page', () => {
   title.remove();
   assert.equal(doc.body.children.length, 0);
 });
+
+test('the progress bar fades away once the game is ready, and comes back if loading fails', () => {
+  const doc = new FakeDoc();
+  const title = new TitleScreen(doc);
+  assert.ok(!title.loading.classList.contains('is-done'));
+  title.setReady();
+  assert.ok(title.loading.classList.contains('is-done'));
+  title.setFailed('x');
+  assert.ok(!title.loading.classList.contains('is-done'));
+});
