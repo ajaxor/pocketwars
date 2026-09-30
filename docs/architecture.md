@@ -38,7 +38,7 @@ gallery/         live preview pages published next to the game: unit art (index.
 The map is one canvas that covers the whole window (`Renderer.fit`): the biggest whole-pixel tile size that fits the board below the
 status bar, centred. Everything else floats over it in `#ui`, built by `src/ui/hud.js`:
 
-- **Status bar**, pinned to the top: turn, day, funds, properties, Undo, End turn.
+- **Status bar**, pinned to the top: turn, day, funds, properties, Undo, End turn and a gear that opens the in-game menu (Resume, Reset mission, Quit to title; the last two ask first). Quit calls the host's `onQuit`, which re-shows the title screen.
 - **Dock**: a column of windows on the screen edge *away from* the tile being worked on (`Hud.focus` gives the tile, the session turns it
   into `top` or `bottom` with `Session.#placeDock`). Top to bottom of the column: order buttons (or the build menu), the unit and
   terrain info cards, then toasts. The info cards and toasts let taps through to the map; the order buttons and build menu do not.

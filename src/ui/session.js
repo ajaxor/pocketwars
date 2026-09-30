@@ -16,12 +16,13 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class Session {
   /**
    * @param {import('../engine/game.js').Game} game
-   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void}} host
+   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void, quit?:()=>void}} host
    */
-  constructor(game, { canvas, doc, restart }) {
+  constructor(game, { canvas, doc, restart, quit = restart }) {
     this.game = game;
     this.canvas = canvas;
     this.restart = restart;
+    this.quit = quit;
     this.busy = false;
     this.disposed = false;
 
@@ -66,6 +67,7 @@ export class Session {
     addEventListener('resize', this.onResize);
     hud.onEnd(() => this.#onEndTurn());
     hud.onUndo(() => this.#onUndo());
+    hud.onMenu(() => this.#openMenu());
     hud.message(this.#introText());
     requestAnimationFrame(() => this.#frame());
     void game;
@@ -77,6 +79,20 @@ export class Session {
     removeEventListener('resize', this.onResize);
     this.hud.onEnd(null);
     this.hud.onUndo(null);
+    this.hud.onMenu(null);
+  }
+
+  #openMenu() {
+    const { hud } = this;
+    if (hud.menuOpen) { hud.menu(null); return; }
+    hud.menu({
+      title: 'Menu',
+      items: [
+        { label: 'Resume', variant: 'primary', onClick: () => hud.menu(null) },
+        { label: 'Reset mission', confirm: 'Restart this mission from the beginning?', variant: 'danger', onClick: () => this.restart() },
+        { label: 'Quit to title', confirm: 'Leave this mission and go back to the title screen?', variant: 'danger', onClick: () => this.quit() },
+      ],
+    });
   }
 
   #introText() {

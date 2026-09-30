@@ -228,3 +228,48 @@ test('tapping an attribute tag shows what it does; tapping it again, or the next
   cover.click();
   assert.equal(help.hidden, true);
 });
+
+test('tapping the picked row a second time builds it; the first tap on a row never does', () => {
+  const { rows, calls } = openBuild(8000);
+  rows()[0].click();                       // the row that starts highlighted still needs an explicit first tap
+  assert.deepEqual(calls, []);
+  rows()[1].click();
+  assert.deepEqual(calls, []);
+  rows()[1].click();
+  assert.deepEqual(calls, [['build', 'tank']]);
+});
+
+test('a second tap on a row the player cannot afford builds nothing', () => {
+  const { rows, calls } = openBuild(8000);
+  rows()[2].click(); rows()[2].click();
+  assert.deepEqual(calls, []);
+});
+
+test('the gear opens a menu; Reset and Quit ask first, Resume closes it', () => {
+  const t = make();
+  const log = [];
+  t.hud.onMenu(() => t.hud.menu({
+    items: [
+      { label: 'Resume', onClick: () => t.hud.menu(null) },
+      { label: 'Reset mission', confirm: 'Sure?', onClick: () => log.push('reset') },
+    ],
+  }));
+  t.hud.el.gear.click();
+  assert.equal(t.hud.el.modal.hidden, false);
+  const find = (label) => t.hud.el.modal.find((e) => e.classList.contains('btn') && e.children.at(-1)?.textContent === label)[0];
+  find('Reset mission').click();
+  assert.deepEqual(log, [], 'asks first');
+  find('Back').click();
+  find('Reset mission').click();
+  find('Yes').click();
+  assert.deepEqual(log, ['reset']);
+  t.hud.menu(null);
+  assert.equal(t.hud.el.modal.hidden, true);
+});
+
+test('the menu never covers a game-over box', () => {
+  const t = make();
+  t.hud.gameOver({ title: 'Victory', text: 'x', onClick() {} });
+  t.hud.menu({ items: [{ label: 'Resume', onClick() {} }] });
+  assert.equal(t.hud.el.modal.find((e) => e.textContent === 'Resume').length, 0);
+});

@@ -19,6 +19,8 @@ const TOAST_MS = 3600;
 
 const weaponRange = (w) => (w.min === w.max ? `${w.min}` : `${w.min}-${w.max}`);
 
+const GEAR_SVG = '<svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M19.14 12.94a7.5 7.5 0 0 0 .05-.94 7.5 7.5 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.61-.22l-2.39.96a7 7 0 0 0-1.62-.94l-.36-2.54A.5.5 0 0 0 13.9 2h-3.84a.5.5 0 0 0-.5.42l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96a.5.5 0 0 0-.61.22L2.66 8.48a.5.5 0 0 0 .12.64l2.03 1.58a7.5 7.5 0 0 0-.05.94c0 .32.02.63.05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32c.13.22.39.3.61.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.04.24.25.42.5.42h3.84c.25 0 .46-.18.5-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.09.48 0 .61-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"/></svg>';
+
 export class Hud {
   /**
    * @param {Document} doc
@@ -54,7 +56,10 @@ export class Hud {
     const props = h(doc, 'div', 'bar-stat'); props.append(h(doc, 'i', 'icon icon--flag'), this.el.props);
     this.el.undo = button(doc, { label: 'Undo', size: 'sm', disabled: true });
     this.el.end = button(doc, { label: 'End turn', variant: 'primary', size: 'sm' });
-    const actions = h(doc, 'div', 'bar-actions'); actions.append(this.el.undo, this.el.end);
+    this.el.gear = button(doc, { size: 'sm', cls: 'btn--icon' });
+    this.el.gear.setAttribute('aria-label', 'Menu');
+    this.el.gear.innerHTML = GEAR_SVG;
+    const actions = h(doc, 'div', 'bar-actions'); actions.append(this.el.undo, this.el.end, this.el.gear);
     bar.append(turn, money, props, actions);
 
     // dock: edge first (actions / build), then info, then toast. CSS flips the order for the bottom edge.
@@ -94,6 +99,7 @@ export class Hud {
   setEndDisabled(v) { this.#set('end', this.el.end, 'disabled', v); }
   onUndo(fn) { this.el.undo.onclick = fn; }
   onEnd(fn) { this.el.end.onclick = fn; }
+  onMenu(fn) { this.el.gear.onclick = fn; }
 
   // ---- where the dock sits -------------------------------------------------------------------------------------------------
 
@@ -237,8 +243,8 @@ export class Hud {
 
   /**
    * The build menu. `model` is buildMenuModel(); `choice` the id shown selected; `onBuild(id)` and `onClose()` are the two
-   * ways out. Tapping a row selects it (details appear under the list); the big button builds the selected unit, so a
-   * stray tap never spends money.
+   * ways out. Tapping a row selects it (details appear under the list); tapping the selected row again, or the big
+   * button, builds it, so a single stray tap never spends money.
    */
   build(model, { choice, faction, onBuild, onClose }) {
     this.el.main.replaceChildren();
@@ -261,7 +267,11 @@ export class Hud {
       const row = button(d, {
         cls: `build-row${o.id === picked?.id ? ' is-picked' : ''}${o.affordable ? '' : ' is-poor'}`,
         kids: [this.#icon({ ...o, faction }, BUILD_ICON)],
-        onClick: () => { this.buildState.choice = o.id; this.#drawBuild(); },
+        onClick: () => {
+          // a second tap on a row the player has already picked builds it; the first tap only selects
+          if (this.buildState.armed === o.id && o.affordable) { onBuild(o.id); return; }
+          this.buildState.choice = o.id; this.buildState.armed = o.id; this.#drawBuild();
+        },
       });
       row.setAttribute('role', 'option');
       row.setAttribute('aria-selected', o.id === picked?.id ? 'true' : 'false');
@@ -309,10 +319,51 @@ export class Hud {
   gameOver(spec) {
     this.el.modal.replaceChildren();
     this.el.modal.hidden = !spec;
+    this.gameOverShown = !!spec;
+    this.menuOpen = false;
     if (!spec) return;
     const w = windowBox(this.doc, { title: spec.title, accent: spec.color, cls: 'win--modal' });
     w.body.append(h(this.doc, 'div', 'big', spec.text));
     w.body.append(button(this.doc, { label: spec.buttonLabel || 'Play again', variant: 'primary', size: 'lg', onClick: spec.onClick }));
+    this.el.modal.append(w.root);
+  }
+
+  // ---- in-game menu --------------------------------------------------------------------------------------------------------
+
+  /**
+   * The gear menu: a centred window over the dimmed screen. `items`: { label, variant?, onClick, confirm? }; an item with
+   * `confirm` (a question) asks "Are you sure?" inside the window first. null closes it. Never replaces a game-over box.
+   */
+  menu(spec) {
+    if (this.gameOverShown) return;
+    this.el.modal.replaceChildren();
+    this.el.modal.hidden = !spec;
+    this.menuOpen = !!spec;
+    if (!spec) return;
+    const d = this.doc;
+    const w = windowBox(d, { title: spec.title || 'Menu', cls: 'win--modal' });
+    const col = h(d, 'div', 'btn-col');
+    for (const it of spec.items) {
+      col.append(button(d, {
+        label: it.label, variant: it.variant, size: 'lg',
+        onClick: () => (it.confirm ? this.#confirm(spec, it) : it.onClick()),
+      }));
+    }
+    w.body.append(col);
+    this.el.modal.append(w.root);
+  }
+
+  #confirm(spec, it) {
+    const d = this.doc;
+    this.el.modal.replaceChildren();
+    const w = windowBox(d, { title: it.label, cls: 'win--modal' });
+    w.body.append(h(d, 'div', 'big', it.confirm));
+    const row = h(d, 'div', 'btn-row');
+    row.append(
+      button(d, { label: 'Back', variant: 'ghost', size: 'lg', onClick: () => this.menu(spec) }),
+      button(d, { label: 'Yes', variant: 'danger', size: 'lg', cls: 'btn--grow', onClick: it.onClick }),
+    );
+    w.body.append(row);
     this.el.modal.append(w.root);
   }
 

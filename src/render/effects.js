@@ -95,7 +95,7 @@ export class Effects {
         g.fillStyle = f.color; g.beginPath(); g.arc(x, y, S * .05, 0, 7); g.fill();
       } else if (f.k === 'bomb') {
         // a growing shadow on the ground and a bomb accelerating down onto it
-        const by = f.y * S - (1 - p * p) * S * 2.2;
+        const by = f.y * S - (1 - p * p) * S * 1.1;
         g.fillStyle = 'rgba(0,0,0,' + (.1 + .25 * p) + ')'; g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, S * (.1 + .22 * p), S * (.05 + .1 * p), 0, 0, 7); g.fill();
         g.save(); g.translate(f.x * S, by); g.fillStyle = '#2b2f36'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .12, 0, 0, 7); g.fill();
         g.fillStyle = '#ffe45c'; g.fillRect(-S * .05, -S * .16, S * .1, S * .04); g.restore();

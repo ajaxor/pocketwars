@@ -14,7 +14,7 @@ const defaultLoadCss = (doc, href) => new Promise((ok, no) => {
   el.rel = 'stylesheet'; el.href = href; el.onload = ok; el.onerror = () => no(new Error('Could not load ' + href));
   doc.head.appendChild(el);
 });
-const defaultLoadGame = async (href) => (await import(new URL(href, location.href).href)).boot();
+const defaultLoadGame = async (href, opts) => (await import(new URL(href, location.href).href)).boot(opts);
 
 /**
  * @param {object} o
@@ -37,10 +37,19 @@ export async function launch({
   doc.getElementById('boot')?.remove();
   doc.body.classList.remove('loading');
 
-  const title = new TitleScreen(doc, { links: GALLERIES });
-  title.setVersion('build ' + (hash === 'dev' ? 'dev' : hash + (built ? ' - ' + built.slice(0, 10) : '')));
-  let started = false;
-  title.onStart = () => { if (title.ready) { started = true; title.remove(); } else reload(); };
+  const version = 'build ' + (hash === 'dev' ? 'dev' : hash + (built ? ' - ' + built.slice(0, 10) : ''));
+  let title = null, started = false, ready = false, failed = null;
+
+  // The title screen can come back (Quit to title), so it is built by a function.
+  const show = () => {
+    started = false;
+    const t = title = new TitleScreen(doc, { links: GALLERIES });
+    t.setVersion(version);
+    t.onStart = () => { if (t.ready) { started = true; t.remove(); } else reload(); };
+    if (ready) t.setReady(); else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
+    return t;
+  };
+  show();
 
   // Coming back to the tab while still on the title screen: check for a newer deploy.
   doc.addEventListener('visibilitychange', async () => {
@@ -49,13 +58,14 @@ export async function launch({
     if (v && v.hash !== hash) title.showUpdate(() => goTo(v.hash));
   });
 
-  title.setProgress(60, 'Loading game...');
   try {
-    await loadGame(base + 'src/main.js?v=' + tag);
+    await loadGame(base + 'src/main.js?v=' + tag, { onQuit: show });
+    ready = true;
     title.setReady();
   } catch (e) {
     console.error(e);
-    title.setFailed(String(e.message || e).split('\n')[0].slice(0, 120));
+    failed = String(e.message || e).split('\n')[0].slice(0, 120);
+    title.setFailed(failed);
   }
   return title;
 }

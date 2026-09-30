@@ -212,3 +212,14 @@ canvas.unit-icon { display: block; flex: none; }
 .title-links { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
 .title-upd { color: var(--edge); background: linear-gradient(#fff07a, #ffd93d); text-shadow: none; }
 .title-ver { position: fixed; left: 0; right: 0; bottom: calc(10px + var(--safe-b)); font-size: 11px; opacity: .55; letter-spacing: .04em; pointer-events: none; }
+
+/* gear button and the in-game menu */
+.btn--icon { padding: 0; width: 40px; flex: none; }
+.btn--icon svg { display: block; margin: auto; }
+.btn-col { display: flex; flex-direction: column; gap: var(--gap); min-width: 220px; }
+@media (max-width: 370px) {
+  .bar { gap: 6px; }
+  .bar-actions { gap: 4px; }
+  .btn--sm { padding: 0 8px; font-size: 12px; }
+  .btn--icon { width: 36px; padding: 0; }
+}
