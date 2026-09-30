@@ -1,10 +1,15 @@
 // Procedural terrain drawing. terrain.json -> render.base is the tile colour, render.decor names a
 // decoration below and render.building names a building drawn on properties. Each function draws into a square
-// (px, py, S) and knows nothing about the tile under it: the tile's shape and finish belong to terrain-styles.js.
+// (px, py, S) and knows nothing about the tile under it: the tile's shape belongs to terrain-layer.js and the alternative
+// drawings of the decor belong to terrain-themes.js. Buildings are the same in every theme.
 
 const tri = (g, a, b, c, d, e, f) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c, d); g.lineTo(e, f); g.fill(); };
 
+// The original flat drawings: the 'flat' theme in terrain-themes.js. Every theme supplies one function per decor name;
+// grass and road are the ground under plain tiles, roads and buildings and draw nothing here.
 export const TERRAIN_DECOR = {
+  grass() {},
+  road() {},
   forest(g, px, py, S) {
     g.fillStyle = '#2f6b34';
     for (const [a, b] of [[.3, .35], [.7, .4], [.5, .72]]) { g.beginPath(); g.arc(px + a * S, py + b * S, S * .2, 0, 7); g.fill(); }

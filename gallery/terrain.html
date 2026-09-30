@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pocket Wars: terrain styles</title>
+<title>Pocket Wars: terrain art</title>
 <style>
   :root { color-scheme: dark; }
   * { box-sizing: border-box; }
@@ -34,8 +34,8 @@
 </head>
 <body>
 <header>
-  <h1>Terrain styles</h1>
-  <p>The game's real renderer drawing the classic map, once per style. Pick one with the button under it: the game uses it from then on (on this device).</p>
+  <h1>Terrain art</h1>
+  <p>The game's real renderer drawing the classic map, once per terrain theme. Pick one with the button under it: the game uses it from then on (on this device).</p>
 </header>
 <div class="controls"><div class="controls-inner">
   <div class="ctl">Tile size <input id="size" type="range" min="24" max="64" step="2" value="34" aria-label="Tile size"><output id="sizeOut">34 px</output></div>
@@ -43,7 +43,7 @@
 </div></div>
 <main>
   <div id="grid"></div>
-  <p class="hint">40 px is a phone tile at 1x; try 24 to see the worst case. To try a style without saving it, open the game with <code>?tiles=&lt;id&gt;</code>, for example <code>?tiles=merged</code>.</p>
+  <p class="hint">40 px is a phone tile at 1x; try 24 to see the worst case. To try a theme without saving it, open the game with <code>?terrain=&lt;id&gt;</code>, for example <code>?terrain=pines</code>. Forest, mountain, sea, grass and road are drawn by the theme; buildings and units are the same in all of them.</p>
   <p class="hint"><a href="../">Back to the game</a> · <a href="./">Unit art</a></p>
 </main>
 <script type="module">

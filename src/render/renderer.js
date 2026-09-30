@@ -13,25 +13,26 @@
 
 import { calcDamage, canTarget } from '../engine/combat.js';
 import { tileIndex, unitById } from '../engine/queries.js';
-import { drawTerrainLayer, faceRect, tileStyleById } from './terrain-styles.js';
+import { drawTerrainLayer, faceRect } from './terrain-layer.js';
+import { terrainThemeById } from './terrain-themes.js';
 import { drawUnit } from './unit-sprites.js';
 
 export class Renderer {
-  /** @param {{tileStyle?:string}} [opts] id of a style in terrain-styles.js (unknown = the default) */
-  constructor(canvas, game, effects, animator, { tileStyle } = {}) {
+  /** @param {{terrainTheme?:string}} [opts] id of a theme in terrain-themes.js (unknown = the default) */
+  constructor(canvas, game, effects, animator, { terrainTheme } = {}) {
     this.cv = canvas;
     this.g = canvas.getContext('2d');
     this.game = game;
     this.effects = effects;
     this.animator = animator;
     this.S = 40;
-    this.tileStyle = tileStyleById(tileStyle);
+    this.theme = terrainThemeById(terrainTheme);
   }
 
   get tileSize() { return this.S; }
 
-  /** [x, y, w, h, radius] of the face of tile (x, y) in the current style, for outlines and highlights. */
-  face(x, y, margin = 0) { return faceRect(this.tileStyle, x, y, this.S, margin); }
+  /** [x, y, w, h, radius] of tile (x, y), for outlines and highlights that follow the rounded tiles. */
+  face(x, y, margin = 0) { return faceRect(x, y, this.S, margin); }
 
   colorsOf(owner) {
     const { registry, map } = this.game;
@@ -107,7 +108,7 @@ export class Renderer {
 
     const terrainAt = (x, y) => game.registry.terrainDef(map.terrain[y][x]);
     drawTerrainLayer(g, {
-      width: map.width, height: map.height, S, style: this.tileStyle, terrainAt,
+      width: map.width, height: map.height, S, theme: this.theme, now, terrainAt,
       ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? this.colorsOf(state.owners[y][x]).color : null),
     });
     if (view.reach) {

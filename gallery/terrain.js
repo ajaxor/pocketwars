@@ -1,17 +1,17 @@
-// Live terrain-style gallery. Each card runs the game's own Renderer on the classic map with one tile style, so what you
+// Live terrain-style gallery. Each card runs the game's own Renderer on the classic map with one terrain theme, so what you
 // compare here is exactly what ships. "Use in game" remembers the choice in localStorage (src/main.js reads it).
 import { fetchReader, loadMap, loadMapIndex, loadRegistry } from '../src/data/loader.js';
 import { Game } from '../src/engine/game.js';
 import { Effects } from '../src/render/effects.js';
 import { MoveAnimator } from '../src/render/animator.js';
 import { Renderer } from '../src/render/renderer.js';
-import { DEFAULT_TILE_STYLE, TILE_STYLES, TILE_STYLE_KEY, tileStyleById } from '../src/render/terrain-styles.js';
+import { DEFAULT_TERRAIN_THEME, TERRAIN_THEMES, TERRAIN_THEME_KEY, terrainThemeById } from '../src/render/terrain-themes.js';
 
 const EMPTY_VIEW = { selectedId: null, dest: null, reach: null, attackTiles: null, targets: [], showTargets: false, pendingTargetId: null };
 
 const store = {
-  get() { try { return localStorage.getItem(TILE_STYLE_KEY); } catch { return null; } },
-  set(id) { try { localStorage.setItem(TILE_STYLE_KEY, id); return true; } catch { return false; } },
+  get() { try { return localStorage.getItem(TERRAIN_THEME_KEY); } catch { return null; } },
+  set(id) { try { localStorage.setItem(TERRAIN_THEME_KEY, id); return true; } catch { return false; } },
 };
 
 async function boot() {
@@ -21,21 +21,21 @@ async function boot() {
   const map = await loadMap(readJson, registry, index.default);
   const $ = (sel) => document.querySelector(sel);
   const state = { size: 34, paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
-  let current = tileStyleById(store.get()).id;
+  let current = terrainThemeById(store.get()).id;
   let clock = 0, last = performance.now();
 
-  const cards = TILE_STYLES.map((style) => {
+  const cards = TERRAIN_THEMES.map((style) => {
     const game = new Game(registry, map);
     const canvas = document.createElement('canvas');
-    canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `The classic map drawn in the ${style.name} style`);
+    canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `The classic map drawn with the ${style.name} terrain`);
     let renderer = null;
     const effects = new Effects(registry, (owner) => renderer.colorsOf(owner));
-    renderer = new Renderer(canvas, game, effects, new MoveAnimator(), { tileStyle: style.id });
+    renderer = new Renderer(canvas, game, effects, new MoveAnimator(), { terrainTheme: style.id });
 
     const el = document.createElement('div'); el.className = 'card';
     const head = document.createElement('div'); head.className = 'head';
     const name = document.createElement('span'); name.className = 'name'; name.textContent = style.name;
-    const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = style.id === DEFAULT_TILE_STYLE ? 'default' : '';
+    const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = style.id === DEFAULT_TERRAIN_THEME ? 'default' : '';
     head.append(name, tag);
     const note = document.createElement('div'); note.className = 'note'; note.textContent = style.note;
     const use = document.createElement('button'); use.className = 'use'; use.type = 'button';

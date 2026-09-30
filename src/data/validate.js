@@ -61,7 +61,6 @@ export function validateTerrain(terrain, rules, problems) {
       }
     }
     if (!isObj(t.render) || !isColor(t.render.base)) problems.push(`terrain "${id}": render.base must be a hex color`);
-    else if (t.render.height !== undefined && !(isNum(t.render.height) && t.render.height >= 0 && t.render.height <= 1)) problems.push(`terrain "${id}": render.height must be a number from 0 (sunken) to 1 (raised)`);
     checkAttributes('terrain', id, t, TERRAIN_ATTRIBUTES, problems);
   }
 }

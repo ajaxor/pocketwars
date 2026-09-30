@@ -4,7 +4,7 @@
     "defense": 1,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#86b95c" }
+    "render": { "base": "#86b95c", "decor": "grass" }
   },
   "forest": {
     "name": "Forest",
@@ -25,21 +25,21 @@
     "defense": 0,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#cdbb8f", "height": 0.5 }
+    "render": { "base": "#cdbb8f", "decor": "road" }
   },
   "sea": {
     "name": "Sea",
     "defense": 0,
     "moveCost": { "foot": null, "vehicle": null, "air": 1 },
     "attributes": {},
-    "render": { "base": "#3d7ec7", "decor": "sea", "height": 0 }
+    "render": { "base": "#3d7ec7", "decor": "sea" }
   },
   "city": {
     "name": "City",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] } },
-    "render": { "base": "#86b95c", "building": "city" }
+    "render": { "base": "#86b95c", "decor": "grass", "building": "city" }
   },
   "hq": {
     "name": "HQ",
@@ -49,27 +49,27 @@
       "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
       "victoryOnCapture": true
     },
-    "render": { "base": "#86b95c", "building": "hq" }
+    "render": { "base": "#86b95c", "decor": "grass", "building": "hq" }
   },
   "factory": {
     "name": "Factory",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] } },
-    "render": { "base": "#86b95c", "building": "factory" }
+    "render": { "base": "#86b95c", "decor": "grass", "building": "factory" }
   },
   "barracks": {
     "name": "Barracks",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] } },
-    "render": { "base": "#86b95c", "building": "barracks" }
+    "render": { "base": "#86b95c", "decor": "grass", "building": "barracks" }
   },
   "airfield": {
     "name": "Airfield",
     "defense": 3,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["aircraft"] } },
-    "render": { "base": "#86b95c", "building": "airfield" }
+    "render": { "base": "#86b95c", "decor": "grass", "building": "airfield" }
   }
 }
