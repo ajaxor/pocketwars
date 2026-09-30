@@ -43,7 +43,7 @@ test('property info: owner, income, repair, capture points and what it builds', 
 test('unit stats read the weapon, armor and attribute labels from the data', () => {
   const game = fresh();
   const tank = unitStats(game, registry.unit('tank'));
-  assert.deepEqual([tank.name, tank.cost, tank.move, tank.armor, tank.toughness], ['Tank', 7000, 6, 85, 1.3]);
+  assert.deepEqual([tank.name, tank.cost, tank.move, tank.armor, tank.toughness], ['Tank', 7000, 4, 85, 1.3]);
   assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air'] }]);
   assert.deepEqual(tank.tags, []);
 

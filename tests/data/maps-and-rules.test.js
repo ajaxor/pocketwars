@@ -17,7 +17,10 @@ const cost = (terrain, cls) => registry.terrainDef(terrain).moveCost[cls];
 test('movement classes: wheels, treads, foot and air', () => {
   assert.deepEqual(registry.rules.moveClasses, ['foot', 'wheels', 'tread', 'air']);
   assert.equal(registry.unit('recon').moveClass, 'wheels');
-  for (const u of ['tank', 'heavy_tank', 'artillery', 'flak']) assert.equal(registry.unit(u).moveClass, 'tread', u);
+  for (const u of ['tank', 'heavy_tank', 'flak']) assert.equal(registry.unit(u).moveClass, 'tread', u);
+  assert.equal(registry.unit('artillery').moveClass, 'wheels');
+  for (const u of ['recon', 'tank', 'heavy_tank', 'artillery', 'flak']) assert.ok(registry.unit(u).move <= 6, `${u} is slow enough`);
+  assert.equal(registry.terrainDef('mountain').render.base, registry.terrainDef('rough').render.base, 'mountains sit on rough ground');
 });
 
 test('roads favour wheels; forests and rough ground block wheels; treads pay extra in forests', () => {

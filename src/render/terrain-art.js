@@ -57,14 +57,14 @@ export const TERRAIN_DECOR = {
         g.fillStyle = i % 2 ? '#93c668' : '#76a94d'; g.beginPath(); g.ellipse(cx, cy, S * .09, S * .035, 0, 0, 7); g.fill();
       }
     },
-    // Asphalt with a pale shoulder line along every side that does not meet another road, and a dashed centre line that runs
+    // Light concrete-grey road (so units stand out against it) with a dark shoulder line along every side that does not meet another road, and a dashed centre line that runs
     // through each tile in the same rhythm (two dashes a tile, gaps at the tile edges) so it carries on from tile to tile.
     road(g, px, py, S, { x, y, link = NO_LINKS, radii = null }) {
-      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, i % 2 ? '#6b707a' : '#51555d');
+      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, i % 2 ? '#d9dce1' : '#b3b7bf');
       const lw = Math.max(1, S * .04);
       g.save();
       if (radii) { g.beginPath(); g.roundRect(px, py, S, S, radii); g.clip(); }
-      g.strokeStyle = 'rgba(232,228,208,.5)'; g.lineWidth = lw; g.lineCap = 'butt'; g.beginPath();
+      g.strokeStyle = 'rgba(92,98,110,.55)'; g.lineWidth = lw; g.lineCap = 'butt'; g.beginPath();
       const i = S * .075;
       // a side counts as open when the neighbour there is not a road (off the map counts as road, so the edge stays plain)
       if (!link.n) { g.moveTo(px, py + i); g.lineTo(px + S, py + i); }
@@ -78,7 +78,7 @@ export const TERRAIN_DECOR = {
       const cx = px + S / 2, cy = py + S / 2;
       // a dash on one arm, from `a` to `b` tiles out from the centre
       const dash = (dx, dy, a, b) => { g.moveTo(cx + dx * a * S, cy + dy * a * S); g.lineTo(cx + dx * b * S, cy + dy * b * S); };
-      g.strokeStyle = '#f1e9c6'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
+      g.strokeStyle = '#e3a91c'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
       const DIRS = [['n', 0, -1], ['e', 1, 0], ['s', 0, 1], ['w', -1, 0]];
       for (const [k, dx, dy] of DIRS) {
         if (!arms[k]) continue;

@@ -121,3 +121,13 @@ test('a dimmed building is composited once at DIMMED_ALPHA; a normal one is draw
   assert.ok(alphas(true).includes(DIMMED_ALPHA));
   assert.ok(DIMMED_ALPHA > 0 && DIMMED_ALPHA < 1);
 });
+
+test('ground stays square against an inlaid road, but a road still rounds its own outer corners', () => {
+  const nb = { ...all(G), n: R, w: '#c9ccd2', nw: R };
+  assert.deepEqual(radiiOf(nb), [12, 0, 0, 0], 'rounds against the other ground');
+  assert.deepEqual(radiiOf({ ...nb, inlay: { n: false, e: false, s: false, w: true } }), [0, 0, 0, 0], 'square against the road side');
+  const road = { render: { base: '#c9ccd2', inlay: true } };
+  const { ctx, calls } = recorder();
+  paintTile(ctx, 0, 0, 40, road, null, { ...all('#c9ccd2'), n: G, w: G, nw: G, inlay: { n: false, e: true, s: true, w: false } }, { x: 0, y: 0, now: 0 });
+  assert.deepEqual(calls.find((c) => c.op === 'roundRect').args[4], [12, 0, 0, 0]);
+});

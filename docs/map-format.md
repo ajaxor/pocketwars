@@ -39,5 +39,6 @@ to `index.json`, run `npm run validate`.
 
 - Move classes are `foot`, `wheels`, `tread` and `air`. Roads cost wheels 0.5; forests cost treads 2 and block wheels; rough ground blocks
   wheels and costs treads 1; mountains admit only foot (and air).
+- `terrain.json -> render.inlay` (true for roads): neighbouring ground stays square against it instead of rounding its corners.
 - `terrain.json -> render.mini` (optional hex colour) is the flat colour used by the skirmish page's map preview.
 - Maps larger than the screen scroll; any size up to 64x64 works.

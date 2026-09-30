@@ -209,3 +209,15 @@ test('taps outside the board are ignored', () => {
   t.controller.tap(-1, 0); t.controller.tap(0, 99);
   assert.equal(t.controller.mode, 'idle');
 });
+
+test('tapping an enemy unit previews where it could move and what it could hit, without selecting it', () => {
+  const t = setup(duelMap);
+  t.controller.tap(4, 0);
+  assert.equal(t.controller.mode, 'idle');
+  assert.equal(t.controller.view.selectedId, null);
+  assert.ok(t.controller.view.reach.has(3, 0), 'shows the enemy movement');
+  assert.ok(t.controller.view.attackTiles.size > 0, 'and its attack range');
+  t.controller.tap(2, 0);   // an empty tile clears the preview
+  assert.equal(t.controller.view.reach, null);
+  assert.equal(t.controller.view.attackTiles, null);
+});

@@ -44,6 +44,7 @@ export class Controller {
     this.attack = null;
     this.targets = [];
     this.pendingTargetId = null;
+    this.preview = null; // { reach, attack }: where a tapped unit that cannot be ordered (an enemy's, say) could move and hit
     this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
     this.cards = null;  // the info cards for the current selection; while orders are being given they start hidden (see #setCards)
     this.infoOn = false;
@@ -54,8 +55,8 @@ export class Controller {
     return {
       selectedId: this.sel ? this.sel.id : null,
       dest: this.dest,
-      reach: this.reach,
-      attackTiles: this.attack,
+      reach: this.reach || (this.preview && this.preview.reach),
+      attackTiles: this.attack || (this.preview && this.preview.attack),
       targets: this.targets,
       showTargets: this.mode === 'act',
       pendingTargetId: this.pendingTargetId,
@@ -83,6 +84,7 @@ export class Controller {
 
     if (this.mode === 'idle') {
       this.cursor = { x, y };
+      this.preview = null;
       if (u && u.owner === game.currentPlayer && !u.done) this.#select(u);
       else if (u) this.#show(x, y, u);
       else {
@@ -127,9 +129,21 @@ export class Controller {
 
   /** Show what is on tile (x, y): its unit (when there is one) and its terrain. */
   #show(x, y, unit) {
+    if (unit) this.preview = this.#threat(unit);
     this.hud.focus({ x, y });
     this.hud.info({ unit: unit ? unitInfo(this.game, unit) : null, terrain: terrainInfo(this.game, x, y) });
     this.hud.message(null);
+  }
+
+  /** The ground a unit that is not being ordered could cover next turn: where it can move, and every tile it could then hit. */
+  #threat(unit) {
+    const { game } = this;
+    const reach = computeReach(game, unit);
+    const attack = new Set();
+    // a unit that cannot fire after moving (artillery) only threatens from where it stands
+    const from = canFireAfterMoving(game, unit) ? [...reach.tiles()] : [{ x: unit.x, y: unit.y }];
+    for (const t of from) for (const k of attackTiles(game, unit, t.x, t.y)) attack.add(k);
+    return { reach, attack };
   }
 
   /**

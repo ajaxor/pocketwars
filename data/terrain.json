@@ -18,7 +18,7 @@
     "defense": 4,
     "moveCost": { "foot": 2, "wheels": null, "tread": null, "air": 1 },
     "attributes": { "blocksLineOfSight": 2, "vantage": 2 },
-    "render": { "base": "#86b95c", "decor": "mountain", "mini": "#8f877a" }
+    "render": { "base": "#b59d6b", "decor": "mountain", "mini": "#8f877a" }
   },
   "rough": {
     "name": "Rough",
@@ -32,7 +32,7 @@
     "defense": 0,
     "moveCost": { "foot": 1, "wheels": 0.5, "tread": 1, "air": 1 },
     "attributes": {},
-    "render": { "base": "#5d626b", "decor": "road", "mini": "#5d626b" }
+    "render": { "base": "#c9ccd2", "decor": "road", "inlay": true, "mini": "#c9ccd2" }
   },
   "sea": {
     "name": "Sea",

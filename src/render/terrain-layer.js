@@ -32,6 +32,7 @@ export function backdrop(base, a, b, d) {
 
 /**
  * Paint one tile whose top-left pixel is (px, py). `nb` holds the base colour of the eight neighbours (null off the map).
+ * `nb.inlay` (optional) says which of the four sides carry an inlaid terrain (terrain.render.inlay, the road).
  * `at` = { x, y, now, dimmed, link }: grid position and clock, for drawings that vary per tile or animate; `dimmed` draws the
  * building faintly; `link` says which of the eight neighbours carry on the same drawing (off the map counts as yes), which
  * is how roads know where to run. paintTile adds `radii`, the tile's corner radii, so a drawing can clip itself to the tile.
@@ -41,8 +42,11 @@ export function paintTile(g, px, py, S, terrain, ownerColor, nb, at) {
   const same = (c) => c === base;
   const joins = (c) => c === null || c === base;       // off the map counts as more of the same shape: flat along the edge
   // corner order matches roundRect's radii: top-left, top-right, bottom-right, bottom-left
-  const corners = [[0, 0, nb.n, nb.w, nb.nw], [1, 0, nb.n, nb.e, nb.ne], [1, 1, nb.s, nb.e, nb.se], [0, 1, nb.s, nb.w, nb.sw]];
-  const radii = corners.map(([, , a, b]) => (!joins(a) && !joins(b) ? r : 0));
+  const corners = [[0, 0, nb.n, nb.w, nb.nw, 'n', 'w'], [1, 0, nb.n, nb.e, nb.ne, 'n', 'e'], [1, 1, nb.s, nb.e, nb.se, 's', 'e'], [0, 1, nb.s, nb.w, nb.sw, 's', 'w']];
+  // an inlaid neighbour (a road) is laid over the ground, so a tile that is not itself inlaid stays square against it: its edge
+  // is a straight line, and no corner of the ground opens up to show asphalt outside the road's shoulder
+  const flatSide = (k) => !terrain.render.inlay && !!nb.inlay?.[k];
+  const radii = corners.map(([, , a, b, , ka, kb]) => (!joins(a) && !joins(b) && !flatSide(ka) && !flatSide(kb) ? r : 0));
   corners.forEach(([cx, cy, a, b, d], i) => {
     if (!radii[i]) return;
     g.fillStyle = backdrop(base, a, b, d);
@@ -85,6 +89,8 @@ export function drawTerrainLayer(g, { width, height, S, now = 0, terrainAt, owne
         n: baseAt(x, y - 1), e: baseAt(x + 1, y), s: baseAt(x, y + 1), w: baseAt(x - 1, y),
         ne: baseAt(x + 1, y - 1), se: baseAt(x + 1, y + 1), sw: baseAt(x - 1, y + 1), nw: baseAt(x - 1, y - 1),
       };
+      const inlayAt = (dx, dy) => !off(x + dx, y + dy) && !!terrainAt(x + dx, y + dy).render.inlay;
+      nb.inlay = { n: inlayAt(0, -1), e: inlayAt(1, 0), s: inlayAt(0, 1), w: inlayAt(-1, 0) };
       const decor = decorAt(x, y);
       const same = (dx, dy) => off(x + dx, y + dy) || decorAt(x + dx, y + dy) === decor;
       const link = {
