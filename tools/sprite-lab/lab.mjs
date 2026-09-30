@@ -18,7 +18,7 @@ function parse(argv) {
   return a;
 }
 const args = parse(process.argv.slice(2));
-view.moving = !!args.moving;   // --moving: show the walk cycle (infantry legs only step while moving)
+view.moving = !!args.moving;   // --moving: show the walk cycle (foot units only step while moving)
 const cmd = args._[0] || 'help';
 const num = (v, d) => (v === undefined || v === true ? d : Number(v));
 const list = (v) => (typeof v === 'string' ? v.split(',').filter(Boolean) : null);

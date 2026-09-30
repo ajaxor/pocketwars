@@ -12,7 +12,7 @@
 // game.act(), so cancelling is free and the engine never sees half-finished moves.
 
 import { canCapture } from '../engine/capture.js';
-import { canTarget } from '../engine/combat.js';
+import { canTarget, terrainStars } from '../engine/combat.js';
 import { buildOptions } from '../engine/economy.js';
 import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, targetsFrom } from '../engine/movement.js';
 import { ownerAt, propertyAt, terrainAt, layerInfo, unitDef } from '../engine/queries.js';
@@ -124,7 +124,7 @@ export class Controller {
     const label = layerInfo(game, u).label;
     const t = terrainAt(game, u.x, u.y);
     const prop = propertyAt(game, u.x, u.y);
-    this.#msg(`${def.name}${label ? ` (${label})` : ''} HP ${Math.ceil(u.hp)} - ${t.name} def ${t.defense}`
+    this.#msg(`${def.name}${label ? ` (${label})` : ''} HP ${Math.ceil(u.hp)} - ${t.name} def ${terrainStars(game, u)}`
       + (u.capture && prop ? ` - capturing ${u.capture}/${prop.capturePoints}` : ''));
   }
 

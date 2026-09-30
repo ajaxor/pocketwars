@@ -1,7 +1,7 @@
 {
   "plain": {
     "name": "Plain",
-    "defense": 1,
+    "defense": 0,
     "moveCost": { "foot": 1, "vehicle": 1, "air": 1 },
     "attributes": {},
     "render": { "base": "#86b95c", "decor": "grass" }

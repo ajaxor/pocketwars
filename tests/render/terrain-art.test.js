@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { loadRegistry, loadMap } from '../../src/data/loader.js';
-import { BOARD_COLOR, backdrop, drawTerrainLayer, faceRect, paintTile } from '../../src/render/terrain-layer.js';
+import { BOARD_COLOR, DIMMED_ALPHA, backdrop, drawTerrainLayer, faceRect, paintTile } from '../../src/render/terrain-layer.js';
 import { TERRAIN_DECOR, rnd } from '../../src/render/terrain-art.js';
 
 const registry = await loadRegistry(readData);
@@ -84,7 +84,40 @@ test('merged: a rounded corner is filled with the colour it opens onto, or the b
   const corner = (nb) => paint(nb).find((c) => c.op === 'fillRect' && c.args[0] === 0 && c.args[1] === 0).fill;
   assert.equal(corner({ ...all(G), n: SEA, w: SEA, nw: SEA }), SEA);               // a grass corner poking into the sea
   assert.equal(corner({ ...all(G), n: R, w: R, nw: SEA }), R);                      // two edges agree: they win over the diagonal
-  assert.equal(corner({ ...all(G), n: null, w: null, nw: null }), BOARD_COLOR);     // the map corner
   assert.equal(corner({ ...all(G), n: R, w: SEA, nw: '#000000' }), BOARD_COLOR);    // three different neighbours
   assert.equal(backdrop(G, G, G, G), BOARD_COLOR);
+  assert.equal(backdrop(G, null, SEA, SEA), BOARD_COLOR);
+});
+
+test('merged: the map edge is flat, not rounded', () => {
+  const edge = (nb) => radiiOf({ ...all(G), ...nb });
+  assert.deepEqual(edge({ n: null, ne: null, nw: null }), [0, 0, 0, 0], 'top edge');
+  assert.deepEqual(edge({ s: null, se: null, sw: null }), [0, 0, 0, 0], 'bottom edge');
+  assert.deepEqual(edge({ w: null, nw: null, sw: null }), [0, 0, 0, 0], 'left edge');
+  assert.deepEqual(edge({ e: null, ne: null, se: null }), [0, 0, 0, 0], 'right edge');
+  assert.deepEqual(edge({ n: null, w: null, nw: null, ne: null, sw: null }), [0, 0, 0, 0], 'map corner');
+});
+
+test('merged: water against land on the map edge stays flat along the edge', () => {
+  // a sea tile in the left edge column with grass above, below and to its right: only its inner corners round
+  const sea = { render: { base: SEA } };
+  const { ctx, calls } = recorder();
+  paintTile(ctx, 0, 0, 40, sea, null, { n: G, ne: G, e: G, se: G, s: G, sw: null, w: null, nw: null }, { x: 0, y: 3, now: 0 });
+  const [tl, tr, br, bl] = calls.find((c) => c.op === 'roundRect').args[4];
+  assert.equal(tl, 0, 'top-left corner sits on the map edge');
+  assert.equal(bl, 0, 'bottom-left corner sits on the map edge');
+  assert.ok(tr > 0 && br > 0, 'corners that open onto land inside the map still round');
+});
+
+test('a dimmed building is composited once at DIMMED_ALPHA; a normal one is drawn at full strength', () => {
+  const city = registry.terrainDef('city');
+  const alphas = (dimmed) => {
+    const sets = [];
+    const ctx = new Proxy({}, { get: (_, p) => (typeof p === 'symbol' ? undefined : () => ({ addColorStop() {} })), set: (_, p, v) => { if (p === 'globalAlpha') sets.push(v); return true; } });
+    paintTile(ctx, 0, 0, 40, city, '#e8712c', all(G), { x: 0, y: 0, now: 0, dimmed });
+    return sets;
+  };
+  assert.deepEqual(alphas(false), []);
+  assert.ok(alphas(true).includes(DIMMED_ALPHA));
+  assert.ok(DIMMED_ALPHA > 0 && DIMMED_ALPHA < 1);
 });

@@ -34,6 +34,8 @@ export function createRegistry(raw) {
     unit: (id) => { const u = units[id]; if (!u) throw new Error(`Unknown unit "${id}"`); return u; },
     terrainDef: (id) => { const t = terrain[id]; if (!t) throw new Error(`Unknown terrain "${id}"`); return t; },
     faction: (id) => { const f = factions[id]; if (!f) throw new Error(`Unknown faction "${id}"`); return f; },
+    /** Full health of a unit type: its own `maxHp`, else rules.maxHp. */
+    maxHpOf: (id) => { const u = units[id]; if (!u) throw new Error(`Unknown unit "${id}"`); return u.maxHp ?? rules.maxHp; },
     /** Unit definitions belonging to any of the given categories, in build-menu order. */
     unitsInCategories: (categories) => unitIds.map((id) => units[id]).filter((u) => categories.includes(u.category)),
   });

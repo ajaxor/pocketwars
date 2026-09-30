@@ -6,7 +6,7 @@ export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduc
 
 /**
  * Begin `player`'s turn: collect income, repair units standing on properties they own (+property.repair HP,
- * capped at maxHp) and make all their units ready to act again.
+ * capped at the unit's max HP) and make all their units ready to act again.
  */
 export function startTurn(game, player) {
   const { state, registry } = game;
@@ -17,9 +17,10 @@ export function startTurn(game, player) {
     if (u.owner !== player) continue;
     u.done = false;
     const property = propertyAt(game, u.x, u.y);
-    if (property && ownerAt(game, u.x, u.y) === player && u.hp < registry.rules.maxHp) {
+    const max = registry.maxHpOf(u.type);
+    if (property && ownerAt(game, u.x, u.y) === player && u.hp < max) {
       const from = u.hp;
-      u.hp = Math.min(registry.rules.maxHp, round1(u.hp + property.repair));
+      u.hp = Math.min(max, round1(u.hp + property.repair));
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
     }
   }
@@ -52,7 +53,7 @@ export function buildUnit(game, player, x, y, typeId) {
   if (problem) return { ok: false, error: problem, events: [] };
   const { state, registry } = game;
   state.funds[player] -= registry.unit(typeId).cost;
-  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x, y, hp: registry.rules.maxHp, done: true, capture: 0 };
+  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x, y, hp: registry.maxHpOf(typeId), done: true, capture: 0 };
   state.units.push(unit);
   return { ok: true, events: [{ type: 'build', unit: snapshotUnit(unit), cost: registry.unit(typeId).cost }] };
 }

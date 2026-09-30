@@ -1,9 +1,10 @@
 // Combat rules. Damage is data-driven (unit.damage table x layers) and modified by attributes:
 //   - ignoresTerrainDefense on the DEFENDER removes the terrain-star reduction
+//   - terrainDefenseMultiplier on the DEFENDER scales the terrain stars it gets
 //   - indirect on either side disables counterattacks
 // Every function returns plain data / event objects; nothing here knows about drawing.
 
-import { hasAttribute } from './attributes.js';
+import { attributeConfig, hasAttribute } from './attributes.js';
 import { inAttackRange, removeUnit, round1, snapshotUnit, terrainAt, unitDef } from './queries.js';
 
 /** Can `attacker` ever damage `defender`? (defender's layer is targetable AND the damage table has an entry.) */
@@ -11,6 +12,13 @@ export function canTarget(game, attacker, defender) {
   const a = unitDef(game, attacker);
   const d = unitDef(game, defender);
   return a.targetLayers.includes(d.layer) && (a.damage[d.id] || 0) > 0;
+}
+
+/** Terrain defense stars `unit` gets on its current tile, after its attributes have had their say. */
+export function terrainStars(game, unit) {
+  const def = unitDef(game, unit);
+  if (hasAttribute(def, 'ignoresTerrainDefense')) return 0;
+  return terrainAt(game, unit.x, unit.y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
 }
 
 /**
@@ -21,7 +29,7 @@ export function calcDamage(game, attacker, defender) {
   if (!canTarget(game, attacker, defender)) return 0;
   const a = unitDef(game, attacker);
   const d = unitDef(game, defender);
-  const stars = hasAttribute(d, 'ignoresTerrainDefense') ? 0 : terrainAt(game, defender.x, defender.y).defense;
+  const stars = terrainStars(game, defender);
   const v = (a.damage[d.id] * attacker.hp) / 10 * (1 - (stars * defender.hp) / 100) / 10;
   return v < 1 ? round1(v) : Math.round(v);
 }

@@ -6,7 +6,7 @@
 //   playTurn(game)           -> whole turn synchronously (used by tests and headless simulation)
 
 import { AI_CONDITIONS } from './ai-conditions.js';
-import { hasAttribute } from './attributes.js';
+import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
 import { calcDamage } from './combat.js';
 import { buildProblem } from './economy.js';
@@ -42,7 +42,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   let best = null;
   for (const { x, y } of reach.tiles()) {
     const moved = x !== unit.x || y !== unit.y;
-    const defense = terrainAt(game, x, y).defense;
+    const defense = terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
     let score = -(field.get(tileIndex(map, x, y)) ?? w.unreachableDistance) * w.distanceToGoal + defense * w.terrainDefense;
     let target = null;
     let capture = false;

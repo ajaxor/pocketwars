@@ -68,8 +68,24 @@ export class Renderer {
     const acted = u.done && u.owner === game.state.turn;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
-      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
+      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, maxHp: game.registry.maxHpOf(u.type),
     });
+  }
+
+  /**
+   * Tiles whose building is drawn faintly: a property whose owner has a unit standing on it (neutral and enemy properties
+   * keep their full colour). A unit that is still sliding does not count until it arrives; a previewed move counts at once.
+   */
+  dimmedTiles(view) {
+    const { game, animator } = this;
+    const { map, state } = game;
+    const out = new Set();
+    for (const u of state.units) {
+      if (animator.current !== null && animator.current.unitId === u.id) continue;
+      const { x, y } = this.logicalPos(u, view);
+      if (u.owner !== null && state.owners[y][x] === u.owner && game.registry.terrainDef(map.terrain[y][x]).attributes.property) out.add(tileIndex(map, x, y));
+    }
+    return out;
   }
 
   drawArrow(now) {
@@ -104,9 +120,11 @@ export class Renderer {
     const anim = this.animator.active;
 
     const terrainAt = (x, y) => game.registry.terrainDef(map.terrain[y][x]);
+    const dimmed = this.dimmedTiles(view);
     drawTerrainLayer(g, {
       width: map.width, height: map.height, S, now, terrainAt,
       ownerColorAt: (x, y) => (terrainAt(x, y).attributes.property ? this.colorsOf(state.owners[y][x]).color : null),
+      dimmedAt: (x, y) => dimmed.has(tileIndex(map, x, y)),
     });
     if (view.reach) {
       g.fillStyle = 'rgba(255,255,255,.38)'; g.beginPath();

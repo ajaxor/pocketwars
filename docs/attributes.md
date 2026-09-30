@@ -3,7 +3,7 @@
 An attribute is a named special rule attached to a unit or terrain in JSON:
 
 ```json
-"infantry": { "...": "...", "attributes": { "capture": true } }
+"soldier": { "...": "...", "attributes": { "capture": true } }
 ```
 
 The catalogue lives in `src/engine/attributes.js` (docs + config validation). Unknown attributes, or attributes on the
@@ -16,6 +16,7 @@ wrong kind of entity, fail validation.
 | `capture` | Can capture properties it stands on; progress per action = current HP. | `tests/attributes/capture.test.js` |
 | `indirect` | Cannot move and fire in the same turn; no counterattack either way. Needs `range[0] >= 2`. | `indirect.test.js` |
 | `ignoresTerrainDefense` | Terrain defense does not reduce damage this unit takes. | `ignoresTerrainDefense.test.js` |
+| `terrainDefenseMultiplier` | Multiplies the terrain defense this unit gets (`2` doubles it; must be > 1). No effect on 0-defense terrain, and `ignoresTerrainDefense` still wins. | `terrainDefenseMultiplier.test.js` |
 
 ## Terrain attributes
 
@@ -26,7 +27,7 @@ wrong kind of entity, fail validation.
 
 ## Other data-driven stats (not attributes)
 
-Terrain `moveCost` per move class (`null` = impassable); unit `layer`, `targetLayers` and the `damage` table (which
+Unit `maxHp` (optional, 1..`rules.maxHp`; a unit starts, heals and is built at its own maximum); terrain `moveCost` per move class (`null` = impassable); unit `layer`, `targetLayers` and the `damage` table (which
 targets a unit can hit, and for how much); `layers`/`moveClasses`/`maxHp` in `rules.json`; AI weights and build rules in `ai.json`.
 Layer rules are covered by `tests/attributes/layers.test.js`.
 

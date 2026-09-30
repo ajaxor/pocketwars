@@ -13,7 +13,7 @@
     "infantry": [
       { "unit": "mech",    "max": 2 },
       { "unit": "sniper",  "max": 1 },
-      { "unit": "infantry", "max": 5 }
+      { "unit": "soldier", "max": 5 }
     ],
     "aircraft": [
       { "unit": "bomber",  "max": 1 },

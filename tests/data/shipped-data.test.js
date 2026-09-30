@@ -37,7 +37,8 @@ test('every property terrain has a building drawing; decor names exist', () => {
 
 test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
-  assert.deepEqual(withAttr('capture'), ['infantry', 'mech']);
+  assert.deepEqual(withAttr('capture'), ['mech', 'soldier']);
+  assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['soldier']);
   assert.deepEqual(withAttr('indirect'), ['artillery', 'sniper']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter']);
 });
@@ -51,10 +52,24 @@ test('terrain attributes: properties, income and the HQ victory condition', () =
 
 test('characterisation of the original stats', () => {
   const stat = (id) => { const u = registry.unit(id); return [u.cost, u.move, u.range.join('-'), u.layer]; };
-  assert.deepEqual(stat('infantry'), [1000, 2, '1-1', 'ground']);
+  assert.deepEqual(stat('soldier'), [1000, 2, '1-1', 'ground']);
   assert.deepEqual(stat('artillery'), [6000, 5, '2-3', 'ground']);
   assert.deepEqual(stat('bomber'), [12000, 7, '1-1', 'high_air']);
   assert.equal(registry.rules.maxHp, 10);
+});
+
+test('the soldier is frailer than other units and doubles the terrain defense it gets', () => {
+  assert.equal(registry.maxHpOf('soldier'), 8);
+  assert.equal(registry.unit('soldier').attributes.terrainDefenseMultiplier, 2);
+  for (const id of registry.unitIds.filter((u) => u !== 'soldier')) assert.equal(registry.maxHpOf(id), 10, `${id} keeps the default`);
+  assert.equal(registry.unit('soldier').category, 'infantry', 'the infantry category is unchanged (barracks still build it)');
+  assert.equal(registry.unit('soldier').name, 'Soldier');
+  assert.ok(!registry.units.infantry, 'no unit is still called infantry');
+});
+
+test('plains give no defense, like roads', () => {
+  assert.equal(registry.terrainDef('plain').defense, 0);
+  assert.equal(registry.terrainDef('road').defense, 0);
 });
 
 test('anti-air and anti-ground roles: flak hits air, artillery cannot hit low-air copters', async () => {
@@ -63,7 +78,7 @@ test('anti-air and anti-ground roles: flak hits air, artillery cannot hit low-ai
   assert.ok(canTarget(game, at('flak', 0), at('copter', 1)));
   assert.ok(canTarget(game, at('flak', 0), at('bomber', 1)));
   assert.ok(!canTarget(game, at('artillery', 0), at('copter', 1)));
-  assert.ok(!canTarget(game, at('infantry', 0), at('bomber', 1)));
+  assert.ok(!canTarget(game, at('soldier', 0), at('bomber', 1)));
   assert.ok(canTarget(game, at('bomber', 0), at('tank', 1)));
 });
 

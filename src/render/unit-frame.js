@@ -10,6 +10,9 @@
 
 import { drawFaded } from './layer.js';
 
+/** The wash that marks a unit that has already acted this turn: its colours are blended toward a dark grey. */
+export const DISABLED_TINT = { color: '#2f3036', amount: .5 };
+
 const defaultShadow = (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.ellipse(0, s * .31, s * .3, s * .06, 0, 0, 7); g.fill(); };
 
 export function drawFrame(g, mod, id, o) {
@@ -22,8 +25,8 @@ export function drawFrame(g, mod, id, o) {
   }
 }
 
-// ---- fading a unit as ONE image (see layer.js): shadow and unit are drawn opaque, then composited once ----------
-export function drawFrameAlpha(g, mod, id, o, alpha = 1) {
+// ---- fading / tinting a unit as ONE image (see layer.js): shadow and unit are drawn opaque, then composited once ----------
+export function drawFrameAlpha(g, mod, id, o, alpha = 1, tint = null) {
   const REACH = 1.7, half = o.s * REACH / 2;                    // room for altitude lift and wide sprites
-  drawFaded(g, alpha, -half, -half, half * 2, half * 2, (ctx) => drawFrame(ctx, mod, id, o), o.make);
+  drawFaded(g, alpha, -half, -half, half * 2, half * 2, (ctx) => drawFrame(ctx, mod, id, o), o.make, tint);
 }

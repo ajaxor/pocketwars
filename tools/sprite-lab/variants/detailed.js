@@ -62,7 +62,7 @@ function build() {
   const GHILLIE = (c) => mix(c, '#56643a', .6);
   const KIT = {
     // rifleman: backpack with bedroll, rifle held across the chest
-    infantry: {
+    soldier: {
       pack(U, { dk, b }) { U.rect(-22, -9 + b, 10, 23, 3.5, dk); U.rect(-23, -13 + b, 12, 6, 3, N.oliveL); },
       weapon(g, U, { c, b, sw }) {
         U.line(-2, 2 + b, 15, 4 + b + sw * .5, 6.5, c);                                          // arm, under the rifle
@@ -119,7 +119,7 @@ function build() {
 
   const SPRITES = {
     // ---- the infantry family: one body and head, differing only in pack and weapon ----------------------
-    infantry: trooper(KIT.infantry),
+    soldier: trooper(KIT.soldier),
     mech: trooper(KIT.mech),
     sniper: trooper(KIT.sniper),
 
@@ -317,7 +317,7 @@ function build() {
   };
   const copterOutline = () => [[-50, -2], [-14, -3], [-6, -21], [6, -21], [16, -8], [42, 4], [33, 11], [-14, 7], [-50, 2], [-48, -2], [-6, 21], [6, 21], [-2, 18]].slice(0, 9);
   const SHADOWS = {
-    infantry: ground(.2, .045, .295),
+    soldier: ground(.2, .045, .295),
     mech: ground(.2, .045, .295),
     sniper: ground(.2, .045, .295),
     recon: ground(.36, .05, .29),

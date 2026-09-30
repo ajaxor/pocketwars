@@ -29,6 +29,10 @@ export const UNIT_ATTRIBUTES = {
     doc: 'Terrain defense stars do not reduce damage this unit takes (e.g. aircraft).',
     check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
+  terrainDefenseMultiplier: {
+    doc: 'Multiplies the terrain defense this unit gets (e.g. 2 doubles it). Does nothing on 0-defense terrain, and is moot with ignoresTerrainDefense.',
+    check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 1) fail('must be a number greater than 1'); },
+  },
 };
 
 /** Attributes that may appear in terrain.json -> attributes. */

@@ -54,6 +54,34 @@ test('the board draws every tile and every unit', () => {
   assert.ok(calls.filter((c) => c === 'fill').length >= game.map.width * game.map.height);
 });
 
+test('a building is drawn faintly only while a unit of its owner stands on it', () => {
+  const { renderer, game } = rig();
+  const props = [];
+  game.map.terrain.forEach((row, y) => row.forEach((t, x) => { if (game.registry.terrainDef(t).attributes.property) props.push({ x, y, owner: game.state.owners[y][x] }); }));
+  const key = (q) => q.y * game.map.width + q.x;
+  const ownProps = props.filter((q) => q.owner === 0);
+  const theirs = props.find((q) => q.owner === 1), neutral = props.find((q) => q.owner === null);
+  const [a, b, c] = game.state.units.filter((u) => u.owner === 0);
+  const enemy = game.state.units.find((u) => u.owner === 1);
+  const put = (u, q) => { u.x = q.x; u.y = q.y; };
+  put(a, ownProps[0]); put(b, neutral); put(c, theirs); put(enemy, ownProps[1]);
+  const dim = renderer.dimmedTiles(emptyView);
+  assert.deepEqual([...dim], [key(ownProps[0])], 'only the own unit on its own property');
+  // a previewed move counts at its destination, not at the tile the unit is leaving
+  const view = { ...emptyView, selectedId: a.id, dest: { x: ownProps[2].x, y: ownProps[2].y } };
+  assert.deepEqual([...renderer.dimmedTiles(view)], [key(ownProps[2])]);
+});
+
+test('a unit that is sliding does not dim the property it is heading for until it arrives', () => {
+  const { renderer, game, animator } = rig();
+  const mine = []; game.map.terrain.forEach((row, y) => row.forEach((t, x) => { if (game.registry.terrainDef(t).attributes.property && game.state.owners[y][x] === 0) mine.push({ x, y }); }));
+  const u = game.state.units.find((q) => q.owner === 0);
+  u.x = mine[0].x; u.y = mine[0].y;
+  assert.ok(renderer.dimmedTiles(emptyView).has(mine[0].y * game.map.width + mine[0].x));
+  animator.start(u.id, [[0, 0], [u.x, u.y]], 0);
+  assert.ok(!renderer.dimmedTiles(emptyView).has(mine[0].y * game.map.width + mine[0].x));
+});
+
 test('selection overlays draw (reach, attack outline, targets, pending target)', () => {
   const { renderer, game } = rig();
   const unit = game.state.units.find((u) => u.owner === 0);
@@ -87,7 +115,7 @@ test('effects.strike schedules the right animation for each attackFx', () => {
   const { effects } = rig();
   const at = (type) => ({ id: 1, type, owner: 0, x: 0, y: 0 });
   const def = { id: 2, type: 'tank', owner: 1, x: 1, y: 0 };
-  for (const [type, kind] of [['infantry', 'lunge'], ['tank', 'shot'], ['artillery', 'shot']]) {
+  for (const [type, kind] of [['soldier', 'lunge'], ['tank', 'shot'], ['artillery', 'shot']]) {
     effects.clear();
     effects.strike({ attacker: at(type), defender: def, damage: 3, destroyed: false }, 0);
     assert.ok(effects.list.some((f) => f.k === kind), `${type} -> ${kind}`);
@@ -118,10 +146,10 @@ test('the animator interpolates along a path', () => {
 test('describeEvents summarises strikes, captures, builds and game over', () => {
   const game = new Game(registry, classic);
   const u = (type) => ({ type });
-  assert.equal(describeEvents(game, [{ type: 'strike', attacker: u('tank'), defender: u('infantry'), damage: 7, destroyed: false }]), 'Tank hits Infantry -7');
+  assert.equal(describeEvents(game, [{ type: 'strike', attacker: u('tank'), defender: u('soldier'), damage: 7, destroyed: false }]), 'Tank hits Soldier -7');
   assert.match(describeEvents(game, [
-    { type: 'strike', attacker: u('tank'), defender: u('infantry'), damage: 10, destroyed: true },
-    { type: 'strike', counter: true, attacker: u('infantry'), defender: u('tank'), damage: 1, destroyed: false },
+    { type: 'strike', attacker: u('tank'), defender: u('soldier'), damage: 10, destroyed: true },
+    { type: 'strike', counter: true, attacker: u('soldier'), defender: u('tank'), damage: 1, destroyed: false },
   ]), /destroyed!, counter -1/);
   assert.equal(describeEvents(game, [{ type: 'capture', completed: false, progress: 10, needed: 20 }]), 'Capturing 10/20');
   assert.equal(describeEvents(game, [{ type: 'capture', completed: true }]), 'Captured!');

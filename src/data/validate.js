@@ -83,6 +83,9 @@ export function validateUnits(units, terrain, rules, problems) {
     if (!Array.isArray(u.targetLayers) || !u.targetLayers.length || u.targetLayers.some((l) => !layers.includes(l))) {
       problems.push(`unit "${id}": targetLayers must be a non-empty list of known layers`);
     }
+    if (u.maxHp !== undefined && !(Number.isInteger(u.maxHp) && u.maxHp >= 1 && u.maxHp <= rules.maxHp)) {
+      problems.push(`unit "${id}": maxHp must be an integer 1..${rules.maxHp} (omit it to use rules.maxHp)`);
+    }
     if (!isObj(u.damage)) problems.push(`unit "${id}": damage must be an object keyed by target unit id`);
     if (!isObj(u.render) || !isStr(u.render.sprite)) problems.push(`unit "${id}": render.sprite is required`);
     checkAttributes('unit', id, u, UNIT_ATTRIBUTES, problems);

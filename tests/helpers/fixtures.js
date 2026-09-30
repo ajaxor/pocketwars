@@ -27,7 +27,7 @@ export const BASE_TERRAIN = {
 
 export const BASE_UNIT = {
   name: 'Unit', category: 'ground', cost: 1000, move: 3, moveClass: 'foot', range: [1, 1], layer: 'ground',
-  targetLayers: ['ground'], attributes: {}, render: { sprite: 'infantry', attackFx: 'shot' },
+  targetLayers: ['ground'], attributes: {}, render: { sprite: 'soldier', attackFx: 'shot' },
 };
 
 /** Legend used by makeMap / makeGame rows. Owners: a/H/1 belong to player 0, b/h/2 to player 1. */

@@ -38,12 +38,12 @@
     "MFFvoOkFFM"
   ],
   "units": [
-    { "type": "infantry",  "owner": 0, "x": 3, "y": 9 },
-    { "type": "infantry",  "owner": 1, "x": 3, "y": 1 },
-    { "type": "infantry",  "owner": 0, "x": 6, "y": 9 },
-    { "type": "infantry",  "owner": 1, "x": 6, "y": 1 },
-    { "type": "infantry",  "owner": 0, "x": 5, "y": 8 },
-    { "type": "infantry",  "owner": 1, "x": 5, "y": 2 },
+    { "type": "soldier",  "owner": 0, "x": 3, "y": 9 },
+    { "type": "soldier",  "owner": 1, "x": 3, "y": 1 },
+    { "type": "soldier",  "owner": 0, "x": 6, "y": 9 },
+    { "type": "soldier",  "owner": 1, "x": 6, "y": 1 },
+    { "type": "soldier",  "owner": 0, "x": 5, "y": 8 },
+    { "type": "soldier",  "owner": 1, "x": 5, "y": 2 },
     { "type": "tank",      "owner": 0, "x": 4, "y": 9 },
     { "type": "tank",      "owner": 1, "x": 4, "y": 1 },
     { "type": "artillery", "owner": 0, "x": 5, "y": 9 },

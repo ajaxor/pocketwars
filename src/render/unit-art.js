@@ -30,7 +30,7 @@ const treads = (g, s, x0, x1, y, h, w, run, j) => {
   for (let i = 0; i < 6; i++) { const x = x0 * s + s * .02 + i * s * .12 + off; if (x < x1 * s - s * .05) g.fillRect(x, (y + h * .4) * s, s * .05, s * .04); }
 };
 
-// ---- infantry: one body, head and walk cycle for every foot soldier; only the pack and weapon differ ----------
+// ---- foot units: one body, head and walk cycle shared by soldier, mech and sniper; only the pack and weapon differ ----------
 const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   const walk = run && moving ? 1 : 0;                                                          // legs only step while the unit moves
   const l = Math.sin(w * 8 + ph) * s * .05 * walk, sw = Math.sin(w * 8 + ph) * s * .02 * walk;
@@ -92,10 +92,14 @@ const artillery = (g, { s, c, dk, w, ph, run, j }) => {
 };
 
 const flak = (g, { s, c, dk, w, ph, run, j }) => {
-  treads(g, s, -.32, .32, .1 + j / s, .17, w, run);
-  box(g, s, -.28, -.02 + j / s, .56, .15, 4, c); box(g, s, -.14, -.14 + j / s, .28, .14, 3, dk);
-  g.save(); g.translate(s * .02, -s * .1 + j); g.rotate(-.95 + Math.sin(w * 2 + ph) * .12 * run); g.fillStyle = INK; g.fillRect(0, -s * .055, s * .36, s * .04); g.fillRect(0, s * .015, s * .36, s * .04); g.restore();
-  stroke(g, s, -.16, -.14 + j / s, -.16 + Math.cos(w * 8 * run) * .09, -.16 + j / s - Math.abs(Math.sin(w * 8 * run)) * .06, 1.5, '#ddd');
+  const jj = j / s;
+  treads(g, s, -.32, .32, .1 + jj, .17, w, run);
+  box(g, s, -.28, -.02 + jj, .56, .15, 4, c);
+  // gun mount: a wedge whose front face is raked up and forward, so it reads as aimed at the sky
+  poly(g, s, [[-.2, -.02 + jj], [-.22, -.15 + jj], [-.1, -.2 + jj], [.05, -.2 + jj], [.17, -.02 + jj]], dk);
+  poly(g, s, [[-.1, -.2 + jj], [.05, -.2 + jj], [.17, -.02 + jj], [.1, -.02 + jj]], mix(c, dk, .35));   // lit slope
+  g.save(); g.translate(s * .0, -s * .13 + j); g.rotate(-.95 + Math.sin(w * 2 + ph) * .12 * run);
+  g.fillStyle = INK; g.fillRect(0, -s * .055, s * .36, s * .04); g.fillRect(0, s * .015, s * .36, s * .04); g.restore();
 };
 
 // ---- aircraft (plan view, facing right) ----------------------------------------------------------------------
@@ -152,7 +156,7 @@ const stealth = (g, { s, c, dk }) => {
 };
 
 export const SPRITES = {
-  infantry: trooper('infantry'), mech: trooper('mech'), sniper: trooper('sniper'),
+  soldier: trooper('soldier'), mech: trooper('mech'), sniper: trooper('sniper'),
   recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, fighter, bomber, stealth_bomber: stealth,
 };
 
@@ -164,7 +168,7 @@ const airShadow = (outline) => (g, { s, alt = 0 }) => {
 };
 
 export const SHADOWS = {
-  infantry: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
+  soldier: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
   recon: ground(.3, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
   artillery: ground(.29, .045, .285, -.01), flak: ground(.32, .05, .275),
   copter: airShadow(mirror([[.34, .0], [.2, -.1], [-.1, -.13], [-.2, -.04], [-.46, -.03], [-.46, 0]])),

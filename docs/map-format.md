@@ -20,7 +20,7 @@ reports every problem at once.
     "O": { "terrain": "hq", "owner": 0 }
   },
   "tiles": ["..O.", "...."],
-  "units": [ { "type": "infantry", "owner": 0, "x": 2, "y": 0, "hp": 10 } ]
+  "units": [ { "type": "soldier", "owner": 0, "x": 2, "y": 0, "hp": 10 } ]
 }
 ```
 

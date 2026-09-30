@@ -5,7 +5,7 @@
 //   day: number             starts at 1, increments each time play returns to player 0
 //   funds: number[]         per player
 //   owners: (number|null)[][]   owner of each tile ([y][x]); null = neutral / not a property
-//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture }
+//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture }   (hp counts up to the type's maxHp)
 //   defeated: boolean[]     per player
 //   winner: null | number | 'draw'
 //   nextUnitId: number
@@ -20,7 +20,7 @@ export function createState(map, registry) {
     owners: map.owners.map((row) => [...row]),
     units: map.units.map((u) => ({
       id: nextUnitId++, type: u.type, owner: u.owner, x: u.x, y: u.y,
-      hp: u.hp ?? registry.rules.maxHp, done: false, capture: 0,
+      hp: u.hp ?? registry.maxHpOf(u.type), done: false, capture: 0,
     })),
     defeated: map.players.map(() => false),
     winner: null,
