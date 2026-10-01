@@ -6,7 +6,7 @@ import { loadRegistry } from '../../src/data/loader.js';
 import { parseMap } from '../../src/data/map-format.js';
 import { Game } from '../../src/engine/game.js';
 import { rawMap } from '../helpers/fixtures.js';
-import { canSee, hiddenFrom } from '../../src/engine/detection.js';
+import { canSee, hiddenFrom, isExposed } from '../../src/engine/detection.js';
 import { computeReach, targetsFrom } from '../../src/engine/movement.js';
 import { calcDamage, weaponFor } from '../../src/engine/combat.js';
 import { chooseOrder } from '../../src/engine/ai.js';
@@ -233,4 +233,16 @@ test('a battleship firing its main guns is not counterattacked, and does not cou
   const g2 = sea(['~~~~~~~~', '........'], [['battleship', 0, 0, 0], ['battleship', 1, 1, 0]]);
   const [c, d] = g2.state.units;
   assert.equal(weaponFor(g2, d, c, d, { counter: true }).name, registry.weapon('secondary_guns').name, 'adjacent, the secondary guns answer');
+});
+
+test('a dived sub is exposed only when an enemy notices it (adjacent, or in sonar range)', () => {
+  const g = sea(['~~~~~~~~', '~~~~~~~~'], [['submarine', 0, 3, 0], ['destroyer', 1, 7, 0], ['submarine', 1, 3, 1]]);
+  const [mine, destroyer, theirSub] = g.state.units;
+  mine.submerged = true; theirSub.submerged = true;
+  assert.equal(isExposed(g, mine, 0), true, 'their sub is adjacent: it notices mine');
+  theirSub.y = 1; theirSub.x = 5;
+  assert.equal(isExposed(g, mine, 0), false, 'destroyer 4 tiles off is out of sonar range; the far sub is not adjacent');
+  destroyer.x = 6;
+  assert.equal(isExposed(g, mine, 0), true, 'sonar range 3 reaches it');
+  assert.equal(isExposed(g, theirSub, 0), false, 'nothing of mine is near the enemy sub');
 });

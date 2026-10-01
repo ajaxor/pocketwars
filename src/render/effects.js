@@ -40,10 +40,6 @@ export class Effects {
       const dur = 620;
       this.list.push({ k: 'torpedo', x0, y0, x1, y1, t0, d: dur });
       hit = t0 + dur;
-    } else if (fx === 'depth') {
-      // the charge drops onto the target and goes off below it: a ring of water instead of a flash
-      this.list.push({ k: 'depth', x: x1, y: y1, t0, d: 700 });
-      hit = t0 + 520;
     } else {
       const arc = fx === 'arc';
       const dur = arc ? 480 : 200;
@@ -122,18 +118,8 @@ export class Effects {
         const x = (f.x0 + (f.x1 - f.x0) * p) * S, y = (f.y0 + (f.y1 - f.y0) * p) * S;
         const a = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
         g.save(); g.translate(x, y); g.rotate(a); g.lineCap = 'round';
-        g.strokeStyle = 'rgba(255,255,255,.65)'; g.lineWidth = S * .07; g.beginPath(); g.moveTo(0, 0); g.lineTo(-S * .55, 0); g.stroke();
-        g.strokeStyle = 'rgba(255,255,255,.3)'; g.lineWidth = S * .16; g.beginPath(); g.moveTo(-S * .1, 0); g.lineTo(-S * .8, 0); g.stroke();
-        g.fillStyle = '#c9ced6'; g.beginPath(); g.ellipse(0, 0, S * .13, S * .05, 0, 0, 7); g.fill(); g.restore();
-      } else if (f.k === 'depth') {
-        const drop = Math.min(1, p / .7);
-        if (p < .7) { g.fillStyle = '#2b2f36'; g.beginPath(); g.arc(f.x * S, f.y * S - (1 - drop * drop) * S * .7, S * .09, 0, 7); g.fill(); }
-        else {
-          const q = (p - .7) / .3;
-          g.save(); g.globalAlpha = 1 - q; g.strokeStyle = '#e8f6ff'; g.lineWidth = S * .06;
-          g.beginPath(); g.arc(f.x * S, f.y * S, S * (.15 + .4 * q), 0, 7); g.stroke();
-          g.fillStyle = '#e8f6ff'; g.beginPath(); g.ellipse(f.x * S, f.y * S - S * .3 * q, S * .1, S * .35 * (1 - q * .5), 0, 0, 7); g.fill(); g.restore();
-        }
+        g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = S * .035; g.beginPath(); g.moveTo(0, 0); g.lineTo(-S * .4, 0); g.stroke();
+                g.fillStyle = '#1d222b'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .025, 0, 0, 7); g.fill(); g.restore();
       } else if (f.k === 'ping') {
         g.save(); g.globalAlpha = 1 - p; g.strokeStyle = '#ff5a4d'; g.lineWidth = 3;
         for (let i = 0; i < 2; i++) { const q = Math.min(1, p * 1.4 - i * .25); if (q > 0) { g.beginPath(); g.arc(f.x * S, f.y * S, S * (.15 + .55 * q), 0, 7); g.stroke(); } }

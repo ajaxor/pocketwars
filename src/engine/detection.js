@@ -20,16 +20,23 @@ export const ADJACENT = 1;
 /** Is `unit` on a hidden layer right now (submerged)? Says nothing about who can see it: see canSee. */
 export const isHidden = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)].hidden === true;
 
+/** Does `observer` notice `unit`: next to it, or within range of a sonar? */
+const notices = (game, observer, unit) => {
+  const d = distance(observer.x, observer.y, unit.x, unit.y);
+  if (d <= ADJACENT) return true;
+  const sonar = attributeConfig(unitDef(game, observer), 'sonar');
+  return sonar !== undefined && d <= sonar;
+};
+
 /** Does any unit of `player` notice `unit`: one of them next to it, or within range of a sonar? */
-export function isDetectedBy(game, unit, player) {
-  return game.state.units.some((u) => {
-    if (u.owner !== player) return false;
-    const d = distance(u.x, u.y, unit.x, unit.y);
-    if (d <= ADJACENT) return true;
-    const sonar = attributeConfig(unitDef(game, u), 'sonar');
-    return sonar !== undefined && d <= sonar;
-  });
-}
+export const isDetectedBy = (game, unit, player) => game.state.units.some((u) => u.owner === player && notices(game, u, unit));
+
+/**
+ * Is `unit` exposed, as far as `viewer` can tell: does an enemy that `viewer` can itself see notice it? (An enemy the viewer cannot
+ * see does not count, so the answer never gives away a hidden unit next to one's own.) With no viewer every enemy counts.
+ */
+export const isExposed = (game, unit, viewer = null) => game.state.units.some((u) =>
+  u.owner !== unit.owner && (viewer === null || canSee(game, viewer, u)) && notices(game, u, unit));
 
 /** Can `player` see `unit`? Their own units and everything that is not hidden: always. A hidden enemy: only when detected. */
 export function canSee(game, player, unit) {

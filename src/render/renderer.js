@@ -18,7 +18,7 @@
 
 import { calcDamage, canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
-import { canSee, isHidden } from '../engine/detection.js';
+import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
@@ -111,7 +111,7 @@ export class Renderer {
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
-      submerged: !!u.submerged, hidden: !dying && isHidden(game, u),
+      submerged: !!u.submerged, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
     });

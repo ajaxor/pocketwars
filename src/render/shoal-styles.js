@@ -1,10 +1,10 @@
 // Shoal drawings: the tile is open sea (its colour joins the water around it) and the decor paints a patch of shallows on it, flat-shaded
-// in light blues, with a cluster of the same boulders the rough terrain has standing in it, ringed with surf. The shape of the patch and
+// in two light blues, with a cluster of the same boulders the rough terrain has standing in it, ringed with surf. The shape of the patch and
 // the boulders vary per tile through rnd(). TERRAIN_DECOR.shoals uses SHOAL_STYLES.boulders; the lab tool renders every style listed.
 
 import { rnd } from './rnd.js';
 
-const PALE = '#d9f1ff', LIGHT = '#a9dcf7', MID = '#74bdee', SHALLOW = '#5aa9e6';
+const PALE = '#d9f1ff', LIGHT = '#8ecbf3', SHALLOW = '#5aa9e6';
 const ROCK = '#857c6c', ROCK_LIT = '#b3a997';   // as in the rough terrain
 
 export const SHOAL_STYLES = {
@@ -16,8 +16,7 @@ export const SHOAL_STYLES = {
     // the shallows: an irregular patch in three nested tones
     const patch = (rx, ry, k, seed) => Array.from({ length: 10 }, (_, i) => { const a = (i / 10) * 6.2832, j = 1 + k * (rnd(x, y, seed + i) - .5) * 2; return [cx + Math.cos(a) * rx * j, cy + Math.sin(a) * ry * j]; });
     poly(patch(.4 * S, .33 * S, .14, 100), SHALLOW);
-    poly(patch(.31 * S, .25 * S, .14, 120), MID);
-    poly(patch(.2 * S, .16 * S, .12, 140), LIGHT);
+    poly(patch(.27 * S, .21 * S, .14, 120), LIGHT);
     // boulders, drawn like the rough terrain's, each with a ring of surf round its foot that swells slowly
     const swell = 1 + .08 * Math.sin(now / 700 + R(2) * 6);
     const rock = (bx, by, r, seed) => {
@@ -32,8 +31,12 @@ export const SHOAL_STYLES = {
       poly(pts, ROCK);
       poly(lit, ROCK_LIT);
     };
-    rock(cx - .1 * S + .03 * S * R(3), cy - .06 * S, S * .14, 1);
-    rock(cx + .1 * S, cy + .05 * S, S * .18, 2);
-    rock(cx - .05 * S, cy + .16 * S, S * .08, 3);
+    // two or three boulders of different sizes, scattered a little differently on every tile
+    const count = 2 + (R(4) > .45 ? 1 : 0);
+    const spots = [[-.12, -.07, .13], [.11, .05, .17], [-.04, .15, .08]];
+    for (let i = 0; i < count; i++) {
+      const [ox, oy, r] = spots[(i + Math.floor(R(5) * 3)) % 3];
+      rock(cx + (ox + .07 * (R(6 + i) - .5)) * S, cy + (oy + .07 * (R(9 + i) - .5)) * S, S * r * (.8 + .5 * R(12 + i)), 1 + i + Math.floor(R(15 + i) * 5));
+    }
   },
 };

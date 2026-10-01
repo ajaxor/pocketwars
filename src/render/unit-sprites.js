@@ -24,18 +24,19 @@ const ART = { SPRITES, SHADOWS };
  * @param {boolean} o.moving    drawn at double animation speed while sliding
  * @param {number} o.alpha      fade multiplier (dying units)
  * @param {boolean} o.showHp    draw the HP digit when damaged
+ * @param {boolean} o.exposed  a hidden unit an enemy can see right now: its eye turns white (see detection.js isExposed)
  * @param {boolean} o.hidden    the unit is hidden from other players (submerged, or any other hidden layer): an eye on its corner
  * @param {boolean} o.submerged a dived unit: its sprite draws itself low in the water (see the submarine in unit-art.js)
  */
 export function drawUnit(g, unit, o) {
-  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false } = o;
+  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false } = o;
   const run = animate ? 1 : 0;
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
   g.save(); g.translate(px + s / 2, py + s / 2);
   drawFrameAlpha(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged }, alpha, run ? null : DISABLED_TINT);
   g.restore();
-  if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha);
+  if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha, exposed);
   const dh = Math.ceil(unit.hp - 1e-9);
   if (showHp && dh < 10 && dh > 0) {
     const hx = px + s * .8, hy = py + s * .82, r = s * .3;
@@ -48,12 +49,13 @@ export function drawUnit(g, unit, o) {
 }
 
 /** The "hidden" marker: a white almond-shaped eye with a dark pupil on a dark round badge, centred on (x, y), r = badge radius. */
-function drawEye(g, x, y, r, alpha = 1) {
+function drawEye(g, x, y, r, alpha = 1, exposed = false) {
   g.save(); g.globalAlpha = alpha;
-  g.fillStyle = 'rgba(16,24,40,.82)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
-  g.fillStyle = '#fff'; g.beginPath();
+  g.fillStyle = exposed ? '#fff' : 'rgba(16,24,40,.82)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();     // seen by the enemy: a white badge
+  if (exposed) { g.strokeStyle = 'rgba(16,24,40,.55)'; g.lineWidth = Math.max(1, r * .12); g.stroke(); }
+  g.fillStyle = exposed ? '#1b2740' : '#fff'; g.beginPath();
   g.moveTo(x - r * .72, y); g.quadraticCurveTo(x, y - r * .78, x + r * .72, y); g.quadraticCurveTo(x, y + r * .78, x - r * .72, y); g.closePath(); g.fill();
-  g.fillStyle = '#2a6fd0'; g.beginPath(); g.arc(x, y, r * .3, 0, 7); g.fill();
+  g.fillStyle = exposed ? '#5aa9e6' : '#2a6fd0'; g.beginPath(); g.arc(x, y, r * .3, 0, 7); g.fill();
   g.fillStyle = '#0b1320'; g.beginPath(); g.arc(x, y, r * .15, 0, 7); g.fill();
   g.restore();
 }

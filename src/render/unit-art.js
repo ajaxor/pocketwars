@@ -25,7 +25,7 @@ const wheel = (g, s, x, y, r, w, run, speed) => {
   stroke(g, s, x, y, x + Math.cos(w * speed * run) * r * .9, y + Math.sin(w * speed * run) * r * .9, 1.5, '#aaa');
 };
 const treads = (g, s, x0, x1, y, h, w, run, j) => {
-  box(g, s, x0, y, x1 - x0, h, 5, '#2b2b2b');
+  box(g, s, x0, y, x1 - x0, h, h * s * .5, '#2b2b2b');   // a full pill: the radius follows the tread's height, so it stays round at any size
   g.fillStyle = STEEL; const off = (w * s * .3 * run) % (s * .12);
   for (let i = 0; i < 6; i++) { const x = x0 * s + s * .02 + i * s * .12 + off; if (x < x1 * s - s * .05) g.fillRect(x, (y + h * .4) * s, s * .05, s * .04); }
 };
@@ -196,8 +196,9 @@ const deckAt = ({ x1, deck, rise = 0, sweep = .2 }, x) => {
   const t = lo;
   return { y: deck - t * t * rise, ang: Math.atan2(-2 * t * rise, 2 * (1 - t) * (xc - x0) + 2 * t * (x1 - xc)) };
 };
-/** An armoured turret like a tank's: a rounded dark block with barrels out of its front, tilted by `ang` to sit on a slope. */
+/** An armoured turret like a tank's: a rounded block, lighter than the dark hull, with barrels out of its front, tilted by `ang` to sit on a slope. */
 const turret = (g, s, x, y, w, len, { ang = 0, n = 1, dk = '#3a3d45', bar = .04 } = {}) => {
+  dk = mix(dk, '#ffffff', .5);                                    // lighter than the underwater hull, so it never reads as part of it
   g.save(); g.translate(x * s, y * s); g.rotate(ang);
   box(g, s, -w * .5, -w * .5, w, w * .5, 4, dk);
   g.fillStyle = INK;
