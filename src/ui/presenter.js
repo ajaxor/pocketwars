@@ -31,12 +31,12 @@ export class Presenter {
       } else if (ev.type === 'capture') {
         this.effects.capture(ev, t);
       } else if (ev.type === 'resupply') {
-        this.effects.resupply(ev.unit, t);
+        this.effects.resupply(ev.unit, t, ev.cost);
       } else if (ev.type === 'deploy') {
         this.effects.deploy(ev, t);
       } else if (ev.type === 'turnStart') {
         this.effects.income(ev, t);
-        (ev.resupplied || []).forEach((u) => this.effects.resupply(u, t + 200));
+        (ev.resupplied || []).forEach((u) => this.effects.resupply(u, t + 200, u.cost));
       }
     }
   }

@@ -7,8 +7,12 @@
 //
 // WHEN A UNIT IS RESUPPLIED. (1) At the start of its owner's turn, if it stands in reach of such a property (economy.js startTurn).
 // (2) When it ends an order with the Resupply action (game.js act; offered in place of Wait when it is short on ammo and next to such a
-// property): it is refilled and, as a pit stop, gets its move back: it is ready again, with a full move, from where it stopped. It has
-// to be short and in reach (canResupplyAt), and an attack or a drop uses the unit's turn, so it cannot be repeated for free.
+// property). Resupply is an order like Wait: it ends the unit's turn.
+//
+// RESUPPLY COSTS MONEY, like building the rounds: `resupplyCost` is the missing rounds times the price of a round, which is the unit's
+// `ammo.cost` or, for a carrier, the price of the unit each round stands for (a transport copter pays for the soldiers it takes on).
+// The owner pays it from their funds; without enough, nothing is refilled (the UI says "Not enough credits" and the order is a Wait).
+// A cost of 0 (the default for units that carry plain ammunition) is free.
 //
 // A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say.
 
@@ -42,6 +46,17 @@ export function ammoLevel(game, unit) {
   return n <= 0 ? 'empty' : n <= cfg.low ? 'low' : 'ok';
 }
 
+/** What one round of `unit`'s ammo costs to replace: its `ammo.cost`, else the price of the unit each round of a carrier stands for, else 0. */
+export function roundCost(game, unit) {
+  const cfg = ammoConfig(game, unit);
+  if (!cfg) return 0;
+  if (cfg.cost != null) return cfg.cost;
+  const drop = attributeConfig(unitDef(game, unit), 'deploy');
+  return drop ? Math.round(game.registry.unit(drop.unit).cost / (drop.ammo ?? 1)) : 0;
+}
+/** The price of filling `unit` up from where it is. */
+export const resupplyCost = (game, unit) => (usesAmmo(game, unit) ? Math.max(0, ammoConfig(game, unit).max - ammoOf(game, unit)) * roundCost(game, unit) : 0);
+
 /** Could `unit`, stopping on (x, y), take on ammo there (it is short and a friendly property in reach resupplies it)? The 'resupply' action needs this. */
 export const canResupplyAt = (game, unit, x, y) => usesAmmo(game, unit) && ammoOf(game, unit) < ammoConfig(game, unit).max && resupplySource(game, unit, x, y) !== null;
 
@@ -57,15 +72,18 @@ export function resupplySource(game, unit, x = unit.x, y = unit.y) {
 }
 
 /**
- * Refill `unit` if it is short and in reach of a property that resupplies it. Returns a 'resupply' event, or null when nothing
- * changed (full already, or nothing in reach). Does not touch the unit's turn: see game.js act for the pit stop.
+ * Refill `unit` (in reach of a property that resupplies it) and charge its owner `resupplyCost`. Returns a 'resupply' event, null when
+ * nothing applies (full already, or nothing in reach), or a 'resupplyDenied' event when the owner cannot pay (nothing changes).
  */
 export function resupply(game, unit) {
   const cfg = ammoConfig(game, unit);
   if (!cfg || ammoOf(game, unit) >= cfg.max) return null;
   const source = resupplySource(game, unit);
   if (!source) return null;
+  const cost = resupplyCost(game, unit);
+  if (cost > game.state.funds[unit.owner]) return { type: 'resupplyDenied', unit: snapshotUnit(unit), cost };
+  game.state.funds[unit.owner] -= cost;
   const from = ammoOf(game, unit);
   unit.ammo = cfg.max;
-  return { type: 'resupply', unit: snapshotUnit(unit), from, to: cfg.max, source: { x: source.x, y: source.y } };
+  return { type: 'resupply', unit: snapshotUnit(unit), from, to: cfg.max, cost, source: { x: source.x, y: source.y } };
 }

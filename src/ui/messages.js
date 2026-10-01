@@ -24,7 +24,9 @@ export function describeEvents(game, events) {
     } else if (ev.type === 'deploy') {
       text = `${name(ev.unit)} drops a ${name(ev.dropped)} (${ev.ammo} left)`;
     } else if (ev.type === 'resupply') {
-      text = `${name(ev.unit)} resupplied` + (ev.refreshed ? ' - ready to move again' : '');
+      text = `${name(ev.unit)} resupplied` + (ev.cost ? ` for ${ev.cost.toLocaleString('en-US')}` : '');
+    } else if (ev.type === 'resupplyDenied') {
+      text = 'Not enough credits';
     } else if (ev.type === 'eliminated') {
       text = `${factionOf(game, ev.player).name} is out of the game!`;
     } else if (ev.type === 'gameOver') {

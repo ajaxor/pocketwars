@@ -25,6 +25,7 @@ export function startTurn(game, player) {
     u.halted = null;
     delete u.fresh;
     delete u.deployed;
+    delete u.carriedBy;
     const property = propertyAt(game, u.x, u.y);
     if (property && ownerAt(game, u.x, u.y) === player && u.hp < registry.rules.maxHp) {
       const from = u.hp;
@@ -32,7 +33,7 @@ export function startTurn(game, player) {
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
     }
     const filled = resupply(game, u);
-    if (filled) resupplied.push({ id: u.id, x: u.x, y: u.y, from: filled.from, to: filled.to });
+    if (filled && filled.type === 'resupply') resupplied.push({ id: u.id, x: u.x, y: u.y, from: filled.from, to: filled.to, cost: filled.cost });
   }
   return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, resupplied }];
 }

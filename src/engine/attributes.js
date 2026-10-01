@@ -55,18 +55,19 @@ export const UNIT_ATTRIBUTES = {
   },
   ammo: {
     label: (v) => `Ammo ${v.max}`,
-    help: (v) => `Carries up to ${v.max} rounds. When it is down to ${v.low} or fewer a bullet flashes on its tile, and at 0 the bullet stays red. It is refilled by choosing Resupply (in place of Wait) next to a friendly property that resupplies it (an airfield, for aircraft), and at the start of a turn spent there.`,
-    doc: 'A limited supply. Config: { max, low }. The unit starts full (`unit.ammo`). Weapons with an `ammo` cost spend it per shot and cannot fire without enough; the `deploy` attribute spends it too. It is shown on the tile as a bullet: flashing when ammo <= `low` (and above 0), steady red at 0. It is refilled by a terrain with the `resupply` attribute: see ammo.js.',
+    help: (v) => `Carries up to ${v.max} rounds. When it is down to ${v.low} or fewer a bullet flashes on its tile, and at 0 the bullet stays red. It is refilled, for a price, by choosing Resupply (in place of Wait, and it ends the turn) next to a friendly property that resupplies it (an airfield, for aircraft), and at the start of a turn spent there.`,
+    doc: 'A limited supply. Config: { max, low, cost? } (`cost`: what replacing one round costs; a unit with `deploy` defaults to the price of the unit each round stands for, otherwise 0). The unit starts full (`unit.ammo`). Weapons with an `ammo` cost spend it per shot and cannot fire without enough; the `deploy` attribute spends it too. It is shown on the tile as a bullet: flashing when ammo <= `low` (and above 0), steady red at 0. It is refilled by a terrain with the `resupply` attribute: see ammo.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "max": 3, "low": 1 }');
       if (!Number.isInteger(v.max) || v.max < 1) fail('max must be a positive whole number');
+      if (v.cost !== undefined && (!Number.isInteger(v.cost) || v.cost < 0)) fail('cost (what one round costs to replace) must be a non-negative whole number');
       if (!Number.isInteger(v.low) || v.low < 0 || (Number.isInteger(v.max) && v.low >= v.max)) fail('low must be a whole number from 0 up to (not including) max');
     },
   },
   deploy: {
     label: (v, registry) => `Deploys ${registry?.units?.[v.unit]?.name ?? v.unit}`,
-    help: (v, registry) => `Carries ${registry?.units?.[v.unit]?.name ?? v.unit} troops as ammo. Once a turn, before or after it moves, Deploy sends one from it to any tile within that unit's own movement range. It can then attack or wait.`,
-    doc: 'A separate action, like a factory building a unit: before or after the carrier\'s own move-and-act order (not part of it), once per turn, spending `ammo` (default 1) of its ammo. A new unit of type `unit` moves from the carrier\'s tile to any free tile within its own movement range, and has an action (attack, capture, wait) left. It belongs to the same player at full HP. A carrier that was just built cannot deploy. Requires the `ammo` attribute. See deploy.js.',
+    help: (v, registry) => `Carries ${registry?.units?.[v.unit]?.name ?? v.unit} troops as ammo. Once a turn, before or after it moves, Deploy places one on it, and you then move and order it as normal (it can attack). Cancel puts it back.`,
+    doc: 'A separate action, like a factory building a unit: before or after the carrier\'s own move-and-act order (not part of it), once per turn, spending `ammo` (default 1) of its ammo. A new unit of type `unit` is placed on the carrier\'s tile and is ordered with the normal move-and-act order (it must leave the tile; it can attack); until ordered it can be put back (game.cancelDeploy, which returns the ammo). It belongs to the same player at full HP. A carrier that was just built cannot deploy. Requires the `ammo` attribute. See deploy.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "unit": "soldier", "ammo": 1 }');
       if (typeof v.unit !== 'string' || !v.unit) fail('unit must name a unit from units.json');
@@ -94,7 +95,7 @@ export const TERRAIN_ATTRIBUTES = {
   resupply: {
     label: 'Resupplies',
     help: (v) => `Refills the ammo of friendly ${v.categories.join(' and ')} units that Resupply ${v.range === 0 ? 'on it' : v.range === 1 ? 'on or next to it' : `within ${v.range} tiles`}.`,
-    doc: 'Refills ammo (see the unit attribute `ammo`). Config: { range, categories }: a unit of one of those categories, owned by the same player as this property, is resupplied when it stops within `range` tiles (Manhattan; 1 = on or next to it) and takes the Resupply action (offered in place of Wait while it is short), and at the start of its owner\'s turn. Resupply also gives the unit its move back (see ammo.js). Requires the `property` attribute.',
+    doc: 'Refills ammo (see the unit attribute `ammo`). Config: { range, categories }: a unit of one of those categories, owned by the same player as this property, is resupplied when it stops within `range` tiles (Manhattan; 1 = on or next to it) and takes the Resupply action (offered in place of Wait while it is short), and at the start of its owner\'s turn. Resupply costs money and ends the unit\'s turn (see ammo.js). Requires the `property` attribute.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "range": 1, "categories": ["aircraft"] }');
       if (!Number.isInteger(v.range) || v.range < 0) fail('range must be a whole number of tiles (0 = only a unit standing on it)');

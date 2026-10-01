@@ -150,23 +150,39 @@ test('a ship built at a shipyard is selected for its free move off the yard, and
   assert.equal(controller.view.attackTiles, null);
 });
 
-test('a transport copter offers Deploy before it moves, highlights where the soldier could land, and then hands over the soldier', () => {
+test('a transport copter offers Deploy before it moves; the soldier is placed on it and moved with the normal interface', () => {
   const t = setup(['..~..', '.....'], [['transport_copter', 0, 1, 0], ['recon', 1, 4, 1]]);
   t.controller.tap(1, 0);
   assert.ok(t.labels().includes('Deploy Soldier'), 'in the first window, before any move');
   t.press('Deploy Soldier');
-  assert.equal(t.controller.mode, 'deploy');
-  const tiles = t.controller.view.deploy.map((d) => `${d.x},${d.y}`);
-  assert.ok(tiles.includes('0,0') && tiles.includes('1,1') && tiles.includes('0,1'), 'tiles within the soldier\'s own movement range');
-  assert.ok(!tiles.includes('2,0') && !tiles.includes('1,0'), 'not the sea, and not the copter\'s own tile');
+  const soldier = t.game.state.units.find((u) => u.type === 'soldier');
+  assert.deepEqual([soldier.x, soldier.y], [1, 0], 'placed on the copter');
+  assert.equal(t.controller.mode, 'move', 'selected for an ordinary move');
+  assert.equal(t.controller.view.selectedId, soldier.id);
   t.controller.tap(1, 1);
   t.finishMove();
-  const soldier = t.game.state.units.find((u) => u.type === 'soldier');
+  assert.equal(t.controller.mode, 'act');
+  t.press('Wait');
   assert.equal(soldier.y, 1);
-  assert.equal(t.controller.mode, 'act', 'the soldier is selected with only an action left');
-  assert.equal(t.controller.view.selectedId, soldier.id);
+  assert.equal(soldier.done, true);
   assert.equal(t.game.state.units[0].done, false, 'the copter keeps its own order');
-  assert.match(t.hud.messages.at(-1), /Soldier/);
+});
+
+test('cancelling a freshly deployed soldier puts it back into the copter', () => {
+  const t = setup(['.....', '.....'], [['transport_copter', 0, 1, 0], ['recon', 1, 4, 1]]);
+  t.controller.tap(1, 0);
+  t.press('Deploy Soldier');
+  assert.equal(t.game.state.units.length, 3);
+  t.press('Cancel');
+  assert.equal(t.game.state.units.length, 2);
+  assert.equal(t.game.state.units[0].ammo, 2);
+  // also after a previewed move
+  t.controller.tap(1, 0);
+  t.press('Deploy Soldier');
+  t.controller.tap(2, 1);
+  t.finishMove();
+  t.press('Cancel');
+  assert.equal(t.game.state.units.length, 2);
 });
 
 test('after the copter has moved and waited it can still be tapped to deploy', () => {
@@ -176,7 +192,8 @@ test('after the copter has moved and waited it can still be tapped to deploy', (
   assert.equal(t.controller.mode, 'idle');
   assert.ok(t.labels().includes('Deploy Soldier'));
   t.press('Deploy Soldier');
-  assert.equal(t.controller.mode, 'deploy');
+  assert.equal(t.controller.mode, 'move');
+  assert.equal(t.game.state.units.length, 3);
 });
 
 test('a copter that is out of ammo is not offered Deploy', () => {
@@ -186,22 +203,28 @@ test('a copter that is out of ammo is not offered Deploy', () => {
   assert.ok(!t.labels().some((l) => l.startsWith('Deploy')));
 });
 
-test('Wait is replaced by Resupply when a unit that is short on ammo stops next to an airfield', () => {
+test('Wait is replaced by a priced Resupply next to an airfield; without the money it says so and waits', () => {
   const rows = ['A....', '.....'];
-  const make = (ammo) => {
-    const g = new Game(registry, parseMap(rawMap({ rows, unitsOnMap: [['transport_copter', 0, 2, 0], ['recon', 1, 4, 1]], players, legend: { ...legend, A: { terrain: 'airfield', owner: 0 } } }), registry));
+  const make = (ammo, funds) => {
+    const g = new Game(registry, parseMap(rawMap({ rows, unitsOnMap: [['transport_copter', 0, 2, 0], ['recon', 1, 4, 1]], players: players.map((p, i) => (i === 0 ? { ...p, funds } : p)), legend: { ...legend, A: { terrain: 'airfield', owner: 0 } } }), registry));
     g.state.units[0].ammo = ammo;
     return g;
   };
-  for (const [ammo, label] of [[0, 'Resupply'], [2, 'Wait']]) {
-    const game = make(ammo);
+  for (const [ammo, funds, label] of [[0, 5000, 'Resupply 2,000'], [2, 5000, 'Wait'], [0, 500, 'Resupply 2,000']]) {
+    const game = make(ammo, funds);
     const hud = { messages: [], acts: null, shown: null, message(t) { this.messages.push(t); }, info(o) { this.shown = o; }, actions(a) { this.acts = a; }, build() {}, focus() {}, clear() { this.acts = null; } };
     const animator = new MoveAnimator();
     const c = new Controller({ game, hud, animator, presenter: new Presenter({ effects: new Effects(registry, () => ({ color: '#f00' })), animator }), colorsOf: () => ({ color: '#f00', dark: '#800' }), onEvents: () => {} });
     c.tap(2, 0); c.tap(1, 0);   // preview a move to the tile next to the airfield
     const cur = animator.current; animator.current = null; cur.onDone();
     const labels = hud.acts.items.map((b) => b.label);
-    assert.ok(labels.includes(label) && !(label === 'Resupply' && labels.includes('Wait')), `${ammo} ammo offers ${label}`);
-    if (label === 'Resupply') { hud.acts.items.find((b) => b.label === 'Resupply').onClick(); assert.equal(game.state.units[0].ammo, 2); assert.equal(c.mode, 'move', 'refreshed: selected again to move'); }
+    assert.ok(labels.includes(label) && !(label !== 'Wait' && labels.includes('Wait')), `${ammo} ammo offers ${label}`);
+    if (label !== 'Wait') {
+      hud.acts.items.find((b) => b.label === label).onClick();
+      assert.equal(c.mode, 'idle', 'it ends the turn');
+      assert.equal(game.state.units[0].done, true);
+      if (funds >= 2000) { assert.equal(game.state.units[0].ammo, 2); assert.equal(game.state.funds[0], funds - 2000); }
+      else { assert.equal(game.state.units[0].ammo, 0); assert.equal(hud.messages.at(-1), 'Not enough credits'); }
+    }
   }
 });

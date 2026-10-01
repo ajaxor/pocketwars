@@ -1,15 +1,15 @@
-// Dropping troops. A unit with the `deploy` attribute (the transport copter) carries units "as ammo", and works like a factory in the
-// air: Deploy is its own action, apart from the carrier's move-and-act order. Before or after it moves (and whenever it is not busy
-// being built), the carrier puts a new unit of config.unit down by moving that unit, from the carrier's tile, to any tile within the new
-// unit's own movement range (so a soldier lands up to 2 tiles of walking away). That costs config.ammo (default 1) of the carrier's
-// ammo, and a carrier deploys once per turn (`unit.deployed`, cleared when its owner's turn starts). The new unit belongs to the
-// carrier's player, is at full HP, and has used its move but not its action (`halted`): it may attack, capture or wait from where it
-// landed, like a unit whose move was cut short. A carrier that was just built (`fresh`) cannot deploy.
+// Deploying troops. A unit with the `deploy` attribute (the transport copter) carries units "as ammo", and deploys like a factory builds:
+// Deploy is its own action, apart from the carrier's move-and-act order and not ending it. It puts a new unit of config.unit on the
+// carrier's tile (`carriedBy` names the carrier) and spends config.ammo (default 1) of the carrier's ammo; the player then orders that
+// unit like any other: it moves off the carrier's tile (it has to leave it) and may attack, capture or wait. The new unit is at full HP.
+// If the player cancels before ordering it, `undoDeploy` puts it back in the carrier. A carrier deploys once per turn (`unit.deployed`,
+// cleared when its owner's turn starts), may deploy before or after its own move, and cannot deploy while it was just built (`fresh`).
+// A deploy needs somewhere to go: at least one tile the new unit could reach from the carrier's tile.
 
 import { attributeConfig } from './attributes.js';
 import { ammoOf, spendAmmo } from './ammo.js';
 import { computeReach } from './movement.js';
-import { facingAlong, snapshotUnit, unitAt, unitDef } from './queries.js';
+import { snapshotUnit, unitAt, unitById, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 /** `{ unit, ammo? }` for a unit that can drop troops, or undefined. */
@@ -30,39 +30,42 @@ export function deployReach(game, carrier) {
   return { reach, tiles };
 }
 
-/** Why `carrier` cannot put a unit on `to`, or null when it can: 'cannot-deploy', 'just-built', 'already-deployed', 'out-of-ammo', 'invalid-deploy-tile'. */
-export function deployProblem(game, carrier, to) {
+/** Why `carrier` cannot deploy, or null when it can: 'cannot-deploy', 'just-built', 'already-deployed', 'out-of-ammo', 'no-room'. */
+export function deployProblem(game, carrier) {
   const cfg = deployConfig(game, carrier);
   if (!cfg) return 'cannot-deploy';
   if (carrier.fresh) return 'just-built';
   if (carrier.deployed) return 'already-deployed';
   if (ammoOf(game, carrier) < deployCost(cfg)) return 'out-of-ammo';
-  if (!to || !deployReach(game, carrier).tiles.some((t) => t.x === to.x && t.y === to.y)) return 'invalid-deploy-tile';
+  if (!deployReach(game, carrier).tiles.length) return 'no-room';
   return null;
 }
 
-/** Could `carrier` deploy right now (the ammo, the turn's one drop, and somewhere to land)? */
-export function canDeploy(game, carrier) {
+/** Could `carrier` deploy right now? */
+export const canDeploy = (game, carrier) => deployProblem(game, carrier) === null;
+
+/** Put the new unit on the carrier's tile (already validated) and spend the ammo. Returns a 'deploy' event. */
+export function resolveDeploy(game, carrier) {
+  const { state, registry, map } = game;
   const cfg = deployConfig(game, carrier);
-  return !!cfg && !carrier.fresh && !carrier.deployed && ammoOf(game, carrier) >= deployCost(cfg) && deployReach(game, carrier).tiles.length > 0;
+  spendAmmo(game, carrier, deployCost(cfg));
+  carrier.deployed = true;
+  const dropped = makeUnit(registry, map, state.nextUnitId++, { type: cfg.unit, owner: carrier.owner, x: carrier.x, y: carrier.y });
+  dropped.carriedBy = carrier.id;
+  state.units.push(dropped);
+  return [{ type: 'deploy', unit: snapshotUnit(carrier), dropped: snapshotUnit(dropped), ammo: ammoOf(game, carrier) }];
 }
 
 /**
- * Put the unit on `to` (already validated) and spend the ammo. The new unit is in the game from here on; its slide from the carrier's
- * tile is a 'move' event, followed by a 'deploy' event.
+ * Put a deployed unit back in its carrier, if it has not been ordered yet (it still sits on the carrier's tile, with its order unused).
+ * Returns an 'undeploy' event list, or null when it cannot be taken back.
  */
-export function resolveDeploy(game, carrier, to) {
-  const { state, registry, map } = game;
+export function undoDeploy(game, unit) {
+  const carrier = unit.carriedBy != null ? unitById(game, unit.carriedBy) : null;
+  if (!carrier || unit.done || unit.halted || unit.x !== carrier.x || unit.y !== carrier.y) return null;
   const cfg = deployConfig(game, carrier);
-  const path = deployReach(game, carrier).reach.pathTo(to.x, to.y);
-  spendAmmo(game, carrier, deployCost(cfg));
-  carrier.deployed = true;
-  const dropped = makeUnit(registry, map, state.nextUnitId++, { type: cfg.unit, owner: carrier.owner, x: to.x, y: to.y });
-  dropped.facing = facingAlong(path, dropped.facing);
-  dropped.halted = { moved: true };   // its move is used; an action (attack, capture, wait) is left
-  state.units.push(dropped);
-  return [
-    { type: 'move', unitId: dropped.id, path },
-    { type: 'deploy', unit: snapshotUnit(carrier), dropped: snapshotUnit(dropped), ammo: ammoOf(game, carrier) },
-  ];
+  game.state.units = game.state.units.filter((u) => u !== unit);
+  carrier.ammo = ammoOf(game, carrier) + deployCost(cfg);
+  delete carrier.deployed;
+  return [{ type: 'undeploy', unit: snapshotUnit(carrier), removed: unit.id }];
 }

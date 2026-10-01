@@ -256,7 +256,7 @@ export class Session {
     const viewer = this.#viewer();
     animator.arrow = null;
     let shown = false;   // did the human get to see this unit act?
-    // An order can be cut short by a hidden unit, or be a pit stop that refills the unit (and its move); the unit then gets another order.
+    // An order can be cut short by a hidden unit; the unit then gets another order.
     for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done; step++) {
       const order = chooseOrder(game, unit);
       // on a map bigger than the screen, bring the unit, where it is going and what it shoots at into view first
@@ -276,7 +276,7 @@ export class Session {
       const text = describeEvents(game, events);
       if (text) hud.message(text);
       this.#handleEvents(res.events);
-      if (!res.interrupted && !res.refreshed) break;
+      if (!res.interrupted) break;
       await sleep(Math.max(animator.active ? animator.current.d + 500 : 400, effects.lockUntil - this.#now() + 250));
     }
     // no waiting around for a unit the human could not see do anything (a pause would also give it away)

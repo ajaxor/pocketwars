@@ -120,13 +120,13 @@ export function buildPhase(game, ai = game.registry.ai) {
   return events;
 }
 
-/** Give `unit` its order(s): a second one when the first was cut short by a hidden unit or was a pit stop that gave its move back. */
+/** Give `unit` its order(s): a second one when the first was cut short by a hidden unit. */
 function orderUnit(game, unit, events) {
   for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
     const result = game.act(chooseOrder(game, unit));
     if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
     events.push(...result.events);
-    if (!result.interrupted && !result.refreshed) break;
+    if (!result.interrupted) break;
   }
 }
 

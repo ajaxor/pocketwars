@@ -39,7 +39,7 @@ test('ammo: a weapon with an ammo cost spends it, and a unit that is out cannot 
   assert.equal(g.act({ unitId: u.id, to: { x: 1, y: 0 }, action: { type: 'attack', targetId: foe.id } }).ok, false);
 });
 
-test('resupply: the Resupply action next to a friendly airfield refills the unit and gives its move back (a pit stop); Wait does not', () => {
+test('resupply: the Resupply action next to a friendly airfield refills the unit and ends its turn; Wait takes on nothing', () => {
   const g = game(['H.A..h'], [['flyer', 0, 4, 0, 10], ['grunt', 1, 5, 0]], 3, 1);
   const u = g.state.units[0];
   u.ammo = 0;
@@ -50,15 +50,9 @@ test('resupply: the Resupply action next to a friendly airfield refills the unit
   const res = g.act({ unitId: u.id, to: { x: 3, y: 0 }, action: { type: 'resupply' } });
   assert.equal(res.ok, true);
   assert.equal(u.ammo, 3, 'refilled');
-  assert.equal(u.done, false, 'its move is refreshed');
-  assert.deepEqual(res.refreshed, { unitId: u.id });
+  assert.equal(u.done, true, 'and that is its turn: no refreshed movement');
+  assert.equal(res.refreshed, undefined);
   assert.ok(res.events.some((e) => e.type === 'resupply' && e.from === 0 && e.to === 3));
-  // the second order is an ordinary one, and it ends the turn: nothing is refilled, so no further pit stop
-  assert.equal(g.act({ unitId: u.id, to: { x: 3, y: 0 }, action: { type: 'resupply' } }).error, 'cannot-resupply', 'full already');
-  const again = g.act({ unitId: u.id, to: { x: 3, y: 0 }, action: { type: 'wait' } });
-  assert.equal(again.ok, true);
-  assert.equal(u.done, true);
-  assert.equal(again.refreshed, undefined);
 });
 
 test('resupply: not from an enemy airfield, from a far one, or when already full', () => {

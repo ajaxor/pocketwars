@@ -7,7 +7,7 @@ import { parseMap } from '../../src/data/map-format.js';
 import { rawMap } from '../helpers/fixtures.js';
 import { Game } from '../../src/engine/game.js';
 import { computeReach } from '../../src/engine/movement.js';
-import { ammoLevel } from '../../src/engine/ammo.js';
+import { ammoLevel, resupplyCost } from '../../src/engine/ammo.js';
 import { canDeploy, deployReach } from '../../src/engine/deploy.js';
 import { chooseOrder, playTurn } from '../../src/engine/ai.js';
 import { unitAt } from '../../src/engine/queries.js';
@@ -38,7 +38,7 @@ test('a marine is built at a shipyard and can swim off it', () => {
   assert.equal(g.act({ unitId: marine.id, to: { x: 4, y: 0 }, action: { type: 'wait' } }).ok, true, 'a free move across the water');
 });
 
-test('a transport copter deploys like a factory: the soldier moves from the copter to a tile in its own range, and the copter keeps its order', () => {
+test('a transport copter deploys like a factory: the soldier appears on the copter and then moves out with a normal order', () => {
   const g = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 5, 1]]);
   const copter = g.state.units[0];
   assert.equal(copter.ammo, 2);
@@ -48,18 +48,35 @@ test('a transport copter deploys like a factory: the soldier moves from the copt
   assert.ok(tiles.some((t) => t.x === 3 && t.y === 0), 'two tiles of walking away');
   assert.ok(!tiles.some((t) => t.x === 1 && t.y === 0), 'not the copter\'s own tile');
   assert.ok(!tiles.some((t) => t.x === 4 && t.y === 0), 'but not beyond a soldier\'s move');
-  const res = g.deploy({ unitId: copter.id, to: { x: 3, y: 0 } });
+  const res = g.deploy({ unitId: copter.id });
   assert.equal(res.ok, true);
-  const soldier = unitAt(g, 3, 0);
+  assert.deepEqual(res.events.map((e) => e.type), ['deploy']);
+  const soldier = g.state.units.find((u) => u.id === res.deployed.unitId);
   assert.equal(soldier.type, 'soldier');
   assert.equal(soldier.owner, 0);
-  assert.equal(soldier.done, false, 'it has an action left');
+  assert.deepEqual([soldier.x, soldier.y], [1, 0], 'on the copter\'s tile');
+  assert.equal(soldier.done, false);
   assert.equal(soldier.fresh, undefined, 'it is not limited like a unit just built');
-  assert.deepEqual(soldier.halted, { moved: true }, 'its move is used: attack, capture or wait from where it landed');
   assert.equal(copter.ammo, 1);
   assert.equal(copter.done, false, 'deploying is not part of the copter\'s own order');
-  assert.deepEqual(res.events.map((e) => e.type), ['move', 'deploy']);
-  assert.equal(g.act({ unitId: copter.id, to: { x: 2, y: 1 }, action: { type: 'wait' } }).ok, true, 'it can still move afterwards');
+  assert.equal(g.act({ unitId: soldier.id, to: { x: 1, y: 0 }, action: { type: 'wait' } }).ok, false, 'it has to leave the copter\'s tile');
+  assert.equal(g.act({ unitId: soldier.id, to: { x: 3, y: 0 }, action: { type: 'wait' } }).ok, true);
+  assert.equal(soldier.carriedBy, undefined, 'ordered: it can no longer be put back');
+  assert.equal(g.cancelDeploy({ unitId: soldier.id }).error, 'cannot-cancel-deploy');
+  assert.equal(g.act({ unitId: copter.id, to: { x: 2, y: 1 }, action: { type: 'wait' } }).ok, true, 'the copter can still move afterwards');
+});
+
+test('cancelling a deploy puts the unit back in the copter and gives the ammo back', () => {
+  const g = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 5, 1]]);
+  const copter = g.state.units[0];
+  const { deployed } = g.deploy({ unitId: copter.id });
+  assert.equal(g.state.units.length, 3);
+  const res = g.cancelDeploy({ unitId: deployed.unitId });
+  assert.equal(res.ok, true);
+  assert.equal(g.state.units.length, 2);
+  assert.equal(copter.ammo, 2);
+  assert.equal(copter.deployed, undefined);
+  assert.equal(canDeploy(g, copter), true, 'free to deploy again');
 });
 
 test('a copter can deploy after it has moved and waited, but only once a turn, and not when it was just built', () => {
@@ -67,48 +84,63 @@ test('a copter can deploy after it has moved and waited, but only once a turn, a
   const copter = g.state.units[0];
   g.act({ unitId: copter.id, to: { x: 2, y: 1 }, action: { type: 'wait' } });
   assert.equal(copter.done, true);
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 2, y: 0 } }).ok, true, 'after its move');
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 3, y: 1 } }).error, 'already-deployed');
+  assert.equal(g.deploy({ unitId: copter.id }).ok, true, 'after its move');
+  assert.equal(g.deploy({ unitId: copter.id }).error, 'already-deployed');
   assert.equal(canDeploy(g, copter), false);
   g.endTurn(); g.endTurn();
   assert.equal(copter.deployed, undefined, 'a new turn, a new drop');
   assert.equal(canDeploy(g, copter), true);
   copter.fresh = true;
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 3, y: 1 } }).error, 'just-built');
+  assert.equal(g.deploy({ unitId: copter.id }).error, 'just-built');
 });
 
-test('a deployed soldier can attack at once', () => {
+test('a deployed soldier can move and attack in one order', () => {
   const g = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 3, 1]]);
   const copter = g.state.units[0], foe = g.state.units[1];
-  const { deployed } = g.deploy({ unitId: copter.id, to: { x: 2, y: 1 } });
-  const soldier = g.state.units.find((u) => u.id === deployed.unitId);
-  const hit = g.act({ unitId: soldier.id, to: { x: 2, y: 1 }, action: { type: 'attack', targetId: foe.id } });
+  const { deployed } = g.deploy({ unitId: copter.id });
+  const hit = g.act({ unitId: deployed.unitId, to: { x: 2, y: 1 }, action: { type: 'attack', targetId: foe.id } });
   assert.equal(hit.ok, true);
   assert.ok(foe.hp < 10);
 });
 
-test('a landing needs a tile the soldier can reach and stand on, and ammo', () => {
+test('a landing needs a tile the soldier could stand on, and ammo', () => {
   const g = world(['H.~~~h', '..~~~.'], [['transport_copter', 0, 3, 0], ['recon', 1, 5, 1]]);
-  const copter = g.state.units[0];
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 2, y: 0 } }).error, 'invalid-deploy-tile', 'a soldier cannot be put in the sea');
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 3, y: 0 } }).error, 'invalid-deploy-tile', 'nor on the copter\'s own tile');
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 5, y: 5 } }).error, 'invalid-deploy-tile', 'nor out of the soldier\'s reach');
+  assert.equal(deployReach(g, g.state.units[0]).tiles.length, 0, 'nowhere to walk from over the sea');
+  assert.equal(g.deploy({ unitId: g.state.units[0].id }).error, 'no-room');
   const out = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 5, 1]]);
   out.state.units[0].ammo = 0;
   assert.equal(ammoLevel(out, out.state.units[0]), 'empty');
-  assert.equal(out.deploy({ unitId: out.state.units[0].id, to: { x: 2, y: 1 } }).error, 'out-of-ammo');
+  assert.equal(out.deploy({ unitId: out.state.units[0].id }).error, 'out-of-ammo');
 });
 
-test('a transport copter next to an airfield can Resupply and then move on', () => {
-  const g = world(['H.A....h', '........'], [['transport_copter', 0, 5, 0], ['recon', 1, 7, 1]]);
+test('Resupply costs money like building the units, ends the turn, and can be undone', () => {
+  const g = world(['H.A....h', '........'], [['transport_copter', 0, 3, 0], ['recon', 1, 7, 1]]);
   const copter = g.state.units[0];
   copter.ammo = 0;
-  assert.equal(g.act({ unitId: copter.id, to: { x: 5, y: 0 }, action: { type: 'resupply' } }).error, 'cannot-resupply', 'too far from the airfield');
-  const stop = g.act({ unitId: copter.id, to: { x: 3, y: 0 }, action: { type: 'resupply' } });
-  assert.equal(stop.ok, true);
-  assert.equal(copter.ammo, 2, 'refilled beside the airfield');
-  assert.equal(copter.done, false, 'and ready to move again');
-  assert.equal(g.deploy({ unitId: copter.id, to: { x: 4, y: 1 } }).ok, true);
+  assert.equal(resupplyCost(g, copter), 2000, 'two soldiers at 1,000 each');
+  const before = g.state.funds[0];
+  const res = g.act({ unitId: copter.id, to: { x: 3, y: 0 }, action: { type: 'resupply' } });
+  assert.equal(res.ok, true);
+  assert.equal(copter.ammo, 2);
+  assert.equal(copter.done, true);
+  assert.equal(g.state.funds[0], before - 2000);
+  assert.equal(res.events.find((e) => e.type === 'resupply').cost, 2000);
+  assert.equal(g.undo(), true);
+  assert.equal(g.state.funds[0], before, 'the money comes back');
+  assert.equal(g.state.units[0].ammo, 0);
+});
+
+test('Resupply without the money is just a Wait, with a resupplyDenied event', () => {
+  const g = world(['H.A....h', '........'], [['transport_copter', 0, 3, 0], ['recon', 1, 7, 1]]);
+  const copter = g.state.units[0];
+  copter.ammo = 0;
+  g.state.funds[0] = 1500;
+  const res = g.act({ unitId: copter.id, to: { x: 3, y: 0 }, action: { type: 'resupply' } });
+  assert.equal(res.ok, true);
+  assert.ok(res.events.some((e) => e.type === 'resupplyDenied'));
+  assert.equal(copter.ammo, 0);
+  assert.equal(copter.done, true);
+  assert.equal(g.state.funds[0], 1500);
 });
 
 test('the AI builds marines at a shipyard, and plays a whole turn with them and the free moves', () => {

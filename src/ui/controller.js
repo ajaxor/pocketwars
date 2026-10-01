@@ -8,11 +8,12 @@
 //   anim  the selected unit is sliding to the previewed tile (taps ignored)
 //   act   the unit sits at its previewed tile; pick Wait / Capture / an enemy (tap twice to attack)
 //   build the build menu is open
-//   deploy a unit with the `deploy` attribute (the transport copter) is deploying: tap one of the highlighted tiles the new unit could
-//          move to from the carrier. Deploying is its own action (like a factory building), before or after the carrier's own order.
 //
 // BUILDING: a unit is built on the property and the controller selects it at once, for its free move (it is `fresh`: it can only move and
-// Wait, see engine/game.js). A Wait that refills ammo next to an airfield is a pit stop (`res.refreshed`): the unit is selected again.
+// Wait, see engine/game.js).
+// DEPLOYING works the same way: the Deploy button of a carrier (transport copter) puts the new unit on the carrier's tile and selects it;
+// it is then ordered with the normal move-and-attack interface. Cancelling (cancelAll) before it is ordered puts it back in the carrier.
+// RESUPPLY replaces Wait next to a property that refills the unit; it costs money and ends the turn (engine/ammo.js).
 //
 // An order can come back INTERRUPTED (the path ran into a hidden unit, see engine/game.js): the unit has already moved, so the
 // controller plays the partial move and goes straight to the act menu for it ('resume'); the player then attacks or waits.
@@ -23,8 +24,8 @@
 import { canCapture } from '../engine/capture.js';
 import { canTarget, forecastAttack } from '../engine/combat.js';
 import { canSee } from '../engine/detection.js';
-import { canResupplyAt } from '../engine/ammo.js';
-import { canDeploy, deployConfig, deployReach } from '../engine/deploy.js';
+import { canResupplyAt, resupplyCost } from '../engine/ammo.js';
+import { canDeploy, deployConfig } from '../engine/deploy.js';
 import { buildOptions } from '../engine/economy.js';
 import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, hasMovedAlready, targetsFrom } from '../engine/movement.js';
 import { ownerAt, unitAt, unitById } from '../engine/queries.js';
@@ -57,7 +58,6 @@ export class Controller {
     this.targets = [];
     this.pendingTargetId = null;
     this.preview = null; // { reach, attack }: where a tapped unit that cannot be ordered (an enemy's, say) could move and hit
-    this.deploy = null; // tiles a new unit may appear on, while the player is choosing one
     this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
     this.cards = null;  // the info cards for the current selection; while orders are being given they start hidden (see #setCards)
     this.infoOn = false;
@@ -74,7 +74,6 @@ export class Controller {
       showTargets: this.mode === 'act',
       pendingTargetId: this.pendingTargetId,
       cursor: this.cursor,
-      deploy: this.deploy,
       forecast: this.#forecast(),
     };
   }
@@ -99,15 +98,21 @@ export class Controller {
   #msg(text) { this.hud.message(text); }
 
   cancelAll() {
+    this.#undoPendingDeploy();
     this.animator.arrow = null;
     this.reset();
     this.hud.clear();
   }
 
+  /** A unit that was just deployed and not yet ordered goes back into its carrier. */
+  #undoPendingDeploy() {
+    const s = this.sel;
+    if (s && s.carriedBy && !s.done) this.game.cancelDeploy({ unitId: s.id });
+  }
+
   tap(x, y) {
     const { game, hud } = this;
     if (x < 0 || y < 0 || x >= game.map.width || y >= game.map.height || this.mode === 'anim') return;
-    if (this.mode === 'deploy') { this.#deployTap(x, y); return; }
     if (this.mode === 'build') { this.mode = 'idle'; hud.clear(); }
     const u = this.#unitAt(x, y);
 
@@ -133,6 +138,7 @@ export class Controller {
       }
       if (this.reach.has(x, y)) {
         if (x === sel.x && y === sel.y) {
+          if (sel.carriedBy) { this.cancelAll(); return; }   // tapping the carrier's tile again puts the unit back
           if (!sel.fresh && canCapture(game, sel)) this.#commit({ type: 'capture' });
           else this.#actMenu();
           return;
@@ -210,8 +216,8 @@ export class Controller {
 
   #selectOrders() {
     this.hud.actions({
-      hint: this.sel.fresh ? 'Just built: tap a highlighted tile to move it out (it cannot attack yet).' : 'Tap a highlighted tile to move, or an enemy to attack it.',
-      items: [...this.#deployItem(this.sel, () => this.#startDeploy(this.sel, 'orders')), this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+      hint: this.sel.carriedBy ? 'Move it out and give it an order. Cancel puts it back in the transport.' : this.sel.fresh ? 'Just built: tap a highlighted tile to move it out (it cannot attack yet).' : 'Tap a highlighted tile to move, or an enemy to attack it.',
+      items: [...this.#deployItem(this.sel, () => this.#deployNow(this.sel)), this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
   }
 
@@ -290,7 +296,8 @@ export class Controller {
     if (!fresh && canSurface(sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
     // Wait becomes Resupply when the unit is short on ammo and stops next to a property that resupplies it
     const resup = !fresh && canResupplyAt(game, sel, pos.x, pos.y);
-    items.push(resup ? { label: 'Resupply', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
+    const price = resup ? resupplyCost(game, sel) : 0;
+    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
       : { label: 'Wait', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
     items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
@@ -314,7 +321,6 @@ export class Controller {
     this.cancelAll();
     if (text) this.#msg(text);
     this.onEvents(res.events);
-    if (res.refreshed) this.#select(unitById(game, res.refreshed.unitId), text);   // a pit stop: it can move again
   }
 
   /** The move hit something hidden: slide the unit as far as it got, then let the player give it an order from there. */
@@ -376,7 +382,7 @@ export class Controller {
     this.#show(x, y, u);
     this.hud.actions({
       hint: 'This unit has moved, but can still deploy.',
-      items: [...this.#deployItem(u, () => this.#startDeploy(u, 'idle')), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+      items: [...this.#deployItem(u, () => this.#deployNow(u)), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
   }
 
@@ -390,49 +396,20 @@ export class Controller {
       this.presenter.present(res.events, { now: performance.now(), animateMoves: false });
       this.onEvents(res.events);
     }
-    this.#startDeploy(sel, 'idle');
+    this.#deployNow(sel);
   }
 
-  /**
-   * Highlight where a unit deployed by `carrier` could land (its movement range from the carrier's tile) and wait for a tap on one.
-   * `back` is where Back leads: 'orders' (the carrier is still being ordered) or 'idle'.
-   */
-  #startDeploy(carrier, back) {
-    const { game, hud } = this;
-    const tiles = deployReach(game, carrier).tiles;
-    const name = game.registry.unit(deployConfig(game, carrier).unit).name;
-    this.animator.arrow = null;
-    if (back === 'idle') { this.reset(); hud.clear(); }
-    this.sel = carrier;
-    this.mode = 'deploy';
-    this.deploy = tiles;
-    this.reach = null;
-    this.dest = null;
-    this.attack = null;
-    this.targets = [];
-    this.pendingTargetId = null;
-    hud.focus({ x: carrier.x, y: carrier.y });
-    hud.actions({
-      hint: `Tap a highlighted tile to deploy a ${name} there. It can attack after it lands.`,
-      items: [{ label: 'Back', variant: 'ghost', onClick: () => (back === 'orders' ? this.#select(carrier) : this.cancelAll()) }],
-    });
-  }
-
-  #deployTap(x, y) {
-    const { game, hud } = this;
-    const carrier = this.sel;
-    const at = this.deploy.find((t) => t.x === x && t.y === y);
-    if (!at) { this.cancelAll(); return; }
-    const res = game.deploy({ unitId: carrier.id, to: { x, y } });
-    if (!res.ok) { this.cancelAll(); this.#msg(`Cannot deploy (${res.error}).`); return; }
-    const dropped = unitById(game, res.deployed.unitId);
-    const text = describeEvents(game, res.events);
+  /** Put the carrier's unit on the carrier's tile and select it, like a freshly built unit (cancelling puts it back). */
+  #deployNow(carrier) {
+    const { game } = this;
+    const res = game.deploy({ unitId: carrier.id });
     this.animator.arrow = null;
     this.reset();
-    hud.clear();
-    this.mode = 'anim';
-    this.presenter.present(res.events, { now: performance.now(), animateMoves: true, onMoveDone: () => this.#resume(dropped, `${text} - it can attack or wait.`) });
-    if (text) this.#msg(text);
+    this.hud.clear();
+    if (!res.ok) { this.#msg(`Cannot deploy (${res.error}).`); return; }
+    this.presenter.present(res.events, { now: performance.now(), animateMoves: false });
     this.onEvents(res.events);
+    const dropped = unitById(game, res.deployed.unitId);
+    this.#select(dropped, `Deployed ${dropped ? game.registry.unit(dropped.type).name : 'unit'}. Move it out: it can attack. Cancel puts it back.`);
   }
 }
