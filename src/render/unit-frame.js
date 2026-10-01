@@ -17,12 +17,12 @@ export const DISABLED_TINT = { color: '#2f3036', amount: .5 };
 const defaultShadow = (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.25)'; g.beginPath(); g.ellipse(0, s * .31, s * .3, s * .06, 0, 0, 7); g.fill(); };
 
 export function drawFrame(g, mod, id, o) {
-  const { s, c, dk, alt = 0, w = 0, ph = 0, run = 1, moving = false, only, submerged = false } = o;
+  const { s, c, dk, alt = 0, w = 0, ph = 0, run = 1, moving = false, only, submerged = false, look } = o;
   const b = Math.sin(w * 5 + ph) * s * .025 * run, j = Math.sin(w * 14 + ph) * s * .012 * run;
   if (only !== 'body') { g.save(); (mod.SHADOWS?.[id] || defaultShadow)(g, { s, alt, w, ph, run }); g.restore(); }
   if (only !== 'shadow') {
     g.save(); if (alt) g.translate(0, -s * alt + Math.sin(w * 3 + ph) * s * .03 * run);
-    mod.SPRITES[id](g, { s, c, dk, w, ph, run, moving, b, j, submerged }); g.restore();
+    mod.SPRITES[id](g, { s, c, dk, w, ph, run, moving, b, j, submerged, look }); g.restore();
   }
 }
 

@@ -11,15 +11,17 @@ const MOD = { SPRITES, SHADOWS };
 export const STATES = { idle: { run: 1, speed: 1, alpha: 1 }, moving: { run: 1, speed: 2, alpha: 1 }, done: { run: 0, speed: 1, alpha: 1, tint: DISABLED_TINT } };
 
 /** Paint one tile (backdrop + unit) into a 2D context that is already scaled to CSS pixels. Pure drawing: no DOM. */
+// ship looks to compare (see LOOK in unit-art.js)
+export const SHIP_LOOKS = { standard: undefined, lighter: { under: .45, line: true }, noline: { under: 1, line: false }, flat: { under: 0, line: false } };
 export const OUTLINES = { off: 0, thin: OUTLINE_THIN, medium: .024, thick: .038 };   // radius as a fraction of the tile
 export const OUTLINE_COLORS = { navy: '#161a26', black: '#000000', faction: null };            // null: the faction's dark colour
 
-export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', make }) {
+export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', ships = 'standard', make }) {
   const st = STATES[state] || STATES.idle;
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
   g.save(); g.translate(size / 2, size / 2);
-  const o = { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run, moving: state === 'moving', make };
+  const o = { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run, moving: state === 'moving', look: SHIP_LOOKS[ships], make };
   const k = OUTLINES[outline] || 0;
   if (k) drawOutlined(g, MOD, unit.sprite, o, { r: Math.max(1, size * k), color: OUTLINE_COLORS[outlineColor] || faction.dark, tint: st.tint || null, make });
   else drawFrameAlpha(g, MOD, unit.sprite, o, st.alpha, st.tint || null);
@@ -30,7 +32,7 @@ export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline
 async function boot() {
   const DATA = await (await fetch(new URL('data.json', import.meta.url))).json();
   const $ = (sel) => document.querySelector(sel);
-  const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
+  const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', ships: 'standard', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
   let clock = 0, last = performance.now();
 
   const grid = $('#grid');
@@ -59,7 +61,7 @@ async function boot() {
   }
   function draw() {
     const bg = DATA.terrain[state.bg];
-    for (const t of tiles) if (t.visible) paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg, outline: state.outline, outlineColor: state.outlineColor });
+    for (const t of tiles) if (t.visible) paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg, outline: state.outline, outlineColor: state.outlineColor, ships: state.ships });
   }
   function frame(now) {
     if (!state.paused) clock += (now - last) / 1000;
@@ -70,7 +72,7 @@ async function boot() {
   const group = (sel, key, after) => document.querySelectorAll(`${sel} button`).forEach((b) => b.addEventListener('click', () => {
     state[key] = b.dataset.v; document.querySelectorAll(`${sel} button`).forEach((x) => x.setAttribute('aria-pressed', String(x === b))); if (after) after(); draw();
   }));
-  group('#mode', 'mode'); group('#bg', 'bg'); group('#outline', 'outline'); group('#outlineColor', 'outlineColor');
+  group('#mode', 'mode'); group('#bg', 'bg'); group('#outline', 'outline'); group('#outlineColor', 'outlineColor'); group('#ships', 'ships');
   $('#size').addEventListener('input', (e) => { state.size = Number(e.target.value); $('#sizeOut').textContent = state.size + ' px'; resize(); });
   const pauseBtn = $('#pause');
   const syncPause = () => { pauseBtn.textContent = state.paused ? 'Play' : 'Pause'; pauseBtn.setAttribute('aria-pressed', String(state.paused)); };
