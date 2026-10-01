@@ -160,10 +160,10 @@ const FOAM = 'rgba(255,255,255,.6)';
 const LINE = .14;                                   // the waterline, in tile fractions (fixed: only the ship moves)
 const skyClip = (g, s, line) => { g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (line + 1.5) * s); g.clip(); };
 const seaClip = (g, s, line) => { g.beginPath(); g.rect(-s, line * s, s * 2, s * 2); g.clip(); };
-/** A propeller at (x, y) on the stern, tinted from the hull colour `col` (so under water it reads dark): a blurred blade whose length
+/** A propeller at (x, y) on the stern, the hull's own colour `col` (dark under water): a blurred blade whose length
  *  flickers as it turns, and (`bubbles`) a stream of bubbles astern. Draw it inside the ship's own transform so it bobs with it. */
 const propeller = (g, s, x, y, w, run, col, bubbles = true) => {
-  const blade = mix(col, '#ffffff', .18), a = run ? w * 17 : .5, len = .06 * (.35 + .65 * Math.abs(Math.cos(a)));
+  const blade = col, a = run ? w * 17 : .5, len = .06 * (.35 + .65 * Math.abs(Math.cos(a)));
   oval(g, s, x, y, .014, len, blade);
   oval(g, s, x, y, .014, .014, blade);
   if (!run || !bubbles) return;

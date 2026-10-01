@@ -168,7 +168,7 @@ export const TERRAIN_DECOR = {
       peak(cx, w, top, yb, pkx, false);
     },
     // Shoals: shallows in open sea (the tile colour joins the water around it); the drawing is one of shoal-styles.js.
-    shoals: SHOAL_STYLES.rocks,
+    shoals: SHOAL_STYLES.boulders,
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {
       const t = now / 1000;

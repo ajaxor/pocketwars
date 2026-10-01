@@ -3,7 +3,7 @@ import { createCanvas } from '@napi-rs/canvas';
 import { writeFileSync } from 'node:fs';
 import { SHOAL_STYLES } from '../../src/render/shoal-styles.js';
 const out = process.argv[2] || 'shoals.png';
-const BASE = '#3d7ec7', names = Object.keys(SHOAL_STYLES), cols = 5, S = 150, small = 48;
+const BASE = "#3d7ec7", names = Object.keys(SHOAL_STYLES), cols = 5, S = 150, small = 48;
 const cv = createCanvas(cols * S + 20 + 6 * small, names.length * S);
 const g = cv.getContext('2d');
 g.fillStyle = BASE; g.fillRect(0, 0, cv.width, cv.height);
