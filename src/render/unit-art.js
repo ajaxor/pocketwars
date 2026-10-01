@@ -198,13 +198,15 @@ const deckAt = ({ x1, deck, rise = 0, sweep = .2 }, x) => {
   const t = lo;
   return { y: deck - t * t * rise, ang: Math.atan2(-2 * t * rise, 2 * (1 - t) * (xc - x0) + 2 * t * (x1 - xc)) };
 };
-/** An armoured turret like a tank's: a rounded block, lighter than the dark hull, with barrels out of its front, tilted by `ang` to sit on a slope. */
-const turret = (g, s, x, y, w, len, { ang = 0, n = 1, dk = '#3a3d45', bar = .04, dir = 1 } = {}) => {
+/** An armoured turret like a tank's: a rounded block, lighter than the dark hull, with barrels out of its front. The block is tilted by `ang`
+ *  (to sit on a slope); the barrels are raised `elev` radians on their own, and `dir` -1 points them aft. */
+const turret = (g, s, x, y, w, len, { ang = 0, elev = 0, n = 1, dk = '#3a3d45', bar = .04, dir = 1 } = {}) => {
   dk = mix(dk, '#ffffff', .5);                                    // lighter than the underwater hull, so it never reads as part of it
   g.save(); g.translate(x * s, y * s); g.rotate(ang);
   box(g, s, -w * .5, -w * .5, w, w * .5, 4, dk);
+  g.translate(dir * w * .3 * s, -w * .38 * s); g.rotate(dir > 0 ? -elev : elev);
   g.fillStyle = INK;
-  for (let i = 0; i < n; i++) g.fillRect(dir > 0 ? w * .3 * s : -(w * .3 + len) * s, (-w * .38 + (i - (n - 1) / 2) * bar * 1.4) * s, len * s, bar * s);   // dir -1: the barrels point aft
+  for (let i = 0; i < n; i++) g.fillRect(dir > 0 ? 0 : -len * s, (-bar * .5 + (i - (n - 1) / 2) * bar * 1.4) * s, len * s, bar * s);
   g.restore();
 };
 
@@ -218,8 +220,8 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
       box(g, s, -.22, -.1, .26, .1, 3, c); box(g, s, -.17, -.2, .17, .1, 3, c);                    // stepped superstructure
       box(g, s, -.01, -.14, .06, .14, 2, c); stroke(g, s, -.1, -.2, -.1, -.33, 2, INK);           // funnel and mast
       const f = deckAt(H, .22);
-      turret(g, s, .22, f.y, .26, .2, { ang: f.ang - .14, n: 2, dk });                                   // forward turret, tilted to the sloping deck
-      turret(g, s, -.27, H.deck, .22, .18, { n: 2, dk, dir: -1, ang: .1 });                              // aft turret, pointing astern and a little up
+      turret(g, s, .22, f.y + .02, .26, .2, { elev: .52, n: 2, dk });                                   // forward turret: level block, barrels raised 30 degrees
+      turret(g, s, -.27, H.deck, .22, .18, { n: 2, dk, dir: -1, elev: .52 });                               // aft turret: level block, barrels astern at 30 degrees
     }
     g.restore();
   });
@@ -237,9 +239,12 @@ const cruiser = (g, { s, c, dk, w, run, b }) => {
       box(g, s, -.13, D - .12, .2, .12, 3, c); box(g, s, -.09, D - .21, .12, .09, 3, c);            // stepped bridge
       box(g, s, -.075, D - .185, .09, .025, 1, GLASS);
       stroke(g, s, -.03, D - .21, -.03, D - .34, 2, INK); stroke(g, s, -.08, D - .3, .02, D - .3, 2, INK);   // mast with a yard
-      box(g, s, -.24, D - .12, .07, .12, 2, c); box(g, s, -.245, D - .14, .08, .03, 1, dk);        // funnel with a dark cap
+      // the flak mount is the flak unit's wedge, half size: raked up and forward so it reads as aimed at the sky
+      const mount = (x, y) => [[-.2, -.02], [-.22, -.15], [-.1, -.2], [.05, -.2], [.17, -.02]].map(([a, b]) => [x + a * .55, y + b * .55]);
+      poly(g, s, mount(-.3, D), mix(dk, '#ffffff', .5));
+      poly(g, s, [[-.1, -.2], [.05, -.2], [.17, -.02], [.1, -.02]].map(([a, b]) => [-.3 + a * .55, D + b * .55]), mix(c, dk, .35));   // lit slope
       const aim = -.95 + Math.sin(w * 2.5) * .12 * run;
-      g.save(); g.translate(-.33 * s, (D - .07) * s); g.rotate(aim);
+      g.save(); g.translate(-.3 * s, (D - .075) * s); g.rotate(aim);
       g.fillStyle = INK; g.fillRect(0, -s * .035, s * .26, s * .026); g.fillRect(0, s * .005, s * .26, s * .026);
       g.fillStyle = '#ffd24a'; g.fillRect(s * .24, -s * .035, s * .03, s * .026); g.fillRect(s * .24, s * .005, s * .03, s * .026);
       g.restore();
