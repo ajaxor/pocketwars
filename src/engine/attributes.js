@@ -65,8 +65,8 @@ export const UNIT_ATTRIBUTES = {
   },
   deploy: {
     label: (v, registry) => `Deploys ${registry?.units?.[v.unit]?.name ?? v.unit}`,
-    help: (v, registry) => `Carries ${registry?.units?.[v.unit]?.name ?? v.unit} troops as ammo. Instead of waiting it can drop one onto a free tile next to it (the new unit gets a free move, but cannot attack that turn).`,
-    doc: 'An order (after moving): put a new unit of type `unit` on a free tile next to where this one stopped, spending `ammo` (default 1) of its ammo. The new unit belongs to the same player, is at full HP, and gets a free move like a unit just built (`fresh`: move and Wait only). The tile must be enterable by the new unit. Requires the `ammo` attribute.',
+    help: (v, registry) => `Carries ${registry?.units?.[v.unit]?.name ?? v.unit} troops as ammo. Instead of waiting it can drop one onto a free tile next to it (the new unit is ready to move and attack at once).`,
+    doc: 'An order (after moving): put a new unit of type `unit` on a free tile next to where this one stopped, spending `ammo` (default 1) of its ammo. The new unit belongs to the same player, is at full HP, and is ready to act at once (it may move and attack). The tile must be enterable by the new unit. Requires the `ammo` attribute.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "unit": "soldier", "ammo": 1 }');
       if (typeof v.unit !== 'string' || !v.unit) fail('unit must name a unit from units.json');

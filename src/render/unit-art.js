@@ -8,7 +8,7 @@
 // run = 1 while animating (0 when the unit has acted), b / j = bob / jitter in pixels.
 // Coordinates are fractions of the tile size s; +x is forward, +y is down.
 
-const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238', VEST = '#ff9a2e';
+const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238';
 const hexToRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const mix = (a, b, t) => { const A = hexToRgb(a), B = hexToRgb(b); return '#' + [0, 1, 2].map((i) => Math.round(A[i] + (B[i] - A[i]) * t).toString(16).padStart(2, '0')).join(''); };
 
@@ -30,6 +30,26 @@ const treads = (g, s, x0, x1, y, h, w, run, j) => {
   for (let i = 0; i < 6; i++) { const x = x0 * s + s * .02 + i * s * .12 + off; if (x < x1 * s - s * .05) g.fillRect(x, (y + h * .4) * s, s * .05, s * .04); }
 };
 
+// ---- the marine's own parts, shared by the marine on land and the one riding a dinghy ----------------------------------------------
+// Drawn in the soldier's coordinates (head centred on (0, -.2 + bb)); callers translate for a different seat.
+/** A flat-topped utility cover with a short visor, in the team's dark colour, and a scarf that flutters. */
+const marineCover = (g, s, { c, dk, w, ph, run }, bb) => {
+  const fl = run ? Math.sin(w * 9 + ph) * .03 : 0;
+  poly(g, s, [[-.102, -.225 + bb], [-.122, -.3 + bb], [.122, -.3 + bb], [.102, -.225 + bb]], dk);   // crown, wider at the top
+  oval(g, s, 0, -.3 + bb, .122, .026, mix(dk, '#ffffff', .22));                                      // the flat top, seen from a little above
+  poly(g, s, [[-.104, -.26 + bb], [.104, -.26 + bb], [.102, -.245 + bb], [-.102, -.245 + bb]], mix(dk, '#000000', .25));   // band
+  oval(g, s, .015, -.222 + bb, .105, .022, mix(dk, '#000000', .15));                                  // the visor, in front of the face (the cap looks toward the camera)
+  const sc = mix(c, '#ffffff', .3);   // a little lighter than the shirt so it shows
+  poly(g, s, [[-.1, -.1 + bb], [.1, -.1 + bb], [0, .0 + bb]], sc); poly(g, s, [[-.1, -.1 + bb], [-.2, -.06 + fl + bb], [-.19, -.13 + fl + bb]], sc);
+};
+/** Assault rifle: the rifle line with a curved magazine under the receiver and a stock. `sw` = swing, `bb` = bob (tile fractions). */
+const marineRifle = (g, s, bb, sw) => {
+  stroke(g, s, -.1, .04 + bb, .26, -.12 + bb + sw, Math.max(2, s * .05), INK);
+  const m = bb + sw * .5;
+  poly(g, s, [[.0, -.005 + m], [.055, -.03 + m], [.1, .09 + m], [.05, .1 + m]], '#3a3a44');
+  box(g, s, -.17, .0 + m, .1, .045, 2, '#4a3a2a');
+};
+
 // ---- foot units: one body, head and walk cycle shared by soldier, mech and sniper; only the pack and weapon differ ----------
 const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   const walk = run && moving ? 1 : 0;                                                          // legs only step while the unit moves
@@ -39,14 +59,8 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   else if (kind === 'sniper') box(g, s, -.24, -.08 + b / s, .09, .2, 3, mix(c, '#56643a', .6)); // ghillie-covered pack
   box(g, s, -.16, -.12 + b / s, .32, .28, 4, c);
   disc(g, s, 0, -.2 + b / s, .09, SKIN);
-  if (kind === 'marine') {          // a flat-topped utility cover with a short visor, in the team's dark colour, and a scarf that flutters
-    const bb = b / s, fl = run ? Math.sin(w * 9 + ph) * .03 : 0;
-    poly(g, s, [[-.102, -.225 + bb], [-.122, -.3 + bb], [.122, -.3 + bb], [.102, -.225 + bb]], dk);   // crown, wider at the top
-    oval(g, s, 0, -.3 + bb, .122, .026, mix(dk, '#ffffff', .22));                                      // the flat top, seen from a little above
-    poly(g, s, [[-.104, -.26 + bb], [.104, -.26 + bb], [.102, -.245 + bb], [-.102, -.245 + bb]], mix(dk, '#000000', .25));   // band
-    oval(g, s, .015, -.222 + bb, .105, .022, mix(dk, '#000000', .15));                                                          // the visor, in front of the face (the cap looks toward the camera)
-    const sc = mix(c, '#ffffff', .3);   // a little lighter than the shirt so it shows
-    poly(g, s, [[-.1, -.1 + bb], [.1, -.1 + bb], [0, .0 + bb]], sc); poly(g, s, [[-.1, -.1 + bb], [-.2, -.06 + fl + bb], [-.19, -.13 + fl + bb]], sc);
+  if (kind === 'marine') {
+    marineCover(g, s, { c, dk, w, ph, run }, b / s);
   } else {
     g.fillStyle = dk; g.beginPath(); g.arc(0, -s * .21 + b, s * .11, Math.PI, 0); g.fill(); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
   }
@@ -63,12 +77,8 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
     box(g, s, -.05, .035, .03, .04, 1, STEEL); box(g, s, .03, .035, .03, .04, 1, STEEL);        // mounts
     g.restore();
   } else {                        // rifle
-    stroke(g, s, -.1, .04 + b / s, .26, -.12 + b / s + sw / s, Math.max(2, s * .05), INK);
-    if (kind === 'marine') {          // assault rifle: a curved magazine under the receiver and a handguard
-      const bb = b / s + sw / s * .5;
-      poly(g, s, [[.0, -.005 + bb], [.055, -.03 + bb], [.1, .09 + bb], [.05, .1 + bb]], '#3a3a44');
-      box(g, s, -.17, .0 + bb, .1, .045, 2, '#4a3a2a');   // stock
-    }
+    if (kind === 'marine') marineRifle(g, s, b / s, sw / s);
+    else stroke(g, s, -.1, .04 + b / s, .26, -.12 + b / s + sw / s, Math.max(2, s * .05), INK);
   }
 };
 
@@ -339,12 +349,16 @@ const dinghy = (g, { s, c, dk, w, run, b }) => {
     g.save(); g.translate(0, bb * s);
     if (!light) { box(g, s, -.3, .02, .62, .22, 8, under); propeller(g, s, -.33, .17, w, run, under); }
     else {
-      box(g, s, -.3, -.02, .62, .17, 8, tube); box(g, s, -.1, -.01, .22, .05, 2, c);        // the rubber tube and a stripe in team colours
       box(g, s, -.26, -.06, .12, .1, 3, '#3a3f48');                                           // outboard motor
-      const sw = Math.sin(w * 4) * s * .008 * run;
-      box(g, s, -.1, -.2, .22, .2, 4, c); box(g, s, -.1, -.1, .22, .06, 2, VEST);          // body and life vest
-      disc(g, s, .01, -.28, .08, SKIN); g.fillStyle = dk; g.beginPath(); g.arc(.01 * s, -.29 * s, s * .09, Math.PI, 0); g.fill();
-      stroke(g, s, -.02, -.1, .3, -.2 + sw / s, Math.max(2, s * .045), INK);                // rifle
+      // the marine sits in it: the same body, cover, scarf and assault rifle as on land, a little lower
+      const sw = Math.sin(w * 4) * .008 * run;
+      g.save(); g.translate(.03 * s, .0);
+      box(g, s, -.16, -.12, .32, .22, 4, c);
+      disc(g, s, 0, -.2, .09, SKIN);
+      marineCover(g, s, { c, dk, w, ph: 0, run }, 0);
+      marineRifle(g, s, 0, sw);
+      g.restore();
+      box(g, s, -.3, -.02, .62, .17, 8, tube);                                                // the rubber tube, in front of the rider
     }
     g.restore();
   }, .14);
@@ -361,7 +375,7 @@ const stealth = (g, { s, c, dk }) => {
 const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); };
 
 export const SPRITES = {
-  soldier: trooper('soldier'), marine: trooper('marine'), dinghy: shrunk(dinghy, .9), mech: trooper('mech'), sniper: trooper('sniper'),
+  soldier: trooper('soldier'), marine: trooper('marine'), dinghy: (g, o) => { g.save(); g.scale(.9, .9); dinghy(g, o); g.restore(); }, mech: trooper('mech'), sniper: trooper('sniper'),
   recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
    fighter, bomber, stealth_bomber: stealth,
   destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),

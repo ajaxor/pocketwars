@@ -173,13 +173,13 @@ function withWindow(w, h, dpr, fn) {
 }
 
 test('on a phone the map is as wide as the window and sits centred below the status bar', () => {
-  withWindow(500, 800, 2, () => {
+  withWindow(700, 800, 2, () => {
     const { renderer } = rig();
-    renderer.fit({ top: 50 });          // the classic map is 10 x 11
-    assert.equal(renderer.tileSize, 50);
-    assert.deepEqual(renderer.tileRect(0, 0), { left: 0, top: 150, size: 50 });
-    assert.deepEqual(renderer.layout, { W: 500, H: 800, ox: 0, oy: 150, d: 2 });
-    assert.deepEqual([renderer.cv.width, renderer.cv.height], [1000, 1600], 'the canvas is the whole window, in device pixels');
+    renderer.fit({ top: 50 });          // the classic map is 10 x 11: it starts as tall as the playfield allows
+    assert.equal(renderer.tileSize, 68);
+    assert.deepEqual(renderer.tileRect(0, 0), { left: 10, top: 51, size: 68 });
+    assert.deepEqual(renderer.layout, { W: 700, H: 800, ox: 10, oy: 51, d: 2 });
+    assert.deepEqual([renderer.cv.width, renderer.cv.height], [1400, 1600], 'the canvas is the whole window, in device pixels');
   });
 });
 
@@ -201,7 +201,6 @@ test('taps are turned into map tiles through the offset; taps beside the map lan
     assert.deepEqual(renderer.tileAt(r.left + 5, r.top + 5), { x: 3, y: 4 });
     assert.deepEqual(renderer.tileAt(r.left + 39, r.top + 39), { x: 3, y: 4 });
     assert.ok(renderer.tileAt(10, 10).y < 0, 'above the map');
-    assert.ok(renderer.tileAt(10, 790).y >= game.map.height, 'below the map');
   });
 });
 

@@ -5,6 +5,8 @@
 //
 //   - A map that fits at a comfortable size is shown whole and centred, exactly as before.
 //   - A bigger map is shown at a comfortable minimum tile size (MIN_TILE) and scrolls: drag to pan, pinch or wheel to zoom.
+//   - The default size is the larger of that and the size at which the map fills the playfield's height.
+//   - Zoom snaps to a ladder of sizes (see `steps`), one of which is the default; pinching accumulates until the next rung is reached.
 //   - Zoom goes from "the whole map fits" (never below ZOOM_OUT_FLOOR px) up to ZOOM_IN_CEIL px per tile.
 //   - Along an axis where the map is smaller than the window it stays centred; otherwise its edges stop at the window's edges.
 
@@ -36,17 +38,38 @@ export class Camera {
   get availH() { return Math.max(1, this.H - this.top); }
   /** The biggest whole-pixel tile size at which the whole map fits. */
   get fitSize() { return Math.max(1, Math.floor(Math.min(this.W / this.mapW, this.availH / this.mapH))); }
-  /** The tile size a map starts at: whole-map-fits, but never smaller than MIN_TILE. */
-  get defaultSize() { return Math.max(this.fitSize, MIN_TILE); }
+  /** The tile size at which the map is exactly as tall as the playfield. */
+  get heightFitSize() { return Math.max(1, Math.floor(this.availH / this.mapH)); }
+  /** The tile size a map starts at: the whole map fits, or it fills the height, or MIN_TILE, whichever is most zoomed in. */
+  get defaultSize() { return Math.max(this.fitSize, MIN_TILE, this.heightFitSize); }
   get minSize() { return Math.min(this.defaultSize, Math.max(ZOOM_OUT_FLOOR, this.fitSize)); }
   get maxSize() { return Math.max(ZOOM_IN_CEIL, this.defaultSize); }
+  /**
+   * The tile sizes zooming snaps to, ascending: the default, rungs a quarter bigger or smaller each way from it, and the size at
+   * which the whole map fits (when that is in range). Rungs closer than 2 px to the default are dropped, so the default is always one.
+   */
+  get steps() {
+    const def = this.defaultSize, lo = this.minSize, hi = this.maxSize;
+    const set = new Set([def]);
+    const apart = (v) => [...set].every((u) => Math.abs(u - v) >= 2);
+    for (let k = -8; k <= 8; k++) {
+      const v = Math.round(def * Math.pow(1.25, k));
+      if (v >= lo && v <= hi && apart(v)) set.add(v);
+    }
+    for (const v of [this.fitSize, lo, hi]) if (v >= lo && v <= hi && apart(v)) set.add(v);   // the whole map in view, and both ends of the range
+    return [...set].sort((a, b) => a - b);
+  }
+  /** The step nearest to `size`. */
+  snap(size) { return this.steps.reduce((best, v) => (Math.abs(v - size) < Math.abs(best - size) ? v : best)); }
+
   /** True when the map is bigger than the window at the current zoom on either axis (so there is something to scroll to). */
   get scrolls() { return this.mapW * this.S > this.W || this.mapH * this.S > this.availH; }
 
   /** The window changed size (or this is the first time it is known). `top` is the status bar's height. */
   setViewport(W, H, top = 0) {
     this.W = W; this.H = H; this.top = top;
-    this.S = this.zoomed ? clamp(this.S, this.minSize, this.maxSize) : this.defaultSize;
+    this.S = this.zoomed ? this.snap(clamp(this.S, this.minSize, this.maxSize)) : this.defaultSize;
+    this.raw = null;
     this.#clamp();
   }
 
@@ -87,7 +110,7 @@ export class Camera {
 
   /** Change the tile size to `size` (clamped) keeping the map point under window pixel (ax, ay) where it is. */
   zoomTo(size, ax = this.W / 2, ay = this.top + this.availH / 2) {
-    const s = clamp(Math.round(size), this.minSize, this.maxSize);
+    const s = this.snap(clamp(Math.round(size), this.minSize, this.maxSize));
     this.glide = null;
     if (s === this.S) return;
     const { ox, oy } = this.origin();
@@ -99,12 +122,14 @@ export class Camera {
     this.#clamp();
   }
 
-  /** Multiply the tile size by `factor` around a window pixel (pinch and wheel). */
+  /**
+   * Multiply the tile size by `factor` around a window pixel (pinch and wheel). The size jumps between steps, so the unrounded
+   * size is kept in `raw` while a gesture goes on, and the camera moves to whichever step it is nearest.
+   */
   zoomBy(factor, ax, ay) {
-    // tiny pinches would round away; a factor that changes nothing still moves one step so zooming never sticks
-    const target = this.S * factor;
-    const next = Math.round(target) === this.S ? this.S + Math.sign(factor - 1) : target;
-    this.zoomTo(next, ax, ay);
+    if (this.raw == null || this.snap(this.raw) !== this.S) this.raw = this.S;   // a new gesture starts from where the view is
+    this.raw = clamp(this.raw * factor, this.minSize, this.maxSize);
+    this.zoomTo(this.raw, ax, ay);
   }
 
   /** Put tile (x, y) at the centre of the window at once. */

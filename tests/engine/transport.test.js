@@ -50,8 +50,8 @@ test('a transport copter carries soldiers as ammo and drops them next to where i
   const soldier = unitAt(g, 3, 1);
   assert.equal(soldier.type, 'soldier');
   assert.equal(soldier.owner, 0);
-  assert.equal(soldier.done, false, 'it gets a free move...');
-  assert.equal(soldier.fresh, true, '...but no attack');
+  assert.equal(soldier.done, false, 'it can act at once');
+  assert.equal(soldier.fresh, undefined, 'and is not limited to a move like a unit just built');
   assert.equal(copter.ammo, 1);
   assert.equal(copter.done, true);
   assert.deepEqual(res.events.map((e) => e.type).filter((t) => t === 'deploy' || t === 'move'), ['move', 'deploy']);
@@ -103,4 +103,14 @@ test('forecastAttack previews the blow and the counter without changing anything
   d.hp = 1;
   assert.equal(forecastAttack(g, g.state.units[0], d).destroyed, true);
   assert.equal(forecastAttack(g, g.state.units[0], d).counter, null, 'a dead defender does not answer');
+});
+
+test('a dropped soldier can attack at once, unlike a unit that was just built', () => {
+  const g = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 3, 1]]);
+  const copter = g.state.units[0], foe = g.state.units[1];
+  g.act({ unitId: copter.id, to: { x: 1, y: 0 }, action: { type: 'deploy', at: { x: 1, y: 1 } } });
+  const soldier = unitAt(g, 1, 1);
+  const hit = g.act({ unitId: soldier.id, to: { x: 2, y: 1 }, action: { type: 'attack', targetId: foe.id } });
+  assert.equal(hit.ok, true);
+  assert.ok(foe.hp < 10);
 });

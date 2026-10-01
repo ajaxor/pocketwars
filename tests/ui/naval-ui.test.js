@@ -161,8 +161,8 @@ test('a transport copter offers Deploy, highlights the tiles beside it, and drop
   t.controller.tap(1, 1);
   const soldier = t.game.state.units.find((u) => u.type === 'soldier');
   assert.equal(soldier.y, 1);
-  assert.equal(soldier.fresh, true);
-  assert.equal(t.controller.mode, 'move', 'the dropped soldier is selected for its free move');
+  assert.equal(soldier.fresh, undefined);
+  assert.equal(t.controller.mode, 'move', 'the dropped soldier is selected, ready to move or attack');
   assert.equal(t.controller.view.selectedId, soldier.id);
   assert.match(t.hud.messages.at(-1), /drops a Soldier/);
 });

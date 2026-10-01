@@ -295,7 +295,7 @@ export class Controller {
     if (text) this.#msg(text);
     this.onEvents(res.events);
     const drop = res.events.find((e) => e.type === 'deploy');
-    if (drop) { const u = unitById(game, drop.dropped.id); if (u && !u.done) this.#select(u, `${text} - move it out, it cannot attack this turn.`); }   // the dropped unit's free move
+    if (drop) { const u = unitById(game, drop.dropped.id); if (u && !u.done) this.#select(u, `${text} - it is ready to move and attack.`); }   // the dropped unit can act at once
     else if (res.refreshed) this.#select(unitById(game, res.refreshed.unitId), text);   // a pit stop: it can move again
   }
 
