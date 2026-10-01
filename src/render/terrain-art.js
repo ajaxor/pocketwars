@@ -7,12 +7,10 @@
 // The tile's shape belongs to terrain-layer.js, buildings to buildings.js.
 // The test suite requires a drawing for every decor name the terrain data uses.
 
-/** Deterministic pseudo-random number in [0, 1) for grid position (x, y) and a per-call index. */
-export function rnd(x, y, i = 0) {
-  let h = Math.imul(x + 1013, 374761393) ^ Math.imul(y + 7919, 668265263) ^ Math.imul(i + 31, 2246822519);
-  h = Math.imul(h ^ (h >>> 13), 1274126177);
-  return ((h ^ (h >>> 16)) >>> 0) / 4294967296;
-}
+import { SHOAL_STYLES } from './shoal-styles.js';
+
+import { rnd } from './rnd.js';
+export { rnd };
 
 const poly = (g, pts, fill) => {
   g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath();
@@ -169,29 +167,8 @@ export const TERRAIN_DECOR = {
       }
       peak(cx, w, top, yb, pkx, false);
     },
-    // Shoals: an underwater reef in open sea (the tile colour joins the water around it): a patch of paler turquoise where the water
-    // is shallow, dark rock and coral showing through it, and a little foam where the swell breaks over the highest rock.
-    // Its shape and the coral colours vary per tile; the edge of the tile stays plain deep water.
-    shoals(g, px, py, S, { x, y, now }) {
-      const R = (i) => rnd(x, y, 40 + i);
-      const cx = px + (.42 + .16 * R(0)) * S, cy = py + (.44 + .14 * R(1)) * S;
-      const swell = 1 + .05 * Math.sin(now / 800 + R(2) * 6);
-      const blob = (ox, oy, rx, ry, fill, tilt = 0) => { g.fillStyle = fill; g.beginPath(); g.ellipse(cx + ox * S * 1.25, cy + oy * S * 1.25, rx * S * 1.25, ry * S * 1.25, tilt, 0, 7); g.fill(); };
-      blob(0, 0, .3 * swell, .22 * swell, 'rgba(120,215,225,.22)');                 // the shallows, a pale wash
-      blob(-.06, .01, .23 * swell, .16 * swell, 'rgba(120,225,225,.3)', .3);
-      blob(.05, -.02, .16, .11, '#2a5f7c', -.2);                                     // dark reef rock under the surface
-      blob(-.1, .05, .1, .07, '#2a5f7c', .5);
-      blob(.12, .06, .08, .055, '#356e86', 0);
-      const coral = ['#e57f6c', '#f0a07a', '#d96f93', '#f2c15b'];
-      for (let i = 0; i < 4; i++) {                                                  // coral heads on the rock
-        const a = R(3 + i) * 6.28, d = .04 + .1 * R(8 + i);
-        blob(Math.cos(a) * d, Math.sin(a) * d * .7, .028 + .012 * R(12 + i), .02 + .008 * R(16 + i), coral[(i + Math.floor(R(20) * 4)) % 4]);
-      }
-      blob(.02, -.04, .045, .028, '#4f9bb0', -.2);                                   // the high rock the swell breaks on
-      g.strokeStyle = `rgba(255,255,255,${(.5 + .3 * Math.sin(now / 600 + R(5) * 6)).toFixed(2)})`; g.lineWidth = Math.max(1.2, S * .03); g.lineCap = 'round';
-      g.beginPath(); g.ellipse(cx + .02 * S, cy - .04 * S, .075 * S * swell, .045 * S * swell, -.2, Math.PI * 1.05, Math.PI * 1.85); g.stroke();   // foam
-      g.beginPath(); g.ellipse(cx - .12 * S, cy + .07 * S, .05 * S, .03 * S, .5, Math.PI * .1, Math.PI * .8); g.stroke();
-    },
+    // Shoals: shallows in open sea (the tile colour joins the water around it); the drawing is one of shoal-styles.js.
+    shoals: SHOAL_STYLES.rocks,
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {
       const t = now / 1000;

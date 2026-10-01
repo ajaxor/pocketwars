@@ -178,5 +178,5 @@ test('shoals are open sea with a small islet: same colour as the sea, so the wat
   assert.equal(registry.terrainDef('shoals').render.base, registry.terrainDef('sea').render.base);
   const { ctx, calls } = recorder();
   paintTile(ctx, 0, 0, 40, registry.terrainDef('shoals'), null, { n: '#3d7ec7', e: '#3d7ec7', s: '#3d7ec7', w: '#3d7ec7', ne: '#3d7ec7', se: '#3d7ec7', sw: '#3d7ec7', nw: '#3d7ec7' }, { x: 3, y: 4, now: 0 });
-  assert.ok(calls.filter((c) => c.op === 'ellipse').length >= 4);
+  assert.ok(calls.filter((c) => c.op === 'ellipse' || c.op === 'lineTo').length >= 4);
 });
