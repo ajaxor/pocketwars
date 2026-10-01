@@ -36,7 +36,6 @@ export class Presenter {
         this.effects.deploy(ev, t);
       } else if (ev.type === 'turnStart') {
         this.effects.income(ev, t);
-        (ev.resupplied || []).forEach((u) => this.effects.resupply(u, t + 200, u.cost));
       }
     }
   }

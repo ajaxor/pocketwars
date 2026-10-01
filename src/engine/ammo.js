@@ -5,9 +5,8 @@
 //   unit attribute `deploy`               dropping a unit costs ammo too (deploy.js)
 //   terrain attribute `resupply: { range, categories }` on a property: refills the ammo of its owner's units of those categories
 //
-// WHEN A UNIT IS RESUPPLIED. (1) At the start of its owner's turn, if it stands in reach of such a property (economy.js startTurn).
-// (2) When it ends an order with the Resupply action (game.js act; offered in place of Wait when it is short on ammo and next to such a
-// property). Resupply is an order like Wait: it ends the unit's turn.
+// WHEN A UNIT IS RESUPPLIED. Only when it ends an order with the Resupply action (game.js act; offered in place of Wait when it is short
+// on ammo and next to such a property). Resupply is an order like Wait: it ends the unit's turn. Nothing is refilled automatically.
 //
 // RESUPPLY COSTS MONEY, like building the rounds: `resupplyCost` is the missing rounds times the price of a round, which is the unit's
 // `ammo.cost` or, for a carrier, the price of the unit each round stands for (a transport copter pays for the soldiers it takes on).

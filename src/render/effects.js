@@ -105,7 +105,7 @@ export class Effects {
     });
   }
 
-  /** A unit refilled with ammo (a 'resupply' event, or an entry of a turnStart's `resupplied`): a call-out over it. Does not lock input. */
+  /** A unit refilled with ammo (a 'resupply' event): a call-out over it. Does not lock input. */
   resupply(unit, t0, cost = 0) {
     this.list.push({ k: 'txt', x: unit.x + .5, y: unit.y + .35, s: 'Resupplied', sz: .28, c: '#9be564', t0, d: 1200 });
     if (cost) this.list.push({ k: 'txt', x: unit.x + .5, y: unit.y + .7, s: `-${cost.toLocaleString('en-US')}`, sz: .3, c: '#ff7b6b', t0, d: 1200 });

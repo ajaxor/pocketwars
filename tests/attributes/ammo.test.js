@@ -76,11 +76,11 @@ test('resupply: an attack uses the turn, so it cannot be a pit stop', () => {
   assert.equal(u.ammo, 0);
 });
 
-test('resupply: at the start of its owner\'s turn a unit next to an airfield is refilled', () => {
+test('resupply: nothing is refilled automatically at the start of a turn', () => {
   const g = game(['H.A..h'], [['flyer', 0, 3, 0], ['grunt', 1, 5, 0]], 3, 1);
   const u = g.state.units[0];
   u.ammo = 0;
   const [ev] = startTurn(g, 0);
-  assert.equal(u.ammo, 3);
-  assert.deepEqual(ev.resupplied.map((r) => [r.id, r.from, r.to]), [[u.id, 0, 3]]);
+  assert.equal(u.ammo, 0);
+  assert.equal(ev.resupplied, undefined);
 });

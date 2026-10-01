@@ -1,6 +1,5 @@
 // Turn income, repair, resupply and unit production, all driven by the terrain `property` attribute.
 
-import { resupply } from './ammo.js';
 import { propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, tileIndex, unitAt } from './queries.js';
 import { makeUnit } from './state.js';
 
@@ -18,7 +17,6 @@ export function startTurn(game, player) {
   state.funds[player] += income;
   state.builtThisTurn = [];
   const repaired = [];
-  const resupplied = [];
   for (const u of state.units) {
     if (u.owner !== player) continue;
     u.done = false;
@@ -32,10 +30,8 @@ export function startTurn(game, player) {
       u.hp = Math.min(registry.rules.maxHp, round1(u.hp + property.repair));
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
     }
-    const filled = resupply(game, u);
-    if (filled && filled.type === 'resupply') resupplied.push({ id: u.id, x: u.x, y: u.y, from: filled.from, to: filled.to, cost: filled.cost });
   }
-  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, resupplied }];
+  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired }];
 }
 
 /** Unit definitions that a property tile owned by the current player can produce, in menu order. */

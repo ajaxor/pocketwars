@@ -55,7 +55,7 @@ export const UNIT_ATTRIBUTES = {
   },
   ammo: {
     label: (v) => `Ammo ${v.max}`,
-    help: (v) => `Carries up to ${v.max} rounds. When it is down to ${v.low} or fewer a bullet flashes on its tile, and at 0 the bullet stays red. It is refilled, for a price, by choosing Resupply (in place of Wait, and it ends the turn) next to a friendly property that resupplies it (an airfield, for aircraft), and at the start of a turn spent there.`,
+    help: (v) => `Carries up to ${v.max} rounds. When it is down to ${v.low} or fewer a bullet flashes on its tile, and at 0 the bullet stays red. It is refilled, for a price, by choosing Resupply (in place of Wait, and it ends the turn) next to a friendly property that resupplies it (an airfield, for aircraft).`,
     doc: 'A limited supply. Config: { max, low, cost? } (`cost`: what replacing one round costs; a unit with `deploy` defaults to the price of the unit each round stands for, otherwise 0). The unit starts full (`unit.ammo`). Weapons with an `ammo` cost spend it per shot and cannot fire without enough; the `deploy` attribute spends it too. It is shown on the tile as a bullet: flashing when ammo <= `low` (and above 0), steady red at 0. It is refilled by a terrain with the `resupply` attribute: see ammo.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "max": 3, "low": 1 }');
@@ -95,7 +95,7 @@ export const TERRAIN_ATTRIBUTES = {
   resupply: {
     label: 'Resupplies',
     help: (v) => `Refills the ammo of friendly ${v.categories.join(' and ')} units that Resupply ${v.range === 0 ? 'on it' : v.range === 1 ? 'on or next to it' : `within ${v.range} tiles`}.`,
-    doc: 'Refills ammo (see the unit attribute `ammo`). Config: { range, categories }: a unit of one of those categories, owned by the same player as this property, is resupplied when it stops within `range` tiles (Manhattan; 1 = on or next to it) and takes the Resupply action (offered in place of Wait while it is short), and at the start of its owner\'s turn. Resupply costs money and ends the unit\'s turn (see ammo.js). Requires the `property` attribute.',
+    doc: 'Refills ammo (see the unit attribute `ammo`). Config: { range, categories }: a unit of one of those categories, owned by the same player as this property, is resupplied when it stops within `range` tiles (Manhattan; 1 = on or next to it) and takes the Resupply action (offered in place of Wait while it is short); nothing is refilled automatically. Resupply costs money and ends the unit\'s turn (see ammo.js). Requires the `property` attribute.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "range": 1, "categories": ["aircraft"] }');
       if (!Number.isInteger(v.range) || v.range < 0) fail('range must be a whole number of tiles (0 = only a unit standing on it)');
