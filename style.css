@@ -40,11 +40,13 @@
 [hidden] { display: none !important; }
 
 html, body {
-  height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none;
+  height: 100%; margin: 0; overflow: hidden; overscroll-behavior: none; touch-action: none;
   background: radial-gradient(ellipse at 50% 35%, var(--bg-hi) 0%, var(--bg) 75%);
   color: var(--ink); font: 500 14px/1.25 var(--font);
   -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
 }
+
+body { position: fixed; inset: 0; width: 100%; }   /* iOS Safari cannot rubber-band a page that is pinned to the window */
 
 /* The map: the canvas is the whole window, the renderer centres the board in it. */
 canvas#c { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }

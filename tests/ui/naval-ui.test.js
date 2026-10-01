@@ -159,8 +159,11 @@ test('a transport copter offers Deploy, highlights the tiles beside it, and drop
   assert.equal(t.controller.mode, 'deploy');
   assert.deepEqual(t.controller.view.deploy.map((d) => `${d.x},${d.y}`).sort(), ['0,0', '1,1'], 'the sea tile is not offered');
   t.controller.tap(1, 1);
-  assert.equal(t.game.state.units.find((u) => u.type === 'soldier').y, 1);
-  assert.equal(t.controller.mode, 'idle');
+  const soldier = t.game.state.units.find((u) => u.type === 'soldier');
+  assert.equal(soldier.y, 1);
+  assert.equal(soldier.fresh, true);
+  assert.equal(t.controller.mode, 'move', 'the dropped soldier is selected for its free move');
+  assert.equal(t.controller.view.selectedId, soldier.id);
   assert.match(t.hud.messages.at(-1), /drops a Soldier/);
 });
 

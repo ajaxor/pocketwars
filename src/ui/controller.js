@@ -294,7 +294,9 @@ export class Controller {
     this.cancelAll();
     if (text) this.#msg(text);
     this.onEvents(res.events);
-    if (res.refreshed) this.#select(unitById(game, res.refreshed.unitId), text);   // a pit stop: it can move again
+    const drop = res.events.find((e) => e.type === 'deploy');
+    if (drop) { const u = unitById(game, drop.dropped.id); if (u && !u.done) this.#select(u, `${text} - move it out, it cannot attack this turn.`); }   // the dropped unit's free move
+    else if (res.refreshed) this.#select(unitById(game, res.refreshed.unitId), text);   // a pit stop: it can move again
   }
 
   /** The move hit something hidden: slide the unit as far as it got, then let the player give it an order from there. */

@@ -173,13 +173,13 @@ function withWindow(w, h, dpr, fn) {
 }
 
 test('on a phone the map is as wide as the window and sits centred below the status bar', () => {
-  withWindow(400, 800, 2, () => {
+  withWindow(500, 800, 2, () => {
     const { renderer } = rig();
     renderer.fit({ top: 50 });          // the classic map is 10 x 11
-    assert.equal(renderer.tileSize, 40);
-    assert.deepEqual(renderer.tileRect(0, 0), { left: 0, top: 205, size: 40 });
-    assert.deepEqual(renderer.layout, { W: 400, H: 800, ox: 0, oy: 205, d: 2 });
-    assert.deepEqual([renderer.cv.width, renderer.cv.height], [800, 1600], 'the canvas is the whole window, in device pixels');
+    assert.equal(renderer.tileSize, 50);
+    assert.deepEqual(renderer.tileRect(0, 0), { left: 0, top: 150, size: 50 });
+    assert.deepEqual(renderer.layout, { W: 500, H: 800, ox: 0, oy: 150, d: 2 });
+    assert.deepEqual([renderer.cv.width, renderer.cv.height], [1000, 1600], 'the canvas is the whole window, in device pixels');
   });
 });
 
@@ -243,6 +243,7 @@ test('the ammo bullet flashes when low (every other beat), stays on when empty, 
     return calls.filter((c) => c === 'quadraticCurveTo').length;
   };
   const none = draws(null, 0);
+  assert.equal(draws('ok', 0), none, 'no bullet while there is plenty');
   assert.ok(draws('empty', 0) > none && draws('empty', AMMO_BLINK_MS) > none, 'steady');
   assert.ok(draws('low', 0) > none, 'on');
   assert.equal(draws('low', AMMO_BLINK_MS), none, 'off');

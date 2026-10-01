@@ -41,7 +41,7 @@ test('a marine is built at a shipyard and can swim off it', () => {
 test('a transport copter carries soldiers as ammo and drops them next to where it stops', () => {
   const g = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 5, 1]]);
   const copter = g.state.units[0];
-  assert.equal(copter.ammo, 3);
+  assert.equal(copter.ammo, 2);
   assert.equal(ammoLevel(g, copter), 'ok');
   assert.equal(canDeploy(g, copter, 3, 0), true);
   assert.equal(dropTiles(g, copter, 3, 0).length, 3, 'three free neighbours (the map edge takes the fourth)');
@@ -50,8 +50,9 @@ test('a transport copter carries soldiers as ammo and drops them next to where i
   const soldier = unitAt(g, 3, 1);
   assert.equal(soldier.type, 'soldier');
   assert.equal(soldier.owner, 0);
-  assert.equal(soldier.done, true, 'it cannot act until next turn');
-  assert.equal(copter.ammo, 2);
+  assert.equal(soldier.done, false, 'it gets a free move...');
+  assert.equal(soldier.fresh, true, '...but no attack');
+  assert.equal(copter.ammo, 1);
   assert.equal(copter.done, true);
   assert.deepEqual(res.events.map((e) => e.type).filter((t) => t === 'deploy' || t === 'move'), ['move', 'deploy']);
 });
@@ -71,12 +72,11 @@ test('a transport copter next to an airfield is resupplied and may move on, to d
   const g = world(['H.A....h', '........'], [['transport_copter', 0, 5, 0], ['recon', 1, 7, 1]]);
   const copter = g.state.units[0];
   g.act({ unitId: copter.id, to: { x: 5, y: 0 }, action: { type: 'deploy', at: { x: 5, y: 1 } } });
-  g.act({ unitId: copter.id, to: { x: 5, y: 0 }, action: { type: 'deploy', at: { x: 5, y: 1 } } });
   assert.equal(copter.done, true);
-  copter.done = false; copter.ammo = 1;
+  copter.done = false; copter.ammo = 0;
   const stop = g.act({ unitId: copter.id, to: { x: 3, y: 0 }, action: { type: 'wait' } });
   assert.equal(stop.ok, true);
-  assert.equal(copter.ammo, 3, 'refilled beside the airfield');
+  assert.equal(copter.ammo, 2, 'refilled beside the airfield');
   assert.equal(copter.done, false, 'and ready to move again');
   assert.equal(g.act({ unitId: copter.id, to: { x: 6, y: 0 }, action: { type: 'deploy', at: { x: 6, y: 1 } } }).ok, true);
 });

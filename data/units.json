@@ -126,7 +126,7 @@
     "weapons": [],
     "toughness": 1.5,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true, "ammo": { "max": 3, "low": 1 }, "deploy": { "unit": "soldier" } },
+    "attributes": { "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier" } },
     "render": { "sprite": "transport_copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "copter": {

@@ -45,7 +45,7 @@ export function drawUnit(g, unit, o) {
   if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha, exposed);
   const dh = Math.ceil(unit.hp - 1e-9);
   const digit = showHp && dh < 10 && dh > 0;
-  if (ammo) drawAmmo(g, px + s * .84, py + (digit ? s * .54 : s * .8), s, ammo, now, alpha);
+  if (ammo === 'low' || ammo === 'empty') drawAmmo(g, px + s * .84, py + (digit ? s * .54 : s * .8), s, ammo, now, alpha);
   if (digit) {
     const hx = px + s * .8, hy = py + s * .82, r = s * .3;
     drawFaded(g, alpha, hx - r, hy - r, r * 2, r * 2, (c) => {   // outline + digit as one image, so fading never greys the digit, and a unit that has acted keeps a clear white digit

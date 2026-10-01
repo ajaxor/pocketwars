@@ -9,7 +9,7 @@
 //   - Along an axis where the map is smaller than the window it stays centred; otherwise its edges stop at the window's edges.
 
 /** Smallest tile size used by default. A map that would need smaller tiles to fit whole scrolls instead. */
-export const MIN_TILE = 36;
+export const MIN_TILE = 44;
 /** Smallest tile size zooming out can reach when the whole map still does not fit. */
 export const ZOOM_OUT_FLOOR = 16;
 /** Largest tile size zooming in can reach (a map that already fits bigger than this keeps its own size). */

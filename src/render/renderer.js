@@ -149,7 +149,7 @@ export class Renderer {
       face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(game.map.terrain[u.y][u.x]).render.water),
-      ammo: dying ? null : ammoLevel(game, u),
+      ammo: dying ? null : ammoLevel(game, u),   // drawUnit only draws it for 'low' and 'empty'
     });
   }
 

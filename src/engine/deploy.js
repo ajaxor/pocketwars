@@ -1,6 +1,6 @@
 // Dropping troops. A unit with the `deploy` attribute (the transport copter) carries units "as ammo": an order, after the move, puts
 // a new unit of config.unit on a free tile next to where the carrier stopped and spends config.ammo (default 1) of its ammo.
-// The dropped unit is the carrier's, at full HP, and cannot act until next turn (it already used its turn getting off).
+// The dropped unit is the carrier's, at full HP, and is `fresh` like a unit just built: it gets one move (and a Wait) this turn, but no attack, capture or dive.
 // The carrier's turn is over, like any action. The tile has to be one the dropped unit could enter (a soldier cannot be put in the sea).
 
 import { attributeConfig } from './attributes.js';
@@ -48,7 +48,7 @@ export function resolveDeploy(game, unit, at) {
   const { state, registry, map } = game;
   const cfg = deployConfig(game, unit);
   spendAmmo(game, unit, deployCost(cfg));
-  const dropped = makeUnit(registry, map, state.nextUnitId++, { type: cfg.unit, owner: unit.owner, x: at.x, y: at.y, done: true });
+  const dropped = makeUnit(registry, map, state.nextUnitId++, { type: cfg.unit, owner: unit.owner, x: at.x, y: at.y, fresh: true });
   state.units.push(dropped);
   return [{ type: 'deploy', unit: snapshotUnit(unit), dropped: snapshotUnit(dropped), ammo: ammoOf(game, unit) }];
 }

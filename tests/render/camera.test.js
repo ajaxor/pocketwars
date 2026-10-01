@@ -6,12 +6,12 @@ import { Camera, MIN_TILE, ZOOM_IN_CEIL } from '../../src/render/camera.js';
 const cam = (w, h, W = 400, H = 700, top = 50) => { const c = new Camera(w, h); c.setViewport(W, H, top); return c; };
 
 test('a small map is shown whole and centred', () => {
-  const c = cam(10, 8);
+  const c = cam(8, 6);
   assert.equal(c.S, c.fitSize);
   assert.equal(c.scrolls, false);
-  assert.deepEqual([c.cx, c.cy], [5, 4]);
+  assert.deepEqual([c.cx, c.cy], [4, 3]);
   c.panBy(100, 100);
-  assert.deepEqual([c.cx, c.cy], [5, 4], 'nothing to pan');
+  assert.deepEqual([c.cx, c.cy], [4, 3], 'nothing to pan');
 });
 
 test('a big map starts at the minimum tile size and scrolls', () => {

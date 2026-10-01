@@ -55,6 +55,8 @@ export class Session {
     this.onPointerMove = (e) => this.gestures.move(e);
     this.onPointerUp = (e) => this.gestures.up(e);
     this.onPointerCancel = (e) => this.gestures.cancel(e);
+    // iOS Safari scrolls (rubber-bands) the whole page on a touch drag unless the touchmove is cancelled; only the lists that scroll themselves are exempt
+    this.onTouchMove = (e) => { if (!e.target.closest?.('.build-list, .sk-body, .sk-maps, .title')) e.preventDefault(); };
     this.onWheel = (e) => { e.preventDefault(); this.gestures.wheel(e); };
     this.onResize = () => this.#fit();
     this.lastFrame = 0;
@@ -93,6 +95,7 @@ export class Session {
     this.canvas.addEventListener('pointercancel', this.onPointerCancel);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     addEventListener('resize', this.onResize);
+    globalThis.document?.addEventListener?.('touchmove', this.onTouchMove, { passive: false });
     hud.onEnd(() => this.#onEndTurn());
     hud.onUndo(() => this.#onUndo());
     hud.onMenu(() => this.#openMenu());
@@ -109,6 +112,7 @@ export class Session {
     this.canvas.removeEventListener('pointercancel', this.onPointerCancel);
     this.canvas.removeEventListener('wheel', this.onWheel);
     removeEventListener('resize', this.onResize);
+    globalThis.document?.removeEventListener?.('touchmove', this.onTouchMove);
     this.hud.onEnd(null);
     this.hud.onUndo(null);
     this.hud.onMenu(null);
