@@ -108,6 +108,30 @@ test('the renderer leaves out units hidden from its viewer, and draws everything
   r.draw({ selectedId: null, dest: null, reach: null, attackTiles: null, targets: [t.game.state.units[1]], showTargets: true, pendingTargetId: null }, 0);
 });
 
+test('a unit that turns hidden finishes diving and then fades out; one that becomes visible fades in', () => {
+  const t = setup(['~~~~~~', '~~~~~~'], [['cruiser', 0, 0, 0], ['submarine', 1, 4, 0]]);
+  const sub = t.game.state.units[1];
+  const ctx = new Proxy({}, { get: (_, p) => (typeof p === 'symbol' ? undefined : () => ({ addColorStop() {} })), set: () => true });
+  const r = new Renderer({ getContext: () => ctx, style: {}, width: 0, height: 0, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, t.game, t.effects, t.animator);
+  r.viewer = 0;
+  const view = { selectedId: null, dest: null, reach: null, attackTiles: null, targets: [], showTargets: false, pendingTargetId: null };
+  r.draw(view, 0);
+  assert.deepEqual([r.motionOf(sub, 0).dive, r.motionOf(sub, 0).alpha], [0, 1], 'seen on the surface');
+  sub.submerged = true;                                  // the enemy dives in view
+  r.draw(view, 100);
+  const early = r.motionOf(sub, 100);
+  assert.ok(early.dive > 0 && early.dive < 1 && early.alpha === 1, 'sinking, still fully drawn');
+  for (let now = 200; now <= 1000; now += 100) r.draw(view, now);
+  const mid = r.motionOf(sub, 1000);
+  assert.equal(mid.dive, 1);
+  assert.ok(mid.alpha < 1, 'then fading');
+  for (let now = 1100; now <= 2200; now += 100) r.draw(view, now);
+  assert.equal(r.motionOf(sub, 2200).alpha, 0, 'gone');
+  sub.submerged = false;                                 // it comes back up in view
+  for (let now = 2300; now <= 2800; now += 100) r.draw(view, now);
+  assert.equal(r.motionOf(sub, 2800).alpha, 1);
+});
+
 test('a shipyard with several free water tiles asks where to launch; one tile builds straight away', () => {
   const legend2 = { ...legend, '.': { terrain: 'plain' }, Y: { terrain: 'shipyard', owner: 0 }, h: { terrain: 'hq', owner: 1 } };
   const make = (rows) => {

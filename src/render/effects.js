@@ -36,7 +36,7 @@ export class Effects {
       this.list.push({ k: 'bomb', x: x1, y: y1, t0, d: 520 });
       hit = t0 + 520;
     } else if (fx === 'torpedo') {
-      // a wake racing just under the surface to the target
+      // a small dark torpedo running under the surface to the target
       const dur = 620;
       this.list.push({ k: 'torpedo', x0, y0, x1, y1, t0, d: dur });
       hit = t0 + dur;
@@ -118,8 +118,7 @@ export class Effects {
         const x = (f.x0 + (f.x1 - f.x0) * p) * S, y = (f.y0 + (f.y1 - f.y0) * p) * S;
         const a = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
         g.save(); g.translate(x, y); g.rotate(a); g.lineCap = 'round';
-        g.strokeStyle = 'rgba(255,255,255,.6)'; g.lineWidth = S * .035; g.beginPath(); g.moveTo(0, 0); g.lineTo(-S * .4, 0); g.stroke();
-                g.fillStyle = '#1d222b'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .025, 0, 0, 7); g.fill(); g.restore();
+        g.fillStyle = '#1d222b'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .025, 0, 0, 7); g.fill(); g.restore();
       } else if (f.k === 'ping') {
         g.save(); g.globalAlpha = 1 - p; g.strokeStyle = '#ff5a4d'; g.lineWidth = 3;
         for (let i = 0; i < 2; i++) { const q = Math.min(1, p * 1.4 - i * .25); if (q > 0) { g.beginPath(); g.arc(f.x * S, f.y * S, S * (.15 + .55 * q), 0, 7); g.stroke(); } }

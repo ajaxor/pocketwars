@@ -36,6 +36,10 @@ export class Renderer {
     // The player whose eyes the board is drawn with: units hidden from them (a submerged enemy nobody has spotted) are not drawn
     // and not outlined. null shows everything (tests, the sprite gallery). The session sets it each frame.
     this.viewer = null;
+    // Per unit: how far dived (0..1, eased so a dive is seen) and how visible it is (0..1, eased so a unit that turns hidden fades away).
+    this.motion = new Map();
+    this.motionViewer = null;
+    this.motionAt = null;
     // until fit() learns the real window, the map is laid out whole at 40 px a tile (headless use and tests)
     this.camera.setViewport(game.map.width * 40, game.map.height * 40, 0);
   }
@@ -96,6 +100,25 @@ export class Renderer {
     return { x: Math.floor((clientX - r.left - ox) / this.S), y: Math.floor((clientY - r.top - oy) / this.S) };
   }
 
+  /**
+   * Ease each unit's dive depth and visibility toward where the game says they are. A dived unit the viewer can no longer see first
+   * finishes sinking and then fades out; a unit that becomes visible fades in. The first frame a unit is seen it simply starts there.
+   * Returns the (dive, alpha) of `u` for this frame.
+   */
+  motionOf(u, now) {
+    if (this.motionViewer !== this.viewer) { this.motion.clear(); this.motionViewer = this.viewer; }
+    const dt = this.motionAt === null ? 0 : Math.max(0, Math.min(100, now - this.motionAt)) / 1000;
+    const goalDive = u.submerged ? 1 : 0, goalAlpha = this.isShown(u) ? 1 : 0;
+    let m = this.motion.get(u.id);
+    if (!m) { m = { dive: goalDive, alpha: goalAlpha, at: now }; this.motion.set(u.id, m); return m; }
+    if (m.at === now) return m;      // already eased this frame
+    m.at = now;
+    m.dive += Math.sign(goalDive - m.dive) * Math.min(Math.abs(goalDive - m.dive), dt / .7);
+    if (goalAlpha === 1) m.alpha = Math.min(1, m.alpha + dt / .35);
+    else if (m.dive >= 1 || !u.submerged) m.alpha = Math.max(0, m.alpha - dt / .6);   // let a dive play out before fading
+    return m;
+  }
+
   /** Is `u` drawn for the current viewer? */
   isShown(u) { return this.viewer === null || canSee(this.game, this.viewer, u); }
 
@@ -103,7 +126,7 @@ export class Renderer {
     return view.dest && u.id === view.selectedId ? view.dest : u;
   }
 
-  drawUnitAt(g, u, view, now, { dying = false, alpha = 1 } = {}) {
+  drawUnitAt(g, u, view, now, { dying = false, alpha = 1, dive = u.submerged ? 1 : 0 } = {}) {
     const { S, game, animator, effects } = this;
     const lp = dying ? u : this.logicalPos(u, view);
     const moving = animator.current !== null && animator.current.unitId === u.id;
@@ -111,7 +134,7 @@ export class Renderer {
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
-      submerged: !!u.submerged, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
+      submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
     });
@@ -200,7 +223,12 @@ export class Renderer {
       g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;
       view.targets.filter((e) => this.isShown(e)).forEach((e) => { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2.5)); g.stroke(); });
     }
-    state.units.forEach((u) => { if (this.isShown(u)) this.drawUnitAt(g, u, view, now); });
+    for (const u of state.units) {
+      const m = this.motionOf(u, now);
+      if (m.alpha > .01) this.drawUnitAt(g, u, view, now, { alpha: m.alpha, dive: m.dive });
+    }
+    this.motionAt = now;
+    if (this.motion.size > state.units.length + 8) for (const id of [...this.motion.keys()]) if (!unitById(game, id)) this.motion.delete(id);
     this.drawArrow(now);
 
     const atk = view.attackTiles;

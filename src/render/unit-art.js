@@ -265,8 +265,9 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
 
 const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
   const LN = .1;
-  const dip = submerged ? .22 : 0;                       // dived: the whole boat sinks until only the periscope shows
-  const bb = b * (submerged ? .3 : .6) / s + (submerged ? 0 : .03);   // rides low
+  const d = Math.max(0, Math.min(1, Number(submerged) || 0));   // 0 surfaced .. 1 dived: the renderer eases it so a dive is seen
+  const dip = .22 * d;                       // dived: the whole boat sinks until only the periscope shows
+  const bb = b * (.6 - .3 * d) / s + .03 * (1 - d);   // rides low
   const p = .8 + .2 * Math.sin(w * 4) * run;
   const boat = (light) => {                              // the same drawing above (light) and below (dark) the waterline
     const col = light ? c : dk;
@@ -279,7 +280,7 @@ const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
   };
   g.save(); skyClip(g, s, LN); boat(true); g.restore();
   g.save(); seaClip(g, s, LN); boat(false); g.restore();
-  if (!submerged) {
+  if (d < .5) {
     g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(-.44 * s, (LN - .012) * s, .88 * s, .026 * s);
     oval(g, s, .44, LN + .005, .06 * p, .026, FOAM); oval(g, s, -.44, LN + .005, .06 * p, .026, FOAM);
     return;

@@ -220,9 +220,10 @@ export class Session {
    * The part of an AI order's events the human may see. Something the computer does out of sight (a submarine moving or diving
    * under water nobody is watching) must not show up as an animation, a ripple or a message, or it would give it away.
    */
-  #visibleTo(viewer, events) {
+  #visibleTo(viewer, events, wasVisible = false) {
     const { game } = this;
-    const seen = (id) => { const u = unitById(game, id); return !u || canSee(game, viewer, u); };
+    // a unit the human could see before the order may dive during it: its move and its dive are still shown (it then fades away)
+    const seen = (id) => { const u = unitById(game, id); return !u || wasVisible || canSee(game, viewer, u); };
     return events.filter((ev) => {
       if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
       if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
@@ -252,7 +253,7 @@ export class Session {
         if (game.isOver || this.disposed) return;
         const res = game.act(order);
         if (!res.ok) throw new Error(`AI produced an invalid order: ${res.error}`);
-        const events = this.#visibleTo(viewer, res.events);
+        const events = this.#visibleTo(viewer, res.events, visible);
         shown = shown || visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);
         presenter.present(events, { now: this.#now() });
         const text = describeEvents(game, events);
