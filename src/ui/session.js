@@ -28,6 +28,7 @@ export class Session {
     this.quit = quit;
     this.busy = false;
     this.disposed = false;
+    this.endArmed = false;   // End turn was pressed with units still to move: the next press really ends it
 
     this.animator = new MoveAnimator();
     this.renderer = null;
@@ -45,6 +46,7 @@ export class Session {
     this.gestures = new Gestures({
       onTap: (cx, cy) => {
         if (!this.#inputAllowed()) return;
+        if (this.endArmed) { this.endArmed = false; this.hud.message(null); }
         const { x, y } = this.renderer.tileAt(cx, cy);
         this.controller.tap(x, y);
       },
@@ -66,11 +68,16 @@ export class Session {
 
   /** On a map bigger than the screen, open on the viewing player's HQ (or their first unit). */
   #centerOnStart() {
+    const home = this.#home();
+    if (home) this.renderer.centerOn(home.x, home.y);
+  }
+
+  /** The viewing player's HQ (or their first unit). */
+  #home() {
     const { game } = this;
     const viewer = this.#viewer();
-    const home = allProperties(game).find((p) => p.owner === viewer && hasAttribute(p.terrain, 'victoryOnCapture'))
+    return allProperties(game).find((p) => p.owner === viewer && hasAttribute(p.terrain, 'victoryOnCapture'))
       || game.state.units.find((u) => u.owner === viewer);
-    if (home) this.renderer.centerOn(home.x, home.y);
   }
 
   /** The dock floats over the map on the edge away from the tile being worked on: the top half of the screen -> bottom edge. */
@@ -169,6 +176,7 @@ export class Session {
     const { game, hud, controller } = this;
     const now = this.#now();
     if (!game.canUndo || !this.#humanTurn() || this.busy || controller.mode !== 'idle' || this.effects.isLocked(now)) return;
+    this.endArmed = false;
     game.undo();
     this.effects.clear();
     this.animator.clear();
@@ -192,11 +200,24 @@ export class Session {
   async #onEndTurn() {
     const { game, hud } = this;
     if (game.isOver || this.busy || this.effects.isLocked(this.#now())) return;
+    // Units that have not acted yet: the first press shows one and asks; a second press ends the turn anyway.
+    const idle = this.#humanTurn() ? game.state.units.filter((u) => u.owner === game.currentPlayer && !u.done) : [];
+    if (idle.length && !this.endArmed) {
+      this.endArmed = true;
+      this.controller.cancelAll();
+      this.renderer.reveal([[idle[0].x, idle[0].y]]);
+      this.controller.cursor = { x: idle[0].x, y: idle[0].y };
+      hud.message('Are you sure? Tap again to end turn.', { sticky: true });
+      return;
+    }
+    this.endArmed = false;
     this.controller.cancelAll();
     this.busy = true;
     await this.#advanceTurns();
     this.busy = false;
     if (!game.isOver && !this.disposed) {
+      const home = this.#home();
+      if (home) this.renderer.camera.glideTo(home.x, home.y);   // a new turn starts at the HQ
       const humans = game.map.players.filter((p) => p.controller === 'human').length;
       hud.message(humans > 1 ? `${factionOf(game, game.currentPlayer).name}: your turn.` : 'Your turn.');
     }
