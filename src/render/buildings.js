@@ -160,7 +160,7 @@ export const BUILDINGS = {
     g.beginPath(); g.arc(k.X(cx), k.Y(.745), .075 * S, .12 * Math.PI, .88 * Math.PI); g.stroke();
     k.poly([[cx - .082, .77], [cx - .1, .73], [cx - .05, .745]], ink); k.poly([[cx + .082, .77], [cx + .1, .73], [cx + .05, .745]], ink);
     // crane out of the roof: a mast, a jib reaching left with a counterweight behind, and a grab on a cable
-    k.line([[.66, .44], [.66, .07]], steel, .035);
+    k.line([[.66, .44], [.66, .07]], steel, .06);
     k.line([[.14, .07], [.8, .07]], steel, .035);                      // jib
     k.rect(.76, .05, .07, .07, '#565a63');                             // counterweight
     k.line([[.66, .05], [.24, .07]], '#3a3d44', .01);                  // stay

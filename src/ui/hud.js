@@ -263,9 +263,11 @@ export class Hud {
   #drawBuild() {
     const d = this.doc;
     const { model, choice, faction, onBuild, onClose } = this.buildState;
-    const scrolled = this.buildList ? this.buildList.scrollTop : 0;   // choosing a row redraws the window: keep the list where it was
+    const again = !!this.buildList;                                    // choosing a row redraws the window: it must not pop in again,
+    const scrolled = again ? this.buildList.scrollTop : 0;             // and the list stays where it was
     this.el.main.replaceChildren();
     const w = windowBox(d, { title: model.title, accent: faction?.color, cls: 'win--build' });
+    if (again) w.root.classList.add('win--still');
     const list = h(d, 'div', 'build-list');
     list.setAttribute('role', 'listbox');
     const picked = model.options.find((o) => o.id === choice) || model.options[0];
@@ -304,6 +306,7 @@ export class Hud {
     this.el.main.append(w.root);
     list.scrollTop = scrolled;
     this.buildList = list;
+    this.drawIcons(this.clock());   // the new pictures are not blank for a frame
   }
 
   #buildDetail(o) {

@@ -169,19 +169,28 @@ export const TERRAIN_DECOR = {
       }
       peak(cx, w, top, yb, pkx, false);
     },
-    // Shoals: the tile is open sea (its colour joins the water around it) with a tiny sand islet in it, a few rocks and a tuft of grass,
-    // ringed with surf. The islet's place and size vary per tile; most of the tile stays deep water.
+    // Shoals: an underwater reef in open sea (the tile colour joins the water around it): a patch of paler turquoise where the water
+    // is shallow, dark rock and coral showing through it, and a little foam where the swell breaks over the highest rock.
+    // Its shape and the coral colours vary per tile; the edge of the tile stays plain deep water.
     shoals(g, px, py, S, { x, y, now }) {
-      const cx = px + (.38 + .24 * rnd(x, y, 40)) * S, cy = py + (.4 + .2 * rnd(x, y, 41)) * S;
-      const rx = S * (.15 + .05 * rnd(x, y, 42)), ry = rx * .72, tilt = (rnd(x, y, 43) - .5) * .6;
-      const pulse = 1 + .06 * Math.sin(now / 700 + rnd(x, y, 44) * 6);
-      g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.ellipse(cx, cy + S * .01, rx * 1.9 * pulse, ry * 1.9 * pulse, tilt, 0, 7); g.fill();   // shallow halo
-      g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = Math.max(1.5, S * .035);
-      g.beginPath(); g.ellipse(cx, cy, rx * 1.35 * pulse, ry * 1.35 * pulse, tilt, 0, 7); g.stroke();                                       // surf
-      g.fillStyle = '#e8d7a3'; g.beginPath(); g.ellipse(cx, cy, rx, ry, tilt, 0, 7); g.fill();                                              // sand
-      g.fillStyle = '#f5ead0'; g.beginPath(); g.ellipse(cx - rx * .15, cy - ry * .2, rx * .6, ry * .5, tilt, 0, 7); g.fill();
-      g.fillStyle = '#8c8f96'; g.beginPath(); g.ellipse(cx + rx * .35, cy + ry * .1, S * .035, S * .025, 0, 0, 7); g.fill();               // a rock
-      if (rnd(x, y, 49) > .4) { g.fillStyle = '#7fae55'; g.beginPath(); g.ellipse(cx - rx * .3, cy - ry * .1, S * .035, S * .022, 0, 0, 7); g.fill(); }   // a tuft
+      const R = (i) => rnd(x, y, 40 + i);
+      const cx = px + (.42 + .16 * R(0)) * S, cy = py + (.44 + .14 * R(1)) * S;
+      const swell = 1 + .05 * Math.sin(now / 800 + R(2) * 6);
+      const blob = (ox, oy, rx, ry, fill, tilt = 0) => { g.fillStyle = fill; g.beginPath(); g.ellipse(cx + ox * S * 1.25, cy + oy * S * 1.25, rx * S * 1.25, ry * S * 1.25, tilt, 0, 7); g.fill(); };
+      blob(0, 0, .3 * swell, .22 * swell, 'rgba(120,215,225,.22)');                 // the shallows, a pale wash
+      blob(-.06, .01, .23 * swell, .16 * swell, 'rgba(120,225,225,.3)', .3);
+      blob(.05, -.02, .16, .11, '#2a5f7c', -.2);                                     // dark reef rock under the surface
+      blob(-.1, .05, .1, .07, '#2a5f7c', .5);
+      blob(.12, .06, .08, .055, '#356e86', 0);
+      const coral = ['#e57f6c', '#f0a07a', '#d96f93', '#f2c15b'];
+      for (let i = 0; i < 4; i++) {                                                  // coral heads on the rock
+        const a = R(3 + i) * 6.28, d = .04 + .1 * R(8 + i);
+        blob(Math.cos(a) * d, Math.sin(a) * d * .7, .028 + .012 * R(12 + i), .02 + .008 * R(16 + i), coral[(i + Math.floor(R(20) * 4)) % 4]);
+      }
+      blob(.02, -.04, .045, .028, '#4f9bb0', -.2);                                   // the high rock the swell breaks on
+      g.strokeStyle = `rgba(255,255,255,${(.5 + .3 * Math.sin(now / 600 + R(5) * 6)).toFixed(2)})`; g.lineWidth = Math.max(1.2, S * .03); g.lineCap = 'round';
+      g.beginPath(); g.ellipse(cx + .02 * S, cy - .04 * S, .075 * S * swell, .045 * S * swell, -.2, Math.PI * 1.05, Math.PI * 1.85); g.stroke();   // foam
+      g.beginPath(); g.ellipse(cx - .12 * S, cy + .07 * S, .05 * S, .03 * S, .5, Math.PI * .1, Math.PI * .8); g.stroke();
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {

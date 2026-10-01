@@ -194,6 +194,8 @@ canvas.unit-icon { display: block; flex: none; }
 .win--modal .win-body { gap: 16px; padding: 18px 16px 18px; align-items: center; }
 .big { font-size: 28px; font-weight: 700; line-height: 1.1; text-shadow: 0 3px 0 rgba(0, 0, 0, .35); }
 
+/* a window redrawn in place (choosing a build row) must not animate in again */
+.win.win--still, .dock--bottom .win.win--still { animation: none; }
 @keyframes pop { from { opacity: 0; transform: translateY(8px) scale(.97); } to { opacity: 1; transform: none; } }
 @keyframes pop-up { from { opacity: 0; transform: translateY(-8px) scale(.97); } to { opacity: 1; transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }

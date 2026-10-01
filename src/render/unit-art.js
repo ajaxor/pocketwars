@@ -209,7 +209,7 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .26, rise: .2, sweep: .6 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.47 - .01, .17, w, run, dk);
+    if (!light) propeller(g, s, -.47 + .005, .205, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, -.22, -.1, .26, .1, 3, c); box(g, s, -.17, -.2, .17, .1, 3, c);                    // stepped superstructure
@@ -226,7 +226,7 @@ const cruiser = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .04, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .26, rise: .04, sweep: .2 };
   afloat(g, s, w, run, -.45, .45, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.45 - .01, .17, w, run, dk);
+    if (!light) propeller(g, s, -.45 + .005, .205, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, .06, D - .05, .36, .06, 2, c);                                                      // raised forecastle
@@ -250,7 +250,7 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s, D = .04, H = { x0: -.38, x1: .4, deck: D, keel: .26, rise: .03, sweep: .16 };
   afloat(g, s, w, run, -.38, .4, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.38 - .01, .17, w, run, dk);
+    if (!light) propeller(g, s, -.38 + .005, .205, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, -.14, D - .12, .22, .12, 3, c); box(g, s, -.11, D - .09, .16, .03, 1, GLASS);       // bridge
