@@ -13,7 +13,7 @@ reports every problem at once.
   "description": "optional",
   "players": [
     { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "blue_moon",   "controller": "ai",    "funds": 8000 }
+    { "faction": "violet_nebula",   "controller": "ai",    "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },

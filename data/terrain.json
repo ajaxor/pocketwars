@@ -46,7 +46,7 @@
     "defense": 2,
     "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": null },
     "attributes": {},
-    "render": { "base": "#e2cf9a", "decor": "shoals", "mini": "#e2cf9a" }
+    "render": { "base": "#3d7ec7", "decor": "shoals", "mini": "#3d7ec7" }
   },
   "city": {
     "name": "City",

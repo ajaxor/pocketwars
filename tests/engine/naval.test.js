@@ -17,7 +17,7 @@ const legend = {
   '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' },
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 },
 };
-const players = [{ faction: 'orange_star', controller: 'human', funds: 10000 }, { faction: 'blue_moon', controller: 'human', funds: 10000 }];
+const players = [{ faction: 'orange_star', controller: 'human', funds: 10000 }, { faction: 'violet_nebula', controller: 'human', funds: 10000 }];
 function sea(rows, unitsOnMap) {
   return new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend: legend }), registry));
 }

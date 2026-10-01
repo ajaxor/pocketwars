@@ -6,7 +6,7 @@
   "description": "A 26x16 river valley. Two bridges are the only ground crossings, so the road nets on each bank decide who gets there first; only air can cross anywhere else.",
   "players": [
     { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "blue_moon", "controller": "ai", "funds": 8000 }
+    { "faction": "violet_nebula", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },

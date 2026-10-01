@@ -65,7 +65,7 @@ test('a toast fades after a few seconds, unless it is sticky', () => {
   assert.equal(hud.el.toast.children.length, 1, 'still there after one second');
   hud.tick(9000);
   assert.equal(hud.el.toast.children.length, 0);
-  hud.message('Blue Moon is moving...', { sticky: true });
+  hud.message('Violet Nebula is moving...', { sticky: true });
   hud.tick(1e9);
   assert.equal(hud.el.toast.children.length, 1);
   hud.message(null);
@@ -90,7 +90,7 @@ test('a terrain window for a property shows its owner and income; impassable mov
   const { hud, game, byClass, texts } = make();
   const p = allProperties(game).find((q) => q.owner === 1 && q.terrain.id === 'factory');
   hud.info({ terrain: terrainInfo(game, p.x, p.y) });
-  assert.deepEqual(texts(byClass('card-sub')), ['Blue Moon']);
+  assert.deepEqual(texts(byClass('card-sub')), ['Violet Nebula']);
   assert.ok(texts(byClass('chip-v')).includes('+1,000'));
   assert.ok(texts(byClass('tag')).includes('Builds vehicles'));
   let sea = null;

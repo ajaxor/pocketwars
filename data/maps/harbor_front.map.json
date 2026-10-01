@@ -11,7 +11,7 @@
       "funds": 14000
     },
     {
-      "faction": "blue_moon",
+      "faction": "violet_nebula",
       "controller": "ai",
       "funds": 14000
     }
@@ -72,7 +72,7 @@
     "..r..crY~~~~~~Zrc..r..",
     "FF.c..r~~~~~~~~r..c.FF",
     "FF..rrr.~~oo~~.rrr..FF",
-    "FF..r.c.~~oo~~.c.r..FF",
+    "FF..r.c.~o~~o~.c.r..FF",
     "..r...r~~~~~~~~r...r..",
     "..rrrrrY~~~~~~Zrrrrr..",
     "..rc..r~~~~~~~~r..cr..",

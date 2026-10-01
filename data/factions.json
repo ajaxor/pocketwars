@@ -1,6 +1,6 @@
 {
   "orange_star":  { "name": "Orange Star",  "color": "#e8712c", "dark": "#9a3f0e" },
-  "blue_moon":    { "name": "Blue Moon",    "color": "#3c74d6", "dark": "#1e3f80" },
+  "violet_nebula":    { "name": "Violet Nebula",    "color": "#9a5fd8", "dark": "#51298f" },
   "green_earth":  { "name": "Green Earth",  "color": "#22a06b", "dark": "#0f6440" },
   "yellow_comet": { "name": "Yellow Comet", "color": "#f2c81e", "dark": "#a07c00" }
 }

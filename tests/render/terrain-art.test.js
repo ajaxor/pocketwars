@@ -174,9 +174,9 @@ test('terrains with the same render.group are one shape: the border between them
   assert.deepEqual(rounds(deep, nb), [40 * .3, 0, 0, 0]);
 });
 
-test('shoals draw an islet that joins up with its neighbours', () => {
+test('shoals are open sea with a small islet: same colour as the sea, so the water joins up around them', () => {
+  assert.equal(registry.terrainDef('shoals').render.base, registry.terrainDef('sea').render.base);
   const { ctx, calls } = recorder();
-  const shoals = registry.terrainDef('shoals');
-  paintTile(ctx, 0, 0, 40, shoals, null, { n: '#3d7ec7', e: '#3d7ec7', s: '#3d7ec7', w: '#3d7ec7', ne: '#3d7ec7', se: '#3d7ec7', sw: '#3d7ec7', nw: '#3d7ec7' }, { x: 3, y: 4, now: 0, link: { n: false, e: true, s: false, w: false } });
-  assert.ok(calls.length > 10);
+  paintTile(ctx, 0, 0, 40, registry.terrainDef('shoals'), null, { n: '#3d7ec7', e: '#3d7ec7', s: '#3d7ec7', w: '#3d7ec7', ne: '#3d7ec7', se: '#3d7ec7', sw: '#3d7ec7', nw: '#3d7ec7' }, { x: 3, y: 4, now: 0 });
+  assert.ok(calls.filter((c) => c.op === 'ellipse').length >= 4);
 });

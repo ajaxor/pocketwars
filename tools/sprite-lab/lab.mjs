@@ -52,7 +52,7 @@ const COMMANDS = {
     save(R.compare(names.map((n) => pick(styles, n)), { size, t: num(args.t, .35), bg: args.bg || 'plain' }), args.out || `compare-${names.join('+')}-${size}.png`);
   },
 
-  // node lab.mjs units <style,style,...> <unit,unit,...> [--size 150] [--faction blue_moon]   styles as columns, units as rows
+  // node lab.mjs units <style,style,...> <unit,unit,...> [--size 150] [--faction violet_nebula]   styles as columns, units as rows
   units(styles) {
     const names = list(args._[1]); const ids = list(args._[2]);
     if (!names || !ids) die('usage: units <style,style,...> <unit,unit,...>');

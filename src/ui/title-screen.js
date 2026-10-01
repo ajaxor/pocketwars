@@ -31,12 +31,12 @@ const ART = `<svg viewBox="0 0 360 200" preserveAspectRatio="xMidYMax slice" ari
 ${cloud(70, 44, 'c1')}${cloud(250, 30, 'c2')}${cloud(150, 76, 'c3')}
 <g class="t-plane"><ellipse cx="0" cy="0" rx="16" ry="4" fill="#2b2f45"/><path d="M-4 0l-10-12h7l9 10zM-4 0l-10 12h7l9-10z" fill="#3a405c"/><path d="M-14-1l-8-8h5l8 7z" fill="#3a405c"/><circle cx="10" cy="-1" r="2" fill="#ffe45c"/></g>
 <path d="M0 138c30-14 52-10 80-2s48 4 70-6 54-14 82-4 54 6 78-2 50-2 50-2v78H0z" fill="#3c2f63"/>
-${city(6, '#6a3a3a', '#8a4a2a')}${city(322, '#34497a', '#3c74d6')}
+${city(6, '#6a3a3a', '#8a4a2a')}${city(322, '#4a3a7a', '#9a5fd8')}
 <path d="M0 154c40-8 80-4 120 0s90 4 130-2 80-2 110 2v46H0z" fill="#4e7a3a"/>
 <rect x="0" y="160" width="360" height="40" fill="#5f9444"/>
 <path d="M0 170h360M0 182h360M40 160v40M80 160v40M120 160v40M160 160v40M200 160v40M240 160v40M280 160v40M320 160v40" stroke="#4e7a3a" stroke-width="1" opacity=".55"/>
 ${grunt(34, 1, '#e8712c', 'u1')}${tank(104, 1, '#e8712c', '#9a3f0e', 'u2 fire-l')}
-${tank(256, -1, '#3c74d6', '#1e3f80', 'u3 fire-r')}${grunt(326, -1, '#3c74d6', 'u4')}
+${tank(256, -1, '#9a5fd8', '#51298f', 'u3 fire-r')}${grunt(326, -1, '#9a5fd8', 'u4')}
 </svg>`;
 
 export class TitleScreen {

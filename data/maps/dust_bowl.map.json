@@ -6,7 +6,7 @@
   "description": "A 22x14 desert. Roads and rough ground: wheels stay on the asphalt, treads cut across the rough, and only infantry can climb the mountain plug in the middle.",
   "players": [
     { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "blue_moon", "controller": "ai", "funds": 8000 }
+    { "faction": "violet_nebula", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },

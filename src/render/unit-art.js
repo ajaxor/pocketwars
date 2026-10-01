@@ -194,7 +194,7 @@ const turret = (g, s, x, y, w, len, { ang = 0, n = 1, dk = '#3a3d45', bar = .04 
 };
 
 const battleship = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s, H = { x0: -.47, x1: .47, deck: .0, keel: .26, rise: .2, sweep: .6 };
+  const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .26, rise: .2, sweep: .6 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
@@ -210,7 +210,7 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
 };
 
 const cruiser = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .26, rise: .04, sweep: .2 };
+  const bb = b / s + .04, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .26, rise: .04, sweep: .2 };
   afloat(g, s, w, run, -.45, .45, (light) => {
     g.save(); g.translate(0, bb * s);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
@@ -250,7 +250,7 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
 const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
   const LN = .15;
   const dip = submerged ? .27 : 0;                       // dived: the whole boat sinks until only the periscope shows
-  const bb = b * (submerged ? .3 : .6) / s;
+  const bb = b * (submerged ? .3 : .6) / s + (submerged ? 0 : .03);   // rides low
   const p = .8 + .2 * Math.sin(w * 4) * run;
   const boat = (light) => {                              // the same drawing above (light) and below (dark) the waterline
     const col = light ? c : dk;
@@ -289,7 +289,7 @@ const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, o); g.r
 export const SPRITES = {
   soldier: trooper('soldier'), mech: trooper('mech'), sniper: trooper('sniper'),
   recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, fighter, bomber, stealth_bomber: stealth,
-  destroyer: shrunk(destroyer, .78), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
+  destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
 };
 
 // ---- shadows: each shape matches its unit's footprint ---------------------------------------------------------

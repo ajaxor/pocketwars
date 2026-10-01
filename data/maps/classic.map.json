@@ -6,7 +6,7 @@
   "description": "The original 10x11 demo map: a river crossing with a central road, cities on both flanks, and mountain-guarded bases.",
   "players": [
     { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "blue_moon",   "controller": "ai",    "funds": 8000 }
+    { "faction": "violet_nebula",   "controller": "ai",    "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },

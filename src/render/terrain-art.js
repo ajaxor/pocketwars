@@ -169,27 +169,19 @@ export const TERRAIN_DECOR = {
       }
       peak(cx, w, top, yb, pkx, false);
     },
-    // Shoals: a little sandy islet poking out of the sea. The tile's own shape (own colour, rounded where it meets water) is the island;
-    // this adds a lighter middle, a pale surf line round the rim, and a couple of rocks and a tuft of grass, placed per tile.
-    shoals(g, px, py, S, { x, y, link = {} }) {
-      g.save();
-      const m = S * .12, l = link.w ? 0 : m, r = link.e ? 0 : m, tp = link.n ? 0 : m, bt = link.s ? 0 : m;   // islets of several tiles join up: no rim between them
-      g.fillStyle = '#efe1b4'; g.beginPath(); g.roundRect(px + l, py + tp, S - l - r, S - tp - bt, S * .2); g.fill();   // dry sand
-      g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = Math.max(1.5, S * .05); g.lineCap = 'round';                 // surf along the open sides
-      const o = S * .04;
-      g.beginPath();
-      if (!link.n) { g.moveTo(px + (link.w ? 0 : S * .2), py + o); g.lineTo(px + S - (link.e ? 0 : S * .2), py + o); }
-      if (!link.s) { g.moveTo(px + (link.w ? 0 : S * .2), py + S - o); g.lineTo(px + S - (link.e ? 0 : S * .2), py + S - o); }
-      if (!link.w) { g.moveTo(px + o, py + (link.n ? 0 : S * .2)); g.lineTo(px + o, py + S - (link.s ? 0 : S * .2)); }
-      if (!link.e) { g.moveTo(px + S - o, py + (link.n ? 0 : S * .2)); g.lineTo(px + S - o, py + S - (link.s ? 0 : S * .2)); }
-      g.stroke();
-      for (let i = 0; i < 2; i++) {
-        const cx = px + (.28 + .44 * rnd(x, y, i + 40)) * S, cy = py + (.3 + .4 * rnd(x, y, i + 43)) * S;
-        g.fillStyle = '#8c8f96'; g.beginPath(); g.ellipse(cx, cy, S * (.07 + .04 * rnd(x, y, i + 46)), S * .05, 0, 0, 7); g.fill();
-        g.fillStyle = '#b4b7be'; g.beginPath(); g.ellipse(cx - S * .015, cy - S * .015, S * .035, S * .02, 0, 0, 7); g.fill();
-      }
-      if (rnd(x, y, 49) > .35) { g.fillStyle = '#7fae55'; g.beginPath(); g.ellipse(px + (.3 + .4 * rnd(x, y, 50)) * S, py + (.62 + .12 * rnd(x, y, 51)) * S, S * .07, S * .04, 0, 0, 7); g.fill(); }
-      g.restore();
+    // Shoals: the tile is open sea (its colour joins the water around it) with a tiny sand islet in it, a few rocks and a tuft of grass,
+    // ringed with surf. The islet's place and size vary per tile; most of the tile stays deep water.
+    shoals(g, px, py, S, { x, y, now }) {
+      const cx = px + (.38 + .24 * rnd(x, y, 40)) * S, cy = py + (.4 + .2 * rnd(x, y, 41)) * S;
+      const rx = S * (.15 + .05 * rnd(x, y, 42)), ry = rx * .72, tilt = (rnd(x, y, 43) - .5) * .6;
+      const pulse = 1 + .06 * Math.sin(now / 700 + rnd(x, y, 44) * 6);
+      g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.ellipse(cx, cy + S * .01, rx * 1.9 * pulse, ry * 1.9 * pulse, tilt, 0, 7); g.fill();   // shallow halo
+      g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = Math.max(1.5, S * .035);
+      g.beginPath(); g.ellipse(cx, cy, rx * 1.35 * pulse, ry * 1.35 * pulse, tilt, 0, 7); g.stroke();                                       // surf
+      g.fillStyle = '#e8d7a3'; g.beginPath(); g.ellipse(cx, cy, rx, ry, tilt, 0, 7); g.fill();                                              // sand
+      g.fillStyle = '#f5ead0'; g.beginPath(); g.ellipse(cx - rx * .15, cy - ry * .2, rx * .6, ry * .5, tilt, 0, 7); g.fill();
+      g.fillStyle = '#8c8f96'; g.beginPath(); g.ellipse(cx + rx * .35, cy + ry * .1, S * .035, S * .025, 0, 0, 7); g.fill();               // a rock
+      if (rnd(x, y, 49) > .4) { g.fillStyle = '#7fae55'; g.beginPath(); g.ellipse(cx - rx * .3, cy - ry * .1, S * .035, S * .022, 0, 0, 7); g.fill(); }   // a tuft
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {

@@ -6,7 +6,7 @@
   "description": "A 26x26 map for four teams, one in each corner. Every base has two roads out to the big crossroads in the middle; mountains and rough ground fill the space between.",
   "players": [
     { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "blue_moon", "controller": "ai", "funds": 8000 },
+    { "faction": "violet_nebula", "controller": "ai", "funds": 8000 },
     { "faction": "green_earth", "controller": "ai", "funds": 8000 },
     { "faction": "yellow_comet", "controller": "ai", "funds": 8000 }
   ],

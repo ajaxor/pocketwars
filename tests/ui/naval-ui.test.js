@@ -16,7 +16,7 @@ import { describeEvents } from '../../src/ui/messages.js';
 
 const registry = await loadRegistry(readData);
 const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' } };
-const players = [{ faction: 'orange_star', controller: 'human', funds: 0 }, { faction: 'blue_moon', controller: 'human', funds: 0 }];
+const players = [{ faction: 'orange_star', controller: 'human', funds: 0 }, { faction: 'violet_nebula', controller: 'human', funds: 0 }];
 
 function setup(rows, unitsOnMap) {
   const game = new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
