@@ -1,7 +1,7 @@
 // Turn income, repair and unit production, all driven by the terrain `property` attribute.
 
 import { moveCostAt } from './movement.js';
-import { DIRS, inBounds, propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, unitAt } from './queries.js';
+import { DIRS, facingToCentre, inBounds, propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, unitAt } from './queries.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
 
@@ -70,7 +70,7 @@ export function buildUnit(game, player, x, y, typeId, at = null) {
   const { state, registry } = game;
   const spot = at || deployTiles(game, x, y, registry.unit(typeId))[0];
   state.funds[player] -= registry.unit(typeId).cost;
-  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x: spot.x, y: spot.y, hp: registry.rules.maxHp, done: true, capture: 0, submerged: false, halted: null };
+  const unit = { id: state.nextUnitId++, type: typeId, owner: player, x: spot.x, y: spot.y, hp: registry.rules.maxHp, done: true, capture: 0, submerged: false, halted: null, facing: facingToCentre(game.map, spot.x) };
   state.units.push(unit);
   return { ok: true, events: [{ type: 'build', unit: snapshotUnit(unit), cost: registry.unit(typeId).cost }] };
 }

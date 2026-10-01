@@ -139,6 +139,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
       for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
     }
     if (!isObj(u.render) || !isStr(u.render.sprite)) problems.push(`unit "${id}": render.sprite is required`);
+    else if (u.render.facing !== undefined && typeof u.render.facing !== 'boolean') problems.push(`unit "${id}": render.facing must be true or false (false: the unit never turns to face left or right)`);
     const dive = u.attributes && u.attributes.submerge;
     if (isObj(dive) && isStr(dive.layer)) {
       if (!layers.includes(dive.layer)) problems.push(`unit "${id}": attribute "submerge" names unknown layer "${dive.layer}"`);

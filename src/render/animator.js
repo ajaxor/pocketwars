@@ -33,6 +33,16 @@ export class MoveAnimator {
     return [(ax + (bx - ax) * r) * S, (ay + (by - ay) * r) * S];
   }
 
+  /** Which way (1 right, -1 left) the unit sliding along its path is facing at `now`: its last sideways step so far, or null when it has made none yet. */
+  facingOf(unitId, now) {
+    const a = this.current;
+    if (!a || a.unitId !== unitId) return null;
+    const n = a.path.length - 1;
+    const i = Math.min(n - 1, Math.floor(Math.min(1, (now - a.t) / a.d) * n));
+    for (let k = i; k >= 0; k--) { const dx = a.path[k + 1][0] - a.path[k][0]; if (dx) return dx > 0 ? 1 : -1; }
+    return null;
+  }
+
   /** Call once per frame; fires the completion callback when the slide has finished. */
   update(now) {
     const a = this.current;

@@ -10,7 +10,7 @@
     "toughness": 1,
     "armor": 0,
     "attributes": { "capture": true, "terrainDefenseMultiplier": 2 },
-    "render": { "sprite": "soldier", "attackFx": "lunge" }
+    "render": { "sprite": "soldier", "facing": false, "attackFx": "lunge" }
   },
   "mech": {
     "name": "Mech",
@@ -23,7 +23,7 @@
     "toughness": 1.1,
     "armor": 0,
     "attributes": { "capture": true },
-    "render": { "sprite": "mech", "attackFx": "shot" }
+    "render": { "sprite": "mech", "facing": false, "attackFx": "shot" }
   },
   "sniper": {
     "name": "Sniper",
@@ -36,7 +36,7 @@
     "toughness": 1,
     "armor": 0,
     "attributes": { "indirect": true },
-    "render": { "sprite": "sniper", "attackFx": "shot" }
+    "render": { "sprite": "sniper", "facing": false, "attackFx": "shot" }
   },
   "recon": {
     "name": "Recon",

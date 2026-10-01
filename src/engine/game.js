@@ -107,6 +107,7 @@ export class Game {
         unit.x = path[last][0];
         unit.y = path[last][1];
         unit.capture = 0; // leaving a tile abandons capture progress
+        for (let i = last; i > 0; i--) { const dx = path[i][0] - path[i - 1][0]; if (dx) { unit.facing = dx > 0 ? 1 : -1; break; } }   // faces the way it last moved sideways
         events.push({ type: 'move', unitId: unit.id, path: path.slice(0, last + 1) });
       }
       if (unit.submerged && !submergibleAt(this, unit.x, unit.y)) {   // a submarine that ends its move outside deep water comes up

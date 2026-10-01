@@ -6,6 +6,7 @@
 //   funds: number[]         per player
 //   owners: (number|null)[][]   owner of each tile ([y][x]); null = neutral / not a property
 //   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture, submerged, halted }
+//                           facing: 1 right / -1 left, the way it last moved (see game.act), toward the map centre at first (drawing only);
 //                           submerged: diving (see submerge.js); halted: null, or { moved } after a move was interrupted by a hidden
 //                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped)
 //   defeated: boolean[]     per player
@@ -13,6 +14,7 @@
 //   nextUnitId: number
 // }
 
+import { facingToCentre } from './queries.js';
 export function createState(map, registry) {
   let nextUnitId = 1;
   return {
@@ -22,7 +24,7 @@ export function createState(map, registry) {
     owners: map.owners.map((row) => [...row]),
     units: map.units.map((u) => ({
       id: nextUnitId++, type: u.type, owner: u.owner, x: u.x, y: u.y,
-      hp: u.hp ?? registry.rules.maxHp, done: false, capture: 0, submerged: false, halted: null,
+      hp: u.hp ?? registry.rules.maxHp, done: false, capture: 0, submerged: false, halted: null, facing: facingToCentre(map, u.x),
     })),
     defeated: map.players.map(() => false),
     winner: null,

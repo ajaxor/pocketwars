@@ -25,18 +25,19 @@ const ART = { SPRITES, SHADOWS };
  * @param {boolean} o.moving    drawn at double animation speed while sliding
  * @param {number} o.alpha      fade multiplier (dying units)
  * @param {boolean} o.showHp    draw the HP digit when damaged
+ * @param {number} o.face      1 faces right (the way sprites are drawn), -1 mirrors the unit to face left
  * @param {boolean} o.exposed  a hidden unit an enemy can see right now: its eye turns white (see detection.js isExposed)
  * @param {boolean} o.hidden    the unit is hidden from other players (submerged, or any other hidden layer): an eye on its corner
  * @param {boolean} o.submerged a dived unit: its sprite draws itself low in the water (see the submarine in unit-art.js)
  */
 export function drawUnit(g, unit, o) {
-  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false } = o;
+  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false, face = 1 } = o;
   const run = animate ? 1 : 0;
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
   g.save(); g.translate(px + s / 2, py + s / 2);
   // a thin line in the unit's dark team colour all round it
-  drawOutlined(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged },
+  drawOutlined(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged, face },
     { r: Math.max(1, s * OUTLINE_THIN), color: colors.dark, tint: run ? null : DISABLED_TINT, alpha });
   g.restore();
   if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha, exposed);

@@ -46,3 +46,6 @@ export function layerIdOf(game, unit) {
 }
 export const layerInfo = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)];
 export const factionOf = (game, player) => game.registry.faction(game.map.players[player].faction);
+
+/** Which way a unit standing at column `x` faces when it starts: toward the middle of the map (1 right, -1 left; the middle column faces right). */
+export const facingToCentre = (map, x) => (x > (map.width - 1) / 2 ? -1 : 1);
