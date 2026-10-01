@@ -160,22 +160,22 @@ const FOAM = 'rgba(255,255,255,.6)';
 const LINE = .14;                                   // the waterline, in tile fractions (fixed: only the ship moves)
 const skyClip = (g, s, line) => { g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (line + 1.5) * s); g.clip(); };
 const seaClip = (g, s, line) => { g.beginPath(); g.rect(-s, line * s, s * 2, s * 2); g.clip(); };
-/** A propeller just under the surface at (x, y): a blurred blade (its length flickers as it turns) and bubbles streaming astern. */
-const propeller = (g, s, x, y, w, run) => {
-  const a = run ? w * 17 : .5, len = .07 * (.35 + .65 * Math.abs(Math.cos(a)));
-  stroke(g, s, x, y - len, x, y + len, 2.5, 'rgba(235,245,255,.95)');
-  oval(g, s, x, y, .016, .016, '#8892a0');
-  if (!run) return;
+/** A propeller at (x, y) on the stern, tinted from the hull colour `col` (so under water it reads dark): a blurred blade whose length
+ *  flickers as it turns, and (`bubbles`) a stream of bubbles astern. Draw it inside the ship's own transform so it bobs with it. */
+const propeller = (g, s, x, y, w, run, col, bubbles = true) => {
+  const a = run ? w * 17 : .5, len = .06 * (.35 + .65 * Math.abs(Math.cos(a)));
+  oval(g, s, x, y, .014, len, mix(col, '#ffffff', .18));
+  oval(g, s, x, y, .024, .024, mix(col, '#000000', .35));
+  if (!run || !bubbles) return;
   for (let i = 0; i < 3; i++) {
     const f = (w * 1.6 + i / 3) % 1;                          // each bubble drifts back and fades
-    oval(g, s, x - .03 - f * .17, y + Math.sin(w * 9 + i * 2.1) * .03, .018 * (1 - f * .5), .018 * (1 - f * .5), `rgba(255,255,255,${(.7 * (1 - f)).toFixed(2)})`);
+    oval(g, s, x - .03 - f * .17, y + Math.sin(w * 9 + i * 2.1) * .03, .016 * (1 - f * .5), .016 * (1 - f * .5), `rgba(190,215,245,${(.6 * (1 - f)).toFixed(2)})`);
   }
 };
 /** Run `draw(light)` above the waterline (light = true) and again below it (false), then lay foam along the waterline and curl it at both ends. */
 const afloat = (g, s, w, run, x0, x1, draw, line = LINE) => {
   g.save(); skyClip(g, s, line); draw(true); g.restore();
   g.save(); seaClip(g, s, line); draw(false); g.restore();
-  propeller(g, s, x0 - .01, line + .075, w, run);
   const p = .8 + .2 * Math.sin(w * 4) * run, q = .8 + .2 * Math.sin(w * 4 + 2) * run;
   g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(x0 * s, (line - .012) * s, (x1 - x0) * s, .026 * s);
   oval(g, s, x1 + .005, line + .005, .065 * p, .028, FOAM); oval(g, s, x1 - .07, line + .02, .05 * p, .018, 'rgba(255,255,255,.35)');   // bow
@@ -209,6 +209,7 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .26, rise: .2, sweep: .6 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
+    if (!light) propeller(g, s, -.47 - .01, .17, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, -.22, -.1, .26, .1, 3, c); box(g, s, -.17, -.2, .17, .1, 3, c);                    // stepped superstructure
@@ -225,6 +226,7 @@ const cruiser = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .04, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .26, rise: .04, sweep: .2 };
   afloat(g, s, w, run, -.45, .45, (light) => {
     g.save(); g.translate(0, bb * s);
+    if (!light) propeller(g, s, -.45 - .01, .17, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, .06, D - .05, .36, .06, 2, c);                                                      // raised forecastle
@@ -248,6 +250,7 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s, D = .04, H = { x0: -.38, x1: .4, deck: D, keel: .26, rise: .03, sweep: .16 };
   afloat(g, s, w, run, -.38, .4, (light) => {
     g.save(); g.translate(0, bb * s);
+    if (!light) propeller(g, s, -.38 - .01, .17, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, -.14, D - .12, .22, .12, 3, c); box(g, s, -.11, D - .09, .16, .03, 1, GLASS);       // bridge
@@ -268,13 +271,13 @@ const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
     const col = light ? c : dk;
     g.save(); g.translate(0, (dip + bb) * s);
     box(g, s, -.44, -.03, .88, .19, s * .095, col);                                           // round hull
+    propeller(g, s, -.46, .065, w, run, col, !light);                                         // on the middle of the stern
     box(g, s, -.06, -.17, .17, .16, 3, col);                                                  // conning tower
     if (light) { stroke(g, s, .07, -.17, .07, -.28, 2, INK); stroke(g, s, .07, -.28, .13, -.28, 2, INK); }   // periscope
     g.restore();
   };
   g.save(); skyClip(g, s, LN); boat(true); g.restore();
   g.save(); seaClip(g, s, LN); boat(false); g.restore();
-  propeller(g, s, -.455, LN + .06 + dip + bb, w, run);
   if (!submerged) {
     g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(-.44 * s, (LN - .012) * s, .88 * s, .026 * s);
     oval(g, s, .44, LN + .005, .06 * p, .026, FOAM); oval(g, s, -.44, LN + .005, .06 * p, .026, FOAM);

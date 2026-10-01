@@ -6,7 +6,7 @@
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
 //   barracks  two squarish canvas tents side by side (gabled roofs, open doors) and a flag out front
 //   airfield  a tapering runway, an arched hangar and a control tower
-//   shipyard  a dock hall like the factory's, a slipway door, an anchor on its front and a crane jib on a tower
+//   shipyard  a factory-like hall (sawtooth roof), a slipway door, an anchor on its front and a crane with a grab out of the roof
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
 import { luma, shade } from './color.js';
@@ -140,12 +140,17 @@ export const BUILDINGS = {
   shipyard(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
     const ink = luma(owner) > .62 ? '#2a3550' : '#ffffff';
-    k.boxShadow(.7, .2, .08, .34, .04); k.boxShadow(.08, .52, .7, .34, .12);
-    k.box(.7, .2, .08, .34, .04, '#565a63');                          // crane tower, behind the hall
-    k.box(.08, .52, .7, .34, .12, owner);                             // the dock hall: a plain box like the other works
-    k.rect(.14, .66, .28, .2, '#2b2d33');                             // slipway door, with a strip of water showing
-    k.rect(.14, .8, .28, .06, '#3d7ec7');
-    for (let i = 1; i < 3; i++) k.rect(.14, .66 + i * .05, .28, .012, '#4a4d55');
+    const steel = shade(owner, -.35);
+    k.boxShadow(.08, .52, .7, .34, .12);
+    k.box(.08, .52, .7, .34, .12, owner);                             // a hall like the factory's, with the same sawtooth roof
+    for (let i = 0; i < 3; i++) {
+      const x0 = .08 + i * .7 / 3, w = .7 / 3;
+      k.poly([[x0, .52], [x0 + w, .52], [x0 + w, .38]], shade(owner, -.12));
+      k.poly([[x0, .52], [x0 + w, .38], [x0 + w, .4], [x0 + .02, .52]], '#cfe6f5');
+    }
+    k.rect(.14, .66, .26, .2, '#2b2d33');                             // slipway door, with a strip of water showing
+    k.rect(.14, .8, .26, .06, '#3d7ec7');
+    for (let i = 1; i < 3; i++) k.rect(.14, .66 + i * .05, .26, .012, '#4a4d55');
     // anchor emblem on the front: ring, shank, stock and the two curved arms
     const cx = .6;
     g.strokeStyle = ink; g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = Math.max(1, .026 * S);
@@ -154,12 +159,14 @@ export const BUILDINGS = {
     k.line([[cx - .045, .655], [cx + .045, .655]], ink, .026);
     g.beginPath(); g.arc(k.X(cx), k.Y(.745), .075 * S, .12 * Math.PI, .88 * Math.PI); g.stroke();
     k.poly([[cx - .082, .77], [cx - .1, .73], [cx - .05, .745]], ink); k.poly([[cx + .082, .77], [cx + .1, .73], [cx + .05, .745]], ink);
-    // gantry crane: a jib from the tower out over the quay, with a hook on a line
-    k.rect(.64, .17, .14, .05, shade(owner, -.3));                     // cab on the tower top
-    k.line([[.74, .2], [.1, .2]], shade(owner, -.2), .04);             // jib
-    k.line([[.74, .2], [.92, .2]], shade(owner, -.2), .04);            // counter-jib
-    k.line([[.74, .17], [.3, .2]], '#3a3d44', .012);                    // stay
-    k.line([[.2, .22], [.2, .4]], '#20232a', .014);
-    k.rect(.17, .4, .06, .045, '#ffd24a');
+    // crane out of the roof: a mast, a jib reaching left with a counterweight behind, and a grab on a cable
+    k.line([[.66, .44], [.66, .07]], steel, .035);
+    k.line([[.14, .07], [.8, .07]], steel, .035);                      // jib
+    k.rect(.76, .05, .07, .07, '#565a63');                             // counterweight
+    k.line([[.66, .05], [.24, .07]], '#3a3d44', .01);                  // stay
+    k.line([[.2, .08], [.2, .27]], '#20232a', .014);                   // cable
+    k.rect(.17, .26, .06, .045, '#ffd24a');                            // grab head
+    k.line([[.18, .3], [.14, .38], [.17, .41]], '#20232a', .022);      // two claws, opening downward
+    k.line([[.22, .3], [.26, .38], [.23, .41]], '#20232a', .022);
   },
 };
