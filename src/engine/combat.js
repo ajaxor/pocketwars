@@ -11,8 +11,11 @@
 //     (hidden, see detection.js) also disables the counter
 //   - a unit may carry several weapons: of those that can legally fire at the defender from where the attacker stands, the one
 //     that would do the most damage is used (weaponFor), for the order, the forecast and the counterattack alike
+//   - a weapon with an `ammo` cost (and a unit with the `ammo` attribute) needs that many rounds left, and spends them when it fires,
+//     as a counterattack too (see ammo.js); a unit that is out cannot fire it, so it is not offered, forecast or used
 // Every function returns plain data / event objects; nothing here knows about drawing.
 
+import { hasAmmoFor, spendAmmo } from './ammo.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { hasLineOfSight } from './sight.js';
 import { canSee } from './detection.js';
@@ -37,15 +40,17 @@ export function canTarget(game, attacker, defender) {
 /**
  * The weapon `attacker` would fire at `defender` if it stood on tile `from` (default: where it is). Of its weapons, those whose
  * range and target mode fit are candidates (a direct mode also needs a clear line of sight); the one that would do the most damage
- * to this defender, where it stands, wins. A tie goes to the weapon listed first. null when no weapon can fire.
+ * to this defender, where it stands, wins. A tie goes to the weapon listed first. null when no weapon can fire. A weapon the
+ * attacker has no ammo for is not a candidate (unless `ignoreAmmo`, which attackProblem uses to tell "out of ammo" from "out of range").
  */
-export function weaponFor(game, attacker, defender, from = attacker, { moved = hasMoved(attacker, from), counter = false } = {}) {
+export function weaponFor(game, attacker, defender, from = attacker, { moved = hasMoved(attacker, from), counter = false, ignoreAmmo = false } = {}) {
   const d = distance(from.x, from.y, defender.x, defender.y);
   const layer = layerOf(game, defender);
   let best = null;
   let bestDamage = -1;
   for (const w of weaponsOf(game, attacker)) {
     if ((moved || counter) && isIndirect(game, attacker, w)) continue;   // indirect weapons need a standing start and never counter
+    if (!ignoreAmmo && !hasAmmoFor(game, attacker, w)) continue;
     if (d < w.range[0] || d > w.range[1]) continue;
     if (!modesOf(game, w).some((m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)))) continue;
     const damage = rawDamage(game, w, attacker, defender);
@@ -57,10 +62,11 @@ export function weaponFor(game, attacker, defender, from = attacker, { moved = h
 /** Can `attacker`, standing on (x, y), hit `defender` right now? */
 export const canAttackFrom = (game, attacker, defender, x, y) => weaponFor(game, attacker, defender, { x, y }) !== null;
 
-/** Why `attacker` standing on (x, y) cannot hit `defender`: 'cannot-target', 'out-of-range', 'no-line-of-sight', or null when it can. */
+/** Why `attacker` standing on (x, y) cannot hit `defender`: 'cannot-target', 'out-of-ammo', 'out-of-range', 'no-line-of-sight', or null when it can. */
 export function attackProblem(game, attacker, defender, x = attacker.x, y = attacker.y) {
   if (!canTarget(game, attacker, defender)) return 'cannot-target';
   if (canAttackFrom(game, attacker, defender, x, y)) return null;
+  if (weaponFor(game, attacker, defender, { x, y }, { ignoreAmmo: true })) return 'out-of-ammo';   // it would reach, but a weapon with no rounds left cannot fire
   if (weaponFor(game, attacker, defender, { x, y }, { moved: false })) return 'cannot-move-and-fire';   // only an indirect weapon reaches, and the unit moved
   const d = distance(x, y, defender.x, defender.y);
   const layer = layerOf(game, defender);
@@ -122,6 +128,7 @@ export function resolveAttack(game, attacker, defender) {
   const events = [];
   const weapon = weaponFor(game, attacker, defender);
   const dealt = weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
+  if (weapon) spendAmmo(game, attacker, weapon.ammo);
   defender.hp = round1(defender.hp - dealt);
   if (defender.hp <= 0) {
     removeUnit(game, defender);
@@ -132,6 +139,7 @@ export function resolveAttack(game, attacker, defender) {
   if (canCounter(game, defender, attacker, weapon)) {
     const reply = weaponFor(game, defender, attacker, defender, { counter: true });
     const back = reply ? weaponDamage(game, reply, defender, attacker) : 0;
+    if (reply) spendAmmo(game, defender, reply.ammo);
     attacker.hp = round1(attacker.hp - back);
     const destroyed = attacker.hp <= 0;
     if (destroyed) removeUnit(game, attacker);

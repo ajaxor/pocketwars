@@ -16,6 +16,7 @@
 // whole, a big one scrolls. Everything below draws in map pixels, so the frame starts by clearing the window and moving the
 // origin to the map's top-left corner (which may be off-screen), and only the tiles that are on screen are painted.
 
+import { ammoLevel } from '../engine/ammo.js';
 import { calcDamage, canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
@@ -141,10 +142,13 @@ export class Renderer {
     const base = animator.positionOf(u.id, now, S) || [lp.x * S, lp.y * S];
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn;
+    const cx = Math.floor((base[0] + S / 2) / S), cy = Math.floor((base[1] + S / 2) / S);   // the tile under the unit's centre, even mid-slide
+    const onWater = !dying && !!game.registry.terrainDef(game.map.terrain[Math.min(game.map.height - 1, Math.max(0, cy))]?.[Math.min(game.map.width - 1, Math.max(0, cx))])?.render.water;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
       face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
-      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
+      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(game.map.terrain[u.y][u.x]).render.water),
+      ammo: dying ? null : ammoLevel(game, u),
     });
   }
 

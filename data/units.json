@@ -38,6 +38,19 @@
     "attributes": { "indirect": true },
     "render": { "sprite": "sniper", "facing": false, "attackFx": "shot" }
   },
+  "marine": {
+    "name": "Marine",
+    "category": "amphibious",
+    "cost": 1500,
+    "move": 2,
+    "moveClass": "amphibious",
+    "layer": "ground",
+    "weapons": ["rifle"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true },
+    "render": { "sprite": "marine", "waterSprite": "dinghy", "facing": false, "attackFx": "shot" }
+  },
   "recon": {
     "name": "Recon",
     "category": "vehicle",
@@ -102,6 +115,19 @@
     "armor": 0.55,
     "attributes": {},
     "render": { "sprite": "flak", "attackFx": "shot" }
+  },
+  "transport_copter": {
+    "name": "Transport Copter",
+    "category": "aircraft",
+    "cost": 6000,
+    "move": 6,
+    "moveClass": "air",
+    "layer": "low_air",
+    "weapons": [],
+    "toughness": 1.5,
+    "armor": 0,
+    "attributes": { "ignoresTerrainDefense": true, "ammo": { "max": 3, "low": 1 }, "deploy": { "unit": "soldier" } },
+    "render": { "sprite": "transport_copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "copter": {
     "name": "Copter",

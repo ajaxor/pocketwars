@@ -5,6 +5,10 @@
 //   buildPhase(game)         -> builds everything the profile wants; returns the events
 //   playTurn(game)           -> whole turn synchronously (used by tests and headless simulation)
 //
+// A turn goes: every unit moves, then production, then the units just built use their free move (they are `fresh`: a move and a
+// Wait only, see game.js) so they leave the properties that built them. The AI does not drop troops (deploy) yet: it does not build
+// units that need it.
+
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
 // hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
@@ -44,7 +48,8 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   const goals = goalTiles(game, unit);
   const field = distanceField(game, def.moveClass, goals);
   const movedAlready = hasMovedAlready(unit);   // an interrupted move counts: indirect weapons cannot fire after it
-  const mayFire = (moved) => !(moved || movedAlready) || canFireAfterMoving(game, unit);
+  const mayAct = !unit.fresh;                   // a freshly built unit only gets its free move: no attack, capture or dive
+  const mayFire = (moved) => mayAct && (!(moved || movedAlready) || canFireAfterMoving(game, unit));
   // Where no route to a goal exists for this kind of unit (a ship whose enemy is inland), it still closes in as the crow flies.
   const fallback = (x, y) => w.unreachableDistance + Math.min(...goals.map(([gx, gy]) => distance(x, y, gx, gy))) * (w.crowFlies ?? .1);
 
@@ -68,7 +73,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
     }
     if (target) {
       score = w.attackBase + target.value + defense;
-    } else if (canCapture(game, unit, x, y)) {
+    } else if (mayAct && canCapture(game, unit, x, y)) {
       capture = true;
       const winsGame = hasAttribute(terrainAt(game, x, y), 'victoryOnCapture');
       score = w.captureBase + (winsGame ? w.victoryCaptureBonus : 0);
@@ -80,7 +85,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   }
 
   // with nothing to shoot or capture, a submarine goes under (it cannot be hunted there without sonar, and it can still strike from there)
-  const dive = !best.target && !best.capture && canSubmergeAt(game, unit, best.x, best.y);
+  const dive = mayAct && !best.target && !best.capture && canSubmergeAt(game, unit, best.x, best.y);
   const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : { type: 'wait' };
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
@@ -114,22 +119,23 @@ export function buildPhase(game, ai = game.registry.ai) {
   return events;
 }
 
-/** Play the current player's whole turn (every unit, then production) and return all events. */
+/** Give `unit` its order(s): a second one when the first was cut short by a hidden unit or was a pit stop that gave its move back. */
+function orderUnit(game, unit, events) {
+  for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
+    const result = game.act(chooseOrder(game, unit));
+    if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
+    events.push(...result.events);
+    if (!result.interrupted && !result.refreshed) break;
+  }
+}
+
+/** Play the current player's whole turn (every unit, then production, then the new units' free moves) and return all events. */
 export function playTurn(game) {
   const player = game.state.turn;
   const events = [];
-  for (const unit of game.state.units.filter((u) => u.owner === player)) {
-    if (game.isOver) return events;
-    if (!game.state.units.includes(unit)) continue; // died to a counterattack earlier this turn
-    let result = game.act(chooseOrder(game, unit));
-    if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
-    events.push(...result.events);
-    if (result.interrupted) {   // ran into something hidden: it has moved, now it decides what to do about it
-      result = game.act(chooseOrder(game, unit));
-      if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
-      events.push(...result.events);
-    }
-  }
-  if (!game.isOver) events.push(...buildPhase(game));
+  for (const unit of game.state.units.filter((u) => u.owner === player)) orderUnit(game, unit, events);
+  if (game.isOver) return events;
+  events.push(...buildPhase(game));
+  for (const unit of game.state.units.filter((u) => u.owner === player && u.fresh)) orderUnit(game, unit, events);
   return events;
 }

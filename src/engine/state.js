@@ -5,16 +5,35 @@
 //   day: number             starts at 1, increments each time play returns to player 0
 //   funds: number[]         per player
 //   owners: (number|null)[][]   owner of each tile ([y][x]); null = neutral / not a property
-//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture, submerged, halted }
+//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture, submerged, halted, facing, fresh?, ammo? }
 //                           facing: 1 right / -1 left, the way it last moved (see game.act), toward the map centre at first (drawing only);
 //                           submerged: diving (see submerge.js); halted: null, or { moved } after a move was interrupted by a hidden
-//                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped)
+//                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped);
+//                           fresh: true on a unit built this turn: it is ready, but its one order can only be a move and a Wait (a free
+//                           move off the property that built it; no attack, capture or dive). Cleared when it acts and at the start of its
+//                           owner's next turn; absent otherwise;
+//                           ammo: rounds left, only on a unit type with the `ammo` attribute (see ammo.js)
 //   defeated: boolean[]     per player
 //   winner: null | number | 'draw'
 //   nextUnitId: number
+//   builtThisTurn: number[] tile indexes of the properties that have already built a unit this turn (one build per property per turn)
 // }
 
+import { initialAmmo } from './ammo.js';
 import { facingToCentre } from './queries.js';
+
+/**
+ * A unit as it is stored in `state.units`. `hp` defaults to full; `done` is true for a unit that cannot act this turn (a dropped
+ * one); `fresh` marks a unit that was just built (see above).
+ */
+export function makeUnit(registry, map, id, { type, owner, x, y, hp, done = false, fresh = false }) {
+  const ammo = initialAmmo(registry.unit(type));
+  return {
+    id, type, owner, x, y, hp: hp ?? registry.rules.maxHp, done, capture: 0, submerged: false, halted: null, facing: facingToCentre(map, x),
+    ...(fresh && { fresh: true }), ...(ammo !== undefined && { ammo }),
+  };
+}
+
 export function createState(map, registry) {
   let nextUnitId = 1;
   return {
@@ -22,13 +41,11 @@ export function createState(map, registry) {
     day: 1,
     funds: map.players.map((p) => p.funds),
     owners: map.owners.map((row) => [...row]),
-    units: map.units.map((u) => ({
-      id: nextUnitId++, type: u.type, owner: u.owner, x: u.x, y: u.y,
-      hp: u.hp ?? registry.rules.maxHp, done: false, capture: 0, submerged: false, halted: null, facing: facingToCentre(map, u.x),
-    })),
+    units: map.units.map((u) => makeUnit(registry, map, nextUnitId++, u)),
     defeated: map.players.map(() => false),
     winner: null,
     nextUnitId,
+    builtThisTurn: [],
   };
 }
 

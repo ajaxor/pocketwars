@@ -8,7 +8,10 @@
 //   anim  the selected unit is sliding to the previewed tile (taps ignored)
 //   act   the unit sits at its previewed tile; pick Wait / Capture / an enemy (tap twice to attack)
 //   build the build menu is open
-//   deploy a ship was bought at a shipyard that has several free water tiles next to it: tap one to launch it there
+//   deploy a unit with the `deploy` attribute (the transport copter) is dropping troops: tap one of the highlighted tiles next to it
+//
+// BUILDING: a unit is built on the property and the controller selects it at once, for its free move (it is `fresh`: it can only move and
+// Wait, see engine/game.js). A Wait that refills ammo next to an airfield is a pit stop (`res.refreshed`): the unit is selected again.
 //
 // An order can come back INTERRUPTED (the path ran into a hidden unit, see engine/game.js): the unit has already moved, so the
 // controller plays the partial move and goes straight to the act menu for it ('resume'); the player then attacks or waits.
@@ -19,9 +22,10 @@
 import { canCapture } from '../engine/capture.js';
 import { canTarget } from '../engine/combat.js';
 import { canSee } from '../engine/detection.js';
-import { buildOptions, deployTiles } from '../engine/economy.js';
+import { canDeploy, deployConfig, dropTiles } from '../engine/deploy.js';
+import { buildOptions } from '../engine/economy.js';
 import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, hasMovedAlready, targetsFrom } from '../engine/movement.js';
-import { ownerAt, terrainAt, unitById } from '../engine/queries.js';
+import { ownerAt, unitAt, unitById } from '../engine/queries.js';
 import { canSubmergeAt, canSurface } from '../engine/submerge.js';
 import { buildMenuModel, defaultChoice } from './build-menu.js';
 import { terrainInfo, unitInfo } from './info.js';
@@ -107,7 +111,7 @@ export class Controller {
       }
     } else if (this.mode === 'move') {
       const sel = this.sel;
-      if (u && u.owner !== sel.owner && canTarget(game, sel, u)) {
+      if (u && u.owner !== sel.owner && !sel.fresh && canTarget(game, sel, u)) {
         const spot = bestAttackTile(game, sel, u, this.reach);
         if (spot) {
           this.#previewMove(spot[0], spot[1], () => this.#pend(u));
@@ -116,7 +120,7 @@ export class Controller {
       }
       if (this.reach.has(x, y)) {
         if (x === sel.x && y === sel.y) {
-          if (canCapture(game, sel)) this.#commit({ type: 'capture' });
+          if (!sel.fresh && canCapture(game, sel)) this.#commit({ type: 'capture' });
           else this.#actMenu();
           return;
         }
@@ -131,7 +135,7 @@ export class Controller {
         if (this.pendingTargetId === target.id) { this.#commit({ type: 'attack', targetId: target.id }); return; }
         this.#pend(target);
       } else if (x === pos.x && y === pos.y) {
-        this.#commit(canCapture(game, this.sel, pos.x, pos.y) ? { type: 'capture' } : { type: 'wait' });
+        this.#commit(!this.sel.fresh && canCapture(game, this.sel, pos.x, pos.y) ? { type: 'capture' } : { type: 'wait' });
       } else if (this.reach && this.reach.has(x, y) && !u) {
         this.#previewMove(x, y);
       } else { this.pendingTargetId = null; this.#actMenu(); }
@@ -179,7 +183,7 @@ export class Controller {
 
   #selectOrders() {
     this.hud.actions({
-      hint: 'Tap a highlighted tile to move, or an enemy to attack it.',
+      hint: this.sel.fresh ? 'Just built: tap a highlighted tile to move it out (it cannot attack yet).' : 'Tap a highlighted tile to move, or an enemy to attack it.',
       items: [this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
   }
@@ -191,13 +195,13 @@ export class Controller {
     this.#setCards({ unit: unitInfo(this.game, this.sel, { at: pos }), terrain: terrainInfo(this.game, pos.x, pos.y) });
   }
 
-  #select(u) {
+  #select(u, text = null) {
     this.sel = u;
     this.dest = null;
     this.reach = computeReach(this.game, u);
-    this.attack = attackTiles(this.game, u);
+    this.attack = u.fresh ? null : attackTiles(this.game, u);   // a freshly built unit only moves
     this.mode = 'move';
-    this.hud.message(null);
+    this.hud.message(text);
     this.#showSelected();
     if (u.halted) { this.#actMenu(); return; }   // it already used its move (an interrupted one): only an action is left
     this.#selectOrders();
@@ -236,7 +240,7 @@ export class Controller {
   #actMenu() {
     const { game, sel } = this;
     const pos = this.#selPos();
-    const blocked = (!!this.dest || hasMovedAlready(sel)) && !canFireAfterMoving(game, sel); // indirect fire cannot follow a move
+    const blocked = sel.fresh || ((!!this.dest || hasMovedAlready(sel)) && !canFireAfterMoving(game, sel)); // indirect fire cannot follow a move
     this.mode = 'act';
     this.attack = blocked ? null : attackTiles(game, sel, pos.x, pos.y);
     this.targets = blocked ? [] : targetsFrom(game, sel, pos.x, pos.y);
@@ -248,19 +252,22 @@ export class Controller {
   #actions() {
     const { game, sel, hud } = this;
     const pos = this.#selPos();
-    const capture = canCapture(game, sel, pos.x, pos.y);
+    const fresh = !!sel.fresh;   // a just-built unit has its free move only: Wait is its one action
+    const capture = !fresh && canCapture(game, sel, pos.x, pos.y);
     const pending = this.pendingTargetId !== null ? this.targets.find((e) => e.id === this.pendingTargetId) : null;
     const items = [];
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
     if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
-    if (canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
-    if (canSurface(sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
+    if (!fresh && canDeploy(game, sel, pos.x, pos.y)) items.push({ label: `Deploy ${this.#carried().name}`, onClick: () => this.#chooseDrop() });
+    if (!fresh && canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
+    if (!fresh && canSurface(sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
     items.push({ label: 'Wait', variant: pending || capture ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
     items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
     hud.actions({
       hint: pending ? `Attack ${name}? Tap it again or press Attack.`
         : capture ? 'Capture this property, or pick another action.'
+          : fresh ? 'Tap your unit to confirm the move.'
           : this.targets.length ? 'Tap an enemy to target it, or tap your unit to wait.'
             : 'Tap your unit to confirm the move.',
       items,
@@ -277,6 +284,7 @@ export class Controller {
     this.cancelAll();
     if (text) this.#msg(text);
     this.onEvents(res.events);
+    if (res.refreshed) this.#select(unitById(game, res.refreshed.unitId), text);   // a pit stop: it can move again
   }
 
   /** The move hit something hidden: slide the unit as far as it got, then let the player give it an order from there. */
@@ -319,40 +327,43 @@ export class Controller {
       onClose: close,
       onBuild: (id) => {
         const def = game.registry.unit(id);
-        if (game.state.funds[player] < def.cost) { this.#msg('Not enough funds'); return; }
-        const tiles = deployTiles(game, x, y, def);
-        if (!tiles.length) { this.#msg(`No free tile next to the ${terrainAt(game, x, y).name.toLowerCase()} for a ${def.name}.`); return; }
-        if (tiles.length > 1) { this.#chooseDeploy(x, y, def, tiles); return; }   // the player picks where it goes
-        this.#buildAt(x, y, def, tiles[0]);
+        const res = game.build(x, y, id);
+        if (!res.ok) {
+          this.#msg(res.error === 'not-enough-funds' ? 'Not enough funds' : res.error === 'already-built' ? 'This property already built a unit this turn.' : `Cannot build (${res.error}).`);
+          return;
+        }
+        this.cancelAll();
+        const unit = unitAt(game, x, y);
+        // the new unit is ready: select it so the player moves it out of the factory (its free move)
+        if (unit) this.#select(unit, `Built ${def.name}. Move it out - it cannot attack this turn.`);
+        else this.#msg('Built ' + def.name);
       },
     });
   }
 
-  #buildAt(x, y, def, at) {
-    const res = this.game.build(x, y, def.id, at);
-    this.cancelAll();
-    this.#msg(res.ok ? 'Built ' + def.name : `Cannot build (${res.error}).`);
-  }
+  /** The unit type the selected carrier drops. */
+  #carried() { return this.game.registry.unit(deployConfig(this.game, this.sel).unit); }
 
-  /** More than one tile could take the new unit: highlight them and wait for a tap on one. */
-  #chooseDeploy(x, y, def, tiles) {
-    const { hud } = this;
-    hud.clear();                       // closes the build window
+  /** Highlight the free tiles next to the carrier (where it would stand) and wait for a tap on one. */
+  #chooseDrop() {
+    const { game, hud, sel } = this;
+    const pos = this.#selPos();
+    const tiles = dropTiles(game, sel, pos.x, pos.y);
+    if (!tiles.length) { this.#msg('No room to drop troops here.'); return; }
     this.mode = 'deploy';
     this.deploy = tiles;
-    this.deployWhat = { x, y, def };
-    hud.info({});
-    hud.focus({ x, y });
+    this.attack = null;
+    this.targets = [];
     hud.actions({
-      hint: `Tap a highlighted tile to launch the ${def.name} there.`,
-      items: [{ label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+      hint: `Tap a highlighted tile to drop the ${this.#carried().name} there.`,
+      items: [{ label: 'Back', variant: 'ghost', onClick: () => { this.deploy = null; this.#actMenu(); } }, { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
   }
 
   #deployTap(x, y) {
     const at = this.deploy.find((t) => t.x === x && t.y === y);
-    if (!at) { this.cancelAll(); return; }
-    const { x: bx, y: by, def } = this.deployWhat;
-    this.#buildAt(bx, by, def, at);
+    if (!at) { this.deploy = null; this.#actMenu(); return; }
+    this.deploy = null;
+    this.#commit({ type: 'deploy', at });
   }
 }

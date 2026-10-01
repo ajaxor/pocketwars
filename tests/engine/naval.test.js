@@ -1,4 +1,5 @@
 // Naval play on the shipped data: hidden submarines, sonar, interrupted moves, best-weapon choice, diving rules.
+import { buildOptions } from '../../src/engine/economy.js';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
@@ -162,37 +163,38 @@ test('the AI dives a submarine when it has nothing better to do', () => {
 });
 
 
-// ---- shipyards: ships are launched onto a free water tile next to the yard --------------------------------------------------
+// ---- shipyards: ships are built on the yard itself and sail off with a free move ---------------------------------------------
 const yardGame = (rows, unitsOnMap = []) => sea(rows, unitsOnMap);
 
-test('a ship built at a shipyard appears on the chosen adjacent water tile, and never on land', () => {
-  const g = yardGame(['.Y~', '.~~', '...']);
+test('a ship built at a shipyard appears on the yard and gets a free move, but cannot attack', () => {
+  const g = yardGame(['.Y~', '.~~', '...'], [['destroyer', 1, 1, 1]]);
   g.state.funds[0] = 20000;
-  const res = g.build(1, 0, 'cruiser', { x: 1, y: 1 });
+  const res = g.build(1, 0, 'cruiser');
   assert.equal(res.ok, true);
-  assert.deepEqual([res.events[0].unit.x, res.events[0].unit.y], [1, 1]);
-  assert.equal(g.build(1, 0, 'cruiser', { x: 0, y: 0 }).error, 'invalid-deploy-tile', 'land is not a deploy tile');
+  assert.deepEqual([res.events[0].unit.x, res.events[0].unit.y], [1, 0], 'on the shipyard tile');
+  const ship = g.state.units.find((u) => u.type === 'cruiser');
+  assert.equal(ship.fresh, true);
+  assert.equal(g.act({ unitId: ship.id, to: { x: 1, y: 0 }, action: { type: 'attack', targetId: g.state.units[0].id } }).error, 'just-built');
+  assert.equal(g.act({ unitId: ship.id, to: { x: 2, y: 1 }, action: { type: 'wait' } }).ok, true, 'it sails off the yard');
+  assert.equal(ship.done, true);
+  assert.equal(ship.fresh, undefined);
 });
 
-test('without a choice the first free water tile is used; with none the build is refused', () => {
-  const g = yardGame(['.Y~', '...']);
+test('a shipyard builds once a turn, and not while a unit is still on it', () => {
+  const g = yardGame(['.Y~', '...'], [['recon', 1, 0, 1]]);
   g.state.funds[0] = 40000;
   assert.equal(g.build(1, 0, 'destroyer').ok, true);
-  assert.deepEqual([g.state.units[0].x, g.state.units[0].y], [2, 0]);
-  assert.equal(g.build(1, 0, 'destroyer').error, 'no-deploy-tile', 'the only water tile is taken');
+  assert.equal(g.build(1, 0, 'destroyer').error, 'tile-occupied');
+  const ship = g.state.units.find((u) => u.type === 'destroyer');
+  g.act({ unitId: ship.id, to: { x: 2, y: 0 }, action: { type: 'wait' } });
+  assert.equal(g.build(1, 0, 'destroyer').error, 'already-built', 'one unit per property per turn');
 });
 
-test('deployTiles: ships are never launched onto shoals', async () => {
-  const { deployTiles } = await import('../../src/engine/economy.js');
-  const g = yardGame(['.Y~', '.o.']);
-  assert.deepEqual(deployTiles(g, 1, 0, registry.unit('submarine')).map((t) => [t.x, t.y]), [[2, 0]]);
-  assert.deepEqual(deployTiles(g, 1, 0, registry.unit('destroyer')).map((t) => [t.x, t.y]), [[2, 0]]);
-});
-
-test('ordinary properties still deploy on themselves', async () => {
-  const { deployTiles } = await import('../../src/engine/economy.js');
-  const g = sea(['H~'], []);
-  assert.deepEqual(deployTiles(g, 0, 0, registry.unit('soldier')), [{ x: 0, y: 0 }]);
+test('the shipyard builds ships and marines, not soldiers', () => {
+  const g = yardGame(['.Y~']);
+  const ids = buildOptions(g, 1, 0).map((u) => u.id);
+  assert.ok(ids.includes('marine') && ids.includes('destroyer'));
+  assert.ok(!ids.includes('soldier'));
 });
 
 test('destroyer and cruiser anti-air weapons are melee range, like the submarine torpedoes', () => {

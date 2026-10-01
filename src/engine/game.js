@@ -1,14 +1,21 @@
 // Game: the single entry point for changing game state. UI, AI and tests all go through these methods.
 //
 //   const game = new Game(registry, map);
-//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'attack' | 'submerge' | 'surface', targetId } })
+//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'attack' | 'submerge' | 'surface' | 'deploy', targetId, at } })
 //   game.build(x, y, unitType)
 //   game.endTurn()
 //   game.undo()
 //
 // Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, dive, surface, strike,
-// capture, build, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
+// capture, build, deploy, resupply, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
+//
+// BUILDING AND THE FREE MOVE. A unit is built on the property itself and is ready at once, but `fresh` (see state.js): its one order
+// can only be a move followed by Wait ('just-built' otherwise), so it drives off the factory (swims off the shipyard, flies off the
+// airfield) without attacking, capturing or diving. A property builds one unit per turn (economy.js).
+//
+// PIT STOPS. A unit with ammo that ends a Wait in reach of a friendly property that resupplies it is refilled and gets its move back:
+// the result then carries `refreshed: { unitId }` and the unit is not `done`: it can be ordered again from where it stopped (ammo.js).
 //
 // INTERRUPTED MOVES. A player plans a move without knowing about hidden units (see detection.js), so the path can run into one.
 // act() then stops the unit on the last free tile before it, reveals what it bumped into (an 'interrupt' event), and returns
@@ -16,8 +23,10 @@
 // (`unit.halted`) but has not acted, and the caller must send a second order for it from where it stands (attack, wait, dive...).
 // Its reach is only its own tile; a unit that got at least one tile cannot fire indirect weapons, like any unit that has moved.
 
+import { resupply } from './ammo.js';
 import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
+import { deployProblem, resolveDeploy } from './deploy.js';
 import { canSee, hiddenFrom } from './detection.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
@@ -58,6 +67,7 @@ export class Game {
     if (!reach.has(to.x, to.y)) return fail('unreachable');
     const moved = hasMovedAlready(unit) || to.x !== unit.x || to.y !== unit.y;
     const action = order.action || { type: 'wait' };
+    if (unit.fresh && action.type !== 'wait') return fail('just-built');   // a freshly built unit only gets its free move
     if (action.type === 'wait') return { ok: true, unit, reach };
     if (action.type === 'capture') {
       return canCapture(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-capture');
@@ -67,6 +77,10 @@ export class Game {
     }
     if (action.type === 'surface') {
       return canSurface(unit) ? { ok: true, unit, reach } : fail('cannot-surface');
+    }
+    if (action.type === 'deploy') {
+      const problem = deployProblem(this, unit, to.x, to.y, action.at);
+      return problem ? fail(problem) : { ok: true, unit, reach };
     }
     if (action.type === 'attack') {
       const target = unitById(this, action.targetId);
@@ -81,7 +95,7 @@ export class Game {
     return fail('unknown-action');
   }
 
-  /** Move a unit (optionally) and then wait, capture, attack, dive or surface. Ends that unit's turn, unless the move is interrupted. */
+  /** Move a unit (optionally) and then wait, capture, attack, dive, surface or deploy. Ends that unit's turn, unless the move is interrupted or a Wait is a pit stop (see above). */
   act(order) {
     const v = this.validateOrder(order);
     if (!v.ok) return v;
@@ -125,18 +139,25 @@ export class Game {
     else if (action.type === 'attack') events.push(...resolveAttack(this, unit, target));
     else if (action.type === 'submerge') { unit.submerged = true; events.push({ type: 'dive', unit: snapshotUnit(unit) }); }
     else if (action.type === 'surface') { unit.submerged = false; events.push({ type: 'surface', unit: snapshotUnit(unit), forced: false }); }
+    else if (action.type === 'deploy') events.push(...resolveDeploy(this, unit, action.at));
     unit.done = true;
     unit.halted = null;
+    delete unit.fresh;
+    let refreshed = null;
+    if (action.type === 'wait') {   // a pit stop: refilled, so it may move again from here
+      const filled = resupply(this, unit);
+      if (filled) { events.push({ ...filled, refreshed: true }); unit.done = false; refreshed = { unitId: unit.id }; }
+    }
     events.push(...evaluateVictory(this));
     // An order that shows the player a hidden unit (by moving next to it, say) cannot be taken back either.
     if (hiddenBefore.some((id) => { const e = unitById(this, id); return e && canSee(this, unit.owner, e); })) this.undoSnapshot = null;
-    return { ok: true, events };
+    return { ok: true, events, ...(refreshed && { refreshed }) };
   }
 
-  /** Current player builds `unitType` on the property at (x, y); `at` picks the deploy tile when the property offers several (see economy.js deployTiles). */
-  build(x, y, unitType, at = null) {
+  /** Current player builds `unitType` on the property at (x, y): it appears there with a free move (see above). */
+  build(x, y, unitType) {
     if (this.isOver) return fail('game-over');
-    const result = buildUnit(this, this.state.turn, x, y, unitType, at);
+    const result = buildUnit(this, this.state.turn, x, y, unitType);
     if (result.ok) this.undoSnapshot = null; // spending funds can't be undone
     return result;
   }

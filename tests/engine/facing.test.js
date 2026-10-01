@@ -35,7 +35,7 @@ test('a unit turns to the way it last moved sideways; a vertical move keeps its 
 
 test('infantry do not turn (render.facing is false in the data); everything else does', () => {
   for (const id of registry.unitIds) {
-    const infantry = registry.unit(id).category === 'infantry';
+    const infantry = ['infantry', 'amphibious'].includes(registry.unit(id).category);   // foot soldiers, marines included
     assert.equal(registry.unit(id).render.facing === false, infantry, id);
   }
 });

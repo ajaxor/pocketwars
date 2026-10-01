@@ -10,7 +10,7 @@ import { MoveAnimator } from '../../src/render/animator.js';
 import { Renderer } from '../../src/render/renderer.js';
 import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
-import { drawUnit } from '../../src/render/unit-sprites.js';
+import { AMMO_BLINK_MS, drawUnit } from '../../src/render/unit-sprites.js';
 import { playTurn } from '../../src/engine/ai.js';
 
 const registry = await loadRegistry(readData);
@@ -233,4 +233,23 @@ test('income floats up from every property that paid, one after another, without
   const floats = effects.list.filter((f) => f.k === 'txt');
   assert.deepEqual(floats.map((f) => [f.s, f.x, f.t0]), [['+1000', 1.5, 100], ['+1000', 4.5, 240]]);
   assert.ok(!effects.isLocked(150));
+});
+
+test('the ammo bullet flashes when low (every other beat), stays on when empty, and draws nothing for plenty', () => {
+  const draws = (level, now) => {
+    const { ctx, calls } = recorder();
+    drawUnit(ctx, { type: 'transport_copter', x: 1, y: 1, hp: 10 }, { def: registry.unit('transport_copter'), colors: registry.faction(classic.players[0].faction), px: 40, py: 40, size: 40, now, animate: true, moving: false, alpha: 1, showHp: true, ammo: level });
+    return calls.filter((c) => c === 'quadraticCurveTo').length;
+  };
+  const none = draws(null, 0);
+  assert.ok(draws('empty', 0) > none && draws('empty', AMMO_BLINK_MS) > none, 'steady');
+  assert.ok(draws('low', 0) > none, 'on');
+  assert.equal(draws('low', AMMO_BLINK_MS), none, 'off');
+});
+
+test('a marine is drawn as a dinghy on water', () => {
+  const { ctx } = recorder();
+  const o = { def: registry.unit('marine'), colors: registry.faction(classic.players[0].faction), px: 40, py: 40, size: 40, now: 500, animate: true, moving: false, alpha: 1, showHp: true };
+  drawUnit(ctx, { type: 'marine', x: 1, y: 1, hp: 10 }, { ...o, onWater: true });
+  assert.ok(registry.unit('marine').render.waterSprite, 'the data names the water sprite');
 });

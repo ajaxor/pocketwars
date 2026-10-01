@@ -19,12 +19,15 @@ wrong kind of entity, fail validation.
 | `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer }` names the layer while down; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. | `tests/engine/naval.test.js` |
 | `sonar` | Detects hidden enemies within this many tiles (integer >= 2; adjacent units are always noticed). | `tests/engine/naval.test.js` |
 | `terrainDefenseMultiplier` | Multiplies the terrain defense this unit gets (`2` doubles it; must be > 1). No effect on 0-defense terrain, and `ignoresTerrainDefense` still wins. | `terrainDefenseMultiplier.test.js` |
+| `ammo` | `{max, low}`: a limited supply, tracked as `unit.ammo`. Weapons with an `ammo` cost spend it; a bullet shows on the tile (flashing at `low` or fewer, steady red at 0). Generic: any unit can have it. | `tests/attributes/ammo.test.js` |
+| `deploy` | `{unit, ammo?}`: after moving, drops a new `unit` on a free adjacent tile it can enter, spending `ammo` (default 1). Requires `ammo`. Transport copter. | `tests/engine/transport.test.js` |
 
 ## Terrain attributes
 
 | Attribute | Meaning | Tests |
 |---|---|---|
-| `property` | Ownable, capturable tile: `income`, `capturePoints`, `repair`, `builds` (unit categories), optional `deploy` (`on` by default; `adjacent` puts new units on a free neighbouring tile they can enter: shipyards). | `property.test.js` |
+| `property` | Ownable, capturable tile: `income`, `capturePoints`, `repair`, `builds` (unit categories), units are built on the property itself with a free move (see `fresh` in `game.js`); one build per property per turn. | `property.test.js` |
+| `resupply` | `{range, categories}`: refills the ammo of its owner's units of those categories that stop within `range` tiles (1 = on or next to it); after a Wait the unit also gets its move back. Airfield: aircraft. Requires `property`. | `tests/attributes/ammo.test.js` |
 | `blocksLineOfSight` | Obstacle for direct fire; the number is its height (forest 1, mountain and buildings 2). | `sight.test.js` |
 | `vantage` | A firer standing here shoots over obstacles lower than this number (mountain 2). | `sight.test.js` |
 | `submergible` | Deep water: `submerge` units can dive here. | `tests/engine/naval.test.js` |

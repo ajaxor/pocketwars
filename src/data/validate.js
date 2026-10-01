@@ -74,6 +74,7 @@ export function validateTerrain(terrain, rules, problems, hasGround = false) {
     else if (t.render.base === undefined && !hasGround) problems.push(`terrain "${id}": render.base is required when there is no ground.json`);
     else if (t.render.group !== undefined && !isStr(t.render.group)) problems.push(`terrain "${id}": render.group must be a name (terrains with the same group are drawn as one shape)`);
     else if (t.render.mini !== undefined && !isColor(t.render.mini)) problems.push(`terrain "${id}": render.mini (the colour on the map preview) must be a hex color`);
+    if (isObj(t.render) && t.render.water !== undefined && typeof t.render.water !== 'boolean') problems.push(`terrain "${id}": render.water must be true or false (units with a render.waterSprite are drawn with it here)`);
     checkAttributes('terrain', id, t, TERRAIN_ATTRIBUTES, problems);
   }
 }
@@ -102,6 +103,7 @@ export function validateWeapons(weapons, rules, problems) {
     if (w.indirect !== undefined && w.indirect !== true) problems.push(`weapon "${id}": indirect must be true when present`);
     if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
+    if (w.ammo !== undefined && !(Number.isInteger(w.ammo) && w.ammo >= 1)) problems.push(`weapon "${id}": ammo (rounds used per shot) must be a positive whole number`);
     if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
     if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);
     if (w.targetMultipliers !== undefined) {
@@ -140,6 +142,18 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     }
     if (!isObj(u.render) || !isStr(u.render.sprite)) problems.push(`unit "${id}": render.sprite is required`);
     else if (u.render.facing !== undefined && typeof u.render.facing !== 'boolean') problems.push(`unit "${id}": render.facing must be true or false (false: the unit never turns to face left or right)`);
+    else if (u.render.waterSprite !== undefined && !isStr(u.render.waterSprite)) problems.push(`unit "${id}": render.waterSprite (the sprite used on terrain with render.water) must be a name`);
+    const supply = u.attributes && u.attributes.ammo;
+    if (Array.isArray(u.weapons) && isObj(weapons)) {
+      for (const w of u.weapons) {
+        const cost = weapons[w] && weapons[w].ammo;
+        if (!cost) continue;
+        if (!isObj(supply)) problems.push(`unit "${id}": weapon "${w}" uses ammo, so the unit needs the "ammo" attribute`);
+        else if (Number.isInteger(supply.max) && cost > supply.max) problems.push(`unit "${id}": weapon "${w}" costs ${cost} ammo a shot but the unit only carries ${supply.max}`);
+      }
+    }
+    const drop = u.attributes && u.attributes.deploy;
+    if (isObj(drop) && isStr(drop.unit) && !units[drop.unit]) problems.push(`unit "${id}": attribute "deploy" names unknown unit "${drop.unit}"`);
     const dive = u.attributes && u.attributes.submerge;
     if (isObj(dive) && isStr(dive.layer)) {
       if (!layers.includes(dive.layer)) problems.push(`unit "${id}": attribute "submerge" names unknown layer "${dive.layer}"`);
@@ -147,11 +161,21 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     }
     checkAttributes('unit', id, u, UNIT_ATTRIBUTES, problems);
   }
-  // Every category a property can build must contain at least one unit.
+  // Every category a property can build must contain at least one unit, and each of those units must be able to stand on the
+  // property (a new unit appears on it); a property that resupplies names real categories too.
   const categories = new Set(Object.values(units).filter(isObj).map((u) => u.category));
   for (const [id, t] of Object.entries(terrain || {})) {
     const builds = t && t.attributes && t.attributes.property && t.attributes.property.builds;
-    if (Array.isArray(builds)) for (const c of builds) if (!categories.has(c)) problems.push(`terrain "${id}": builds unknown unit category "${c}"`);
+    if (Array.isArray(builds)) {
+      for (const c of builds) if (!categories.has(c)) problems.push(`terrain "${id}": builds unknown unit category "${c}"`);
+      for (const [uid, u] of Object.entries(units)) {
+        if (isObj(u) && builds.includes(u.category) && isObj(t.moveCost) && t.moveCost[u.moveClass] == null) {
+          problems.push(`terrain "${id}": builds "${uid}", but its move class "${u.moveClass}" cannot enter the terrain (a new unit appears on the property)`);
+        }
+      }
+    }
+    const supplies = t && t.attributes && t.attributes.resupply && t.attributes.resupply.categories;
+    if (Array.isArray(supplies)) for (const c of supplies) if (!categories.has(c)) problems.push(`terrain "${id}": resupplies unknown unit category "${c}"`);
   }
 }
 

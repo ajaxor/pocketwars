@@ -3,19 +3,20 @@
 // state: no unit or terrain ids are compared here (labels for attributes live in the attribute catalogue).
 
 import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } from '../engine/attributes.js';
+import { ammoConfig, ammoOf } from '../engine/ammo.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
 import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
-const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', naval: 'Naval' };
-const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft', naval: 'Ships' };
+const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', naval: 'Naval', amphibious: 'Amphibious' };
+const CATEGORY_LABELS = { infantry: 'Infantry', aircraft: 'Aircraft', naval: 'Ships', amphibious: 'Amphibious' };
 /** "vehicle" -> "Vehicles": a unit category as a heading (unknown names are capitalised and pluralised). */
 const categoryLabel = (c) => CATEGORY_LABELS[c] || `${cap(c)}s`;
 /** A move class as a short word for the terrain's move-cost chips. */
 const moveLabel = (c) => MOVE_LABELS[c] || cap(c);
 
 /** A labelled attribute as a tag: the short name and the sentence that explains it. */
-const tagOf = (catalogue, name, cfg) => ({ label: attributeLabel(catalogue, name, cfg), help: attributeHelp(catalogue, name, cfg) });
+const tagOf = (catalogue, name, cfg, registry) => ({ label: attributeLabel(catalogue, name, cfg, registry), help: attributeHelp(catalogue, name, cfg, registry) });
 
 export const fmtMoney = (n) => Number(n).toLocaleString('en-US');
 
@@ -34,7 +35,7 @@ function hitsOf(game, weapon) {
 /** Stats of a unit TYPE: what the build menu shows, and the base of the unit info box. */
 export function unitStats(game, def) {
   const { registry } = game;
-  const tags = Object.entries(def.attributes).map(([name, cfg]) => tagOf(UNIT_ATTRIBUTES, name, cfg));
+  const tags = Object.entries(def.attributes).map(([name, cfg]) => tagOf(UNIT_ATTRIBUTES, name, cfg, registry));
   const layer = registry.rules.layers[def.layer];
   return {
     id: def.id, name: def.name, category: def.category, cost: def.cost, move: def.move,
@@ -54,7 +55,7 @@ export function terrainInfo(game, x, y) {
   const t = terrainAt(game, x, y);
   const prop = propertyAt(game, x, y);
   const owner = prop ? ownerAt(game, x, y) : undefined;
-  const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => tagOf(TERRAIN_ATTRIBUTES, name, cfg));
+  const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => tagOf(TERRAIN_ATTRIBUTES, name, cfg, registry));
   return {
     x, y, name: t.name, color: t.render.base ?? registry.groundDef(game.map.ground?.[y]?.[x])?.render.base ?? '#86b95c', defense: t.defense,
     moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),
@@ -82,6 +83,8 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
     faction: faction ? { name: faction.name, color: faction.color, dark: faction.dark } : null,
     hp: Math.ceil(unit.hp - 1e-9), maxHp: game.registry.rules.maxHp,
     layerLabel: layerInfo(game, unit).label,
+    ammo: ammoConfig(game, unit) ? { now: ammoOf(game, unit), max: ammoConfig(game, unit).max, low: ammoConfig(game, unit).low } : null,
+    fresh: !!unit.fresh && unit.owner === game.state.turn,
     acted: !!unit.done && unit.owner === game.state.turn,
     cover: terrainStars(game, where),
     capture: unit.capture && prop ? { progress: unit.capture, needed: prop.capturePoints } : null,

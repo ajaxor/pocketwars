@@ -37,12 +37,14 @@ test('every property terrain has a building drawing; decor names exist', () => {
 
 test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
-  assert.deepEqual(withAttr('capture'), ['mech', 'soldier']);
+  assert.deepEqual(withAttr('capture'), ['marine', 'mech', 'soldier']);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['soldier']);
   assert.deepEqual(withAttr('indirect'), ['artillery', 'sniper']);
   assert.deepEqual(withAttr('submerge'), ['submarine']);
   assert.deepEqual(withAttr('sonar'), ['destroyer']);
-  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter']);
+  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'transport_copter']);
+  assert.deepEqual(withAttr('ammo'), ['transport_copter']);
+  assert.deepEqual(withAttr('deploy'), ['transport_copter']);
 });
 
 test('terrain attributes: properties, income and the HQ victory condition', () => {

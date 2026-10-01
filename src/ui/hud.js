@@ -183,6 +183,7 @@ export class Hud {
     const stats = h(d, 'div', 'chips');
     stats.append(chip(d, 'Move', u.move));
     if (weapon) stats.append(...weaponChips(d, u.weapons));
+    if (u.ammo) stats.append(chip(d, 'Ammo', `${u.ammo.now}/${u.ammo.max}`, u.ammo.now <= 0 ? 'chip--no' : u.ammo.now <= u.ammo.low ? 'chip--gold' : ''));
     stats.append(chip(d, 'Armor', `${u.armor}%`));
     const cover = h(d, 'span', 'chip');
     cover.append(h(d, 'span', 'chip-k', 'Cover'), stars(d, u.cover));
@@ -193,6 +194,7 @@ export class Hud {
     if (tags.length) col.append(this.#tags(tags));
     if (u.capture) col.append(h(d, 'div', 'note note--hot', `Capturing ${u.capture.progress}/${u.capture.needed}`));
     if (u.forecast != null) col.append(h(d, 'div', 'note note--hot', u.forecast > 0 ? `Your attack: -${u.forecast} HP${u.forecastWeapon ? ` (${u.forecastWeapon})` : ''}` : 'Cannot be hurt from here'));
+    else if (u.fresh) col.append(h(d, 'div', 'note', 'Just built: moves, but cannot attack'));
     else if (u.acted) col.append(h(d, 'div', 'note', 'Already moved'));
     w.body.append(col);
     return w.root;

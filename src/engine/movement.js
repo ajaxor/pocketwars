@@ -6,6 +6,7 @@
 // A unit whose move was interrupted (`unit.halted`) has used its move: it can only act where it stands.
 
 import { DIRS, distance, inBounds, tileIndex, unitAt, unitDef, terrainAt } from './queries.js';
+import { hasAmmoFor } from './ammo.js';
 import { hasAttribute } from './attributes.js';
 import { canAttackFrom, isIndirect, weaponsOf } from './combat.js';
 import { canSee } from './detection.js';
@@ -126,6 +127,7 @@ export function attackTiles(game, unit, x = unit.x, y = unit.y) {
   const moved = x !== unit.x || y !== unit.y || hasMovedAlready(unit);
   for (const w of weaponsOf(game, unit)) {
     if (moved && isIndirect(game, unit, w)) continue;   // an indirect weapon cannot follow a move
+    if (!hasAmmoFor(game, unit, w)) continue;            // and one with no rounds left cannot fire at all
     const [lo, hi] = w.range;
     for (let dy = -hi; dy <= hi; dy++) {
       for (let dx = -hi; dx <= hi; dx++) {

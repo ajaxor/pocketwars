@@ -175,9 +175,11 @@ test('tapping an owned factory opens the build menu; buying spends funds and clo
   t.hud.built.onBuild('a');
   assert.equal(t.game.state.units.filter((u) => u.owner === 0).length, 1);
   assert.equal(t.game.state.funds[0], 2000);
-  assert.equal(t.controller.mode, 'idle');
+  assert.equal(t.controller.mode, 'move', 'the new unit is selected for its free move');
+  assert.equal(t.controller.view.selectedId, t.game.state.units.find((u) => u.owner === 0).id);
+  assert.equal(t.controller.view.attackTiles, null, 'a freshly built unit cannot attack');
   assert.equal(t.hud.built, null, 'the menu closes');
-  assert.equal(t.lastMsg(), 'Built Unit');
+  assert.match(t.lastMsg(), /Built Unit/);
 });
 
 test('the build menu marks units the player cannot afford and refuses them', () => {

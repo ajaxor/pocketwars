@@ -89,6 +89,16 @@ export class Effects {
     });
   }
 
+  /** A unit refilled with ammo (a 'resupply' event, or an entry of a turnStart's `resupplied`): a call-out over it. Does not lock input. */
+  resupply(unit, t0) {
+    this.list.push({ k: 'txt', x: unit.x + .5, y: unit.y + .35, s: 'Resupplied', sz: .28, c: '#9be564', t0, d: 1200 });
+  }
+
+  /** Troops dropped next to a carrier (a 'deploy' event): a call-out over the new unit. Does not lock input. */
+  deploy(ev, t0) {
+    this.list.push({ k: 'txt', x: ev.dropped.x + .5, y: ev.dropped.y + .35, s: 'Deployed', sz: .28, c: '#fff', t0, d: 1200 });
+  }
+
   /** Pixel offset applied to a unit while a lunge or hit-shake is playing. */
   unitOffset(id, now, S) {
     let dx = 0;

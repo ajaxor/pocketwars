@@ -7,12 +7,13 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 ## How to play
 
 - Tap any tile to see what is on it (unit and terrain info cards). Tap one of your units to select it, tap a highlighted tile to move, then choose Capture or Wait, or tap an enemy and press Attack (tapping it again also confirms).
-- Tap a factory, barracks, airfield or shipyard you own to open its build menu: tap a unit to select it, then tap it again (or press Build) to build.
+- Tap a factory, barracks, airfield or shipyard you own to open its build menu: tap a unit to select it, then tap it again (or press Build) to build. A new unit appears on the property and gets a free move to drive off it (it cannot attack that turn); each property builds one unit per turn.
 - Units with the `capture` attribute (Soldier, Mech) capture properties: 20 points, each turn adds the unit's HP.
 - Units on owned properties heal each turn, and each property earns funds.
 - Win by capturing the enemy HQ or by destroying all enemy units when they cannot rebuild.
 - Undo reverts your last order; it is cleared when you build, end your turn, or when an order runs into or reveals a hidden unit.
-- **Ships** are built at shipyards on the shore and launched onto an adjacent water tile (you pick which when there are several): Destroyer (sonar, melee guns and depth charges), Submarine, Cruiser (move-and-fire cannon, melee flak) and Battleship (long-range guns that cannot fire after moving, melee secondary guns). Ships sail on open sea only; shoals (little islets) block them.
+- **Marine** (shipyard): infantry that walks on land and crosses shoals and sea, where it is drawn riding a dinghy. **Transport copter** (airfield): a Chinook-style lifter that carries 3 soldiers as ammo; after moving, Deploy drops one on a free tile beside it. Aircraft with limited ammo are refilled by ending a Wait next to an airfield you own, which also gives their move back. A bullet on the tile's bottom right flashes when ammo is low and stays red when it is out.
+- **Ships** are built at shipyards on the shore and sail off the yard on their free move: Destroyer (sonar, melee guns and depth charges), Submarine, Cruiser (move-and-fire cannon, melee flak) and Battleship (long-range guns that cannot fire after moving, melee secondary guns). Ships sail on open sea only; shoals (little islets) block them.
 - **Submarines dive** on deep water (Submerge / Surface in the order window). A submerged sub is invisible to the enemy unless one of their units is next to it, or a destroyer is within 3 tiles. Only depth charges and torpedoes can hit it.
 - **Interrupted moves:** a move is planned without knowing about hidden units. If it runs into one, the unit stops on the last free tile, the hidden unit is revealed, and the unit can still attack or wait from there (it cannot fire indirect weapons, as it has moved).
 - Units with several weapons pick the one that does the most damage to the target automatically; the damage preview names it.

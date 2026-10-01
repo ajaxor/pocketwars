@@ -82,6 +82,8 @@ test('property: building spends funds, needs a free owned tile of the right cate
   const built = game.build(0, 0, 'walker');
   assert.equal(built.ok, true);
   assert.equal(game.state.funds[0], 500);
-  assert.equal(game.state.units[0].done, true);
+  assert.equal(game.state.units[0].done, false, 'a built unit is ready at once...');
+  assert.equal(game.state.units[0].fresh, true, '...but only for its free move');
+  assert.deepEqual([game.state.units[0].x, game.state.units[0].y], [0, 0], 'it appears on the property itself');
   assert.equal(game.build(0, 0, 'walker').error, 'tile-occupied');
 });

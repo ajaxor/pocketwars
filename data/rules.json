@@ -2,7 +2,7 @@
   "maxHp": 10,
   "neutralColor": "#b9b9b9",
   "defaultGround": "grass",
-  "moveClasses": ["foot", "wheels", "tread", "air", "naval"],
+  "moveClasses": ["foot", "wheels", "tread", "air", "naval", "amphibious"],
   "layers": {
     "ground":     { "label": null },
     "low_air":    { "label": "low air",  "airborne": true },

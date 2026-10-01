@@ -8,7 +8,7 @@
 // run = 1 while animating (0 when the unit has acted), b / j = bob / jitter in pixels.
 // Coordinates are fractions of the tile size s; +x is forward, +y is down.
 
-const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238';
+const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238', VEST = '#ff9a2e';
 const hexToRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const mix = (a, b, t) => { const A = hexToRgb(a), B = hexToRgb(b); return '#' + [0, 1, 2].map((i) => Math.round(A[i] + (B[i] - A[i]) * t).toString(16).padStart(2, '0')).join(''); };
 
@@ -38,6 +38,7 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   if (kind === 'mech') box(g, s, -.24, -.1 + b / s, .09, .22, 3, dk);                         // rocket pack
   else if (kind === 'sniper') box(g, s, -.24, -.08 + b / s, .09, .2, 3, mix(c, '#56643a', .6)); // ghillie-covered pack
   box(g, s, -.16, -.12 + b / s, .32, .28, 4, c);
+  if (kind === 'marine') box(g, s, -.16, -.02 + b / s, .32, .07, 2, VEST);                      // life vest band
   disc(g, s, 0, -.2 + b / s, .09, SKIN);
   g.fillStyle = dk; g.beginPath(); g.arc(0, -s * .21 + b, s * .11, Math.PI, 0); g.fill(); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
   if (kind === 'mech') {          // bazooka on the shoulder, tube clear of the body
@@ -110,6 +111,21 @@ const copter = (g, { s, c, dk, w, run }) => {
   g.fillStyle = INK; g.fillRect(s * .22, s * .05, s * .13, s * .03);
   const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .36 + s * .05;
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, INK); g.fillStyle = INK; g.fillRect(-s * .02, -s * .21, s * .04, s * .08);
+};
+
+// Transport copter: a Chinook-style tandem-rotor lifter, a long body with a rotor over each end and a ramp at the tail.
+const transportCopter = (g, { s, c, dk, w, run }) => {
+  stroke(g, s, -.3, .25, .3, .25, 2, INK); stroke(g, s, -.2, .12, -.2, .25, 2, INK); stroke(g, s, .2, .12, .2, .25, 2, INK);
+  box(g, s, -.44, -.1, .88, .22, 6, c);                                                      // fuselage
+  box(g, s, -.46, -.02, .1, .14, 2, dk);                                                      // tail ramp
+  box(g, s, .3, -.07, .12, .1, 3, GLASS);                                                     // cockpit windows
+  g.fillStyle = INK; for (let i = 0; i < 4; i++) g.fillRect(s * (-.22 + i * .12), -s * .03, s * .06, s * .05);   // troop windows
+  box(g, s, -.34, -.18, .1, .1, 2, dk); box(g, s, .2, -.15, .08, .07, 2, dk);                 // rotor pylons
+  const bl = (hub, y, ph) => {
+    const rl = (run ? Math.abs(Math.cos(w * 20 + ph)) : .6) * s * .22 + s * .05;
+    stroke(g, s, hub - rl / s, y, hub + rl / s, y, 2.5, INK); g.fillStyle = INK; g.fillRect((hub - .02) * s, (y - .03) * s, s * .04, s * .06);
+  };
+  bl(-.29, -.2, 0); bl(.24, -.16, 1.3);
 };
 
 // Fighter and bomber are drawn in a 3/4 view from above and slightly ahead: the near wing sweeps down toward the viewer,
@@ -297,6 +313,24 @@ const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
 };
 
 // stealth bomber (planned unit, not in the game yet): flying wing
+// Marine afloat: a soldier in a life vest riding a small rubber dinghy (drawn in place of the marine while it is on water).
+const dinghy = (g, { s, c, dk, w, run, b }) => {
+  const bb = b / s, tube = '#5b616c', under = mix(tube, '#000000', .35);
+  afloat(g, s, w, run, -.3, .32, (light) => {
+    g.save(); g.translate(0, bb * s);
+    if (!light) { box(g, s, -.3, .02, .62, .22, 8, under); propeller(g, s, -.33, .17, w, run, under); }
+    else {
+      box(g, s, -.3, -.02, .62, .17, 8, tube); box(g, s, -.1, -.01, .22, .05, 2, c);        // the rubber tube and a stripe in team colours
+      box(g, s, -.26, -.06, .12, .1, 3, '#3a3f48');                                           // outboard motor
+      const sw = Math.sin(w * 4) * s * .008 * run;
+      box(g, s, -.1, -.2, .22, .2, 4, c); box(g, s, -.1, -.1, .22, .06, 2, VEST);          // body and life vest
+      disc(g, s, .01, -.28, .08, SKIN); g.fillStyle = dk; g.beginPath(); g.arc(.01 * s, -.29 * s, s * .09, Math.PI, 0); g.fill();
+      stroke(g, s, -.02, -.1, .3, -.2 + sw / s, Math.max(2, s * .045), INK);                // rifle
+    }
+    g.restore();
+  }, .14);
+};
+
 const stealthTop = [[.42, 0], [-.2, -.36], [-.27, -.33], [-.12, -.2], [-.24, -.12], [-.14, -.03], [-.2, 0]];
 const stealth = (g, { s, c, dk }) => {
   poly(g, s, mirror(stealthTop), mix(c, dk, .35));
@@ -308,8 +342,8 @@ const stealth = (g, { s, c, dk }) => {
 const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); };
 
 export const SPRITES = {
-  soldier: trooper('soldier'), mech: trooper('mech'), sniper: trooper('sniper'),
-  recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, fighter, bomber, stealth_bomber: stealth,
+  soldier: trooper('soldier'), marine: trooper('marine'), dinghy: shrunk(dinghy, .9), mech: trooper('mech'), sniper: trooper('sniper'),
+  recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, transport_copter: transportCopter, fighter, bomber, stealth_bomber: stealth,
   destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
 };
 
@@ -322,13 +356,14 @@ const airShadow = (outline) => (g, { s, alt = 0 }) => {
 };
 
 export const SHADOWS = {
-  soldier: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
+  soldier: ground(.17, .04, .3), marine: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
   recon: ground(.3, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
   artillery: ground(.29, .045, .285, -.01), flak: ground(.32, .05, .275),
   copter: airShadow(mirror([[.34, .0], [.2, -.1], [-.1, -.13], [-.2, -.04], [-.46, -.03], [-.46, 0]])),
+  transport_copter: airShadow(mirror([[.46, 0], [.4, -.08], [-.4, -.09], [-.48, -.04], [-.48, 0]])),
   fighter: airShadow(mirror([[.42, 0], [.05, -.07], [-.2, -.32], [-.27, -.32], [-.29, -.08], [-.38, -.14], [-.34, -.03], [-.32, 0]])),
   bomber: airShadow(mirror([[.46, 0], [.4, -.05], [.1, -.07], [-.08, -.36], [-.2, -.36], [-.14, -.07], [-.3, -.06], [-.4, -.17], [-.46, -.17], [-.43, -.03], [-.46, 0]])),
   stealth_bomber: airShadow(mirror(stealthTop)),
   // ships sit in the water and cast no shadow (their foam is part of the sprite)
-  destroyer: none, submarine: none, cruiser: none, battleship: none,
+  dinghy: none, destroyer: none, submarine: none, cruiser: none, battleship: none,
 };

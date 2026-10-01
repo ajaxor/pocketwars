@@ -15,7 +15,7 @@ import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
 
 const registry = await loadRegistry(readData);
-const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' } };
+const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' } };
 const players = [{ faction: 'orange_star', controller: 'human', funds: 0 }, { faction: 'violet_nebula', controller: 'human', funds: 0 }];
 
 function setup(rows, unitsOnMap) {
@@ -132,35 +132,42 @@ test('a unit that turns hidden finishes diving and then fades out; one that beco
   assert.equal(r.motionOf(sub, 2800).alpha, 1);
 });
 
-test('a shipyard with several free water tiles asks where to launch; one tile builds straight away', () => {
+test('a ship built at a shipyard is selected for its free move off the yard, and cannot attack', () => {
   const legend2 = { ...legend, '.': { terrain: 'plain' }, Y: { terrain: 'shipyard', owner: 0 }, h: { terrain: 'hq', owner: 1 } };
-  const make = (rows) => {
-    const game = new Game(registry, parseMap(rawMap({ rows, unitsOnMap: [], players, legend: legend2 }), registry));
-    game.state.funds[0] = 50000;
-    const hud = { messages: [], acts: null, built: null, message(t) { this.messages.push(t); }, info() {}, actions(a) { this.acts = a; }, build(m, o) { this.built = m ? { m, ...o } : null; }, focus() {}, clear() { this.acts = null; this.built = null; } };
-    const animator = new MoveAnimator();
-    const presenter = new Presenter({ effects: new Effects(registry, () => ({ color: '#f00' })), animator });
-    const controller = new Controller({ game, hud, animator, presenter, colorsOf: () => ({ color: '#f00', dark: '#800' }), onEvents: () => {} });
-    return { game, hud, controller };
-  };
-  const one = make(['.Y~', '...']);
-  one.controller.tap(1, 0);
-  one.hud.built.onBuild('destroyer');
-  assert.equal(one.game.state.units.length, 1, 'built without asking');
-  assert.equal(one.game.state.units[0].x, 2);
+  const game = new Game(registry, parseMap(rawMap({ rows: ['.Y~', '.~~'], unitsOnMap: [], players, legend: legend2 }), registry));
+  game.state.funds[0] = 50000;
+  const hud = { messages: [], acts: null, built: null, message(t) { this.messages.push(t); }, info() {}, actions(a) { this.acts = a; }, build(m, o) { this.built = m ? { m, ...o } : null; }, focus() {}, clear() { this.acts = null; this.built = null; } };
+  const animator = new MoveAnimator();
+  const presenter = new Presenter({ effects: new Effects(registry, () => ({ color: '#f00' })), animator });
+  const controller = new Controller({ game, hud, animator, presenter, colorsOf: () => ({ color: '#f00', dark: '#800' }), onEvents: () => {} });
+  controller.tap(1, 0);
+  hud.built.onBuild('destroyer');
+  const ship = game.state.units[0];
+  assert.deepEqual([ship.x, ship.y], [1, 0], 'built on the shipyard');
+  assert.equal(controller.mode, 'move');
+  assert.equal(controller.view.selectedId, ship.id);
+  assert.ok(controller.view.reach.has(2, 0), 'it can sail off');
+  assert.equal(controller.view.attackTiles, null);
+});
 
-  const two = make(['.Y~', '.~.']);
-  two.controller.tap(1, 0);
-  two.hud.built.onBuild('destroyer');
-  assert.equal(two.controller.mode, 'deploy');
-  assert.equal(two.controller.view.deploy.length, 2);
-  assert.equal(two.game.state.units.length, 0, 'nothing built yet');
-  two.controller.tap(0, 0);   // land: cancels
-  assert.equal(two.controller.mode, 'idle');
-  assert.equal(two.game.state.units.length, 0);
-  two.controller.tap(1, 0);
-  two.hud.built.onBuild('destroyer');
-  two.controller.tap(1, 1);   // the chosen tile
-  assert.deepEqual([two.game.state.units[0].x, two.game.state.units[0].y], [1, 1]);
-  assert.equal(two.controller.mode, 'idle');
+test('a transport copter offers Deploy, highlights the tiles beside it, and drops a soldier on a tap', () => {
+  const t = setup(['..~..', '.....'], [['transport_copter', 0, 1, 0], ['recon', 1, 4, 1]]);
+  t.controller.tap(1, 0);
+  t.controller.tap(1, 0);   // confirm "stay here"
+  assert.ok(t.labels().includes('Deploy Soldier'));
+  t.press('Deploy Soldier');
+  assert.equal(t.controller.mode, 'deploy');
+  assert.deepEqual(t.controller.view.deploy.map((d) => `${d.x},${d.y}`).sort(), ['0,0', '1,1'], 'the sea tile is not offered');
+  t.controller.tap(1, 1);
+  assert.equal(t.game.state.units.find((u) => u.type === 'soldier').y, 1);
+  assert.equal(t.controller.mode, 'idle');
+  assert.match(t.hud.messages.at(-1), /drops a Soldier/);
+});
+
+test('a copter that is out of ammo is not offered Deploy', () => {
+  const t = setup(['.....', '.....'], [['transport_copter', 0, 1, 0], ['recon', 1, 4, 1]]);
+  t.game.state.units[0].ammo = 0;
+  t.controller.tap(1, 0);
+  t.controller.tap(1, 0);
+  assert.ok(!t.labels().some((l) => l.startsWith('Deploy')));
 });

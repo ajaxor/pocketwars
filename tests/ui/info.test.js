@@ -21,7 +21,7 @@ test('terrain info: defense, move cost per move class (a dash-less null means im
   const t = terrainInfo(game, m.x, m.y);
   assert.equal(t.name, 'Mountain');
   assert.equal(t.defense, 4);
-  assert.deepEqual(t.moves.map((c) => [c.label, c.cost]), [['Foot', 2], ['Wheels', null], ['Treads', null], ['Air', 1], ['Naval', null]]);
+  assert.deepEqual(t.moves.map((c) => [c.label, c.cost]), [['Foot', 2], ['Wheels', null], ['Treads', null], ['Air', 1], ['Naval', null], ['Amphibious', 2]]);
   assert.deepEqual(t.notes.map((n) => n.label), ['Blocks line of sight', 'High ground']);
   assert.ok(t.notes.every((n) => n.help), 'each note explains itself');
   assert.equal(t.property, null);
