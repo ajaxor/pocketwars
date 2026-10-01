@@ -6,7 +6,9 @@
 //        damage = weapon.damage x (attackerHP/10) x (1 - armor x (1 - armorPiercing)) / toughness x (1 - stars x defenderHP/100) / 10
 //   - ignoresTerrainDefense on the DEFENDER removes the terrain-star reduction
 //   - terrainDefenseMultiplier on the DEFENDER scales the terrain stars it gets
-//   - indirect on either side disables counterattacks, and so does not being able to see the attacker (hidden, see detection.js)
+//   - an indirect weapon (the unit attribute `indirect` makes all of a unit's weapons so, or one weapon says `indirect: true`) cannot
+//     fire after moving, is never answered by a counterattack, and is never used to counter; not being able to see the attacker
+//     (hidden, see detection.js) also disables the counter
 //   - a unit may carry several weapons: of those that can legally fire at the defender from where the attacker stands, the one
 //     that would do the most damage is used (weaponFor), for the order, the forecast and the counterattack alike
 // Every function returns plain data / event objects; nothing here knows about drawing.
@@ -15,6 +17,11 @@ import { attributeConfig, hasAttribute } from './attributes.js';
 import { hasLineOfSight } from './sight.js';
 import { canSee } from './detection.js';
 import { distance, layerIdOf, removeUnit, round1, snapshotUnit, terrainAt, unitDef } from './queries.js';
+
+/** Is `weapon` of `unit` an indirect-fire weapon (artillery style: fires from where the unit started, never counters or is countered)? */
+export const isIndirect = (game, unit, weapon) => !!weapon.indirect || hasAttribute(unitDef(game, unit), 'indirect');
+/** Has the unit left its tile this turn, if it were to fire from `from`? (An interrupted move counts.) */
+const hasMoved = (unit, from) => from.x !== unit.x || from.y !== unit.y || !!(unit.halted && unit.halted.moved);
 
 export const weaponsOf = (game, unit) => unitDef(game, unit).weapons.map((id) => game.registry.weapon(id));
 const modesOf = (game, weapon) => weapon.targets.map((m) => game.registry.rules.targetModes[m]);
@@ -32,12 +39,13 @@ export function canTarget(game, attacker, defender) {
  * range and target mode fit are candidates (a direct mode also needs a clear line of sight); the one that would do the most damage
  * to this defender, where it stands, wins. A tie goes to the weapon listed first. null when no weapon can fire.
  */
-export function weaponFor(game, attacker, defender, from = attacker) {
+export function weaponFor(game, attacker, defender, from = attacker, { moved = hasMoved(attacker, from), counter = false } = {}) {
   const d = distance(from.x, from.y, defender.x, defender.y);
   const layer = layerOf(game, defender);
   let best = null;
   let bestDamage = -1;
   for (const w of weaponsOf(game, attacker)) {
+    if ((moved || counter) && isIndirect(game, attacker, w)) continue;   // indirect weapons need a standing start and never counter
     if (d < w.range[0] || d > w.range[1]) continue;
     if (!modesOf(game, w).some((m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)))) continue;
     const damage = rawDamage(game, w, attacker, defender);
@@ -53,6 +61,7 @@ export const canAttackFrom = (game, attacker, defender, x, y) => weaponFor(game,
 export function attackProblem(game, attacker, defender, x = attacker.x, y = attacker.y) {
   if (!canTarget(game, attacker, defender)) return 'cannot-target';
   if (canAttackFrom(game, attacker, defender, x, y)) return null;
+  if (weaponFor(game, attacker, defender, { x, y }, { moved: false })) return 'cannot-move-and-fire';   // only an indirect weapon reaches, and the unit moved
   const d = distance(x, y, defender.x, defender.y);
   const layer = layerOf(game, defender);
   const inRange = weaponsOf(game, attacker).some((w) => d >= w.range[0] && d <= w.range[1] && modesOf(game, w).some((m) => m.layer === layer));
@@ -98,12 +107,11 @@ const strike = (attacker, defender, damage, { counter, destroyed, weapon }) => (
   type: 'strike', attacker: snapshotUnit(attacker), defender: snapshotUnit(defender), damage, counter, destroyed, weapon: weapon ? weapon.id : null,
 });
 
-/** Does `defender` hit back at `attacker` after surviving? (Not when either is indirect, or when it cannot see what hit it.) */
-export function canCounter(game, defender, attacker) {
-  return !hasAttribute(unitDef(game, attacker), 'indirect')
-    && !hasAttribute(unitDef(game, defender), 'indirect')
+/** Does `defender` hit back at `attacker`'s `weapon` after surviving? (Not against an indirect weapon, not with one, and not when it cannot see what hit it.) */
+export function canCounter(game, defender, attacker, weapon = weaponFor(game, attacker, defender)) {
+  return !(weapon && isIndirect(game, attacker, weapon))
     && canSee(game, defender.owner, attacker)
-    && canAttackFrom(game, defender, attacker, defender.x, defender.y);
+    && weaponFor(game, defender, attacker, defender, { counter: true }) !== null;
 }
 
 /**
@@ -121,8 +129,8 @@ export function resolveAttack(game, attacker, defender) {
     return events;
   }
   events.push(strike(attacker, defender, dealt, { counter: false, destroyed: false, weapon }));
-  if (canCounter(game, defender, attacker)) {
-    const reply = weaponFor(game, defender, attacker);
+  if (canCounter(game, defender, attacker, weapon)) {
+    const reply = weaponFor(game, defender, attacker, defender, { counter: true });
     const back = reply ? weaponDamage(game, reply, defender, attacker) : 0;
     attacker.hp = round1(attacker.hp - back);
     const destroyed = attacker.hp <= 0;

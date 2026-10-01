@@ -20,6 +20,7 @@ filling in a row and a column.
 | `damage` | Percent of a full-HP unit removed by a full-HP attacker at `toughness 1`, no armor, no terrain (60 = 6 HP). |
 | `armorPiercing` | `0..1`, default `0`. The fraction of the defender's `armor` this weapon ignores. |
 | `targetMultipliers` | Optional `{ targetMode: factor }`. Scales `damage` when the defender is reached through that mode, so a weapon can be strong against one layer (flak `low_air: 1.9`). Modes not listed use `1`. Each key must be one of the weapon's `targets`. |
+| `indirect` | Optional `true`. An artillery-style weapon: it can only fire if the unit has not moved this turn, is never answered by a counterattack and is never used to counter. Needs a minimum range of at least 2. The unit attribute `indirect` makes all of a unit's weapons so; this lets one unit carry both kinds (the battleship's long guns and its melee secondary guns). |
 | `range` | `[min, max]` tiles (Manhattan). |
 | `targets` | Target modes it can fire at, see below. |
 

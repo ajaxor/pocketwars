@@ -12,7 +12,7 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 - Units on owned properties heal each turn, and each property earns funds.
 - Win by capturing the enemy HQ or by destroying all enemy units when they cannot rebuild.
 - Undo reverts your last order; it is cleared when you build, end your turn, or when an order runs into or reveals a hidden unit.
-- **Ships** are built at shipyards on the shore and launched onto an adjacent water tile (you pick which when there are several): Destroyer (sonar, depth charges), Submarine, Cruiser (cannon and flak) and Battleship (long-range guns). Ships sail on open sea only; shoals (little islets) block them.
+- **Ships** are built at shipyards on the shore and launched onto an adjacent water tile (you pick which when there are several): Destroyer (sonar, melee guns and depth charges), Submarine, Cruiser (move-and-fire cannon, melee flak) and Battleship (long-range guns that cannot fire after moving, melee secondary guns). Ships sail on open sea only; shoals (little islets) block them.
 - **Submarines dive** on deep water (Submerge / Surface in the order window). A submerged sub is invisible to the enemy unless one of their units is next to it, or a destroyer is within 3 tiles. Only depth charges and torpedoes can hit it.
 - **Interrupted moves:** a move is planned without knowing about hidden units. If it runs into one, the unit stops on the last free tile, the hidden unit is revealed, and the unit can still attack or wait from there (it cannot fire indirect weapons, as it has moved).
 - Units with several weapons pick the one that does the most damage to the target automatically; the damage preview names it.

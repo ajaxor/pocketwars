@@ -194,3 +194,43 @@ test('ordinary properties still deploy on themselves', async () => {
   const g = sea(['H~'], []);
   assert.deepEqual(deployTiles(g, 0, 0, registry.unit('soldier')), [{ x: 0, y: 0 }]);
 });
+
+test('destroyer and cruiser anti-air weapons are melee range, like the submarine torpedoes', () => {
+  for (const id of ['deck_gun', 'depth_charges', 'aa_battery', 'torpedoes']) assert.deepEqual(registry.weapon(id).range, [1, 1], id);
+  const g = sea(['~~~~~', '.....'], [['cruiser', 0, 0, 0], ['copter', 1, 2, 0]]);
+  assert.equal(weaponFor(g, g.state.units[0], g.state.units[1]), null, 'a copter two tiles away is out of the AA battery range');
+});
+
+test('a cruiser moves and fires its naval cannon', () => {
+  const g = sea(['~~~~~~~', '.......'], [['cruiser', 0, 0, 0], ['destroyer', 1, 5, 0]]);
+  const [cruiser, foe] = g.state.units;
+  assert.equal(g.act({ unitId: cruiser.id, to: { x: 2, y: 0 }, action: { type: 'attack', targetId: foe.id } }).ok, true);
+});
+
+test('a battleship: long guns need a standing start, the secondary guns work after moving', () => {
+  const rows = ['~~~~~~~~', '........'];
+  // far target: only the main guns reach it
+  let g = sea(rows, [['battleship', 0, 0, 0], ['destroyer', 1, 4, 0]]);
+  let [bb, foe] = g.state.units;
+  assert.equal(weaponFor(g, bb, foe).name, registry.weapon('main_guns').name);
+  assert.equal(g.act({ unitId: bb.id, to: { x: 1, y: 0 }, action: { type: 'attack', targetId: foe.id } }).error, 'cannot-move-and-fire');
+  assert.equal(g.act({ unitId: bb.id, to: { x: 0, y: 0 }, action: { type: 'attack', targetId: foe.id } }).ok, true);
+  // adjacent target after a move: the secondary guns fire, and the target answers
+  g = sea(rows, [['battleship', 0, 0, 0], ['destroyer', 1, 4, 0]]);
+  [bb, foe] = g.state.units;
+  const res = g.act({ unitId: bb.id, to: { x: 3, y: 0 }, action: { type: 'attack', targetId: foe.id } });
+  assert.equal(res.ok, true);
+  const strikes = res.events.filter((e) => e.type === 'strike');
+  assert.equal(strikes[0].weapon, 'secondary_guns');
+  assert.ok(strikes.some((e) => e.counter), 'a melee strike is answered');
+});
+
+test('a battleship firing its main guns is not counterattacked, and does not counter with them', () => {
+  const g = sea(['~~~~~~~~', '........'], [['battleship', 0, 0, 0], ['battleship', 1, 3, 0]]);
+  const [a, b] = g.state.units;
+  const res = g.act({ unitId: a.id, to: { x: 0, y: 0 }, action: { type: 'attack', targetId: b.id } });
+  assert.equal(res.events.filter((e) => e.counter).length, 0);
+  const g2 = sea(['~~~~~~~~', '........'], [['battleship', 0, 0, 0], ['battleship', 1, 1, 0]]);
+  const [c, d] = g2.state.units;
+  assert.equal(weaponFor(g2, d, c, d, { counter: true }).name, registry.weapon('secondary_guns').name, 'adjacent, the secondary guns answer');
+});

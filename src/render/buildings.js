@@ -6,7 +6,7 @@
 //   factory   a wide hall with a sawtooth roof, a smokestack and a garage door
 //   barracks  two squarish canvas tents side by side (gabled roofs, open doors) and a flag out front
 //   airfield  a tapering runway, an arched hangar and a control tower
-//   shipyard  a concrete quay slab, a gantry crane over a half-built hull
+//   shipyard  a dock hall like the factory's, a slipway door, an anchor on its front and a crane jib on a tower
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
 
 import { luma, shade } from './color.js';
@@ -139,20 +139,27 @@ export const BUILDINGS = {
 
   shipyard(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
-    // flat shapes, a few more parts than the first draft: concrete pad, a hull on the slip, a gantry crane and a workshop shed
-    k.rect(.04, .74, .92, .18, '#9aa1ab');                                       // pad
-    k.rect(.04, .74, .92, .03, '#b8bec7');                                       // lit front edge
-    k.poly([[.3, .44], [.88, .44], [.94, .52], [.84, .74], [.36, .74]], '#59606c');   // hull on the slip
-    k.poly([[.3, .44], [.88, .44], [.9, .48], [.31, .48]], '#7d8592');           // deck
-    k.rect(.36, .6, .52, .07, owner);                                           // owner stripe
-    for (let i = 0; i < 4; i++) k.rect(.4 + i * .13, .48, .014, .12, '#434953');     // ribs
-    k.rect(.24, .12, .06, .64, owner); k.rect(.88, .12, .06, .64, owner);        // crane: a leg either side of the hull,
-    k.rect(.2, .1, .76, .07, owner);                                            // a jib over it,
-    k.rect(.24, .24, .06, .03, shade(owner, -.3)); k.rect(.88, .24, .06, .03, shade(owner, -.3));   // cross braces
-    k.line([[.62, .17], [.62, .38]], '#20232a', .014);                          // and a hook on a line
-    k.rect(.58, .38, .08, .05, '#ffd24a');
-    k.rect(.04, .56, .16, .18, '#d8dce2'); k.poly([[.02, .56], [.12, .5], [.22, .56]], shade(owner, -.2));   // workshop shed with a gabled roof
-    k.rect(.08, .64, .06, .1, '#434953');                                       // its door
+    const ink = luma(owner) > .62 ? '#2a3550' : '#ffffff';
+    k.boxShadow(.7, .2, .08, .34, .04); k.boxShadow(.08, .52, .7, .34, .12);
+    k.box(.7, .2, .08, .34, .04, '#565a63');                          // crane tower, behind the hall
+    k.box(.08, .52, .7, .34, .12, owner);                             // the dock hall: a plain box like the other works
+    k.rect(.14, .66, .28, .2, '#2b2d33');                             // slipway door, with a strip of water showing
+    k.rect(.14, .8, .28, .06, '#3d7ec7');
+    for (let i = 1; i < 3; i++) k.rect(.14, .66 + i * .05, .28, .012, '#4a4d55');
+    // anchor emblem on the front: ring, shank, stock and the two curved arms
+    const cx = .6;
+    g.strokeStyle = ink; g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = Math.max(1, .026 * S);
+    g.beginPath(); g.arc(k.X(cx), k.Y(.6), .02 * S, 0, 7); g.stroke();
+    k.line([[cx, .62], [cx, .8]], ink, .026);
+    k.line([[cx - .045, .655], [cx + .045, .655]], ink, .026);
+    g.beginPath(); g.arc(k.X(cx), k.Y(.745), .075 * S, .12 * Math.PI, .88 * Math.PI); g.stroke();
+    k.poly([[cx - .082, .77], [cx - .1, .73], [cx - .05, .745]], ink); k.poly([[cx + .082, .77], [cx + .1, .73], [cx + .05, .745]], ink);
+    // gantry crane: a jib from the tower out over the quay, with a hook on a line
+    k.rect(.64, .17, .14, .05, shade(owner, -.3));                     // cab on the tower top
+    k.line([[.74, .2], [.1, .2]], shade(owner, -.2), .04);             // jib
+    k.line([[.74, .2], [.92, .2]], shade(owner, -.2), .04);            // counter-jib
+    k.line([[.74, .17], [.3, .2]], '#3a3d44', .012);                    // stay
+    k.line([[.2, .22], [.2, .4]], '#20232a', .014);
+    k.rect(.17, .4, .06, .045, '#ffd24a');
   },
-
 };

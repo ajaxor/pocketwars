@@ -99,6 +99,8 @@ export function validateWeapons(weapons, rules, problems) {
   for (const [id, w] of Object.entries(weapons)) {
     if (!isObj(w)) { problems.push(`weapon "${id}" must be an object`); continue; }
     if (!isStr(w.name)) problems.push(`weapon "${id}": name is required`);
+    if (w.indirect !== undefined && w.indirect !== true) problems.push(`weapon "${id}": indirect must be true when present`);
+    if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
     if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
     if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);

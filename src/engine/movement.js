@@ -7,7 +7,7 @@
 
 import { DIRS, distance, inBounds, tileIndex, unitAt, unitDef, terrainAt } from './queries.js';
 import { hasAttribute } from './attributes.js';
-import { canAttackFrom, weaponsOf } from './combat.js';
+import { canAttackFrom, isIndirect, weaponsOf } from './combat.js';
 import { canSee } from './detection.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
@@ -123,7 +123,10 @@ export function distanceField(game, moveClass, goals) {
 export function attackTiles(game, unit, x = unit.x, y = unit.y) {
   const { map } = game;
   const out = new Set();
-  for (const { range: [lo, hi] } of weaponsOf(game, unit)) {
+  const moved = x !== unit.x || y !== unit.y || hasMovedAlready(unit);
+  for (const w of weaponsOf(game, unit)) {
+    if (moved && isIndirect(game, unit, w)) continue;   // an indirect weapon cannot follow a move
+    const [lo, hi] = w.range;
     for (let dy = -hi; dy <= hi; dy++) {
       for (let dx = -hi; dx <= hi; dx++) {
         const d = Math.abs(dx) + Math.abs(dy);
@@ -142,8 +145,8 @@ export function targetsFrom(game, unit, x = unit.x, y = unit.y) {
   return game.state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e) && canAttackFrom(game, unit, e, x, y));
 }
 
-/** Can this unit attack after moving? Indirect-fire units must fire from where they started. */
-export const canFireAfterMoving = (game, unit) => !hasAttribute(unitDef(game, unit), 'indirect');
+/** Can this unit attack after moving? Not when every weapon is indirect fire (those fire from where the unit started). */
+export const canFireAfterMoving = (game, unit) => weaponsOf(game, unit).some((w) => !isIndirect(game, unit, w));
 
 /** Has this unit already moved this turn (only known for a unit whose move was interrupted; a fresh order says so itself)? */
 export const hasMovedAlready = (unit) => !!unit.halted && unit.halted.moved;
@@ -153,8 +156,7 @@ export const hasMovedAlready = (unit) => !!unit.halted && unit.halted.moved;
  * Indirect units only consider their current tile. Returns [x, y] or null when no tile works.
  */
 export function bestAttackTile(game, unit, target, reach) {
-  const def = unitDef(game, unit);
-  const candidates = hasAttribute(def, 'indirect') ? [{ x: unit.x, y: unit.y, cost: reach.costAt(unit.x, unit.y) ?? 0 }] : [...reach.tiles()];
+  const candidates = canFireAfterMoving(game, unit) ? [...reach.tiles()] : [{ x: unit.x, y: unit.y, cost: reach.costAt(unit.x, unit.y) ?? 0 }];
   let best = null;
   for (const { x, y, cost } of candidates) {
     if (!canAttackFrom(game, unit, target, x, y)) continue;

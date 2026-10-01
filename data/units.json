@@ -188,10 +188,10 @@
     "move": 4,
     "moveClass": "naval",
     "layer": "surface",
-    "weapons": ["main_guns"],
+    "weapons": ["main_guns", "secondary_guns"],
     "toughness": 2.6,
     "armor": 0.8,
-    "attributes": { "indirect": true },
+    "attributes": {},
     "render": { "sprite": "battleship", "attackFx": "arc" }
   }
 }
