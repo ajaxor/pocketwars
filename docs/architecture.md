@@ -12,8 +12,8 @@ src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/wi
                  presenter (events -> animations), session (frame loop, AI pacing)
 src/fonts/       the self-hosted typeface (Fredoka, OFL); declared in style.css, named for canvas text in src/render/font.js
 src/main.js      boot(): load data + map, create Game, start Session
-src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Start
-src/ui/title-screen.js  the title screen view (logo, progress, Start, gallery links, update button); styles are `.title*` in style.css
+src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Quick Start (a random map)
+src/ui/title-screen.js  the title screen view (logo, progress, Quick Start, gallery links, update button); styles are `.title*` in style.css
 index.html       tiny shell: the game's DOM plus a few lines that find the build folder and hand over to src/launcher.js
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)

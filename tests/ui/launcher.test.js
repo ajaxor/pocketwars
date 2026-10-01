@@ -26,7 +26,7 @@ test('it loads the stylesheet before showing the title screen, then the game, th
   assert.equal(doc.getElementById('boot'), null, 'the splash is gone');
   assert.equal(doc.body.classList.contains('loading'), false);
   assert.equal(title.ready, true);
-  assert.equal(title.go.textContent, 'Start');
+  assert.equal(title.go.textContent, 'Quick Start');
   assert.equal(title.ver.textContent, 'build abc1234 - 2026-09-30');
 });
 
@@ -97,4 +97,13 @@ test('no update check while the tab is hidden, after Start, or on a dev build', 
   assert.deepEqual(asked, []);
   assert.equal(tc.ver.textContent, 'build dev');
   assert.ok(ta && tb);
+});
+
+test('Quick Start plays a random map', async () => {
+  const played = [];
+  const maps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
+  const { opts } = setup({ random: () => 0.7, loadGame: async () => ({ maps, play: (m) => played.push(m.id), registry: {} }) });
+  const title = await launch(opts);
+  title.go.click();
+  assert.deepEqual(played, ['c']);
 });

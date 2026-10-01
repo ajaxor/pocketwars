@@ -32,7 +32,7 @@ test('progress, version, ready and failed states', () => {
   assert.equal(title.ver.textContent, 'build abc1234');
 
   title.setReady();
-  assert.deepEqual([title.ready, title.go.disabled, title.go.textContent, title.fill.style.width, title.status.textContent], [true, false, 'Start', '100%', 'Ready']);
+  assert.deepEqual([title.ready, title.go.disabled, title.go.textContent, title.fill.style.width, title.status.textContent], [true, false, 'Quick Start', '100%', 'Ready']);
 
   title.setFailed('offline');
   assert.deepEqual([title.ready, title.go.disabled, title.go.textContent, title.fill.style.width], [false, false, 'Retry', '0%']);

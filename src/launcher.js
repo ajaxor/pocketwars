@@ -35,7 +35,7 @@ const defaultLoadGame = async (href, opts) => (await import(new URL(href, locati
  */
 export async function launch({
   base, tag, hash = 'dev', built, getVersion, goTo, reload = () => location.reload(),
-  doc = document, loadCss = defaultLoadCss, loadGame = defaultLoadGame,
+  doc = document, random = Math.random, loadCss = defaultLoadCss, loadGame = defaultLoadGame,
 }) {
   await loadCss(doc, base + 'style.css?v=' + tag);          // the title screen is styled by style.css, so it comes first
   doc.getElementById('boot')?.remove();
@@ -49,7 +49,11 @@ export async function launch({
     started = false;
     const t = title = new TitleScreen(doc, { links: GALLERIES });
     t.setVersion(version);
-    t.onStart = () => { if (t.ready) { started = true; t.remove(); } else reload(); };
+    t.onStart = () => {
+      if (!t.ready) return reload();
+      if (canSkirmish()) game.play(game.maps[Math.floor(random() * game.maps.length)]);   // Quick Start: any map, its own rules
+      started = true; t.remove();
+    };
     t.onSkirmish = () => openSkirmish(t);
     if (ready) { t.setReady(); t.setSkirmish(canSkirmish()); } else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
     return t;

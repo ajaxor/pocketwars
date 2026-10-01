@@ -1,4 +1,4 @@
-// The title screen: a full-screen overlay with the logo, a progress bar, the Start button and links to the galleries.
+// The title screen: a full-screen overlay with the logo, a progress bar, the Quick Start button and links to the galleries.
 // This is only the view: it builds its DOM and exposes the states below. The launcher (src/launcher.js) decides when each
 // state happens. Its styles are the `.title*` rules in style.css; the buttons are the shared `.btn` kit.
 //
@@ -84,7 +84,7 @@ export class TitleScreen {
 
   setProgress(pct, text) { this.loading.classList.remove('is-done'); this.fill.style.width = pct + '%'; this.status.textContent = text; }
   setVersion(text) { this.ver.textContent = text; }
-  setReady() { this.ready = true; this.go.disabled = false; this.go.textContent = 'Start'; this.setProgress(100, 'Ready'); this.loading.classList.add('is-done'); }
+  setReady() { this.ready = true; this.go.disabled = false; this.go.textContent = 'Quick Start'; this.setProgress(100, 'Ready'); this.loading.classList.add('is-done'); }
   setSkirmish(enabled) { this.skirmish.disabled = !enabled; }
   setFailed(message) { this.ready = false; this.skirmish.disabled = true; this.go.disabled = false; this.go.textContent = 'Retry'; this.setProgress(0, 'Could not load the game: ' + message); }
   showUpdate(onClick) { this.onUpdate = onClick; this.upd.hidden = false; }
