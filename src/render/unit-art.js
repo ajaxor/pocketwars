@@ -41,9 +41,10 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   disc(g, s, 0, -.2 + b / s, .09, SKIN);
   if (kind === 'marine') {          // a flat-topped utility cover with a short visor, in the team's dark colour, and a scarf that flutters
     const bb = b / s, fl = run ? Math.sin(w * 9 + ph) * .03 : 0;
-    poly(g, s, [[-.115, -.215 + bb], [-.115, -.325 + bb], [.115, -.325 + bb], [.115, -.215 + bb]], dk);   // boxy crown
-    poly(g, s, [[-.115, -.255 + bb], [.115, -.255 + bb], [.115, -.24 + bb], [-.115, -.24 + bb]], mix(dk, '#000000', .25));   // band
-    poly(g, s, [[.08, -.225 + bb], [.17, -.21 + bb], [.17, -.19 + bb], [.08, -.2 + bb]], dk);
+    poly(g, s, [[-.102, -.225 + bb], [-.122, -.3 + bb], [.122, -.3 + bb], [.102, -.225 + bb]], dk);   // crown, wider at the top
+    oval(g, s, 0, -.3 + bb, .122, .026, mix(dk, '#ffffff', .22));                                      // the flat top, seen from a little above
+    poly(g, s, [[-.104, -.26 + bb], [.104, -.26 + bb], [.102, -.245 + bb], [-.102, -.245 + bb]], mix(dk, '#000000', .25));   // band
+    oval(g, s, .015, -.222 + bb, .105, .022, mix(dk, '#000000', .15));                                                          // the visor, in front of the face (the cap looks toward the camera)
     const sc = mix(c, '#ffffff', .3);   // a little lighter than the shirt so it shows
     poly(g, s, [[-.1, -.1 + bb], [.1, -.1 + bb], [0, .0 + bb]], sc); poly(g, s, [[-.1, -.1 + bb], [-.2, -.06 + fl + bb], [-.19, -.13 + fl + bb]], sc);
   } else {
@@ -66,7 +67,7 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
     if (kind === 'marine') {          // assault rifle: a curved magazine under the receiver and a handguard
       const bb = b / s + sw / s * .5;
       poly(g, s, [[.0, -.005 + bb], [.055, -.03 + bb], [.1, .09 + bb], [.05, .1 + bb]], '#3a3a44');
-      stroke(g, s, .1, -.065 + bb, .24, -.115 + bb, Math.max(3, s * .07), STEEL);
+      box(g, s, -.17, .0 + bb, .1, .045, 2, '#4a3a2a');   // stock
     }
   }
 };
@@ -361,7 +362,8 @@ const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o,
 
 export const SPRITES = {
   soldier: trooper('soldier'), marine: trooper('marine'), dinghy: shrunk(dinghy, .9), mech: trooper('mech'), sniper: trooper('sniper'),
-  recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, transport_copter: transportCopter, fighter, bomber, stealth_bomber: stealth,
+  recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
+   fighter, bomber, stealth_bomber: stealth,
   destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
 };
 
@@ -378,7 +380,7 @@ export const SHADOWS = {
   recon: ground(.3, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
   artillery: ground(.29, .045, .285, -.01), flak: ground(.32, .05, .275),
   copter: airShadow(mirror([[.34, .0], [.2, -.1], [-.1, -.13], [-.2, -.04], [-.46, -.03], [-.46, 0]])),
-  transport_copter: airShadow(mirror([[.46, 0], [.4, -.08], [-.4, -.09], [-.48, -.04], [-.48, 0]])),
+  transport_copter: airShadow(mirror([[.46, 0], [.4, -.08], [-.4, -.09], [-.48, -.04], [-.48, 0]]).map(([x, y]) => [x * .85, y * .85])),
   fighter: airShadow(mirror([[.42, 0], [.05, -.07], [-.2, -.32], [-.27, -.32], [-.29, -.08], [-.38, -.14], [-.34, -.03], [-.32, 0]])),
   bomber: airShadow(mirror([[.46, 0], [.4, -.05], [.1, -.07], [-.08, -.36], [-.2, -.36], [-.14, -.07], [-.3, -.06], [-.4, -.17], [-.46, -.17], [-.43, -.03], [-.46, 0]])),
   stealth_bomber: airShadow(mirror(stealthTop)),
