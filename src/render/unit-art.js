@@ -211,10 +211,10 @@ const turret = (g, s, x, y, w, len, { ang = 0, elev = 0, n = 1, dk = '#3a3d45', 
 };
 
 const battleship = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .26, rise: .2, sweep: .6 };
+  const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .3, rise: .2, sweep: .6 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.47 + .005, .245, w, run, dk);
+    if (!light) propeller(g, s, -.47 + .005, .28, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, -.22, -.1, .26, .1, 3, c); box(g, s, -.17, -.2, .17, .1, 3, c);                    // stepped superstructure
@@ -228,10 +228,10 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
 };
 
 const cruiser = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s + .04, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .26, rise: .04, sweep: .2 };
+  const bb = b / s + .04, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .34, rise: .04, sweep: .2 };
   afloat(g, s, w, run, -.45, .45, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.45 + .005, .245, w, run, dk);
+    if (!light) propeller(g, s, -.45 + .005, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, .06, D - .05, .36, .06, 2, c);                                                      // raised forecastle
@@ -254,10 +254,10 @@ const cruiser = (g, { s, c, dk, w, run, b }) => {
 };
 
 const destroyer = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s, D = .04, H = { x0: -.38, x1: .4, deck: D, keel: .26, rise: .03, sweep: .16 };
+  const bb = b / s, D = .04, H = { x0: -.38, x1: .4, deck: D, keel: .34, rise: .03, sweep: .16 };
   afloat(g, s, w, run, -.38, .4, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.38 + .005, .245, w, run, dk);
+    if (!light) propeller(g, s, -.38 + .005, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, -.14, D - .12, .22, .12, 3, c); box(g, s, -.11, D - .09, .16, .03, 1, GLASS);       // bridge
@@ -277,8 +277,8 @@ const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
   const boat = (light) => {                              // the same drawing above (light) and below (dark) the waterline
     const col = light ? c : dk;
     g.save(); g.translate(0, (dip + bb) * s);
-    box(g, s, -.44, -.03, .88, .19, s * .095, col);                                           // round hull
-    propeller(g, s, -.46, .065, w, run, col, !light);                                         // on the middle of the stern
+    box(g, s, -.44, -.05, .88, .27, s * .13, col);                                           // round hull
+    propeller(g, s, -.46, .085, w, run, col, !light);                                         // on the middle of the stern
     box(g, s, -.06, -.17, .17, .16, 3, col);                                                  // conning tower
     if (light) { stroke(g, s, .07, -.17, .07, -.28, 2, INK); stroke(g, s, .07, -.28, .13, -.28, 2, INK); }   // periscope
     g.restore();

@@ -49,3 +49,9 @@ export const factionOf = (game, player) => game.registry.faction(game.map.player
 
 /** Which way a unit standing at column `x` faces when it starts: toward the middle of the map (1 right, -1 left; the middle column faces right). */
 export const facingToCentre = (map, x) => (x > (map.width - 1) / 2 ? -1 : 1);
+
+/** The facing after walking `path` ([[x, y], ...]): the way of its last sideways step, or `current` when it never moved sideways. */
+export function facingAlong(path, current = 1) {
+  for (let i = path.length - 1; i > 0; i--) { const dx = path[i][0] - path[i - 1][0]; if (dx) return dx > 0 ? 1 : -1; }
+  return current;
+}

@@ -21,7 +21,7 @@ import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { canSee, hiddenFrom } from './detection.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
-import { inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
+import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
 import { createState, restoreState, snapshotState } from './state.js';
 import { canSubmergeAt, canSurface, submergibleAt } from './submerge.js';
 import { evaluateVictory } from './victory.js';
@@ -107,7 +107,7 @@ export class Game {
         unit.x = path[last][0];
         unit.y = path[last][1];
         unit.capture = 0; // leaving a tile abandons capture progress
-        for (let i = last; i > 0; i--) { const dx = path[i][0] - path[i - 1][0]; if (dx) { unit.facing = dx > 0 ? 1 : -1; break; } }   // faces the way it last moved sideways
+        unit.facing = facingAlong(path.slice(0, last + 1), unit.facing);   // faces the way it last moved sideways
         events.push({ type: 'move', unitId: unit.id, path: path.slice(0, last + 1) });
       }
       if (unit.submerged && !submergibleAt(this, unit.x, unit.y)) {   // a submarine that ends its move outside deep water comes up

@@ -19,7 +19,7 @@
 import { calcDamage, canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
-import { tileIndex, unitById } from '../engine/queries.js';
+import { facingAlong, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
 import { drawUnit } from './unit-sprites.js';
@@ -126,6 +126,14 @@ export class Renderer {
     return view.dest && u.id === view.selectedId ? view.dest : u;
   }
 
+  /** Which way a unit is drawn facing: along the preview path while its move is only previewed, along its slide while it moves, else as the game has it. */
+  facingOf(u, view, now) {
+    const current = u.facing ?? 1;
+    if (this.animator.current && this.animator.current.unitId === u.id) return this.animator.facingOf(u.id, now) ?? current;   // mid-slide: turns step by step
+    if (view.dest && u.id === view.selectedId && view.reach && view.reach.pathTo) return facingAlong(view.reach.pathTo(view.dest.x, view.dest.y) || [], current);   // previewed, the slide done
+    return current;
+  }
+
   drawUnitAt(g, u, view, now, { dying = false, alpha = 1, dive = u.submerged ? 1 : 0 } = {}) {
     const { S, game, animator, effects } = this;
     const lp = dying ? u : this.logicalPos(u, view);
@@ -134,7 +142,7 @@ export class Renderer {
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
-      face: game.registry.unit(u.type).render.facing === false ? 1 : (animator.facingOf(u.id, now) ?? u.facing ?? 1), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
+      face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true,
     });
