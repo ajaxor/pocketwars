@@ -150,114 +150,129 @@ const bomber = (g, { s, c, dk, w, run }) => {
 };
 
 // ---- ships (side view, bow to the right) -----------------------------------------------------------------------------
-// Kept plain: a hull that is mostly faction colour with a thin dark strip at the waterline, a few blocks for the superstructure and
-// the guns. The SILHOUETTE tells them apart at phone size: the destroyer is small and low with one raised gun; the cruiser is a
-// little bigger, with a tall tower, a deck gun forward and a flak mount aft; the battleship is the longest, with a bow that sweeps
-// up and two armoured turrets; the submarine is a low cigar with a fin (and, dived, only its periscope shows).
-// Ships have no shadow. They sit in the water: the sprite is clipped along a FIXED waterline while the hull bobs, so the hull dips
-// below the surface and rises again, and foam curls at the bow and stern.
-const FOAM = 'rgba(255,255,255,.6)', DEEP = '#143f73';   // DEEP: what a dived hull is tinted toward
+// Kept plain. Shading is just the waterline: the hull and everything on it are the faction's light colour above the water and its
+// dark colour below it, so as the ship bobs the dark part grows and shrinks (the sprite is drawn twice, clipped above and below a
+// FIXED waterline). Structures are the hull's own colour; turrets are dark blocks like a tank's. The SILHOUETTE tells the ships
+// apart: the destroyer is small and low with one raised gun; the cruiser is a little bigger, stepped, with a forward gun and aft
+// flak; the battleship is the longest, its deck sweeping up at the bow, with two armoured turrets (the forward one tilted to the
+// slope); the submarine is a low cigar with a fin, and dived only its periscope shows. Ships cast no shadow; foam curls at both ends.
+const FOAM = 'rgba(255,255,255,.6)';
 const LINE = .2;                                    // the waterline, in tile fractions (fixed: only the ship moves)
-/** Draw `draw` clipped to everything above the waterline, then the water's foam over the cut: a lip along the hull, a curl at each end. */
+const skyClip = (g, s, line) => { g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (line + 1.5) * s); g.clip(); };
+const seaClip = (g, s, line) => { g.beginPath(); g.rect(-s, line * s, s * 2, s * 2); g.clip(); };
+/** Run `draw(light)` above the waterline (light = true) and again below it (false), then lay foam along the waterline and curl it at both ends. */
 const afloat = (g, s, w, run, x0, x1, draw, line = LINE) => {
-  g.save(); g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (line + 1.5) * s); g.clip(); draw(); g.restore();
+  g.save(); skyClip(g, s, line); draw(true); g.restore();
+  g.save(); seaClip(g, s, line); draw(false); g.restore();
   const p = .8 + .2 * Math.sin(w * 4) * run, q = .8 + .2 * Math.sin(w * 4 + 2) * run;
   g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(x0 * s, (line - .012) * s, (x1 - x0) * s, .026 * s);
   oval(g, s, x1 + .005, line + .005, .065 * p, .028, FOAM); oval(g, s, x1 - .07, line + .02, .05 * p, .018, 'rgba(255,255,255,.35)');   // bow
   oval(g, s, x0 - .005, line + .005, .065 * q, .028, FOAM); oval(g, s, x0 + .07, line + .02, .05 * q, .018, 'rgba(255,255,255,.35)');   // stern
 };
-/** Hull: deck line y = deck, keel at y = keel (below the waterline, so it is clipped), stern at x0, bow at x1; `rise` sweeps the bow up. */
+/** Hull outline: deck at y = deck, keel at y = keel (below the waterline), stern at x0, bow at x1; `rise` sweeps the bow's deck up. */
 const hullPath = (g, s, { x0, x1, deck, keel, rise = 0, sweep = .2 }) => {
   g.beginPath(); g.moveTo(x0 * s, deck * s); g.lineTo((x1 - sweep) * s, deck * s);
   if (rise) g.quadraticCurveTo((x1 - sweep * .55) * s, deck * s, x1 * s, (deck - rise) * s); else g.lineTo(x1 * s, (deck - .02) * s);
   g.lineTo((x1 - .1) * s, keel * s); g.lineTo((x0 + .06) * s, keel * s); g.lineTo(x0 * s, (keel - .07) * s); g.closePath();
 };
-const hullOf = (g, s, h, c, dk) => {
-  hullPath(g, s, h); g.fillStyle = c; g.fill();
-  g.save(); hullPath(g, s, h); g.clip(); g.fillStyle = dk; g.fillRect((h.x0 - .1) * s, (LINE - .05) * s, (h.x1 - h.x0 + .2) * s, .3 * s); g.restore();   // a thin dark strip at the water
+/** The deck's height and slope (radians, negative = rising) at x on a hull with a swept-up bow. */
+const deckAt = ({ x1, deck, rise = 0, sweep = .2 }, x) => {
+  const x0 = x1 - sweep, xc = x1 - sweep * .55;
+  if (!rise || x <= x0) return { y: deck, ang: 0 };
+  let lo = 0, hi = 1;
+  for (let i = 0; i < 24; i++) { const t = (lo + hi) / 2; ((1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * xc + t * t * x1 < x ? (lo = t) : (hi = t)); }
+  const t = lo;
+  return { y: deck - t * t * rise, ang: Math.atan2(-2 * t * rise, 2 * (1 - t) * (xc - x0) + 2 * t * (x1 - xc)) };
 };
-/** An armoured turret like a tank's: a rounded dark block on the deck with barrels coming out of its front. */
-const turret = (g, s, x, y, w, len, n = 1, dk = '#3a3d45', bar = .04) => {
-  box(g, s, x - w * .5, y - w * .5, w, w * .5, 4, dk);
+/** An armoured turret like a tank's: a rounded dark block with barrels out of its front, tilted by `ang` to sit on a slope. */
+const turret = (g, s, x, y, w, len, { ang = 0, n = 1, dk = '#3a3d45', bar = .04 } = {}) => {
+  g.save(); g.translate(x * s, y * s); g.rotate(ang);
+  box(g, s, -w * .5, -w * .5, w, w * .5, 4, dk);
   g.fillStyle = INK;
-  for (let i = 0; i < n; i++) g.fillRect((x + w * .3) * s, (y - w * .38 + (i - (n - 1) / 2) * bar * 1.4) * s, len * s, bar * s);
+  for (let i = 0; i < n; i++) g.fillRect(w * .3 * s, (-w * .38 + (i - (n - 1) / 2) * bar * 1.4) * s, len * s, bar * s);
+  g.restore();
 };
 
 const battleship = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s;
-  afloat(g, s, w, run, -.47, .47, () => {
+  const bb = b / s, H = { x0: -.47, x1: .47, deck: .0, keel: .26, rise: .2, sweep: .6 };
+  afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
-    hullOf(g, s, { x0: -.47, x1: .47, deck: .06, keel: .28, rise: .3, sweep: .75 }, c, dk);   // the deck sweeps up steeply toward the bow
-    box(g, s, -.2, -.1, .26, .16, 3, dk); box(g, s, -.15, -.22, .15, .13, 3, c);                  // superstructure
-    box(g, s, -.02, -.14, .06, .2, 2, '#33363d'); stroke(g, s, -.08, -.22, -.08, -.34, 2, INK);   // funnel and mast
-    turret(g, s, .15, .02, .26, .2, 2, dk);                                                        // two armoured turrets, fore and aft
-    turret(g, s, -.34, .06, .22, .18, 2, dk);
+    hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
+    if (light) {
+      box(g, s, -.22, -.1, .26, .1, 3, c); box(g, s, -.17, -.2, .17, .1, 3, c);                    // stepped superstructure
+      box(g, s, -.01, -.14, .06, .14, 2, c); stroke(g, s, -.1, -.2, -.1, -.33, 2, INK);           // funnel and mast
+      const f = deckAt(H, .22);
+      turret(g, s, .22, f.y, .26, .2, { ang: f.ang, n: 2, dk });                                   // forward turret, tilted to the sloping deck
+      turret(g, s, -.34, H.deck, .22, .18, { n: 2, dk });                                          // aft turret on the flat
+    }
     g.restore();
   });
 };
 
 const cruiser = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s;
-  afloat(g, s, w, run, -.45, .45, () => {
+  const bb = b / s, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .26, rise: .04, sweep: .2 };
+  afloat(g, s, w, run, -.45, .45, (light) => {
     g.save(); g.translate(0, bb * s);
-    hullOf(g, s, { x0: -.45, x1: .45, deck: .05, keel: .28, rise: .05, sweep: .2 }, c, dk);
-    box(g, s, -.08, -.24, .17, .29, 3, dk); box(g, s, -.04, -.2, .1, .03, 1, GLASS);            // tall tower
-    stroke(g, s, .0, -.24, .0, -.36, 2, INK);
-    turret(g, s, .29, .05, .14, .14, 1, dk);                                                     // the deck gun, forward
-    // the flak mount, aft: a big dark base with twin barrels raked up at the sky
-    const aim = -.95 + Math.sin(w * 2.5) * .12 * run;
-    box(g, s, -.36, -.06, .14, .11, 3, dk);
-    g.save(); g.translate(-.29 * s, -.06 * s); g.rotate(aim);
-    g.fillStyle = INK; g.fillRect(0, -s * .035, s * .26, s * .026); g.fillRect(0, s * .005, s * .26, s * .026);
-    g.fillStyle = '#ffd24a'; g.fillRect(s * .24, -s * .035, s * .03, s * .026); g.fillRect(s * .24, s * .005, s * .03, s * .026);
-    g.restore();
+    hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
+    if (light) {
+      box(g, s, .06, D - .05, .36, .06, 2, c);                                                      // raised forecastle
+      turret(g, s, .27, D - .05, .13, .14, { dk });                                                 // the deck gun, forward
+      box(g, s, -.13, D - .12, .2, .12, 3, c); box(g, s, -.09, D - .21, .12, .09, 3, c);            // stepped bridge
+      box(g, s, -.075, D - .185, .09, .025, 1, GLASS);
+      stroke(g, s, -.03, D - .21, -.03, D - .34, 2, INK); stroke(g, s, -.08, D - .3, .02, D - .3, 2, INK);   // mast with a yard
+      box(g, s, -.24, D - .12, .07, .12, 2, c); box(g, s, -.245, D - .14, .08, .03, 1, dk);        // funnel with a dark cap
+      box(g, s, -.4, D - .07, .14, .07, 3, dk);                                                     // flak base, aft
+      const aim = -.95 + Math.sin(w * 2.5) * .12 * run;
+      g.save(); g.translate(-.33 * s, (D - .07) * s); g.rotate(aim);
+      g.fillStyle = INK; g.fillRect(0, -s * .035, s * .26, s * .026); g.fillRect(0, s * .005, s * .26, s * .026);
+      g.fillStyle = '#ffd24a'; g.fillRect(s * .24, -s * .035, s * .03, s * .026); g.fillRect(s * .24, s * .005, s * .03, s * .026);
+      g.restore();
+    }
     g.restore();
   });
 };
 
 const destroyer = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s;
-  afloat(g, s, w, run, -.38, .4, () => {
+  const bb = b / s, D = .04, H = { x0: -.38, x1: .4, deck: D, keel: .26, rise: .03, sweep: .16 };
+  afloat(g, s, w, run, -.38, .4, (light) => {
     g.save(); g.translate(0, bb * s);
-    hullOf(g, s, { x0: -.38, x1: .4, deck: .07, keel: .28, rise: .03, sweep: .16 }, c, dk);   // small and low
-    box(g, s, -.14, -.12, .22, .19, 3, dk); box(g, s, -.11, -.09, .16, .03, 1, GLASS);            // bridge
-    stroke(g, s, -.03, -.12, -.03, -.22, 2, INK);                                                 // mast
-    box(g, s, .2, -.0, .1, .07, 2, c);                                                            // the gun sits on a raised mount
-    turret(g, s, .25, -.0, .12, .13, 1, dk, .035);
+    hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
+    if (light) {
+      box(g, s, -.14, D - .12, .22, .12, 3, c); box(g, s, -.11, D - .09, .16, .03, 1, GLASS);       // bridge
+      stroke(g, s, -.03, D - .12, -.03, D - .22, 2, INK);                                           // mast
+      box(g, s, .2, D - .05, .1, .05, 2, c);                                                        // the gun sits on a raised mount
+      turret(g, s, .25, D - .05, .12, .13, { dk, bar: .035 });
+    }
     g.restore();
   });
 };
 
 const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
-  const SUB_LINE = .15;
-  const dip = submerged ? .27 : 0;                                                          // dived: the whole boat sinks until only the periscope shows
-  const bb = b * .6 / s;
-  const hull = (col, col2, col3) => {
-    box(g, s, -.44, -.01 + bb, .88, .17, s * .085, col);                                      // round hull, riding low
-    box(g, s, -.42, -.02 + bb, .84, .09, s * .05, col2);                                      // faction colour along the top
-    box(g, s, -.06, -.16 + bb, .17, .15, 3, col2); box(g, s, -.06, -.16 + bb, .17, .04, 2, col);   // conning tower
-    const spin = Math.sin(w * 18) * run;                                                     // propeller blur
-    stroke(g, s, -.46, .03 + bb - spin * .05, -.46, .09 + bb + spin * .05, 2, col3);
-  };
-  const periscope = () => { stroke(g, s, .07, -.16 + bb, .07, -.27 + bb, 2, INK); stroke(g, s, .07, -.27 + bb, .13, -.27 + bb, 2, INK); };
+  const LN = .15;
+  const dip = submerged ? .27 : 0;                       // dived: the whole boat sinks until only the periscope shows
+  const bb = b * (submerged ? .3 : .6) / s;
   const p = .8 + .2 * Math.sin(w * 4) * run;
+  const boat = (light) => {                              // the same drawing above (light) and below (dark) the waterline
+    const col = light ? c : dk;
+    g.save(); g.translate(0, (dip + bb) * s);
+    box(g, s, -.44, -.03, .88, .19, s * .095, col);                                           // round hull
+    box(g, s, -.06, -.17, .17, .16, 3, col);                                                  // conning tower
+    const spin = Math.sin(w * 18) * run;                                                      // propeller blur
+    stroke(g, s, -.46, .03 - spin * .05, -.46, .09 + spin * .05, 2, '#ccd');
+    if (light) { stroke(g, s, .07, -.17, .07, -.28, 2, INK); stroke(g, s, .07, -.28, .13, -.28, 2, INK); }   // periscope
+    g.restore();
+  };
+  g.save(); skyClip(g, s, LN); boat(true); g.restore();
+  g.save(); seaClip(g, s, LN); boat(false); g.restore();
   if (!submerged) {
-    g.save(); g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (SUB_LINE + 1.5) * s); g.clip(); hull(dk, c, '#ccd'); periscope(); g.restore();
-    g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(-.44 * s, (SUB_LINE - .012) * s, .88 * s, .026 * s);
-    oval(g, s, .44, SUB_LINE + .005, .06 * p, .026, FOAM); oval(g, s, -.44, SUB_LINE + .005, .06 * p, .026, FOAM);
+    g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(-.44 * s, (LN - .012) * s, .88 * s, .026 * s);
+    oval(g, s, .44, LN + .005, .06 * p, .026, FOAM); oval(g, s, -.44, LN + .005, .06 * p, .026, FOAM);
     return;
   }
-  // dived: the hull is seen through the water in dark, sea-tinted colours; above the surface only the periscope pokes out, with the
-  // water's foam gathered round IT (a ring at its base and a small V trailing behind), not round the hull
-  g.save(); g.translate(0, dip * s);
-  g.save(); g.beginPath(); g.rect(-s, (SUB_LINE - dip) * s, s * 2, s * 2); g.clip();
-  hull(mix(dk, DEEP, .8), mix(c, DEEP, .82), DEEP);
-  g.restore();
-  g.save(); g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (SUB_LINE - dip + 1.5) * s); g.clip(); periscope(); g.restore();
-  g.restore();
-  oval(g, s, .07, SUB_LINE, .1 * p, .03, FOAM);                                              // ring of foam at the periscope
-  oval(g, s, .07, SUB_LINE, .05 * p, .014, 'rgba(255,255,255,.8)');
-  poly(g, s, [[.07, SUB_LINE - .005], [-.1 - .03 * p, SUB_LINE + .012], [-.1 - .03 * p, SUB_LINE - .012]], 'rgba(255,255,255,.45)');   // the V behind it
+  // dived: the foam gathers round the periscope (a ring at its base and a small V trailing behind), not round the hull
+  oval(g, s, .07, LN, .1 * p, .03, FOAM);
+  oval(g, s, .07, LN, .05 * p, .014, 'rgba(255,255,255,.8)');
+  poly(g, s, [[.07, LN - .005], [-.1 - .03 * p, LN + .012], [-.1 - .03 * p, LN - .012]], 'rgba(255,255,255,.45)');
 };
 
 // stealth bomber (planned unit, not in the game yet): flying wing

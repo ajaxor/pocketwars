@@ -3,7 +3,7 @@
   "version": 1,
   "id": "twin_fleets",
   "name": "Twin Fleets",
-  "description": "A wide sea with a reef island in the middle and a road along the north shore. Start with fleets, and build more: battleships win the open water, subs win the ambush.",
+  "description": "A wide sea with a shoal island in the middle and a road along the north shore. Start with fleets, and build more: battleships win the open water, subs win the ambush.",
   "players": [
     {
       "faction": "orange_star",
@@ -35,8 +35,8 @@
     "~": {
       "terrain": "sea"
     },
-    "s": {
-      "terrain": "shallows"
+    "o": {
+      "terrain": "shoals"
     },
     "O": {
       "terrain": "hq",
@@ -66,18 +66,18 @@
   "tiles": [
     "MM.FF..rrrrrrrrrrrr..FF.MM",
     "M.cOfrr..c......c..rrgBc.M",
-    "..rr..ssss~~~~~~ssss..rr..",
-    "F.r.Y~~~ss~~~~~~ss~~~Z.r.F",
-    "..rc~~~s~~~~~~~~~~s~~~cr..",
-    "..r.Y~sss~~~~~~~~sss~Z.r..",
-    "F.rc.~s.Fs~~~~~~sF.s~.cr.F",
-    "..r..~s..s~~~~~~s..s~..r..",
-    "F.r.Y~sss~~~~~~~~sss~Z.r.F",
+    "..rr..~o~~~~~~~~~~o~..rr..",
+    "F.r.Y~~~o~~~~~~~~o~~~Z.r.F",
+    "..rc~~~~~~~~~~~~~~~~~~cr..",
+    "..r.Y~~~~~~~~~~~~~~~~Z.r..",
+    "F.rc.~~oo~~~~~~~~oo~~.cr.F",
+    "..r..~~oo~~~~~~~~oo~~..r..",
+    "F.r.Y~~~~~~~~~~~~~~~~Z.r.F",
     "..rc.~~~~~~~~~~~~~~~~.cr..",
-    "..rr..~~ss~~~~~~ss~~..rr..",
-    "M.r..ssss.~~~~~~.ssss..r.M",
-    "MM.FF.sss~~~~~~~~sss.FF.MM",
-    "MMM.F..ss~~~~~~~~ss..F.MMM"
+    "..rr..~o~~~~~~~~~~o~..rr..",
+    "M.r..~~~~~~~~~~~~~~~~..r.M",
+    "MM.FF.oo~~~~~~~~~~oo.FF.MM",
+    "MMM.F..~~~~~~~~~~~~..F.MMM"
   ],
   "units": [
     {

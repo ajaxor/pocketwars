@@ -161,14 +161,22 @@ test('a mountain stays (nearly) inside its tile', () => {
   }
 });
 
-test('shallows and deep sea are one shape: the shore is rounded, the border between them is not', () => {
-  const shallows = registry.terrainDef('shallows'), sea = registry.terrainDef('sea');
-  assert.equal(shallows.render.group, sea.render.group, 'same group in the data');
+test('terrains with the same render.group are one shape: the border between them is not rounded, the shore is', () => {
+  const mk = (base) => ({ render: { base, group: 'water' } });
+  const light = mk('#62b9e0'), deep = mk('#3d7ec7');
   const G = '#86b95c';
   const rounds = (t, nb) => { const { ctx } = recorder(); const at = { x: 0, y: 0, now: 0 }; paintTile(ctx, 0, 0, 40, t, null, nb, at); return at.radii; };
-  const allWater = (c) => ({ n: c, e: c, s: c, w: c, ne: c, se: c, sw: c, nw: c });
-  // a shallows tile with deep sea to the east and south, land to the north and west: only its outer (land-facing) corner rounds
-  const nb = { ...allWater('#3d7ec7'), n: G, w: G, nw: G, ne: G, sw: G };
+  const all = (c) => ({ n: c, e: c, s: c, w: c, ne: c, se: c, sw: c, nw: c });
+  // land to the north and west, the other water terrain east and south: only the land-facing corner rounds
+  const nb = { ...all('#3d7ec7'), n: G, w: G, nw: G, ne: G, sw: G };
   nb.group = { n: G, w: G, nw: G, ne: G, sw: G, e: 'water', s: 'water', se: 'water' };
-  assert.deepEqual(rounds(shallows, nb), [40 * .3, 0, 0, 0]);
+  assert.deepEqual(rounds(light, nb), [40 * .3, 0, 0, 0]);
+  assert.deepEqual(rounds(deep, nb), [40 * .3, 0, 0, 0]);
+});
+
+test('shoals draw an islet that joins up with its neighbours', () => {
+  const { ctx, calls } = recorder();
+  const shoals = registry.terrainDef('shoals');
+  paintTile(ctx, 0, 0, 40, shoals, null, { n: '#3d7ec7', e: '#3d7ec7', s: '#3d7ec7', w: '#3d7ec7', ne: '#3d7ec7', se: '#3d7ec7', sw: '#3d7ec7', nw: '#3d7ec7' }, { x: 3, y: 4, now: 0, link: { n: false, e: true, s: false, w: false } });
+  assert.ok(calls.length > 10);
 });

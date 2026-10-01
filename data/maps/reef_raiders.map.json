@@ -3,7 +3,7 @@
   "version": 1,
   "id": "reef_raiders",
   "name": "Reef Raiders",
-  "description": "Small and mean: two island bases, a shallow reef and a deep trench. Every shipyard opens on the trench, so the sea decides it.",
+  "description": "Small and mean: two island bases and a reef of shoals in the middle. Every shipyard opens onto open water, so the sea decides it.",
   "players": [
     {
       "faction": "orange_star",
@@ -35,8 +35,8 @@
     "~": {
       "terrain": "sea"
     },
-    "s": {
-      "terrain": "shallows"
+    "o": {
+      "terrain": "shoals"
     },
     "O": {
       "terrain": "hq",
@@ -66,16 +66,16 @@
   "tiles": [
     "MM.FFrrrrrrrrFF.MM",
     "M.cO.frr..rrg.Bc.M",
-    "..rrrr..ss..rrrr..",
-    "F.r.c.ssssss.c.r.F",
+    "..rrrr..~~..rrrr..",
+    "F.r.c.~~~~~~.c.r.F",
     "..r.Y~~~~~~~~Z.r..",
-    "..rc.s~ssss~s.cr..",
-    "F.r..s~ssss~s..r.F",
+    "..rc.~~oooo~~.cr..",
+    "F.r..~~oooo~~..r.F",
     "..r.Y~~~~~~~~Z.r..",
-    "..rr.ssssssss.rr..",
-    "M..F.ssssssss.F..M",
-    "MM.FF.ssssss.FF.MM",
-    "MMM.F.ssssss.F.MMM"
+    "..rr.~~~~~~~~.rr..",
+    "M..F.~~o~~o~~.F..M",
+    "MM.FF.~~~~~~.FF.MM",
+    "MMM.Fo~~~~~~oF.MMM"
   ],
   "units": [
     {

@@ -3,7 +3,7 @@
   "version": 1,
   "id": "harbor_front",
   "name": "Harbor Front",
-  "description": "A bay between two armies. Fight over the land bridge in the north, or build a shipyard fleet and take the bay. Subs hide in the deep; destroyers hunt them in the shallows.",
+  "description": "A bay between two armies. Fight over the land bridge in the north, or build a shipyard fleet and take the bay. Subs hide in the deep; destroyers hunt them with sonar.",
   "players": [
     {
       "faction": "orange_star",
@@ -35,8 +35,8 @@
     "~": {
       "terrain": "sea"
     },
-    "s": {
-      "terrain": "shallows"
+    "o": {
+      "terrain": "shoals"
     },
     "O": {
       "terrain": "hq",
@@ -67,18 +67,18 @@
     "MM.FF..rrrrrrrr..FF.MM",
     "M..c..rr......rr..c..M",
     "...F..r........r..F...",
-    "..rrrrr..ssss..rrrrr..",
-    "..rO.frsss~~sssrg.Br..",
+    "..rrrrr..o~~o..rrrrr..",
+    "..rO.fr~~~~~~~~rg.Br..",
     "..r..crY~~~~~~Zrc..r..",
-    "FF.c..rss~~~~ssr..c.FF",
-    "FF..rrr.s~ss~s.rrr..FF",
-    "FF..r.c.s~ss~s.c.r..FF",
-    "..r...rss~~~~ssr...r..",
+    "FF.c..r~~~~~~~~r..c.FF",
+    "FF..rrr.~~oo~~.rrr..FF",
+    "FF..r.c.~~oo~~.c.r..FF",
+    "..r...r~~~~~~~~r...r..",
     "..rrrrrY~~~~~~Zrrrrr..",
-    "..rc..rsss~~sssr..cr..",
-    "M...F.r..s~~s..r.F...M",
-    "M..FF..r.ssss.r..FF..M",
-    "MM.FF..r..ss..r..FF.MM",
+    "..rc..r~~~~~~~~r..cr..",
+    "M...F.r..o~~o..r.F...M",
+    "M..FF..r.~~~~.r..FF..M",
+    "MM.FF..r..~~..r..FF.MM",
     "MMM.F..rr....rr..F.MMM"
   ],
   "units": [

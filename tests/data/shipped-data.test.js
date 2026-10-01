@@ -99,7 +99,7 @@ test('obstacles: forests, mountains and buildings block direct fire; only mounta
   assert.equal(height('mountain'), 2);
   for (const id of ['city', 'hq', 'factory', 'barracks', 'airfield']) assert.equal(height(id), 2, id);
   assert.equal(height('shipyard'), 1, 'cranes and slips block less than a hall');
-  for (const id of ['plain', 'road', 'sea', 'shallows']) assert.equal(height(id), undefined, id);
+  for (const id of ['plain', 'road', 'sea']) assert.equal(height(id), undefined, id);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => registry.terrainDef(id).attributes.vantage), ['mountain']);
   assert.ok(registry.terrainDef('mountain').attributes.vantage > height('forest'), 'a mountain sees over forests');
   assert.ok(!(registry.terrainDef('mountain').attributes.vantage > height('mountain')), 'but not over other mountains');

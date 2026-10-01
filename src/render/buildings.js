@@ -139,13 +139,20 @@ export const BUILDINGS = {
 
   shipyard(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
-    // flat and simple: a concrete pad, a hull on the slip, and one crane in the owner's colour
-    k.rect(.06, .7, .86, .2, '#9aa1ab');                                        // pad
-    k.poly([[.34, .46], [.86, .46], [.9, .54], [.8, .72], [.4, .72]], '#59606c');   // hull
-    k.rect(.4, .58, .48, .07, owner);                                           // owner stripe
-    k.rect(.12, .14, .07, .6, owner);                                           // crane: one leg, a jib over the hull, a hook
-    k.rect(.12, .14, .6, .07, owner);
-    k.line([[.64, .21], [.64, .4]], '#20232a', .014);
-    k.rect(.6, .4, .08, .05, '#ffd24a');
+    // flat shapes, a few more parts than the first draft: concrete pad, a hull on the slip, a gantry crane and a workshop shed
+    k.rect(.04, .74, .92, .18, '#9aa1ab');                                       // pad
+    k.rect(.04, .74, .92, .03, '#b8bec7');                                       // lit front edge
+    k.poly([[.3, .44], [.88, .44], [.94, .52], [.84, .74], [.36, .74]], '#59606c');   // hull on the slip
+    k.poly([[.3, .44], [.88, .44], [.9, .48], [.31, .48]], '#7d8592');           // deck
+    k.rect(.36, .6, .52, .07, owner);                                           // owner stripe
+    for (let i = 0; i < 4; i++) k.rect(.4 + i * .13, .48, .014, .12, '#434953');     // ribs
+    k.rect(.24, .12, .06, .64, owner); k.rect(.88, .12, .06, .64, owner);        // crane: a leg either side of the hull,
+    k.rect(.2, .1, .76, .07, owner);                                            // a jib over it,
+    k.rect(.24, .24, .06, .03, shade(owner, -.3)); k.rect(.88, .24, .06, .03, shade(owner, -.3));   // cross braces
+    k.line([[.62, .17], [.62, .38]], '#20232a', .014);                          // and a hook on a line
+    k.rect(.58, .38, .08, .05, '#ffd24a');
+    k.rect(.04, .56, .16, .18, '#d8dce2'); k.poly([[.02, .56], [.12, .5], [.22, .56]], shade(owner, -.2));   // workshop shed with a gabled roof
+    k.rect(.08, .64, .06, .1, '#434953');                                       // its door
   },
+
 };

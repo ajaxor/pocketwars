@@ -1,5 +1,5 @@
 // The terrain art: what is drawn ON a tile. terrain.json -> render.decor names a drawing (grass, road, rough, forest, mountain,
-// sea, shallows) and TERRAIN_DECOR supplies one function per name:
+// sea, shoals) and TERRAIN_DECOR supplies one function per name:
 //     decor(g, px, py, S, { x, y, now, link, radii })
 // (px, py) is the tile's top-left pixel, S its size, (x, y) its grid position (so tiles can vary without randomness) and
 // `now` the clock in ms (so the sea can twinkle). `link` ({n, e, s, w, ne, se, sw, nw}, booleans) tells which neighbours carry
@@ -169,17 +169,27 @@ export const TERRAIN_DECOR = {
       }
       peak(cx, w, top, yb, pkx, false);
     },
-    // Shallow water is lighter than the open sea, with a few small pale sand specks and faint glints: it reads as "you could wade
-    // here" at a glance, so nobody sends a battleship into it. Edges stay flat (the tile shape is terrain-layer.js's business).
-    shallows(g, px, py, S, { x, y, now }) {
+    // Shoals: a little sandy islet poking out of the sea. The tile's own shape (own colour, rounded where it meets water) is the island;
+    // this adds a lighter middle, a pale surf line round the rim, and a couple of rocks and a tuft of grass, placed per tile.
+    shoals(g, px, py, S, { x, y, link = {} }) {
+      g.save();
+      const m = S * .12, l = link.w ? 0 : m, r = link.e ? 0 : m, tp = link.n ? 0 : m, bt = link.s ? 0 : m;   // islets of several tiles join up: no rim between them
+      g.fillStyle = '#efe1b4'; g.beginPath(); g.roundRect(px + l, py + tp, S - l - r, S - tp - bt, S * .2); g.fill();   // dry sand
+      g.strokeStyle = 'rgba(255,255,255,.7)'; g.lineWidth = Math.max(1.5, S * .05); g.lineCap = 'round';                 // surf along the open sides
+      const o = S * .04;
+      g.beginPath();
+      if (!link.n) { g.moveTo(px + (link.w ? 0 : S * .2), py + o); g.lineTo(px + S - (link.e ? 0 : S * .2), py + o); }
+      if (!link.s) { g.moveTo(px + (link.w ? 0 : S * .2), py + S - o); g.lineTo(px + S - (link.e ? 0 : S * .2), py + S - o); }
+      if (!link.w) { g.moveTo(px + o, py + (link.n ? 0 : S * .2)); g.lineTo(px + o, py + S - (link.s ? 0 : S * .2)); }
+      if (!link.e) { g.moveTo(px + S - o, py + (link.n ? 0 : S * .2)); g.lineTo(px + S - o, py + S - (link.s ? 0 : S * .2)); }
+      g.stroke();
       for (let i = 0; i < 2; i++) {
-        const cx = px + (.22 + .56 * rnd(x, y, i + 10)) * S, cy = py + (.26 + .48 * rnd(x, y, i + 13)) * S;
-        g.fillStyle = i ? 'rgba(244,232,186,.4)' : 'rgba(244,232,186,.6)';
-        g.beginPath(); g.ellipse(cx, cy, S * (.05 + .05 * rnd(x, y, i + 16)), S * (.02 + .02 * rnd(x, y, i + 19)), (rnd(x, y, i + 22) - .5) * .7, 0, 7); g.fill();
+        const cx = px + (.28 + .44 * rnd(x, y, i + 40)) * S, cy = py + (.3 + .4 * rnd(x, y, i + 43)) * S;
+        g.fillStyle = '#8c8f96'; g.beginPath(); g.ellipse(cx, cy, S * (.07 + .04 * rnd(x, y, i + 46)), S * .05, 0, 0, 7); g.fill();
+        g.fillStyle = '#b4b7be'; g.beginPath(); g.ellipse(cx - S * .015, cy - S * .015, S * .035, S * .02, 0, 0, 7); g.fill();
       }
-      const t = now / 1000;
-      const a = Math.max(0, Math.sin(t * 1.1 + rnd(x, y, 5) * 6.28));
-      if (a > .05) { g.fillStyle = `rgba(255,255,255,${(a * .55).toFixed(2)})`; g.fillRect(px + (.15 + .6 * rnd(x, y, 7)) * S, py + (.6 + .2 * rnd(x, y, 8)) * S, S * .08, Math.max(1, S * .026)); }
+      if (rnd(x, y, 49) > .35) { g.fillStyle = '#7fae55'; g.beginPath(); g.ellipse(px + (.3 + .4 * rnd(x, y, 50)) * S, py + (.62 + .12 * rnd(x, y, 51)) * S, S * .07, S * .04, 0, 0, 7); g.fill(); }
+      g.restore();
     },
     // Open water is plain; a few white glints twinkle on it.
     sea(g, px, py, S, { x, y, now }) {

@@ -1,8 +1,7 @@
 // The terrain layer: paints every tile of the map. Tiles of the same base colour join up into one shape, and only the
 // outer corners of each shape are rounded. A rounded corner is filled with the colour of whatever it opens onto.
-// `terrain.render.group` (optional) puts different terrains in ONE shape even though their colours differ: shallows and deep sea are
-// both "water", so the shore is rounded as a single body of water and the shallows/deep border is a straight edge, not a pair of
-// rounded shapes. A terrain without a group is grouped by its base colour.
+// `terrain.render.group` (optional) puts different terrains in ONE shape even though their colours differ: the group's outline is rounded
+// once and the borders between its members stay straight. A terrain without a group is grouped by its base colour.
 // The map edge does not round anything: a shape is treated as carrying on past the edge, so it stays flat along it.
 // What is drawn ON the tile (trees, mountains, waves...) comes from terrain-art.js.
 

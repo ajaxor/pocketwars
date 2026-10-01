@@ -14,7 +14,7 @@ import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);
 const legend = {
-  '~': { terrain: 'sea' }, s: { terrain: 'shallows' }, '.': { terrain: 'plain' },
+  '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' },
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 },
 };
 const players = [{ faction: 'orange_star', controller: 'human', funds: 10000 }, { faction: 'blue_moon', controller: 'human', funds: 10000 }];
@@ -33,13 +33,11 @@ test('a submarine can only dive on deep water, and diving hides it', () => {
   assert.deepEqual(hiddenFrom(g, 1), [sub.id]);
 });
 
-test('shallows: deep-sea ships stay out, destroyers go in, and a sub cannot dive there', () => {
-  const g = sea(['~~ss~~~h', '........'], [['destroyer', 0, 1, 0], ['submarine', 0, 0, 0]]);
-  const reach = (u) => computeReach(g, u);
-  assert.ok(reach(g.state.units[0]).has(2, 0), 'destroyer enters shallows');
-  assert.ok(!reach(g.state.units[1]).has(2, 0), 'submarine does not');
-  const bad = g.act({ unitId: g.state.units[0].id, to: { x: 2, y: 0 }, action: { type: 'submerge' } });
-  assert.equal(bad.error, 'cannot-submerge', 'a destroyer has no dive');
+test('shoals are impassable to ships, and a ship cannot dive or stop on them', () => {
+  const g = sea(['~~o~~~~h', '........'], [['destroyer', 0, 1, 0], ['submarine', 0, 0, 0]]);
+  for (const u of g.state.units) assert.ok(!computeReach(g, u).has(2, 0), `${u.type} stays out of the shoals`);
+  assert.equal(g.act({ unitId: g.state.units[0].id, to: { x: 1, y: 0 }, action: { type: 'submerge' } }).error, 'cannot-submerge', 'a destroyer has no dive');
+  assert.ok(registry.terrainDef('shoals').defense > 0, 'but they give cover');
 });
 
 test('a submerged unit is noticed when adjacent, and by sonar within its range', () => {
@@ -119,7 +117,7 @@ test('a ship the planner sends over a hidden unit never passes through it', () =
 });
 
 test('a submerged submarine stays down while it moves through deep water, and can surface by order', () => {
-  const g = sea(['~~~ss~~~', '........'], [['submarine', 0, 2, 0], ['recon', 1, 7, 1]]);
+  const g = sea(['~~~oo~~~', '........'], [['submarine', 0, 2, 0], ['recon', 1, 7, 1]]);
   const sub = g.state.units[0];
   sub.submerged = true;
   assert.equal(g.act({ unitId: sub.id, to: { x: 1, y: 0 }, action: { type: 'wait' } }).ok, true);
@@ -184,11 +182,11 @@ test('without a choice the first free water tile is used; with none the build is
   assert.equal(g.build(1, 0, 'destroyer').error, 'no-deploy-tile', 'the only water tile is taken');
 });
 
-test('deployTiles: deep-sea ships cannot launch into shallows, destroyers can', async () => {
+test('deployTiles: ships are never launched onto shoals', async () => {
   const { deployTiles } = await import('../../src/engine/economy.js');
-  const g = yardGame(['.Y~', '.s.']);
+  const g = yardGame(['.Y~', '.o.']);
   assert.deepEqual(deployTiles(g, 1, 0, registry.unit('submarine')).map((t) => [t.x, t.y]), [[2, 0]]);
-  assert.deepEqual(deployTiles(g, 1, 0, registry.unit('destroyer')).map((t) => [t.x, t.y]).sort(), [[1, 1], [2, 0]]);
+  assert.deepEqual(deployTiles(g, 1, 0, registry.unit('destroyer')).map((t) => [t.x, t.y]), [[2, 0]]);
 });
 
 test('ordinary properties still deploy on themselves', async () => {

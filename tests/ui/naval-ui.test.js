@@ -15,7 +15,7 @@ import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
 
 const registry = await loadRegistry(readData);
-const legend = { '~': { terrain: 'sea' }, s: { terrain: 'shallows' } };
+const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' } };
 const players = [{ faction: 'orange_star', controller: 'human', funds: 0 }, { faction: 'blue_moon', controller: 'human', funds: 0 }];
 
 function setup(rows, unitsOnMap) {
@@ -44,7 +44,7 @@ test('tapping the tile of a hidden enemy submarine finds nothing', () => {
 });
 
 test('the order window offers Submerge on deep water only, and Surface once down', () => {
-  const t = setup(['~~s~~', '~~~~~'], [['submarine', 0, 0, 0], ['cruiser', 1, 4, 1]]);
+  const t = setup(['~~o~~', '~~~~~'], [['submarine', 0, 0, 0], ['cruiser', 1, 4, 1]]);
   t.controller.tap(0, 0);
   t.controller.tap(0, 0);   // confirm "stay here"
   assert.ok(t.labels().includes('Submerge'));

@@ -37,7 +37,7 @@ export const darken = (h, t) => mix(h, '#000000', t);
 
 // ---- backdrops: the game's own terrain drawing, so units are judged on what they will really sit on -------
 const { TERRAIN_DECOR } = await import(pathToFileURL(path.join(REPO, 'src/render/terrain-art.js')).href);
-export const TERRAIN_IDS = ['plain', 'forest', 'mountain', 'road', 'sea', 'shallows'].filter((t) => terrain[t]);
+export const TERRAIN_IDS = ['plain', 'forest', 'mountain', 'road', 'sea', 'shoals'].filter((t) => terrain[t]);
 
 /** Paint one tile-sized backdrop. `bg` is a terrain id from data/terrain.json or a #rrggbb colour. */
 export function paintTile(g, bg, x, y, S) {

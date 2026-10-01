@@ -46,7 +46,7 @@ for (const id of ['harbor_front', 'reef_raiders', 'twin_fleets']) {
     const game = new Game(registry, map);
     const yards = allProperties(game).filter((p) => p.terrain.attributes.property.builds.includes('naval'));
     assert.ok(yards.length >= 2);
-    const reach = flood(map, yards[0], 'deep_sea');
+    const reach = flood(map, yards[0], 'naval');
     for (const y of yards) assert.ok(reach.has(y.y * map.width + y.x), `${id}: shipyard ${y.x},${y.y} is boxed in`);
     for (const y of yards) {
       const around = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => registry.terrainDef(map.terrain[y.y + dy]?.[y.x + dx] ?? 'plain').attributes?.submergible);
