@@ -12,6 +12,7 @@
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
 // hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
+import { canResupplyAt } from './ammo.js';
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
@@ -86,7 +87,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
 
   // with nothing to shoot or capture, a submarine goes under (it cannot be hunted there without sonar, and it can still strike from there)
   const dive = mayAct && !best.target && !best.capture && canSubmergeAt(game, unit, best.x, best.y);
-  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : { type: 'wait' };
+  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) ? { type: 'resupply' } : { type: 'wait' };
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
 

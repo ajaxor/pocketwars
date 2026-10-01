@@ -9,6 +9,7 @@
 //                           facing: 1 right / -1 left, the way it last moved (see game.act), toward the map centre at first (drawing only);
 //                           submerged: diving (see submerge.js); halted: null, or { moved } after a move was interrupted by a hidden
 //                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped);
+//                           deployed: true on a carrier that has already deployed this turn (see deploy.js), cleared at the start of its owner's turn;
 //                           fresh: true on a unit built this turn: it is ready, but its one order can only be a move and a Wait (a free
 //                           move off the property that built it; no attack, capture or dive). Cleared when it acts and at the start of its
 //                           owner's next turn; absent otherwise;

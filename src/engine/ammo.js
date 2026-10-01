@@ -6,9 +6,9 @@
 //   terrain attribute `resupply: { range, categories }` on a property: refills the ammo of its owner's units of those categories
 //
 // WHEN A UNIT IS RESUPPLIED. (1) At the start of its owner's turn, if it stands in reach of such a property (economy.js startTurn).
-// (2) When it ends an order with Wait in reach of one (game.js act): it is refilled and, as a pit stop, gets its move back: it is
-// ready again, with a full move, from where it stopped. That only happens when something was actually refilled, and only after a Wait
-// (an attack or a drop uses the unit's turn), so it cannot be repeated for free.
+// (2) When it ends an order with the Resupply action (game.js act; offered in place of Wait when it is short on ammo and next to such a
+// property): it is refilled and, as a pit stop, gets its move back: it is ready again, with a full move, from where it stopped. It has
+// to be short and in reach (canResupplyAt), and an attack or a drop uses the unit's turn, so it cannot be repeated for free.
 //
 // A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say.
 
@@ -41,6 +41,9 @@ export function ammoLevel(game, unit) {
   const n = ammoOf(game, unit);
   return n <= 0 ? 'empty' : n <= cfg.low ? 'low' : 'ok';
 }
+
+/** Could `unit`, stopping on (x, y), take on ammo there (it is short and a friendly property in reach resupplies it)? The 'resupply' action needs this. */
+export const canResupplyAt = (game, unit, x, y) => usesAmmo(game, unit) && ammoOf(game, unit) < ammoConfig(game, unit).max && resupplySource(game, unit, x, y) !== null;
 
 /** The friendly property that would refill `unit` if it stood on (x, y) (default: where it is), or null. */
 export function resupplySource(game, unit, x = unit.x, y = unit.y) {

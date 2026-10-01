@@ -24,6 +24,7 @@ export function startTurn(game, player) {
     u.done = false;
     u.halted = null;
     delete u.fresh;
+    delete u.deployed;
     const property = propertyAt(game, u.x, u.y);
     if (property && ownerAt(game, u.x, u.y) === player && u.hp < registry.rules.maxHp) {
       const from = u.hp;

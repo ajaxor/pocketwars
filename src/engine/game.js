@@ -1,8 +1,9 @@
 // Game: the single entry point for changing game state. UI, AI and tests all go through these methods.
 //
 //   const game = new Game(registry, map);
-//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'attack' | 'submerge' | 'surface' | 'deploy', targetId, at } })
+//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId } })
 //   game.build(x, y, unitType)
+//   game.deploy({ unitId, to })        a carrier (transport copter) puts a unit down, apart from its own order
 //   game.endTurn()
 //   game.undo()
 //
@@ -14,7 +15,8 @@
 // can only be a move followed by Wait ('just-built' otherwise), so it drives off the factory (swims off the shipyard, flies off the
 // airfield) without attacking, capturing or diving. A property builds one unit per turn (economy.js).
 //
-// PIT STOPS. A unit with ammo that ends a Wait in reach of a friendly property that resupplies it is refilled and gets its move back:
+// PIT STOPS. A unit with ammo that is short, and ends an order next to a friendly property that resupplies it, can Resupply instead of
+// Wait (the 'resupply' action; the UI offers it in place of Wait). It is refilled and gets its move back:
 // the result then carries `refreshed: { unitId }` and the unit is not `done`: it can be ordered again from where it stopped (ammo.js).
 //
 // INTERRUPTED MOVES. A player plans a move without knowing about hidden units (see detection.js), so the path can run into one.
@@ -23,7 +25,7 @@
 // (`unit.halted`) but has not acted, and the caller must send a second order for it from where it stands (attack, wait, dive...).
 // Its reach is only its own tile; a unit that got at least one tile cannot fire indirect weapons, like any unit that has moved.
 
-import { resupply } from './ammo.js';
+import { canResupplyAt, resupply } from './ammo.js';
 import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy } from './deploy.js';
@@ -78,9 +80,8 @@ export class Game {
     if (action.type === 'surface') {
       return canSurface(unit) ? { ok: true, unit, reach } : fail('cannot-surface');
     }
-    if (action.type === 'deploy') {
-      const problem = deployProblem(this, unit, to.x, to.y, action.at);
-      return problem ? fail(problem) : { ok: true, unit, reach };
+    if (action.type === 'resupply') {
+      return canResupplyAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-resupply');
     }
     if (action.type === 'attack') {
       const target = unitById(this, action.targetId);
@@ -139,12 +140,11 @@ export class Game {
     else if (action.type === 'attack') events.push(...resolveAttack(this, unit, target));
     else if (action.type === 'submerge') { unit.submerged = true; events.push({ type: 'dive', unit: snapshotUnit(unit) }); }
     else if (action.type === 'surface') { unit.submerged = false; events.push({ type: 'surface', unit: snapshotUnit(unit), forced: false }); }
-    else if (action.type === 'deploy') events.push(...resolveDeploy(this, unit, action.at));
     unit.done = true;
     unit.halted = null;
     delete unit.fresh;
     let refreshed = null;
-    if (action.type === 'wait') {   // a pit stop: refilled, so it may move again from here
+    if (action.type === 'resupply') {   // a pit stop: refilled, so it may move again from here
       const filled = resupply(this, unit);
       if (filled) { events.push({ ...filled, refreshed: true }); unit.done = false; refreshed = { unitId: unit.id }; }
     }
@@ -152,6 +152,22 @@ export class Game {
     // An order that shows the player a hidden unit (by moving next to it, say) cannot be taken back either.
     if (hiddenBefore.some((id) => { const e = unitById(this, id); return e && canSee(this, unit.owner, e); })) this.undoSnapshot = null;
     return { ok: true, events, ...(refreshed && { refreshed }) };
+  }
+
+  /**
+   * `unitId` (a carrier such as the transport copter) deploys a new unit, which lands on `to` (see deploy.js). Apart from the carrier's
+   * own order: it can come before or after it, and does not end it. Returns { ok, events, deployed: { unitId } } (the new unit).
+   */
+  deploy({ unitId, to }) {
+    if (this.isOver) return fail('game-over');
+    const carrier = unitById(this, unitId);
+    if (!carrier) return fail('no-such-unit');
+    if (carrier.owner !== this.state.turn) return fail('not-your-turn');
+    const problem = deployProblem(this, carrier, to);
+    if (problem) return fail(problem);
+    this.undoSnapshot = null;   // the ammo is spent
+    const events = resolveDeploy(this, carrier, to);
+    return { ok: true, events, deployed: { unitId: events[0].unitId } };
   }
 
   /** Current player builds `unitType` on the property at (x, y): it appears there with a free move (see above). */
