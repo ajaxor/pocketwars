@@ -165,9 +165,9 @@ const seaClip = (g, s, line) => { g.beginPath(); g.rect(-s, line * s, s * 2, s *
 /** A propeller at (x, y) on the stern, the hull's own colour `col` (dark under water): a blurred blade whose length
  *  flickers as it turns, and (`bubbles`) a stream of bubbles astern. Draw it inside the ship's own transform so it bobs with it. */
 const propeller = (g, s, x, y, w, run, col, bubbles = true) => {
-  const blade = col, a = run ? w * 17 : .5, len = .06 * (.35 + .65 * Math.abs(Math.cos(a)));
-  oval(g, s, x, y, .014, len, blade);
-  oval(g, s, x, y, .014, .014, blade);
+  const blade = col, a = run ? w * 17 : .5, len = .08 * (.35 + .65 * Math.abs(Math.cos(a)));
+  oval(g, s, x, y, .018, len, blade);
+  oval(g, s, x, y, .018, .018, blade);
   if (!run || !bubbles) return;
   for (let i = 0; i < 3; i++) {
     const f = (w * 1.6 + i / 3) % 1;                          // each bubble drifts back and fades
@@ -214,13 +214,14 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .3, rise: .2, sweep: .6 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.47 + .005, .28, w, run, dk);
+    if (!light) propeller(g, s, -.47 - .02, .28, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      box(g, s, -.22, -.1, .26, .1, 3, c); box(g, s, -.17, -.2, .17, .1, 3, c);                    // stepped superstructure
-      box(g, s, -.01, -.14, .06, .14, 2, c); stroke(g, s, -.1, -.2, -.1, -.33, 2, INK);           // funnel and mast
+      box(g, s, -.12, -.34, .1, .34, 2, c);                                                         // bridge: a tower with two tiers of wings
+      box(g, s, -.22, -.14, .26, .06, 2, c); box(g, s, -.18, -.26, .18, .06, 2, c);
+      box(g, s, .07, -.13, .06, .13, 2, c);                                                         // funnel
       const f = deckAt(H, .22);
-      turret(g, s, .22, f.y + .02, .26, .2, { elev: .52, n: 2, dk });                                   // forward turret: level block, barrels raised 30 degrees
+      turret(g, s, .22, f.y + .02, .26, .2, { ang: f.ang, elev: .52, n: 2, dk });                                   // forward turret: level block, barrels raised 30 degrees
       turret(g, s, -.27, H.deck, .22, .18, { n: 2, dk, dir: -1, elev: .52 });                               // aft turret: level block, barrels astern at 30 degrees
     }
     g.restore();
@@ -231,14 +232,13 @@ const cruiser = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .04, D = .02, H = { x0: -.45, x1: .45, deck: D, keel: .34, rise: .04, sweep: .2 };
   afloat(g, s, w, run, -.45, .45, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.45 + .005, .32, w, run, dk);
+    if (!light) propeller(g, s, -.45 - .02, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, .06, D - .05, .36, .06, 2, c);                                                      // raised forecastle
       turret(g, s, .27, D - .05, .13, .14, { dk });                                                 // the deck gun, forward
-      box(g, s, -.13, D - .12, .2, .12, 3, c); box(g, s, -.09, D - .21, .12, .09, 3, c);            // stepped bridge
-      box(g, s, -.075, D - .185, .09, .025, 1, GLASS);
-      stroke(g, s, -.03, D - .21, -.03, D - .34, 2, INK); stroke(g, s, -.08, D - .3, .02, D - .3, 2, INK);   // mast with a yard
+      box(g, s, -.085, D - .28, .1, .28, 2, c); box(g, s, -.15, D - .19, .22, .08, 2, c);          // plus-shaped bridge
+      box(g, s, -.1, D - .175, .13, .025, 1, GLASS);
       // the flak mount is the flak unit's wedge, half size: raked up and forward so it reads as aimed at the sky
       const mount = (x, y) => [[-.2, -.02], [-.22, -.15], [-.1, -.2], [.05, -.2], [.17, -.02]].map(([a, b]) => [x + a * .55, y + b * .55]);
       poly(g, s, mount(-.3, D), mix(dk, '#ffffff', .5));
@@ -257,12 +257,12 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s, D = .04, H = { x0: -.38, x1: .4, deck: D, keel: .34, rise: .03, sweep: .16 };
   afloat(g, s, w, run, -.38, .4, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.38 + .005, .32, w, run, dk);
+    if (!light) propeller(g, s, -.38 - .02, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      box(g, s, -.14, D - .12, .22, .12, 3, c); box(g, s, -.11, D - .09, .16, .03, 1, GLASS);       // bridge
-      box(g, s, .2, D - .05, .1, .05, 2, c);                                                        // the gun sits on a raised mount
-      turret(g, s, .25, D - .05, .12, .13, { dk, bar: .035 });
+      box(g, s, -.14, D - .18, .22, .18, 3, c); box(g, s, -.11, D - .15, .16, .03, 1, GLASS);       // bridge
+      box(g, s, .14, D - .05, .1, .05, 2, c);                                                        // the gun sits on a raised mount
+      turret(g, s, .19, D - .05, .12, .13, { dk, bar: .035 });
     }
     g.restore();
   });
@@ -278,7 +278,7 @@ const submarine = (g, { s, c, dk, w, run, b, submerged }) => {
     const col = light ? c : dk;
     g.save(); g.translate(0, (dip + bb) * s);
     box(g, s, -.44, -.05, .88, .27, s * .13, col);                                           // round hull
-    propeller(g, s, -.46, .085, w, run, col, !light);                                         // on the middle of the stern
+    propeller(g, s, -.49, .085, w, run, col, !light);                                         // on the middle of the stern
     box(g, s, -.06, -.17, .17, .16, 3, col);                                                  // conning tower
     if (light) { stroke(g, s, .07, -.17, .07, -.28, 2, INK); stroke(g, s, .07, -.28, .13, -.28, 2, INK); }   // periscope
     g.restore();
