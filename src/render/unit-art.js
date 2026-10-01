@@ -217,8 +217,8 @@ const battleship = (g, { s, c, dk, w, run, b }) => {
     if (!light) propeller(g, s, -.47 - .02, .28, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      box(g, s, -.12, -.34, .1, .34, 2, c);                                                         // bridge: a tower with two tiers of wings
-      box(g, s, -.22, -.14, .26, .06, 2, c); box(g, s, -.18, -.26, .18, .06, 2, c);
+      poly(g, s, [[-.1, -.34], [-.04, -.34], [-.01, 0], [-.13, 0]], c);                             // bridge: a mast tapering thicker toward the deck
+      box(g, s, -.2, -.14, .26, .06, 2, c); box(g, s, -.16, -.26, .18, .06, 2, c);                  // two tiers of wings, centred on the mast
       box(g, s, .07, -.13, .06, .13, 2, c);                                                         // funnel
       const f = deckAt(H, .22);
       turret(g, s, .22, f.y + .02, .26, .2, { ang: f.ang, elev: .52, n: 2, dk });                                   // forward turret: level block, barrels raised 30 degrees
