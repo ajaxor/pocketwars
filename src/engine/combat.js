@@ -91,6 +91,24 @@ export function calcDamage(game, attacker, defender, from = attacker) {
   return weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
 }
 
+/**
+ * What an attack would do, for the preview: { damage, destroyed, counter } where `counter` is the HP the defender's reply would
+ * take off the attacker, or null when there is no reply (the defender died, cannot answer, or the shot is indirect). `from` is where
+ * the attacker would stand. It does not change the game.
+ */
+export function forecastAttack(game, attacker, defender, from = attacker) {
+  const weapon = weaponFor(game, attacker, defender, from);
+  if (!weapon) return { damage: 0, destroyed: false, counter: null };
+  const where = { ...attacker, x: from.x, y: from.y };
+  const damage = weaponDamage(game, weapon, attacker, defender);
+  const left = round1(defender.hp - damage);
+  if (left <= 0) return { damage, destroyed: true, counter: null };
+  const hurt = { ...defender, hp: left };
+  if (!canCounter(game, hurt, where, weapon)) return { damage, destroyed: false, counter: null };
+  const reply = weaponFor(game, hurt, where, hurt, { counter: true });
+  return { damage, destroyed: false, counter: reply ? weaponDamage(game, reply, hurt, where) : null };
+}
+
 /** The damage formula before rounding. weapon.damage is scaled by weapon.targetMultipliers for the target mode that reaches the defender's layer. */
 function rawDamage(game, weapon, attacker, defender) {
   const d = unitDef(game, defender);

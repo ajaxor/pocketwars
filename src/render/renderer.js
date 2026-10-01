@@ -17,12 +17,13 @@
 // origin to the map's top-left corner (which may be off-screen), and only the tiles that are on screen are painted.
 
 import { ammoLevel } from '../engine/ammo.js';
-import { calcDamage, canAttackFrom } from '../engine/combat.js';
+import { canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { facingAlong, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
+import { BUBBLE_COUNTER, BUBBLE_HIT, drawBubble } from './bubble.js';
 import { drawUnit } from './unit-sprites.js';
 
 export class Renderer {
@@ -144,7 +145,7 @@ export class Renderer {
     const acted = u.done && u.owner === game.state.turn;
     const cx = Math.floor((base[0] + S / 2) / S), cy = Math.floor((base[1] + S / 2) / S);   // the tile under the unit's centre, even mid-slide
     const onWater = !dying && !!game.registry.terrainDef(game.map.terrain[Math.min(game.map.height - 1, Math.max(0, cy))]?.[Math.min(game.map.width - 1, Math.max(0, cx))])?.render.water;
-    drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: u.hp }, {
+    drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: dying ? u.hp : effects.displayHp(u, now) }, {
       face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(game.map.terrain[u.y][u.x]).render.water),
@@ -278,13 +279,11 @@ export class Renderer {
         const n = Math.sin(a);
         g.beginPath(); g.moveTo(ex + c * (r - S * .1), ey + n * (r - S * .1)); g.lineTo(ex + c * (r + S * .12), ey + n * (r + S * .12)); g.stroke();
       }
-      const n = calcDamage(game, sel, pending, this.logicalPos(sel, view));
-      const cx = (pending.x + (pending.x < map.width - 1 ? 1.5 : -.5)) * S;
-      const cy = (pending.y + .5) * S;
-      const w = S * .82;
-      const h = S * .42;
-      g.save(); g.fillStyle = 'rgba(255,255,255,.95)'; g.strokeStyle = '#ff3b3b'; g.lineWidth = 2; g.beginPath(); g.roundRect(cx - w / 2, cy - h / 2, w, h, 6); g.fill(); g.stroke();
-      g.fillStyle = '#d62828'; g.font = font(700, S * .34); g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText('-' + n, cx, cy); g.restore();
+      const f = view.forecast;
+      if (f) {   // speech bubbles on the HP digits: the damage the target takes, and the counterattack the attacker takes
+        drawBubble(g, pending.x * S, pending.y * S, S, f.destroyed ? 'KO' : '-' + f.damage, BUBBLE_HIT);
+        if (f.counter) drawBubble(g, f.at.x * S, f.at.y * S, S, '-' + f.counter, BUBBLE_COUNTER);
+      }
     }
     if (view.cursor && !sel) {
       g.strokeStyle = '#fff'; g.lineWidth = 3; g.globalAlpha = .7 + .3 * Math.sin(now / 220);

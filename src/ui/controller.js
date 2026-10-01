@@ -20,7 +20,7 @@
 // game.act(), so cancelling is free and the engine never sees half-finished moves.
 
 import { canCapture } from '../engine/capture.js';
-import { canTarget } from '../engine/combat.js';
+import { canTarget, forecastAttack } from '../engine/combat.js';
 import { canSee } from '../engine/detection.js';
 import { canDeploy, deployConfig, dropTiles } from '../engine/deploy.js';
 import { buildOptions } from '../engine/economy.js';
@@ -73,7 +73,17 @@ export class Controller {
       pendingTargetId: this.pendingTargetId,
       cursor: this.cursor,
       deploy: this.deploy,
+      forecast: this.#forecast(),
     };
+  }
+
+  /** The damage preview for the picked target: { damage, destroyed, counter, at } (`at` = where the attacker stands), or null. */
+  #forecast() {
+    if (!this.sel || this.pendingTargetId === null) return null;
+    const target = unitById(this.game, this.pendingTargetId);
+    if (!target) return null;
+    const at = this.#selPos();
+    return { ...forecastAttack(this.game, this.sel, target, at), at };
   }
 
   // The selected unit is drawn at `dest` while previewing, so hit-testing uses that position too.

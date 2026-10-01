@@ -10,6 +10,7 @@ import { MoveAnimator } from '../../src/render/animator.js';
 import { Renderer } from '../../src/render/renderer.js';
 import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
+import { drawBubble } from '../../src/render/bubble.js';
 import { AMMO_BLINK_MS, drawUnit } from '../../src/render/unit-sprites.js';
 import { playTurn } from '../../src/engine/ai.js';
 
@@ -252,4 +253,25 @@ test('a marine is drawn as a dinghy on water', () => {
   const o = { def: registry.unit('marine'), colors: registry.faction(classic.players[0].faction), px: 40, py: 40, size: 40, now: 500, animate: true, moving: false, alpha: 1, showHp: true };
   drawUnit(ctx, { type: 'marine', x: 1, y: 1, hp: 10 }, { ...o, onWater: true });
   assert.ok(registry.unit('marine').render.waterSprite, 'the data names the water sprite');
+});
+
+test('an attacker keeps its old HP digit until the counterattack has landed, and the target until the first blow lands', () => {
+  const { effects } = rig();
+  const a = { id: 1, type: 'soldier', owner: 0, x: 1, y: 1, hp: 6 };   // snapshots are taken as the engine goes: the attacker before the counter...
+  const d = { id: 2, type: 'soldier', owner: 1, x: 2, y: 1, hp: 4 };
+  const t = effects.strike({ type: 'strike', attacker: a, defender: d, damage: 5, counter: false, destroyed: false, weapon: null }, 1000);
+  effects.strike({ type: 'strike', attacker: d, defender: { ...a, hp: 3 }, damage: 3, counter: true, destroyed: false, weapon: null }, t);   // ...and after it
+  const attacker = { id: 1, hp: 3 };   // the game already holds the final HP
+  const target = { id: 2, hp: 4 };
+  assert.equal(effects.displayHp(attacker, 1100), 6, 'still the old HP while the first blow flies');
+  assert.equal(effects.displayHp(target, 1100), 9, 'the target has not been hit yet');
+  assert.equal(effects.displayHp(target, 1300), 4, 'it has, once the blow lands');
+  assert.equal(effects.displayHp(attacker, 1300), 6, 'but the attacker waits for the counter');
+  assert.equal(effects.displayHp(attacker, t + 1000), 3, 'and drops once the counter has landed');
+});
+
+test('a damage bubble draws on a tile', () => {
+  const { ctx, calls } = recorder();
+  drawBubble(ctx, 80, 40, 40, '-4', '#d62828');
+  assert.ok(calls.includes('fill') && calls.includes('stroke'));
 });

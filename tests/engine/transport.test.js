@@ -89,3 +89,18 @@ test('the AI builds marines at a shipyard, and plays a whole turn with them and 
   for (const u of g.state.units.filter((x) => x.owner === 0)) assert.equal(u.fresh, undefined, `${u.type} used its free move`);
   assert.ok(chooseOrder(g, g.state.units[0]));
 });
+
+test('forecastAttack previews the blow and the counter without changing anything', async () => {
+  const { forecastAttack } = await import('../../src/engine/combat.js');
+  const g = world(['H....h', '......'], [['soldier', 0, 1, 0], ['soldier', 1, 2, 0], ['recon', 1, 5, 1]]);
+  const [a, d] = g.state.units;
+  const f = forecastAttack(g, a, d);
+  assert.ok(f.damage > 0 && f.counter > 0 && !f.destroyed);
+  assert.equal(a.hp, 10); assert.equal(d.hp, 10);
+  const real = g.act({ unitId: a.id, to: { x: 1, y: 0 }, action: { type: 'attack', targetId: d.id } });
+  const [hit, back] = real.events.filter((e) => e.type === 'strike');
+  assert.deepEqual([f.damage, f.counter], [hit.damage, back.damage], 'the preview matches what happens');
+  d.hp = 1;
+  assert.equal(forecastAttack(g, g.state.units[0], d).destroyed, true);
+  assert.equal(forecastAttack(g, g.state.units[0], d).counter, null, 'a dead defender does not answer');
+});

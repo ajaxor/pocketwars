@@ -8,7 +8,7 @@
 // run = 1 while animating (0 when the unit has acted), b / j = bob / jitter in pixels.
 // Coordinates are fractions of the tile size s; +x is forward, +y is down.
 
-const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238', VEST = '#ff9a2e';
+const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238', VEST = '#ff9a2e', NAVY = '#1f3556';
 const hexToRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const mix = (a, b, t) => { const A = hexToRgb(a), B = hexToRgb(b); return '#' + [0, 1, 2].map((i) => Math.round(A[i] + (B[i] - A[i]) * t).toString(16).padStart(2, '0')).join(''); };
 
@@ -30,6 +30,18 @@ const treads = (g, s, x0, x1, y, h, w, run, j) => {
   for (let i = 0; i < 6; i++) { const x = x0 * s + s * .02 + i * s * .12 + off; if (x < x1 * s - s * .05) g.fillRect(x, (y + h * .4) * s, s * .05, s * .04); }
 };
 
+/** A small anchor centred on (x, y), radius r (tile fractions), drawn in `col`; `bg` (or null for none) is a round patch behind it. */
+const anchor = (g, s, x, y, r, col, bg) => {
+  if (bg) disc(g, s, x, y, r * 1.2, bg);
+  g.save(); g.strokeStyle = col; g.lineCap = 'round'; g.lineWidth = Math.max(1.3, r * s * .24);
+  g.beginPath(); g.arc(x * s, (y - r * .72) * s, r * .2 * s, 0, 7); g.stroke();                       // ring
+  g.beginPath(); g.moveTo(x * s, (y - r * .52) * s); g.lineTo(x * s, (y + r * .72) * s); g.stroke();   // shank
+  g.beginPath(); g.moveTo((x - r * .42) * s, (y - r * .22) * s); g.lineTo((x + r * .42) * s, (y - r * .22) * s); g.stroke();   // stock
+  g.beginPath(); g.arc(x * s, (y - r * .05) * s, r * .62 * s, Math.PI * .08, Math.PI * .92); g.stroke();   // flukes
+  g.beginPath(); g.moveTo((x - r * .62) * s, (y + r * .05) * s); g.lineTo((x - r * .42) * s, (y + r * .0) * s); g.moveTo((x + r * .62) * s, (y + r * .05) * s); g.lineTo((x + r * .42) * s, (y + r * .0) * s); g.stroke();   // barbs
+  g.restore();
+};
+
 // ---- foot units: one body, head and walk cycle shared by soldier, mech and sniper; only the pack and weapon differ ----------
 const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   const walk = run && moving ? 1 : 0;                                                          // legs only step while the unit moves
@@ -38,9 +50,26 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   if (kind === 'mech') box(g, s, -.24, -.1 + b / s, .09, .22, 3, dk);                         // rocket pack
   else if (kind === 'sniper') box(g, s, -.24, -.08 + b / s, .09, .2, 3, mix(c, '#56643a', .6)); // ghillie-covered pack
   box(g, s, -.16, -.12 + b / s, .32, .28, 4, c);
-  if (kind === 'marine') box(g, s, -.16, -.02 + b / s, .32, .07, 2, VEST);                      // life vest band
   disc(g, s, 0, -.2 + b / s, .09, SKIN);
   g.fillStyle = dk; g.beginPath(); g.arc(0, -s * .21 + b, s * .11, Math.PI, 0); g.fill(); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
+  const mv = kind.startsWith('marine') ? (kind.split('_')[1] || 'a') : null;                   // marine variants (see MARINE below)
+  if (mv === 'a' || mv === 'd') anchor(g, s, -.085, -.06 + b / s, .078, '#ffffff', NAVY);        // anchor patch on the sleeve
+  if (mv === 'b') {                                                                             // frogman: mask on the forehead, snorkel beside the head
+    box(g, s, -.075, -.285 + b / s, .15, .06, 3, '#1d2b3a'); box(g, s, -.06, -.275 + b / s, .12, .035, 2, '#7fd0ff');
+    stroke(g, s, .1, -.3 + b / s, .17, -.17 + b / s, Math.max(2, s * .035), '#e8602c'); disc(g, s, .1, -.3 + b / s, .02, '#e8602c');
+  }
+  if (mv === 'c') {                                                                             // bandolier across the chest
+    g.save(); g.beginPath(); g.roundRect(-s * .16, -s * .12 + b, s * .32, s * .28, 4); g.clip();
+    stroke(g, s, -.17, -.12 + b / s, .17, .14 + b / s, Math.max(3, s * .06), '#6b4a2b');
+    for (let i = 0; i < 4; i++) disc(g, s, -.1 + i * .065, -.06 + b / s + i * .065, .016, '#d9b24a');
+    g.restore();
+  }
+  if (mv === 'd') {                                                                             // navy helmet with an anchor badge, and a neckerchief that flutters
+    g.fillStyle = NAVY; g.beginPath(); g.arc(0, -s * .21 + b, s * .11, Math.PI, 0); g.fill(); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
+    anchor(g, s, .0, -.255 + b / s, .045, '#ffffff', null);
+    const fl = run ? Math.sin(w * 9 + ph) * .03 : 0;
+    poly(g, s, [[-.1, -.1 + b / s], [.1, -.1 + b / s], [.0, .0 + b / s]], c); poly(g, s, [[-.1, -.1 + b / s], [-.2, -.06 + fl + b / s], [-.19, -.13 + fl + b / s]], c);
+  }
   if (kind === 'mech') {          // bazooka on the shoulder, tube clear of the body
     stroke(g, s, -.2, .04 + b / s, .3, -.2 + b / s + sw / s, Math.max(4, s * .11), OLIVE);
     disc(g, s, .3, -.2 + b / s + sw / s, .055, '#666');
@@ -55,6 +84,11 @@ const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
     g.restore();
   } else {                        // rifle
     stroke(g, s, -.1, .04 + b / s, .26, -.12 + b / s + sw / s, Math.max(2, s * .05), INK);
+    if (mv === 'c') {             // assault rifle: thicker, with an underbarrel grenade launcher and a long magazine
+      stroke(g, s, -.1, .04 + b / s, .3, -.14 + b / s + sw / s, Math.max(3, s * .075), INK);
+      stroke(g, s, .06, -.01 + b / s, .27, -.07 + b / s + sw / s, Math.max(2.5, s * .06), STEEL);
+      box(g, s, .0, .0 + b / s, .05, .12, 1, '#3a3a44');
+    }
   }
 };
 
@@ -113,19 +147,22 @@ const copter = (g, { s, c, dk, w, run }) => {
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, INK); g.fillStyle = INK; g.fillRect(-s * .02, -s * .21, s * .04, s * .08);
 };
 
-// Transport copter: a Chinook-style tandem-rotor lifter, a long body with a rotor over each end and a ramp at the tail.
+// Transport copter: a Chinook-style tandem-rotor lifter. A long body with a raised pylon at each end carrying a rotor (the rear one
+// the taller), a ramp at the tail, and two separate landing gear (a nose wheel leg and a main wheel leg).
 const transportCopter = (g, { s, c, dk, w, run }) => {
-  stroke(g, s, -.3, .25, .3, .25, 2, INK); stroke(g, s, -.2, .12, -.2, .25, 2, INK); stroke(g, s, .2, .12, .2, .25, 2, INK);
-  box(g, s, -.44, -.1, .88, .22, 6, c);                                                      // fuselage
-  box(g, s, -.46, -.02, .1, .14, 2, dk);                                                      // tail ramp
-  box(g, s, .3, -.07, .12, .1, 3, GLASS);                                                     // cockpit windows
-  g.fillStyle = INK; for (let i = 0; i < 4; i++) g.fillRect(s * (-.22 + i * .12), -s * .03, s * .06, s * .05);   // troop windows
-  box(g, s, -.34, -.18, .1, .1, 2, dk); box(g, s, .2, -.15, .08, .07, 2, dk);                 // rotor pylons
+  const leg = (x) => { stroke(g, s, x, .1, x, .22, 2.2, INK); disc(g, s, x, .25, .045, INK); disc(g, s, x, .25, .018, STEEL); };
+  leg(.22); leg(-.2);                                                                         // two landing gears, each with its own wheel
+  box(g, s, -.44, -.04, .88, .2, 6, c);                                                       // fuselage
+  box(g, s, -.46, .02, .1, .13, 2, dk);                                                       // tail ramp
+  box(g, s, .3, -.01, .12, .09, 3, GLASS);                                                    // cockpit windows
+  g.fillStyle = INK; for (let i = 0; i < 4; i++) g.fillRect(s * (-.2 + i * .1), s * .02, s * .055, s * .05);   // troop windows
+  box(g, s, .15, -.2, .09, .18, 3, dk);                                                        // front pylon, raised
+  poly(g, s, [[-.44, -.04], [-.41, -.29], [-.3, -.29], [-.27, -.04]], dk);                     // rear pylon: a tall tower at the tail
   const bl = (hub, y, ph) => {
     const rl = (run ? Math.abs(Math.cos(w * 20 + ph)) : .6) * s * .22 + s * .05;
     stroke(g, s, hub - rl / s, y, hub + rl / s, y, 2.5, INK); g.fillStyle = INK; g.fillRect((hub - .02) * s, (y - .03) * s, s * .04, s * .06);
   };
-  bl(-.29, -.2, 0); bl(.24, -.16, 1.3);
+  bl(-.355, -.32, 0); bl(.195, -.23, 1.3);
 };
 
 // Fighter and bomber are drawn in a 3/4 view from above and slightly ahead: the near wing sweeps down toward the viewer,
@@ -342,7 +379,7 @@ const stealth = (g, { s, c, dk }) => {
 const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); };
 
 export const SPRITES = {
-  soldier: trooper('soldier'), marine: trooper('marine'), dinghy: shrunk(dinghy, .9), mech: trooper('mech'), sniper: trooper('sniper'),
+  soldier: trooper('soldier'), marine: trooper('marine'), marine_b: trooper('marine_b'), marine_c: trooper('marine_c'), marine_d: trooper('marine_d'), dinghy: shrunk(dinghy, .9), mech: trooper('mech'), sniper: trooper('sniper'),
   recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, transport_copter: transportCopter, fighter, bomber, stealth_bomber: stealth,
   destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
 };
@@ -356,7 +393,7 @@ const airShadow = (outline) => (g, { s, alt = 0 }) => {
 };
 
 export const SHADOWS = {
-  soldier: ground(.17, .04, .3), marine: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
+  soldier: ground(.17, .04, .3), marine: ground(.17, .04, .3), marine_b: ground(.17, .04, .3), marine_c: ground(.17, .04, .3), marine_d: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
   recon: ground(.3, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
   artillery: ground(.29, .045, .285, -.01), flak: ground(.32, .05, .275),
   copter: airShadow(mirror([[.34, .0], [.2, -.1], [-.1, -.13], [-.2, -.04], [-.46, -.03], [-.46, 0]])),

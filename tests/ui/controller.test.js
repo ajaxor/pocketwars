@@ -159,6 +159,9 @@ test('picking a target shows the enemy and the damage it would take once Info is
   t.press('Info');
   assert.equal(t.hud.shown.unit.owner, 1, 'the cards show the enemy');
   assert.ok(t.hud.shown.unit.forecast > 0);
+  const f = t.controller.view.forecast;
+  assert.ok(f.damage > 0, 'the bubble over the target');
+  assert.deepEqual(f.at, { x: 1, y: 0 }, 'the counter bubble sits on the attacker where it will stand');
   assert.deepEqual(t.hud.acts.items.map((b) => b.label), ['Attack', 'Wait', 'Hide info', 'Cancel']);
   t.press('Attack');
   assert.ok(t.game.state.units[1].hp < 10);

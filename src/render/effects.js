@@ -14,10 +14,22 @@ export class Effects {
     this.registry = registry;
     this.colorsOf = colorsOf;
     this.list = [];
+    this.holds = new Map(); // unit id -> { hp, until }: the HP to show until a blow has landed (the engine has already applied it)
     this.lockUntil = 0; // input is blocked until this time (ms)
   }
 
-  clear() { this.list = []; this.lockUntil = 0; }
+  clear() { this.list = []; this.holds.clear(); this.lockUntil = 0; }
+
+  /**
+   * The HP digit to draw for `unit`: the game's HP, except while a strike on it is still in flight, when it is the HP it had before.
+   * An attacker therefore keeps its old HP until the counterattack has landed.
+   */
+  displayHp(unit, now) {
+    const h = this.holds.get(unit.id);
+    if (!h) return unit.hp;
+    if (now >= h.until) { this.holds.delete(unit.id); return unit.hp; }
+    return h.hp;
+  }
   isLocked(now) { return now < this.lockUntil; }
 
   /** Queue an attack (or counterattack). Returns the time the next strike in a sequence should start. */
@@ -46,6 +58,10 @@ export class Effects {
       this.list.push({ k: 'shot', x0, y0, x1, y1, arc, color: this.colorsOf(a.owner).color, t0, d: dur });
       hit = t0 + dur;
     }
+    const before = (u, lost) => Math.round((u.hp + lost) * 10) / 10;
+    // the target shows its old HP until the blow lands; the attacker of a first blow shows its old HP until the counter (if any) lands too
+    if (!destroyed) this.holds.set(d.id, { hp: before(d, damage), until: hit });
+    if (!ev.counter) this.holds.set(a.id, { hp: a.hp, until: hit });
     this.list.push(
       { k: 'burst', x: x1, y: y1, t0: hit, d: destroyed ? 700 : 420, big: destroyed },
       { k: 'txt', x: x1, y: y1, s: '-' + damage, t0: hit, d: 900 },
