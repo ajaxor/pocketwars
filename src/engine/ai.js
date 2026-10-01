@@ -6,18 +6,22 @@
 //   playTurn(game)           -> whole turn synchronously (used by tests and headless simulation)
 //
 // A turn goes: every unit moves, then production, then the units just built use their free move (they are `fresh`: a move and a
-// Wait only, see game.js) so they leave the properties that built them. The AI does not drop troops (deploy) yet: it does not build
-// units that need it.
+// Wait only, see game.js) so they leave the properties that built them.
+//
+// Carriers (the transport copter) fly toward properties they could have captured, drop their troops once close to one (`tryDeploy`, after
+// the carrier's own move; the dropped unit is then ordered like any other), and go back to an airfield for more when empty and the owner
+// can pay for it. Resupply is only chosen when the unit is low or empty and the money is there.
 
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
 // hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
-import { canResupplyAt } from './ammo.js';
+import { ammoLevel, canResupplyAt, resupplyCost } from './ammo.js';
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
 import { calcDamage, canAttackFrom } from './combat.js';
 import { canSee } from './detection.js';
+import { canDeploy, deployConfig, deployReach } from './deploy.js';
 import { buildProblem } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
 import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
@@ -29,7 +33,13 @@ import { canSubmergeAt } from './submerge.js';
  */
 function goalTiles(game, unit) {
   const { state, map } = game;
-  if (hasAttribute(unitDef(game, unit), 'capture')) {
+  // out of ammo (and able to pay for more): back to the property that refills it
+  if (ammoLevel(game, unit) === 'empty' && resupplyCost(game, unit) <= state.funds[unit.owner]) {
+    const category = unitDef(game, unit).category;
+    const homes = allProperties(game).filter((p) => p.owner === unit.owner && p.terrain.attributes.resupply?.categories.includes(category)).map((p) => [p.x, p.y]);
+    if (homes.length) return homes;
+  }
+  if (hasAttribute(unitDef(game, unit), 'capture') || deployConfig(game, unit)) {   // a carrier takes its troops where they can capture
     const props = allProperties(game).filter((p) => p.owner !== unit.owner).map((p) => [p.x, p.y]);
     if (props.length) return props;
   }
@@ -57,6 +67,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   let best = null;
   for (const { x, y } of reach.tiles()) {
     const moved = x !== unit.x || y !== unit.y;
+    if (unit.carriedBy && !moved) continue;   // a unit just deployed has to leave its carrier's tile
     // cover only matters to a unit that gets it (aircraft ignore it)
     const defense = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
     let score = -(field.get(tileIndex(map, x, y)) ?? fallback(x, y)) * w.distanceToGoal + defense * w.terrainDefense;
@@ -87,7 +98,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
 
   // with nothing to shoot or capture, a submarine goes under (it cannot be hunted there without sonar, and it can still strike from there)
   const dive = mayAct && !best.target && !best.capture && canSubmergeAt(game, unit, best.x, best.y);
-  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) ? { type: 'resupply' } : { type: 'wait' };
+  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) && ammoLevel(game, unit) !== 'ok' && resupplyCost(game, unit) <= game.state.funds[unit.owner] ? { type: 'resupply' } : { type: 'wait' };
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
 
@@ -120,6 +131,19 @@ export function buildPhase(game, ai = game.registry.ai) {
   return events;
 }
 
+/**
+ * A carrier that has moved drops its troops once it is within `deployRange` tiles of something to capture or fight. Returns
+ * `{ events, dropped }` (the dropped unit still has to be ordered), or null when it does not deploy.
+ */
+export function tryDeploy(game, unit, ai = game.registry.ai) {
+  if (game.isOver || !game.state.units.includes(unit) || !canDeploy(game, unit)) return null;
+  const range = ai.weights.deployRange ?? 8;
+  if (Math.min(...goalTiles(game, unit).map(([gx, gy]) => distance(unit.x, unit.y, gx, gy))) > range) return null;
+  if (!deployReach(game, unit).tiles.length) return null;
+  const res = game.deploy({ unitId: unit.id });
+  return res.ok ? { events: res.events, dropped: game.state.units.find((u) => u.id === res.deployed.unitId) } : null;
+}
+
 /** Give `unit` its order(s): a second one when the first was cut short by a hidden unit. */
 function orderUnit(game, unit, events) {
   for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
@@ -134,7 +158,11 @@ function orderUnit(game, unit, events) {
 export function playTurn(game) {
   const player = game.state.turn;
   const events = [];
-  for (const unit of game.state.units.filter((u) => u.owner === player)) orderUnit(game, unit, events);
+  for (const unit of game.state.units.filter((u) => u.owner === player)) {
+    orderUnit(game, unit, events);
+    const drop = tryDeploy(game, unit);
+    if (drop) { events.push(...drop.events); orderUnit(game, drop.dropped, events); }
+  }
   if (game.isOver) return events;
   events.push(...buildPhase(game));
   for (const unit of game.state.units.filter((u) => u.owner === player && u.fresh)) orderUnit(game, unit, events);

@@ -1,7 +1,7 @@
 // Session: owns one running game (Game + Renderer + HUD + Controller) and drives the frame loop,
 // the End-turn button and the AI's turns with their pacing delays.
 
-import { buildPhase, chooseOrder } from '../engine/ai.js';
+import { buildPhase, chooseOrder, tryDeploy } from '../engine/ai.js';
 import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
@@ -241,6 +241,14 @@ export class Session {
     for (const unit of game.state.units.filter((u) => u.owner === player)) {
       if (game.isOver || this.disposed) return;
       await this.#playAiUnit(unit);
+      const drop = tryDeploy(game, unit);   // a carrier drops its troops after its own move; they are then ordered like any unit
+      if (drop) {
+        const viewer = this.#viewer();
+        const events = this.#visibleTo(viewer, drop.events, canSee(game, viewer, unit));
+        this.presenter.present(events, { now: this.#now() });
+        this.#handleEvents(drop.events);
+        await this.#playAiUnit(drop.dropped);
+      }
     }
     if (game.isOver || this.disposed) return;
     buildPhase(game);

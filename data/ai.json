@@ -9,7 +9,8 @@
     "victoryCaptureBonus": 100,
     "costUnit": 1000,
     "blockCapture": 6,
-    "crowFlies": 0.1
+    "crowFlies": 0.1,
+    "deployRange": 8
   },
   "build": {
     "infantry": [
@@ -20,7 +21,8 @@
     "aircraft": [
       { "unit": "bomber",  "max": 1 },
       { "unit": "fighter", "max": 1 },
-      { "unit": "copter",  "max": 2 }
+      { "unit": "copter",  "max": 2 },
+      { "unit": "transport_copter", "max": 1 }
     ],
     "amphibious": [
       { "unit": "marine",  "max": 2 }

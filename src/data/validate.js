@@ -187,6 +187,7 @@ export function validateAi(ai, units, problems) {
     for (const k of weightKeys) if (!isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
     if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push('ai: weights.blockCapture must be a number');
     if (ai.weights.crowFlies !== undefined && !isNum(ai.weights.crowFlies)) problems.push('ai: weights.crowFlies must be a number');
+    if (ai.weights.deployRange !== undefined && !isNum(ai.weights.deployRange)) problems.push('ai: weights.deployRange must be a number');
   }
   if (!isObj(ai.build)) return problems.push('ai: build must be an object keyed by unit category');
   for (const [category, rules] of Object.entries(ai.build)) {

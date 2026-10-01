@@ -166,3 +166,35 @@ test('forecastAttack previews the blow and the counter without changing anything
   assert.equal(forecastAttack(g, g.state.units[0], d).destroyed, true);
   assert.equal(forecastAttack(g, g.state.units[0], d).counter, null, 'a dead defender does not answer');
 });
+
+test('the AI flies a transport copter toward enemy property, drops a soldier there and orders it', () => {
+  const g = world(['H.....h', '.......'], [['transport_copter', 0, 1, 0], ['recon', 1, 6, 1]]);
+  const copter = g.state.units[0];
+  const events = playTurn(g);
+  assert.ok(events.some((e) => e.type === 'deploy'), 'it dropped troops');
+  const soldier = g.state.units.find((u) => u.type === 'soldier');
+  assert.ok(soldier && soldier.done, 'and the soldier was ordered');
+  assert.notDeepEqual([soldier.x, soldier.y], [copter.x, copter.y], 'off the copter\'s tile');
+  assert.equal(copter.ammo, 1);
+});
+
+test('the AI sends an empty transport copter to an airfield and resupplies it when it can pay', () => {
+  const g = world(['H.A.....h', '.........'], [['transport_copter', 0, 7, 0], ['recon', 1, 8, 1]]);
+  const copter = g.state.units[0];
+  copter.ammo = 0;
+  let paid = 0;
+  for (let i = 0; i < 4 && !paid; i++) {
+    paid = playTurn(g).filter((e) => e.type === 'resupply').reduce((n, e) => n + e.cost, 0);
+    g.endTurn(); g.endTurn();
+  }
+  assert.equal(paid, 2000, 'it flew to the airfield and paid for two soldiers');
+});
+
+test('the AI does not buy ammo it cannot pay for', () => {
+  const g = world(['H.A.....h', '.........'], [['transport_copter', 0, 3, 0], ['recon', 1, 8, 1]]);
+  const copter = g.state.units[0];
+  copter.ammo = 0;
+  g.state.funds[0] = 500;
+  const order = chooseOrder(g, copter);
+  assert.equal(order.action.type, 'wait');
+});
