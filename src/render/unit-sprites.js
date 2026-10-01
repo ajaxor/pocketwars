@@ -2,7 +2,8 @@
 // this file adds what only the game needs: faction colours, the dark-grey wash on units that have acted, fade and the HP digit.
 // To add a unit visual, add a sprite and a shadow to unit-art.js and reference it by name from data/units.json.
 import { SPRITES, SHADOWS } from './unit-art.js';
-import { drawFrameAlpha, DISABLED_TINT } from './unit-frame.js';
+import { DISABLED_TINT } from './unit-frame.js';
+import { drawOutlined, OUTLINE_THIN } from './outline.js';
 import { drawFaded } from './layer.js';
 import { font } from './font.js';
 
@@ -34,7 +35,9 @@ export function drawUnit(g, unit, o) {
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
   g.save(); g.translate(px + s / 2, py + s / 2);
-  drawFrameAlpha(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged }, alpha, run ? null : DISABLED_TINT);
+  // a thin line in the unit's dark team colour all round it
+  drawOutlined(g, ART, def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged },
+    { r: Math.max(1, s * OUTLINE_THIN), color: colors.dark, tint: run ? null : DISABLED_TINT, alpha });
   g.restore();
   if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha, exposed);
   const dh = Math.ceil(unit.hp - 1e-9);

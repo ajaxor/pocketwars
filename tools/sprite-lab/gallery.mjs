@@ -64,8 +64,8 @@ export function build() {
 <div class="controls"><div class="controls-inner">
   <div class="ctl">State <span class="seg" id="mode"><button data-v="idle" aria-pressed="true">Idle</button><button data-v="moving" aria-pressed="false">Moving</button><button data-v="done" aria-pressed="false">Done</button></span></div>
   <div class="ctl">Ground <span class="seg" id="bg"><button data-v="plain" aria-pressed="true">Grass</button><button data-v="road" aria-pressed="false">Road</button><button data-v="sea" aria-pressed="false">Sea</button></span></div>
-  <div class="ctl">Outline <span class="seg" id="outline"><button data-v="off" aria-pressed="true">Off</button><button data-v="thin" aria-pressed="false">Thin</button><button data-v="medium" aria-pressed="false">Medium</button><button data-v="thick" aria-pressed="false">Thick</button></span></div>
-  <div class="ctl">Line <span class="seg" id="outlineColor"><button data-v="navy" aria-pressed="true">Navy</button><button data-v="black" aria-pressed="false">Black</button><button data-v="faction" aria-pressed="false">Team dark</button></span></div>
+  <div class="ctl">Outline <span class="seg" id="outline"><button data-v="off" aria-pressed="false">Off</button><button data-v="thin" aria-pressed="true">Thin</button><button data-v="medium" aria-pressed="false">Medium</button><button data-v="thick" aria-pressed="false">Thick</button></span></div>
+  <div class="ctl">Line <span class="seg" id="outlineColor"><button data-v="navy" aria-pressed="false">Navy</button><button data-v="black" aria-pressed="false">Black</button><button data-v="faction" aria-pressed="true">Team dark</button></span></div>
   <div class="ctl">Size <input id="size" type="range" min="40" max="160" step="4" value="96" aria-label="Tile size"><output id="sizeOut">96 px</output></div>
   <button id="pause" aria-pressed="false">Pause</button>
 </div></div>
