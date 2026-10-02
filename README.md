@@ -37,6 +37,7 @@ ES modules and `fetch` need a web server; opening `index.html` from `file://` do
   [docs/combat.md](docs/combat.md).
 - **Maps are files.** `data/maps/*.map.json`: [docs/map-format.md](docs/map-format.md).
 - **Code layout and deploy:** [docs/architecture.md](docs/architecture.md).
+- **Where the game is going:** the campaign vision (leaders, per-leader factories, labs, final boss) is in [docs/campaign-design.md](docs/campaign-design.md).
 
 Deploys run through GitHub Actions on every push to `main`: tests and data validation gate the deploy, and each build is
 published under `v/<commit>/` with a no-cache `version.json` pointing at it. One-time setup: Settings -> Pages -> Source:
