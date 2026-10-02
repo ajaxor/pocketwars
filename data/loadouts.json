@@ -1,0 +1,31 @@
+{
+  "default": {
+    "build": {
+      "barracks": ["soldier", "mech", "sniper"],
+      "factory":  ["recon", "tank", "heavy_tank", "artillery", "flak"],
+      "airfield": ["transport_copter", "copter", "fighter", "bomber"],
+      "shipyard": ["marine", "destroyer", "submarine", "cruiser", "battleship"]
+    },
+    "start": [
+      { "unit": "tank",      "at": [0, 1] },
+      { "unit": "mech",      "at": [-1, 1] },
+      { "unit": "sniper",    "at": [1, 1] },
+      { "unit": "soldier",   "at": [-2, 1] },
+      { "unit": "soldier",   "at": [2, 1] },
+      { "unit": "recon",     "at": [-1, 2] },
+      { "unit": "soldier",   "at": [1, 2] },
+      { "unit": "artillery", "at": [0, -1] }
+    ]
+  },
+  "leaders": {
+    "harlan": {},
+    "ada": {},
+    "vex": {},
+    "hiroshi": {},
+    "ludwig": {},
+    "sasha": {},
+    "chase": {},
+    "dmitri": {},
+    "lysandra": {}
+  }
+}

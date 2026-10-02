@@ -63,6 +63,7 @@ the tokens at the top of `style.css`, so a new window looks like the rest withou
 - `src/ui/gestures.js` turns pointer and wheel events into `onTap`, `onPan` and `onZoom`; the session decides what they do.
 - `src/data/skirmish.js` holds the skirmish rules (colours, who plays, funds); `src/ui/skirmish-screen.js` shows them with map
   previews from `src/render/minimap.js`. `boot()` returns `{registry, map, maps, defaultMapId, play(map)}` and the launcher calls `play`.
+- `data/loadouts.json` gives each leader a kit (build menus and a starting formation); `src/data/formation.js` places the formation around the HQ and `menuFor` in `economy.js` applies the menus. See `docs/leaders.md`.
 - With three or more players, capturing an HQ eliminates its owner (`eliminate` in `victory.js`); the last player left wins.
 
 ## Terrain drawing

@@ -39,9 +39,10 @@ export async function boot({ onQuit } = {}) {
   let current = map;            // the map being played: restart replays it, quitting goes back to the default mission
   // quit: set the default mission up fresh behind the title screen, then let the host show that screen
   const quit = () => { current = map; launch(); onQuit?.(); };
+  const leaderName = (id) => campaign?.leaderById[id]?.name ?? null;   // for the line that says who leads whom
   const launch = () => {
     if (session) session.dispose();
-    session = new Session(new Game(registry, current), { canvas, doc: document, restart: launch, quit });
+    session = new Session(new Game(registry, current), { canvas, doc: document, restart: launch, quit, leaderName });
     session.start();
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());

@@ -25,7 +25,7 @@ export class MapError extends Error {
 const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
 
 /**
- * @typedef {{faction:string, controller:'human'|'ai', funds:number}} PlayerSetup
+ * @typedef {{faction:string, controller:'human'|'ai', funds:number, leader?:string}} PlayerSetup
  * @typedef {{type:string, owner:number, x:number, y:number, hp?:number}} UnitSetup
  * @typedef {{id:string,name:string,description:string,width:number,height:number,
  *   terrain:string[][], ground:(string|null)[][], owners:(number|null)[][], players:PlayerSetup[], units:UnitSetup[],
@@ -57,7 +57,10 @@ export function parseMap(raw, registry) {
       seen.add(p.faction);
       if (!CONTROLLERS.includes(p.controller)) err(`${w}: controller must be one of ${CONTROLLERS.join(', ')}`);
       if (!Number.isInteger(p.funds) || p.funds < 0) err(`${w}: funds must be a non-negative integer`);
-      players.push({ faction: p.faction, controller: p.controller, funds: p.funds });
+      // leader (optional): whose loadout this player fights with (build menus; see data/loadouts.json). Without one, the standard menus apply.
+      const hasLeader = p.leader !== undefined && p.leader !== null;
+      if (hasLeader && !registry.leaderIds.includes(p.leader)) err(`${w}: unknown leader "${p.leader}"`);
+      players.push({ faction: p.faction, controller: p.controller, funds: p.funds, ...(hasLeader && { leader: p.leader }) });
     });
   }
   const playerCount = Array.isArray(raw.players) ? raw.players.length : 0;

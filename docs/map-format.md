@@ -25,7 +25,7 @@ reports every problem at once.
 ```
 
 - `players`: 2-4 entries (each gets its own colour), unique factions from `data/factions.json`; `controller` is `human` or `ai`; player index = position.
-  Player 0 moves first.
+  Player 0 moves first. Optional `leader`: a leader id from `data/loadouts.json`; that leader's menus apply and the map's own units for that player are replaced by the leader's starting formation (see `docs/leaders.md`).
 - `legend`: one character -> terrain id (+ optional `owner` player index, only on terrain with the `property` attribute).
 - `tiles`: equal-length rows of legend glyphs; up to 64x64.
 - `ground` + `groundLegend` (both optional): a second grid of row strings under the terrain, using its own legend of glyph -> id from

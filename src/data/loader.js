@@ -4,7 +4,7 @@
 import { createRegistry } from './registry.js';
 import { parseMap } from './map-format.js';
 
-const DATA_FILES = ['rules', 'factions', 'terrain', 'weapons', 'units', 'ai', 'ground'];
+const DATA_FILES = ['rules', 'factions', 'terrain', 'weapons', 'units', 'ai', 'ground', 'loadouts'];
 
 /** @param {(path:string)=>Promise<any>} readJson */
 export async function loadRegistry(readJson) {

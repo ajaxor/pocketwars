@@ -44,7 +44,7 @@ export const LEGEND = {
  * `targetLayers: ['ground', 'sky']` is shorthand for targets: ['direct_ground', 'sky'] ("ground" means direct fire at ground units).
  * The rest of the spec (toughness, armor, layer, attributes...) goes on the unit.
  */
-export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules, weapons: extraWeapons = {} } = {}) {
+export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules, weapons: extraWeapons = {}, loadouts } = {}) {
   const merged = {};
   const weapons = {};
   for (const [id, spec] of Object.entries(units)) {
@@ -73,6 +73,7 @@ export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules, we
       weights: { distanceToGoal: 2, unreachableDistance: 60, terrainDefense: 0.4, attackBase: 60, killBonus: 4, captureBase: 50, victoryCaptureBonus: 100, costUnit: 1000 },
       build: {},
     },
+    ...(loadouts && { loadouts }),
   };
 }
 
@@ -88,8 +89,8 @@ export function rawMap({ rows = ['...'], unitsOnMap = [], players, legend = LEGE
 }
 
 /** Build a Game from a compact description. `unitsOnMap` entries are [type, owner, x, y, hp?]. */
-export function makeGame({ units, terrain, ai, rules, weapons, rows = ['.....'], unitsOnMap = [], players, legend } = {}) {
-  const registry = makeRegistry({ units, terrain, ai, rules, weapons });
+export function makeGame({ units, terrain, ai, rules, weapons, loadouts, rows = ['.....'], unitsOnMap = [], players, legend } = {}) {
+  const registry = makeRegistry({ units, terrain, ai, rules, weapons, loadouts });
   const map = parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry);
   return new Game(registry, map);
 }

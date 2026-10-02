@@ -34,12 +34,22 @@ export function startTurn(game, player) {
   return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired }];
 }
 
-/** Unit definitions that a property tile owned by the current player can produce, in menu order. */
-export function buildOptions(game, x, y) {
+/**
+ * The menu of the production building at (x, y) for `player`: the units their leader's loadout lists for that kind of building
+ * (data/loadouts.json), in the loadout's order. A building the loadout says nothing about (a lab, say) gives the same menu to
+ * everyone: the units of the categories its `builds` names. No player (a neutral building) gets the standard menu.
+ */
+export function menuFor(game, player, x, y) {
   const property = propertyAt(game, x, y);
   if (!property) return [];
-  return game.registry.unitsInCategories(property.builds);
+  const { registry, map } = game;
+  const leader = player == null ? null : map.players[player].leader ?? null;
+  const ids = registry.loadoutFor(leader).build[map.terrain[y][x]];
+  return ids ? ids.map((id) => registry.unit(id)) : registry.unitsInCategories(property.builds);
 }
+
+/** Unit definitions that the property at (x, y) can produce for the player who owns it, in menu order. */
+export const buildOptions = (game, x, y) => menuFor(game, ownerAt(game, x, y), x, y);
 
 /** Has the property at (x, y) already built a unit this turn? (Each property builds at most one.) */
 export const builtThisTurn = (game, x, y) => game.state.builtThisTurn.includes(tileIndex(game.map, x, y));
@@ -54,7 +64,7 @@ export function buildProblem(game, player, x, y, typeId) {
   if (!def) return 'unknown-unit';
   const property = propertyAt(game, x, y);
   if (!property || ownerAt(game, x, y) !== player) return 'not-your-property';
-  if (!property.builds.includes(def.category)) return 'cannot-build-here';
+  if (!menuFor(game, player, x, y).some((u) => u.id === typeId)) return 'cannot-build-here';
   if (unitAt(game, x, y)) return 'tile-occupied';
   if (builtThisTurn(game, x, y)) return 'already-built';
   if (state.funds[player] < def.cost) return 'not-enough-funds';
@@ -78,7 +88,6 @@ export function buildUnit(game, player, x, y, typeId) {
 }
 
 export const cheapestBuildableCost = (game, player) => {
-  const categories = new Set(propertiesOwnedBy(game, player).flatMap((p) => p.property.builds));
-  const costs = game.registry.unitsInCategories([...categories]).map((u) => u.cost);
+  const costs = propertiesOwnedBy(game, player).flatMap((p) => menuFor(game, player, p.x, p.y).map((u) => u.cost));
   return costs.length ? Math.min(...costs) : Infinity;
 };

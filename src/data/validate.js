@@ -202,7 +202,82 @@ export function validateAi(ai, units, problems) {
   }
 }
 
-/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`. */
+/** Reserved in settings and menus for "pick one for me"; no leader may use it as an id. */
+export const RANDOM_LEADER = 'random';
+export const MAX_START_UNITS = 24;
+
+/**
+ * loadouts.json (optional): what a leader brings to a battle. `default` is the standard kit, used by any leader that does not
+ * override a part of it; `leaders` has one entry per playable leader id. A kit has two parts:
+ *   build  { <terrain id>: [unit ids] }       the menu of that production building (replaces what its `builds` categories give)
+ *   start  [{ unit, at: [side, forward] }]    the starting formation, as tile offsets from the HQ (see src/data/formation.js)
+ * A leader entry may hold either part, both or neither ({}): a part it leaves out is the default's.
+ */
+export function validateLoadouts(loadouts, units, terrain, problems) {
+  if (loadouts === undefined) return;
+  if (!isObj(loadouts)) return problems.push('loadouts.json must be an object');
+  if (!isObj(units) || !isObj(terrain)) return;   // those files are reported on their own
+  for (const k of Object.keys(loadouts)) if (k !== 'default' && k !== 'leaders') problems.push(`loadouts: unknown key "${k}" (expected default and leaders)`);
+
+  const checkBuild = (build, where) => {
+    if (!isObj(build)) return problems.push(`${where}: build must be an object keyed by building (terrain) id`);
+    for (const [tid, list] of Object.entries(build)) {
+      const t = terrain[tid];
+      const here = `${where}: build.${tid}`;
+      if (!isObj(t) || !isObj(t.attributes) || !isObj(t.attributes.property) || !Array.isArray(t.attributes.property.builds) || !t.attributes.property.builds.length) {
+        problems.push(`${here}: "${tid}" is not a production building (a property whose builds is not empty)`);
+        continue;
+      }
+      if (!Array.isArray(list) || !list.length) { problems.push(`${here} must be a non-empty list of unit ids`); continue; }
+      const seen = new Set();
+      for (const id of list) {
+        if (!isObj(units[id])) { problems.push(`${here}: unknown unit "${id}"`); continue; }
+        if (seen.has(id)) problems.push(`${here}: "${id}" is listed twice`);
+        seen.add(id);
+        if (isObj(t.moveCost) && t.moveCost[units[id].moveClass] == null) problems.push(`${here}: "${id}" cannot enter ${t.name || tid} (a new unit appears on the building)`);
+      }
+    }
+  };
+
+  const checkStart = (start, where) => {
+    if (!Array.isArray(start)) return problems.push(`${where}: start must be an array of { unit, at } entries`);
+    if (start.length > MAX_START_UNITS) problems.push(`${where}: start has more than ${MAX_START_UNITS} units`);
+    const spots = new Set();
+    start.forEach((s, i) => {
+      const at = `${where}: start[${i}]`;
+      if (!isObj(s)) return problems.push(`${at} must be an object like { "unit": "tank", "at": [0, 1] }`);
+      for (const k of Object.keys(s)) if (k !== 'unit' && k !== 'at') problems.push(`${at}: unknown key "${k}"`);
+      if (!isObj(units[s.unit])) problems.push(`${at}: unknown unit "${s.unit}"`);
+      if (!Array.isArray(s.at) || s.at.length !== 2 || !s.at.every(Number.isInteger)) { problems.push(`${at}: at must be [side, forward] whole numbers`); return; }
+      if (s.at[0] === 0 && s.at[1] === 0) problems.push(`${at}: [0, 0] is the HQ itself`);
+      const key = s.at.join(',');
+      if (spots.has(key)) problems.push(`${at}: another unit already has the spot [${key}]`);
+      spots.add(key);
+    });
+  };
+
+  const checkKit = (kit, where, whole) => {
+    if (!isObj(kit)) return problems.push(`${where} must be an object`);
+    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start') problems.push(`${where}: unknown key "${k}" (expected build and start)`);
+    if (kit.build !== undefined) checkBuild(kit.build, where);
+    else if (whole) problems.push(`${where}: build is required`);
+    if (kit.start !== undefined) checkStart(kit.start, where);
+    else if (whole) problems.push(`${where}: start is required`);
+  };
+
+  if (loadouts.default === undefined) problems.push('loadouts: default is required');
+  else checkKit(loadouts.default, 'loadouts.default', true);
+  if (!isObj(loadouts.leaders)) problems.push('loadouts: leaders must be an object keyed by leader id');
+  else {
+    for (const [id, kit] of Object.entries(loadouts.leaders)) {
+      if (!/^[a-z0-9_]+$/.test(id)) problems.push(`loadouts: leader id "${id}" must be lowercase letters, digits and _`);
+      else if (id === RANDOM_LEADER) problems.push(`loadouts: "${RANDOM_LEADER}" is reserved and cannot be a leader id`);
+      checkKit(kit, `loadouts.leaders.${id}`, false);
+    }
+  }
+}
+
+/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground` and `loadouts`. */
 export function validateData(raw) {
   const problems = [];
   validateRules(raw.rules, problems);
@@ -213,5 +288,6 @@ export function validateData(raw) {
   validateWeapons(raw.weapons, rules, problems);
   validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);
   validateAi(raw.ai, raw.units, problems);
+  validateLoadouts(raw.loadouts, raw.units, raw.terrain, problems);
   return problems;
 }

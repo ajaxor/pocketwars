@@ -83,7 +83,7 @@ export const TERRAIN_ATTRIBUTES = {
   property: {
     label: 'Property',
     help: 'Can be owned and captured. It earns income and repairs units standing on it.',
-    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored each turn to units on it, if owned), builds (unit categories the owner may build here). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn.',
+    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored each turn to units on it, if owned), builds (unit categories the owner may build here; a leader\'s loadout in data/loadouts.json can give the building its own list of units instead, see economy.js). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object');
       if (!Number.isInteger(v.income) || v.income < 0) fail('income must be a non-negative integer');

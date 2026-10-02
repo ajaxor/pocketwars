@@ -29,7 +29,10 @@ export function campaignProblems(raw, registry) {
     if (!isStr(L.name)) p.push(`campaign: leader "${L.id}" needs a name`);
     if (!isStr(L.bio)) p.push(`campaign: leader "${L.id}" needs a bio (their personality)`);
     if (L.faction !== 'chorus' && !registry.factions[L.faction]) p.push(`campaign: leader "${L.id}" has unknown faction "${L.faction}"`);
+    // everyone who can be fielded needs a loadout (data/loadouts.json); the Chorus' own leader is not one of them
+    if (L.faction !== 'chorus' && !registry.leaderIds.includes(L.id)) p.push(`campaign: leader "${L.id}" has no loadout in loadouts.json`);
   }
+  for (const id of registry.leaderIds) if (!leaders.has(id)) p.push(`campaign: loadouts.json has a loadout for "${id}", who is not a leader`);
 
   const nations = new Set();
   if (!Array.isArray(raw.nations) || raw.nations.length < 2) p.push('campaign: nations must list at least two');

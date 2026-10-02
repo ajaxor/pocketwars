@@ -15,7 +15,17 @@ const withDefaults = (units) => Object.fromEntries(Object.entries(units).map(([i
 const withIds = (obj) => Object.fromEntries(Object.entries(obj).map(([id, def]) => [id, { ...def, id, attributes: def.attributes || {} }]));
 
 /**
- * @param {{rules:object, factions:object, terrain:object, weapons:object, units:object, ai:object}} raw parsed JSON files
+ * Resolve loadouts.json: every leader's kit with the default's parts filled in. A kit is { build: { <terrain id>: [unit ids] },
+ * start: [{ unit, at }] }. Without loadouts.json there are no leaders, and every building gives the menu of its `builds` categories.
+ */
+function resolveLoadouts(raw) {
+  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? [] };
+  const kit = (own = {}) => ({ build: { ...base.build, ...(own.build ?? {}) }, start: own.start ?? base.start });
+  return { default: kit(), leaders: Object.fromEntries(Object.entries(raw?.leaders ?? {}).map(([id, own]) => [id, kit(own)])) };
+}
+
+/**
+ * @param {{rules:object, factions:object, terrain:object, weapons:object, units:object, ai:object, loadouts?:object}} raw parsed JSON files
  * @throws {DataError} when the data is invalid
  */
 export function createRegistry(raw) {
@@ -33,9 +43,18 @@ export function createRegistry(raw) {
   const terrainIds = Object.keys(terrain);
   const groundIds = Object.keys(ground);
   const factionIds = Object.keys(factions); // JSON order = the order colours are offered in
+  const loadouts = deepFreeze(resolveLoadouts(structuredClone(raw.loadouts)));
+  const leaderIds = Object.keys(loadouts.leaders); // JSON order = the order leaders are offered in
 
   return Object.freeze({
-    rules, factions, terrain, ground, units, weapons, ai, unitIds, terrainIds, groundIds, factionIds,
+    rules, factions, terrain, ground, units, weapons, ai, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds,
+    /** The kit a leader brings: { build, start } (see resolveLoadouts). No leader (null) gets the default kit. */
+    loadoutFor: (leaderId) => {
+      if (leaderId == null) return loadouts.default;
+      const k = loadouts.leaders[leaderId];
+      if (!k) throw new Error(`Unknown leader "${leaderId}"`);
+      return k;
+    },
     /** The ground under every tile that a map does not say otherwise about (null when the data has no ground at all). */
     defaultGround: groundIds.includes(rules.defaultGround) ? rules.defaultGround : null,
     groundDef: (id) => (id == null ? null : ground[id] || null),

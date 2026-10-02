@@ -18,7 +18,7 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 - **Interrupted moves:** a move is planned without knowing about hidden units. If it runs into one, the unit stops on the last free tile, the hidden unit is revealed, and the unit can still attack or wait from there (it cannot fire indirect weapons, as it has moved).
 - Units with several weapons pick the one that does the most damage to the target automatically; the damage preview names it.
 - Large maps scroll: drag to pan, pinch (or ctrl + wheel) to zoom.
-- Skirmish on the title screen lets you pick a map, set up to 4 teams (player or computer, colour) and the starting funds.
+- Skirmish on the title screen lets you pick a map, set up to 4 teams (player or computer, colour) the starting funds and a leader for each team (random by default for computer teams). A leader sets which units the factories build and which units you start with, placed in a formation around the HQ (see docs/leaders.md).
 - The gear in the status bar opens a menu: resume, reset the mission, or quit back to the title screen.
 
 ## Development

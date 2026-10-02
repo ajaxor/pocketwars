@@ -19,13 +19,15 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 export class Session {
   /**
    * @param {import('../engine/game.js').Game} game
-   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void, quit?:()=>void}} host
+   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void, quit?:()=>void, leaderName?:(id:string)=>string|null}} host
+   *   leaderName gives a leader's display name, for the line at the start of a battle that says who leads whom
    */
-  constructor(game, { canvas, doc, restart, quit = restart }) {
+  constructor(game, { canvas, doc, restart, quit = restart, leaderName = () => null }) {
     this.game = game;
     this.canvas = canvas;
     this.restart = restart;
     this.quit = quit;
+    this.leaderName = leaderName;
     this.busy = false;
     this.disposed = false;
     this.endArmed = false;   // End turn was pressed with units still to move: the next press really ends it
@@ -142,7 +144,13 @@ export class Session {
     const { registry } = this.game;
     const builders = registry.terrainIds.map((id) => registry.terrain[id]).filter((t) => t.attributes.property && t.attributes.property.builds.length).map((t) => t.name.toLowerCase());
     const list = builders.length > 1 ? `${builders.slice(0, -1).join(', ')} or ${builders[builders.length - 1]}` : builders[0] || 'building';
-    return `Tap a unit to move it. Tap a ${list} you own to build units. Capture the enemy HQ!`;
+    return `${this.#matchup()}Tap a unit to move it. Tap a ${list} you own to build units. Capture the enemy HQ!`;
+  }
+
+  /** "Col. Gus Harlan vs Adm. Sasha Marlow. " when the teams have leaders (a random pick is only known now), else nothing. */
+  #matchup() {
+    const names = this.game.map.players.map((p) => (p.leader ? this.leaderName(p.leader) : null)).filter(Boolean);
+    return names.length ? `${names.join(' vs ')}. ` : '';
   }
 
   #viewer() {

@@ -22,7 +22,7 @@ import { canCapture } from './capture.js';
 import { calcDamage, canAttackFrom } from './combat.js';
 import { canSee } from './detection.js';
 import { canDeploy, deployConfig, deployReach } from './deploy.js';
-import { buildProblem } from './economy.js';
+import { buildProblem, menuFor } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
 import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
 import { canSubmergeAt } from './submerge.js';
@@ -102,13 +102,18 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
 
-/** Which unit (if any) the profile wants built on the property at (x, y) for the current player. */
+/**
+ * Which unit (if any) the profile wants built on the property at (x, y) for the current player. The profile (ai.json) ranks units
+ * by category; a unit the player's leader cannot build here is skipped (buildProblem), and a leader's extra categories come last.
+ */
 export function planBuild(game, x, y, ai = game.registry.ai) {
-  const { state, registry } = game;
+  const { state } = game;
   const player = state.turn;
   const property = terrainAt(game, x, y).attributes.property;
   if (!property) return null;
-  for (const category of property.builds) {
+  const categories = new Set(property.builds);
+  for (const def of menuFor(game, player, x, y)) categories.add(def.category);
+  for (const category of categories) {
     for (const rule of ai.build[category] || []) {
       const owned = state.units.filter((u) => u.owner === player && u.type === rule.unit).length;
       if (owned >= rule.max) continue;

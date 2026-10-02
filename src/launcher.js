@@ -65,15 +65,20 @@ export async function launch({
   };
   const canSkirmish = () => !!(game && game.maps && game.maps.length && game.play);
 
-  // The skirmish page sits on top of the title screen; Back removes it, Start plays the chosen setup and removes both.
+  // The skirmish page sits on top of the title screen; Back removes it, Start plays the chosen setup and removes both. Leaders come
+  // from the campaign (names and portraits); the one a human team starts with is the hero of the home nation.
+  const portraitColors = () => setFactions([...Object.values(game.registry.factions), { id: 'chorus', ...game.campaign?.chorus }]);
   const openSkirmish = (t) => {
     if (!t.ready || !canSkirmish() || skirmish) return;
+    const leaders = game.campaign?.leaders || [];
+    if (leaders.length) portraitColors();
     skirmish = new SkirmishScreen(doc, {
       registry: game.registry, maps: game.maps, selectedId: game.defaultMapId,
+      leaders, starter: leaders.find((l) => l.faction === game.campaign.home)?.id,
       onBack: () => { skirmish.remove(); skirmish = null; },
       onStart: (map, settings) => {
         skirmish.remove(); skirmish = null;
-        game.play(applySkirmish(map, settings));
+        game.play(applySkirmish(map, settings, game.registry, random));
         started = true; t.remove();
       },
     });
@@ -86,7 +91,7 @@ export async function launch({
   const colorsOf = (id) => (id === 'chorus' ? game.campaign.chorus : game.registry.factions[id]);
   const openCampaign = (t) => {
     if (!t.ready || !canCampaign() || campaignScreen) return;
-    setFactions([...Object.values(game.registry.factions), { id: 'chorus', ...game.campaign.chorus }]);
+    portraitColors();
     const playIntro = () => {
       const intro = campaignScreen = new IntroScreen(doc, { campaign: game.campaign, colors: colorsOf, raf, caf, onDone: () => { intro.remove(); showMap(); } });
       doc.body.append(intro.root); intro.start();
