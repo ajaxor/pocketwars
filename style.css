@@ -320,3 +320,6 @@ canvas.unit-icon { display: block; flex: none; }
 .wm-leader { font: 500 14px/1.25 var(--font); opacity: .9; }
 .wm-theme { font: 400 13px/1.3 var(--font); opacity: .75; }
 .wm-go { width: 100%; }
+.wm-card { max-height: 46vh; overflow-y: auto; }
+.wm-gift { font: 600 13px/1.3 var(--font); color: #7ef0ff; }
+.wm-card.is-free .wm-gift { color: #ffb066; }

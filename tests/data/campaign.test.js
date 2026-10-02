@@ -112,9 +112,11 @@ test('the world map shows five nations, your homeland first, and the mission but
   assert.match(m.status.textContent, /Free/);
   assert.equal(m.mission.disabled, true);
   m.select('north');
-  assert.equal(m.name.textContent, 'Violet Reach');
+  assert.equal(m.name.textContent, 'Vantor Reach');
   assert.match(m.status.textContent, /Assimilated/);
   assert.match(m.theme.textContent, /Defeat them to free them/);
+  assert.match(m.gift.textContent, /Cloaking fields/);
+  assert.match(m.bio.textContent, /spymaster/);
   m.select('atlantis'); assert.equal(m.selected, 'north', 'an unknown nation is ignored');
   m.back.click(); m.replay.click(); assert.deepEqual(log, ['back', 'replay']);
   assert.deepEqual(Object.values(m.assim).sort(), [0, 1, 1, 1, 1]);

@@ -6,12 +6,12 @@
   "description": "A wide sea with a shoal island in the middle and a road along the north shore. Start with fleets, and build more: battleships win the open water, subs win the ambush.",
   "players": [
     {
-      "faction": "orange_star",
+      "faction": "ashmark",
       "controller": "human",
       "funds": 20000
     },
     {
-      "faction": "violet_nebula",
+      "faction": "vantor_reach",
       "controller": "ai",
       "funds": 20000
     }

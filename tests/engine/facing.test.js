@@ -9,7 +9,7 @@ import { rawMap } from '../helpers/fixtures.js';
 import { facingToCentre } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);
-const players = [{ faction: 'orange_star', controller: 'human', funds: 10000 }, { faction: 'violet_nebula', controller: 'human', funds: 10000 }];
+const players = [{ faction: 'ashmark', controller: 'human', funds: 10000 }, { faction: 'vantor_reach', controller: 'human', funds: 10000 }];
 const legend = { '.': { terrain: 'plain' }, H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 } };
 const game = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
 

@@ -30,12 +30,12 @@ const colors = { color: '#e8712c', dark: '#9a3f0e' };
 
 test('the status bar shows the day, whose turn it is, funds and properties, and only writes what changed', () => {
   const { hud, inRoot: byClass } = make();
-  hud.status({ day: 3, name: 'Orange Star', color: '#e8712c', funds: 12500, props: 4 });
+  hud.status({ day: 3, name: 'Ashmark', color: '#e8712c', funds: 12500, props: 4 });
   const day = byClass('bar-day')[0], who = byClass('bar-who')[0], nums = byClass('bar-num');
-  assert.deepEqual([day.textContent, who.textContent, nums[0].textContent, nums[1].textContent], ['Day 3', 'Orange Star', '12,500', '4']);
+  assert.deepEqual([day.textContent, who.textContent, nums[0].textContent, nums[1].textContent], ['Day 3', 'Ashmark', '12,500', '4']);
   assert.equal(hud.el.bar.style['--accent'], '#e8712c');
   day.textContent = 'edited elsewhere';
-  hud.status({ day: 3, name: 'Orange Star', color: '#e8712c', funds: 12500, props: 4 });
+  hud.status({ day: 3, name: 'Ashmark', color: '#e8712c', funds: 12500, props: 4 });
   assert.equal(day.textContent, 'edited elsewhere', 'an unchanged value is not written again');
 });
 
@@ -65,7 +65,7 @@ test('a toast fades after a few seconds, unless it is sticky', () => {
   assert.equal(hud.el.toast.children.length, 1, 'still there after one second');
   hud.tick(9000);
   assert.equal(hud.el.toast.children.length, 0);
-  hud.message('Violet Nebula is moving...', { sticky: true });
+  hud.message('Vantor Reach is moving...', { sticky: true });
   hud.tick(1e9);
   assert.equal(hud.el.toast.children.length, 1);
   hud.message(null);
@@ -79,7 +79,7 @@ test('info boxes: the unit window and the terrain window, with the faction and t
   hud.info({ unit: unitInfo(game, u), terrain: terrainInfo(game, u.x, u.y) });
   assert.equal(hud.el.info.children.length, 2);
   assert.deepEqual(texts(byClass('card-name')), ['Soldier', 'Plain']);
-  assert.deepEqual(texts(byClass('card-sub')), ['Orange Star']);
+  assert.deepEqual(texts(byClass('card-sub')), ['Ashmark']);
   assert.ok(texts(byClass('chip-v')).includes('10/10') || texts(byClass('v')).includes('10/10'));
   assert.ok(byClass('star').length >= 8, 'two rows of defense stars');
   hud.info({});
@@ -90,7 +90,7 @@ test('a terrain window for a property shows its owner and income; impassable mov
   const { hud, game, byClass, texts } = make();
   const p = allProperties(game).find((q) => q.owner === 1 && q.terrain.id === 'factory');
   hud.info({ terrain: terrainInfo(game, p.x, p.y) });
-  assert.deepEqual(texts(byClass('card-sub')), ['Violet Nebula']);
+  assert.deepEqual(texts(byClass('card-sub')), ['Vantor Reach']);
   assert.ok(texts(byClass('chip-v')).includes('+1,000'));
   assert.ok(texts(byClass('tag')).includes('Builds vehicles'));
   let sea = null;
@@ -192,10 +192,10 @@ test('the game-over box shows the result and a button; null hides it', () => {
   const { hud, inModal: byClass, texts } = make();
   const calls = [];
   assert.equal(hud.el.modal.hidden, true);
-  hud.gameOver({ title: 'Victory', text: 'Orange Star wins!', color: '#e8712c', onClick: () => calls.push('again') });
+  hud.gameOver({ title: 'Victory', text: 'Ashmark wins!', color: '#e8712c', onClick: () => calls.push('again') });
   assert.equal(hud.el.modal.hidden, false);
   assert.deepEqual(texts(byClass('win-title')), ['Victory']);
-  assert.deepEqual(texts(byClass('big')), ['Orange Star wins!']);
+  assert.deepEqual(texts(byClass('big')), ['Ashmark wins!']);
   byClass('btn')[0].click();
   assert.deepEqual(calls, ['again']);
   hud.gameOver(null);

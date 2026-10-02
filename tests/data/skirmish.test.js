@@ -29,10 +29,10 @@ test('defaults copy the map; problems catch duplicates, unknown colours and no h
 
 test('applying settings gives a frozen copy with colours, controllers and funds', () => {
   const s = defaultSkirmish(classic);
-  s.funds = 15000; s.players[1].controller = 'human'; s.players[0].faction = 'green_earth';
+  s.funds = 15000; s.players[1].controller = 'human'; s.players[0].faction = 'ironvale';
   const m = applySkirmish(classic, s);
   assert.ok(Object.isFrozen(m) && Object.isFrozen(m.players[0]));
-  assert.deepEqual(m.players.map((p) => [p.faction, p.controller, p.funds]), [['green_earth', classic.players[0].controller, 15000], [classic.players[1].faction, 'human', 15000]]);
+  assert.deepEqual(m.players.map((p) => [p.faction, p.controller, p.funds]), [['ironvale', classic.players[0].controller, 15000], [classic.players[1].faction, 'human', 15000]]);
   assert.equal(applySkirmish(classic, defaultSkirmish(classic)).players[0].funds, classic.players[0].funds);
   assert.notEqual(m.players, classic.players, 'the original is untouched');
 });
@@ -56,7 +56,7 @@ test('the skirmish screen lists every map, picks, edits and starts', () => {
   s.setFunds(10000);
   s.pick('classic');
   assert.equal(s.settings.funds, 10000, 'funds survive picking another map');
-  s.setFaction(0, 'yellow_comet');
+  s.setFaction(0, 'solace');
   assert.equal(new Set(s.settings.players.map((p) => p.faction)).size, 2);
   s.setController(0, 'ai'); s.setController(1, 'ai');
   assert.equal(s.go.disabled, true, 'no human, no start');

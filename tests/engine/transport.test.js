@@ -17,7 +17,7 @@ const legend = {
   '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' }, M: { terrain: 'mountain' },
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, A: { terrain: 'airfield', owner: 0 },
 };
-const players = [{ faction: 'orange_star', controller: 'human', funds: 20000 }, { faction: 'violet_nebula', controller: 'human', funds: 20000 }];
+const players = [{ faction: 'ashmark', controller: 'human', funds: 20000 }, { faction: 'vantor_reach', controller: 'human', funds: 20000 }];
 const world = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
 
 test('a marine walks on land, crosses shoals and sea, and captures like a soldier', () => {

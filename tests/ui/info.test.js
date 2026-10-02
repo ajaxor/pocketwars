@@ -31,7 +31,7 @@ test('property info: owner, income, repair, capture points and what it builds', 
   const game = fresh();
   const mine = allProperties(game).find((p) => p.owner === 0 && p.terrain.id === 'factory');
   const t = terrainInfo(game, mine.x, mine.y);
-  assert.equal(t.property.owner.name, 'Orange Star');
+  assert.equal(t.property.owner.name, 'Ashmark');
   assert.deepEqual([t.property.income, t.property.repair, t.property.capturePoints], [1000, 2, 20]);
   assert.deepEqual(t.property.builds, ['Vehicles']);
   const city = allProperties(game).find((p) => p.owner === null);
@@ -71,7 +71,7 @@ test('unit info: HP rounded up, owner, and whether it has acted this turn', () =
   const theirs = game.state.units.find((u) => u.owner === 1);
   mine.hp = 6.4;
   let u = unitInfo(game, mine);
-  assert.deepEqual([u.hp, u.maxHp, u.faction.name, u.acted, u.forecast], [7, 10, 'Orange Star', false, null]);
+  assert.deepEqual([u.hp, u.maxHp, u.faction.name, u.acted, u.forecast], [7, 10, 'Ashmark', false, null]);
   mine.done = true; theirs.done = true;
   assert.equal(unitInfo(game, mine).acted, true);
   assert.equal(unitInfo(game, theirs).acted, false, 'only the side whose turn it is can have acted');

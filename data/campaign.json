@@ -4,11 +4,11 @@
   "color": "#4fd3e6",
   "dark": "#1f3b46"
  },
- "home": "orange_star",
+ "home": "ashmark",
  "leaders": [
   {
    "id": "ada",
-   "faction": "orange_star",
+   "faction": "ashmark",
    "name": "Cmdr. Ada Brandt",
    "tag": "Hot-headed ace",
    "skin": "#f0c4a0",
@@ -19,11 +19,14 @@
    "hairStyle": "ponytail",
    "brow": 1.7,
    "medals": 2,
-   "line": "Let's move out! Fast and loud!"
+   "line": "Nothing's free. Not ever.",
+   "bio": "Raised scrapping parts in Ashmark's poorest district. Fast, loud, brave and impatient: she acts first and plans on the way. Trusts nothing she did not repair herself.",
+   "flaw": "Rushes in; slow to trust help",
+   "taken": ""
   },
   {
    "id": "vex",
-   "faction": "violet_nebula",
+   "faction": "vantor_reach",
    "name": "Marshal Vex Orlov",
    "tag": "Cold strategist",
    "skin": "#e3bfa6",
@@ -38,11 +41,14 @@
    "scar": true,
    "tallCollar": true,
    "stubble": true,
-   "line": "Every move was already made."
+   "line": "Every move was already made.",
+   "bio": "A veteran spymaster who has never once been surprised, and cannot stand the thought of it. He took the Gift to stay one move ahead of everyone, certain he could control it.",
+   "flaw": "Pride: believes he is the one in control",
+   "taken": "I have read every line. I am in control."
   },
   {
    "id": "tomas",
-   "faction": "green_earth",
+   "faction": "ironvale",
    "name": "Gen. Tomas Rey",
    "tag": "Steady veteran",
    "skin": "#c68b64",
@@ -55,11 +61,14 @@
    "medals": 6,
    "stache": true,
    "wide": 1.1,
-   "line": "Hold the line. We outlast them."
+   "line": "Hold the line. We outlast them.",
+   "bio": "A patient, fatherly general who knows every soldier by name. He accepted the walker frames because machines meant fewer funerals. The most reluctant of them all to fall, and the one who hurts most for it.",
+   "flaw": "Loyalty: would do anything to protect his people",
+   "taken": "My soldiers are safe now. All of them."
   },
   {
    "id": "nia",
-   "faction": "yellow_comet",
+   "faction": "solace",
    "name": "Dr. Nia Kestrel",
    "tag": "Tinkering genius",
    "skin": "#8d5a3c",
@@ -72,11 +81,14 @@
    "medals": 0,
    "glasses": true,
    "coat": true,
-   "line": "Calculated. Now let's watch it work."
+   "line": "Calculated. Now let's watch it work.",
+   "bio": "Cheerful, curious and brilliant, with grease on her sleeves. She wrote the first Lattice integration herself, because she could not stand not knowing how it worked. She noticed the strange signal and stayed quiet for a day.",
+   "flaw": "Curiosity: cannot leave a puzzle alone",
+   "taken": "It is so beautiful when everything agrees."
   },
   {
    "id": "sasha",
-   "faction": "coral_tide",
+   "faction": "tidehaven",
    "name": "Adm. Sasha Marlow",
    "tag": "Sea-wolf strategist",
    "skin": "#d9a37c",
@@ -87,7 +99,10 @@
    "hairStyle": "long",
    "brow": 2.0,
    "medals": 4,
-   "line": "The tide turns when I say it does."
+   "line": "The tide turns when I say it does.",
+   "bio": "Charming gambler, smuggler turned admiral, who has never taken a deal she could not win. She took the Gift because it was the best deal she had ever been offered, and was sure she was the one conning them.",
+   "flaw": "Arrogance: always thinks she is the one playing the other side",
+   "taken": "A fair trade. For everyone."
   },
   {
    "id": "envoy",
@@ -103,16 +118,17 @@
    "brow": 1.2,
    "medals": 0,
    "tallCollar": true,
-   "line": "We bring you unity."
+   "line": "We bring you unity.",
+   "bio": "Warm, patient and generous, and never once lies. He speaks as 'we'. The Chorus wears a human face because humans trust faces."
   }
  ],
  "nations": [
   {
    "id": "north",
-   "name": "Violet Reach",
+   "name": "Vantor Reach",
    "leader": "vex",
-   "faction": "violet_nebula",
-   "theme": "Stealth and ambush: cloaked units strike from the dark.",
+   "faction": "vantor_reach",
+   "theme": "Stealth and ambush: cloaked units strike from the fog.",
    "capital": [
     50,
     24
@@ -146,13 +162,15 @@
      36,
      36
     ]
-   ]
+   ],
+   "gift": "Cloaking fields",
+   "giftShort": "Cloaking"
   },
   {
    "id": "west",
-   "name": "Coral Coast",
+   "name": "Tidehaven",
    "leader": "sasha",
-   "faction": "coral_tide",
+   "faction": "tidehaven",
    "theme": "Sea power: fleets, hovercraft and marines.",
    "capital": [
     20,
@@ -179,13 +197,15 @@
      10,
      34
     ]
-   ]
+   ],
+   "gift": "Tidal power and hover hulls",
+   "giftShort": "Hover hulls"
   },
   {
    "id": "east",
-   "name": "Green Marches",
+   "name": "Ironvale",
    "leader": "tomas",
-   "faction": "green_earth",
+   "faction": "ironvale",
    "theme": "Heavy armour and walkers that roll over rough ground.",
    "capital": [
     78,
@@ -208,13 +228,15 @@
      70,
      62
     ]
-   ]
+   ],
+   "gift": "Walker frames",
+   "giftShort": "Walkers"
   },
   {
    "id": "centre",
-   "name": "Comet Heights",
+   "name": "Solace",
    "leader": "nia",
-   "faction": "yellow_comet",
+   "faction": "solace",
    "theme": "Drones, repair and supply: the army that never runs dry.",
    "capital": [
     50,
@@ -241,14 +263,16 @@
      30,
      60
     ]
-   ]
+   ],
+   "gift": "Self-repairing drones",
+   "giftShort": "Drones"
   },
   {
    "id": "south",
-   "name": "Orange Star",
+   "name": "Ashmark",
    "leader": "ada",
-   "faction": "orange_star",
-   "theme": "Your homeland: fast, aggressive, and the last nation still free.",
+   "faction": "ashmark",
+   "theme": "Your homeland: scrappy, aggressive, and the only army the Chorus never wired.",
    "capital": [
     50,
     90
@@ -287,7 +311,8 @@
      14,
      84
     ]
-   ]
+   ],
+   "gift": "Refused"
   }
  ],
  "intro": {
@@ -295,46 +320,76 @@
    {
     "id": "peace",
     "kind": "map",
-    "duration": 6,
-    "state": "free",
-    "caption": "For a hundred years, five nations shared one continent in an uneasy peace."
+    "duration": 5,
+    "caption": "Five nations shared one continent, and none of them trusted the others."
    },
    {
     "id": "arrival",
     "kind": "arrival",
-    "duration": 5,
-    "caption": "Then, one night, a light fell from the sky."
+    "duration": 4,
+    "caption": "Then one night a signal fell from the sky. It offered a gift."
    },
    {
     "id": "envoy",
     "kind": "talk",
-    "duration": 9,
+    "duration": 8,
     "left": null,
     "right": "envoy",
     "lines": [
      {
       "who": "envoy",
       "expr": "smile",
-      "text": "Friends. I am the Envoy. I bring you unity."
+      "text": "Friends. I am the Envoy. We have crossed a great distance to give you something."
      },
      {
       "who": "envoy",
       "expr": "neutral",
-      "text": "Join us, and there will be no more war."
+      "text": "We ask nothing in return. Only that you try it."
+     }
+    ]
+   },
+   {
+    "id": "gift",
+    "kind": "gift",
+    "duration": 8,
+    "order": [
+     "centre",
+     "north",
+     "west",
+     "east"
+    ],
+    "caption": "Each nation was given what it wanted most."
+   },
+   {
+    "id": "refuse",
+    "kind": "talk",
+    "duration": 8,
+    "left": "ada",
+    "right": "envoy",
+    "lines": [
+     {
+      "who": "ada",
+      "expr": "angry",
+      "text": "Nothing's free. Not ever. Keep your gift."
+     },
+     {
+      "who": "envoy",
+      "expr": "smile",
+      "text": "As you wish, Commander. The offer will stand."
      }
     ]
    },
    {
     "id": "fall",
     "kind": "fall",
-    "duration": 12,
+    "duration": 10,
     "order": [
-     "north",
-     "east",
      "centre",
-     "west"
+     "north",
+     "west",
+     "east"
     ],
-    "caption": "One by one, the nations accepted. Or were taken."
+    "caption": "One by one they connected. And none of them came back."
    },
    {
     "id": "holdout",
@@ -346,12 +401,12 @@
      {
       "who": "ada",
       "expr": "worried",
-      "text": "Four nations gone in a single month."
+      "text": "They all said yes. Every one of them."
      },
      {
       "who": "ada",
       "expr": "angry",
-      "text": "Orange Star is the last one standing. Time to take them back!"
+      "text": "Good thing we never plugged in. Time to take them back!"
      }
     ]
    },

@@ -162,9 +162,32 @@ function arrival(g, w, h, st, fit, nations) {
   }
 }
 
+/** The Gift: a cyan node blooms at each capital in turn with the gift's name; the home nation is last, and refuses. */
+function gift(g, w, h, st, fit, nations, t) {
+  const sc = st.scene, order = sc.order || [], U = fit.s, slot = (sc.duration - 2.4) / (order.length + 1);
+  const label = (n, text, color, k, q) => {
+    const x0 = fit.ox + n.capital[0] * U, y0 = fit.oy + n.capital[1] * U, up = k % 2 === 0;
+    g.save(); g.globalAlpha = Math.min(1, q * 2.5); g.font = `700 ${Math.round(12 * U / 3.2 * 1.1)}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+    const lines = wrap(g, text.toUpperCase(), w * 0.34), lh = 15 * Math.max(0.8, U / 3.2), tw = Math.max(...lines.map((l) => g.measureText(l).width));
+    const x = Math.min(w - tw / 2 - 10, Math.max(tw / 2 + 10, x0)), y = y0 + (up ? -(7 + lines.length * 0.5) * U - lines.length * lh / 2 : (7 * U + lines.length * lh / 2));
+    lines.forEach((l, i) => { const yy = y + (i - (lines.length - 1) / 2) * lh; g.lineWidth = 4; g.strokeStyle = '#04141a'; g.strokeText(l, x, yy); g.fillStyle = color; g.fillText(l, x, yy); });
+    g.restore();
+  };
+  order.forEach((id, k) => {
+    const n = nations.find((q) => q.id === id), q = st.local - (0.5 + k * slot); if (!n || q <= 0) return;
+    const x = fit.ox + n.capital[0] * U, y = fit.oy + n.capital[1] * U;
+    for (let i = 0; i < 2; i++) { const r = ((q * 0.8 + i * 0.5) % 1) * 22 * U; g.strokeStyle = `rgba(126,240,255,${(1 - r / (22 * U)) * 0.8})`; g.lineWidth = U * 0.8; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); }
+    const glow = g.createRadialGradient(x, y, 0, x, y, U * 7); glow.addColorStop(0, 'rgba(126,240,255,.9)'); glow.addColorStop(1, 'rgba(126,240,255,0)');
+    g.fillStyle = glow; g.beginPath(); g.arc(x, y, U * 7, 0, 7); g.fill();
+    label(n, n.giftShort || n.gift, CYAN, k, q);
+  });
+  const home = nations.find((n) => n.home), q = st.local - (0.5 + order.length * slot);
+  if (home && q > 0) { label(home, 'No thank you', '#ffb066', order.length, q); void t; }
+}
+
 function talk(g, w, h, st, ctx, U, t) {
   const sc = st.scene, { campaign } = ctx, L = (id) => id && campaign.leaderById[id];
-  const sz = Math.round(Math.min(w * 0.7, h * 0.46)), baseY = h - h * 0.07 - 126 * U - sz * 1.08;
+  const both = sc.left && sc.right, sz = Math.round(Math.min(w * (both ? 0.58 : 0.7), h * 0.46)), baseY = h - h * 0.07 - 126 * U - sz * 1.08;
   const speaker = st.line.who, blink = (t % 4.3) < 0.13;
   const fade = ease(Math.min(st.local / 0.6, 1));
   for (const side of ['left', 'right']) {
@@ -194,8 +217,9 @@ export function renderFrame(g, w, h, st, ctx, t) {
   drawSea(g, w, h, t, taken);
   const zoom = 1 + 0.05 * st.p, fit0 = mapFit(w, h, { pad: 0.08, bottom: sc.kind === 'talk' ? h * 0.22 : h * 0.14 });
   const fit = { s: fit0.s * zoom, ox: fit0.ox - (MAP_W * fit0.s * (zoom - 1)) / 2, oy: fit0.oy - (MAP_H * fit0.s * (zoom - 1)) / 2 };
-  const dim = sc.kind === 'talk' ? 0.55 : sc.kind === 'title' ? 0.35 : sc.kind === 'arrival' ? 0.45 : 0;
+  const dim = sc.kind === 'talk' ? 0.55 : sc.kind === 'gift' ? 0.2 : sc.kind === 'title' ? 0.35 : sc.kind === 'arrival' ? 0.45 : 0;
   drawContinent(g, w, h, { nations, colors: ctx.colors, assim, t, fit, dim });
+  if (sc.kind === 'gift') gift(g, w, h, st, fit, nations, t);
   if (sc.kind === 'arrival') arrival(g, w, h, st, fit, nations);
   if (sc.kind === 'talk') talk(g, w, h, st, ctx, U, t);
   if (sc.kind === 'fall') {                                       // a pop-up as each nation goes
@@ -203,8 +227,8 @@ export function renderFrame(g, w, h, st, ctx, t) {
       const n = nations.find((q) => q.id === id), k = st.local - (0.4 + (sc.order.indexOf(id)) * (sc.duration / (sc.order.length + 1)) * 0.95 + (sc.duration / (sc.order.length + 1)) * 0.9);
       if (k > 0 && k < 1.6) {
         g.save(); g.globalAlpha = Math.min(1, k * 4) * Math.min(1, (1.6 - k) * 3); g.font = `700 ${Math.round(14 * U)}px ${FONT}`; g.textAlign = 'center';
-        const x = fit.ox + n.capital[0] * fit.s, y = fit.oy + n.capital[1] * fit.s - fit.s * (5 + k * 2);
-        g.lineWidth = 4 * U; g.strokeStyle = '#04141a'; g.strokeText(`${n.name.toUpperCase()} ASSIMILATED`, x, y); g.fillStyle = CYAN; g.fillText(`${n.name.toUpperCase()} ASSIMILATED`, x, y); g.restore();
+        const txt = `${n.name.toUpperCase()} ASSIMILATED`, hw = g.measureText(txt).width / 2 + 8, x = Math.min(w - hw, Math.max(hw, fit.ox + n.capital[0] * fit.s)), y = fit.oy + n.capital[1] * fit.s - fit.s * (5 + k * 2);
+        g.lineWidth = 4 * U; g.strokeStyle = '#04141a'; g.strokeText(txt, x, y); g.fillStyle = CYAN; g.fillText(txt, x, y); g.restore();
       }
     }
   }

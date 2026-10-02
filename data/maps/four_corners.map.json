@@ -5,10 +5,10 @@
   "name": "Four Corners",
   "description": "A 26x26 map for four teams, one in each corner. Every base has two roads out to the big crossroads in the middle; mountains and rough ground fill the space between.",
   "players": [
-    { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "violet_nebula", "controller": "ai", "funds": 8000 },
-    { "faction": "green_earth", "controller": "ai", "funds": 8000 },
-    { "faction": "yellow_comet", "controller": "ai", "funds": 8000 }
+    { "faction": "ashmark", "controller": "human", "funds": 8000 },
+    { "faction": "vantor_reach", "controller": "ai", "funds": 8000 },
+    { "faction": "ironvale", "controller": "ai", "funds": 8000 },
+    { "faction": "solace", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },

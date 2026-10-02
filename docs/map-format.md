@@ -12,8 +12,8 @@ reports every problem at once.
   "name": "Front Line",
   "description": "optional",
   "players": [
-    { "faction": "orange_star", "controller": "human", "funds": 8000 },
-    { "faction": "violet_nebula",   "controller": "ai",    "funds": 8000 }
+    { "faction": "ashmark", "controller": "human", "funds": 8000 },
+    { "faction": "vantor_reach",   "controller": "ai",    "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },

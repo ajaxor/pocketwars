@@ -12,7 +12,7 @@ const isStr = (v) => typeof v === 'string' && v.length > 0;
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 const isColor = (v) => typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v);
 
-export const SCENE_KINDS = ['map', 'arrival', 'talk', 'fall', 'title'];
+export const SCENE_KINDS = ['map', 'arrival', 'talk', 'gift', 'fall', 'title'];
 
 export function campaignProblems(raw, registry) {
   const p = [];
@@ -26,6 +26,7 @@ export function campaignProblems(raw, registry) {
     if (leaders.has(L.id)) p.push(`campaign: duplicate leader "${L.id}"`);
     leaders.set(L.id, L);
     if (!isStr(L.name)) p.push(`campaign: leader "${L.id}" needs a name`);
+    if (!isStr(L.bio)) p.push(`campaign: leader "${L.id}" needs a bio (their personality)`);
     if (L.faction !== 'chorus' && !registry.factions[L.faction]) p.push(`campaign: leader "${L.id}" has unknown faction "${L.faction}"`);
   }
 
@@ -43,6 +44,7 @@ export function campaignProblems(raw, registry) {
       if (!registry.factions[n.faction]) p.push(`campaign: nation "${n.id}" has unknown faction "${n.faction}"`);
       if (!Array.isArray(n.capital) || n.capital.length !== 2 || !n.capital.every(isNum)) p.push(`campaign: nation "${n.id}" needs a capital [x, y]`);
       if (!Array.isArray(n.outline) || n.outline.length < 3 || !n.outline.every((q) => Array.isArray(q) && q.length === 2 && q.every(isNum))) p.push(`campaign: nation "${n.id}" needs an outline of at least three [x, y] points`);
+      if (!isStr(n.gift)) p.push(`campaign: nation "${n.id}" needs a gift (what the Chorus offered, or "Refused")`);
       if (n.home) homes++;
     }
     if (homes !== 1) p.push('campaign: exactly one nation must be the home nation');
@@ -60,7 +62,7 @@ export function campaignProblems(raw, registry) {
       if (!Array.isArray(s.lines) || !s.lines.length) p.push(`${at} needs lines`);
       else for (const l of s.lines) if (![s.left, s.right].includes(l.who) || !isStr(l.text)) p.push(`${at}: every line needs text and a speaker who is on screen`);
     }
-    if (s.kind === 'fall') for (const id of s.order || []) if (!nations.has(id)) p.push(`${at}: unknown nation "${id}" in order`);
+    if (s.kind === 'fall' || s.kind === 'gift') for (const id of s.order || []) if (!nations.has(id)) p.push(`${at}: unknown nation "${id}" in order`);
   }
   return p;
 }

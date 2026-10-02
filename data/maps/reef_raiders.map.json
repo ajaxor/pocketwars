@@ -6,12 +6,12 @@
   "description": "Small and mean: two island bases and a reef of shoals in the middle. Every shipyard opens onto open water, so the sea decides it.",
   "players": [
     {
-      "faction": "orange_star",
+      "faction": "ashmark",
       "controller": "human",
       "funds": 12000
     },
     {
-      "faction": "violet_nebula",
+      "faction": "vantor_reach",
       "controller": "ai",
       "funds": 12000
     }

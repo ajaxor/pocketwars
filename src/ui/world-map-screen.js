@@ -29,11 +29,11 @@ export class WorldMapScreen {
     this.card = h(doc, 'div', 'wm-card');
     this.portrait = h(doc, 'canvas', 'wm-portrait');
     this.name = h(doc, 'div', 'wm-name'); this.status = h(doc, 'div', 'wm-status');
-    this.leader = h(doc, 'div', 'wm-leader'); this.theme = h(doc, 'div', 'wm-theme');
-    const who = h(doc, 'div', 'wm-who'); who.append(this.name, this.status, this.leader, this.theme);
+    this.leader = h(doc, 'div', 'wm-leader'); this.bio = h(doc, 'div', 'wm-theme'); this.gift = h(doc, 'div', 'wm-gift'); this.theme = h(doc, 'div', 'wm-theme');
+    const who = h(doc, 'div', 'wm-who'); who.append(this.name, this.status, this.leader);
     this.mission = button(doc, { label: 'Missions coming soon', variant: 'primary', size: 'lg', disabled: true, cls: 'wm-go' });
     const row = h(doc, 'div', 'wm-row'); row.append(this.portrait, who);
-    this.card.append(row, this.mission);
+    this.card.append(row, this.bio, this.gift, this.theme, this.mission);
 
     this.root = h(doc, 'div', 'wm');
     this.root.append(head, this.canvas, this.card);
@@ -49,8 +49,10 @@ export class WorldMapScreen {
     this.card.className = 'wm-card' + (free ? ' is-free' : ' is-taken');
     this.name.textContent = n.name;
     this.status.textContent = free ? 'Free - your homeland' : 'Assimilated by the Chorus';
-    this.leader.textContent = free ? `${L.name} - ${L.tag}` : `${L.name} - taken by the Chorus`;
-    this.theme.textContent = free ? n.theme : `${n.theme} (Defeat them to free them.)`;
+    this.leader.textContent = `${L.name} - ${L.tag}`;
+    this.bio.textContent = L.bio;
+    this.gift.textContent = free ? 'Refused the Chorus\' Gift.' : `Accepted the Gift: ${n.gift}. ${L.taken ? '"' + L.taken + '"' : ''}`;
+    this.theme.textContent = free ? n.theme : `${n.theme} Defeat them to free them.`;
     this.drawPortrait();
   }
 

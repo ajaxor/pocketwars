@@ -1,27 +1,27 @@
 {
-  "orange_star": {
-    "name": "Orange Star",
+  "ashmark": {
+    "name": "Ashmark",
     "color": "#e8712c",
     "dark": "#9a3f0e"
   },
-  "violet_nebula": {
-    "name": "Violet Nebula",
+  "vantor_reach": {
+    "name": "Vantor Reach",
     "color": "#9a5fd8",
     "dark": "#51298f"
   },
-  "green_earth": {
-    "name": "Green Earth",
+  "ironvale": {
+    "name": "Ironvale",
     "color": "#22a06b",
     "dark": "#0f6440"
   },
-  "yellow_comet": {
-    "name": "Yellow Comet",
+  "solace": {
+    "name": "Solace",
     "color": "#f2c81e",
     "dark": "#a07c00"
   },
-  "coral_tide": {
-    "name": "Coral Tide",
-    "color": "#e0508a",
-    "dark": "#99285b"
+  "tidehaven": {
+    "name": "Tidehaven",
+    "color": "#2f86d6",
+    "dark": "#1a4a8a"
   }
 }

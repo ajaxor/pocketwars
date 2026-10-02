@@ -6,12 +6,12 @@
   "description": "A bay between two armies. Fight over the land bridge in the north, or build a shipyard fleet and take the bay. Subs hide in the deep; destroyers hunt them with sonar.",
   "players": [
     {
-      "faction": "orange_star",
+      "faction": "ashmark",
       "controller": "human",
       "funds": 14000
     },
     {
-      "faction": "violet_nebula",
+      "faction": "vantor_reach",
       "controller": "ai",
       "funds": 14000
     }
