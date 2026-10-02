@@ -27,22 +27,22 @@ const torpedoBomber = (g, { s, c, dk, w, run }) => {
   poly(g, s, [[-.32, -.05], [-.37, -.13], [-.44, -.13], [-.43, -.04]], far);                  // far tailplane
   poly(g, s, [[-.28, -.07], [-.36, -.22], [-.45, -.22], [-.45, -.06]], mix(c, dk, .15));      // tail fin
   poly(g, s, [[-.36, -.22], [-.45, -.22], [-.45, -.19], [-.365, -.19]], mix(c, dk, .5));
+  // the torpedo, drawn first so the body and near wing sit in front of it: long, steel, with a red warhead and a little tail
+  oval(g, s, .02, .135, .3, .05, '#707a88');
+  poly(g, s, [[.2, .09], [.33, .135], [.2, .18]], RED);                                       // warhead
+  poly(g, s, [[-.24, .13], [-.33, .07], [-.29, .07], [-.2, .12]], '#4c5460');                  // tail fins
   box(g, s, -.44, -.08, .76, .15, s * .07, c);                                                // fuselage
   poly(g, s, [[.3, -.08], [.4, -.05], [.4, .05], [.3, .07]], dk);                             // engine cowl
   box(g, s, -.44, .03, .76, .035, 2, mix(c, dk, .45));                                        // belly shade
   box(g, s, .06, -.125, .17, .06, 3, GLASS);                                                  // canopy
   poly(g, s, [[.1, .06], [.05, .3], [-.12, .3], [-.15, .06]], near);                          // near wing: broad and straight
   poly(g, s, [[-.3, .05], [-.36, .16], [-.44, .16], [-.43, .05]], near);                      // near tailplane
-  // the torpedo, slung under the belly on two pylons: long, steel, with a red warhead and a little tail
-  oval(g, s, .02, .135, .3, .05, '#707a88');
-  poly(g, s, [[.2, .09], [.33, .135], [.2, .18]], RED);                                       // warhead
-  poly(g, s, [[-.24, .13], [-.33, .07], [-.29, .07], [-.2, .12]], '#4c5460');                  // tail fins
   propDisc(g, s, .43, -.005, .12, w, run);
 };
 
 // ---- Radar plane --------------------------------------------------------------------------------------------------------------
 const radarPlane = (g, { s, c, dk, w, run }) => {
-  const far = mix(c, dk, .6), near = mix(c, dk, .3), disk = '#e7e9ee';
+  const far = mix(c, dk, .6), near = mix(c, dk, .3), disk = c;
   poly(g, s, [[.08, -.03], [.05, -.16], [-.12, -.16], [-.12, -.03]], far);                    // far wing
   box(g, s, -.04, -.12, .17, .045, 2, '#2a2a2a'); propDisc(g, s, .14, -.098, .05, w, run, 1.1);   // far turboprop
   poly(g, s, [[-.32, -.03], [-.37, -.1], [-.46, -.1], [-.44, -.03]], far);                    // far tailplane
@@ -59,8 +59,8 @@ const radarPlane = (g, { s, c, dk, w, run }) => {
   // the rotodome: two pylons carry a big flat disc on the spine; it slowly turns (stripes sliding across its face)
   stroke(g, s, -.14, -.065, -.12, -.17, 3, dk); stroke(g, s, .08, -.065, .06, -.17, 3, dk);
   const cx = -.03, cy = -.215, rx = .24, ry = .055;
-  oval(g, s, cx, cy + .03, rx, ry, mix(disk, dk, .35));                                       // underside / rim
-  box(g, s, cx - rx, cy - .005, rx * 2, .035, 0, mix(disk, dk, .35));
+  oval(g, s, cx, cy + .03, rx, ry, mix(c, dk, .4));                                       // underside / rim
+  box(g, s, cx - rx, cy - .005, rx * 2, .035, 0, mix(c, dk, .4));
   oval(g, s, cx, cy - .005, rx, ry, disk);                                                    // top face
 };
 
@@ -83,7 +83,7 @@ const vintageFighter = (g, { s, c, dk, w, run }) => {
 const vintageBomber = (g, { s, c, dk, w, run }) => {
   const far = mix(c, dk, .6), near = mix(c, dk, .3);
   poly(g, s, [[.1, -.06], [.04, -.22], [-.1, -.22], [-.12, -.06]], far);                      // far wing, straight and tapered
-  for (const [x, y] of [[.07, -.115], [.02, -.185]]) { box(g, s, x - .13, y - .02, .17, .04, 2, '#2a2a2a'); propDisc(g, s, x + .06, y, .045, w, run, x * 40); }   // far engines
+  for (const [x, y] of [[.05, -.13]]) { box(g, s, x - .13, y - .02, .17, .04, 2, '#2a2a2a'); propDisc(g, s, x + .06, y, .045, w, run, x * 40); }   // far engines
   poly(g, s, [[-.33, -.05], [-.4, -.13], [-.47, -.13], [-.45, -.04]], far);                   // far tailplane
   poly(g, s, [[-.26, -.07], [-.38, -.27], [-.47, -.27], [-.47, -.06]], mix(c, dk, .15));      // tall tail fin
   box(g, s, -.47, -.085, .91, .16, s * .08, c);                                               // round fuselage
@@ -91,7 +91,7 @@ const vintageBomber = (g, { s, c, dk, w, run }) => {
   poly(g, s, [[.44, .0], [.4, -.06], [.3, -.085], [.3, .07], [.4, .06]], GLASS);              // glazed nose
   poly(g, s, [[.14, .07], [.06, .32], [-.14, .32], [-.15, .07]], near);                       // near wing
   poly(g, s, [[-.34, .07], [-.41, .17], [-.47, .17], [-.45, .06]], near);                     // near tailplane
-  for (const [x, y] of [[.1, .15], [.01, .27]]) { box(g, s, x - .17, y - .03, .21, .06, 3, mix(dk, '#000000', .2)); propDisc(g, s, x + .06, y, .075, w, run, x * 37); }   // near engines
+  for (const [x, y] of [[.06, .19]]) { box(g, s, x - .17, y - .03, .21, .06, 3, mix(dk, '#000000', .2)); propDisc(g, s, x + .06, y, .075, w, run, x * 37); }   // near engines
 };
 
 export const SPRITES = {

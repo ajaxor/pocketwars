@@ -30,8 +30,8 @@ const ak47 = (g, s, x, y, ang) => {
   g.save(); g.translate(x * s, y * s); g.rotate(ang);
   box(g, s, -.2, -.02, .13, .05, 1, WOOD);                                         // wooden stock
   box(g, s, -.08, -.03, .17, .05, 1, INK);                                         // receiver
-  box(g, s, .09, -.025, .12, .04, 1, WOOD);                                        // wooden handguard
-  box(g, s, .21, -.012, .15, .018, 0, INK);                                        // barrel
+  box(g, s, .09, -.025, .12, .04, 1, INK);                                         // handguard, black like the barrel
+  box(g, s, .09, -.012, .27, .018, 0, INK);                                        // barrel, all black
   poly(g, s, [[.0, .02], [.06, .02], [.09, .13], [.03, .14]], '#3a2c20');          // the curved magazine
   g.restore();
 };
@@ -56,13 +56,20 @@ const rpgTrooper = (g, o) => {
   stroke(g, s, .1, .08 + bb, .17, -.16 + bb, 3.2, SKIN);                            // a hand on the tube
 };
 
-// ---- Mechanic: a soldier holding a wrench across his chest like a rifle -------------------------------------------------------------
+// ---- Mechanic: a soldier holding a wrench across his chest like a rifle, bobbing it up and down --------------------------------------
 const mechanic = (g, o) => {
-  const { s, dk, bb, sw } = body(g, o, {});
+  const { s, dk, bb, sw } = body(g, o, {}), t = o.run ? Math.sin(o.w * 5 + o.ph) : 0;
   helmet(g, s, bb, dk);
-  g.save(); g.translate(-.1 * s, (.1 + bb + sw * .3) * s); g.rotate(-.62);          // from the hip up to the shoulder
-  box(g, s, 0, -.02, .26, .04, 1, STEEL);                                           // handle
-  g.beginPath(); g.arc(.3 * s, 0, .045 * s, .5, Math.PI * 2 - .5); g.lineWidth = .05 * s; g.strokeStyle = STEEL; g.lineCap = 'butt'; g.stroke();   // the open jaw, a C
+  g.save(); g.translate(-.1 * s, (.1 + bb + sw * .3 + t * .02) * s); g.rotate(-.6 + t * .1);   // from the hip up and out past the chest
+  const side = mix(STEEL, '#000000', .4);
+  const piece = (col, grow, dx, dy) => {                                           // the whole wrench in one colour: handle and the open jaw (a C)
+    g.fillStyle = col; g.fillRect((-grow + dx) * s, (-.02 - grow + dy) * s, (.34 + grow * 2) * s, (.04 + grow * 2) * s);
+    g.beginPath(); g.arc((.38 + dx) * s, dy * s, .05 * s, .5, Math.PI * 2 - .5); g.lineWidth = (.055 + grow * 2) * s; g.strokeStyle = col; g.lineCap = 'butt'; g.stroke();
+  };
+  piece(INK, .014, .014, .02);                                                     // outline round the side
+  piece(side, 0, .014, .02);                                                       // the side face, offset down and right
+  piece(INK, .014, 0, 0);                                                          // outline round the front
+  piece(STEEL, 0, 0, 0);                                                           // the front
   g.restore();
 };
 
@@ -105,12 +112,11 @@ const conscript = (g, o) => {
 
 // ---- Spy: a dark coat, a fedora pulled low, and a pistol ------------------------------------------------------------------------------
 const spy = (g, o) => {
-  const { s, w, run } = o, { l, bb } = gait(s, o);
-  void w; void run;
-  g.fillStyle = INK; g.fillRect(-s * .12, s * .14, s * .09, s * .15 + l); g.fillRect(s * .03, s * .14, s * .09, s * .15 - l);
-  poly(g, s, [[-.16, -.12 + bb], [.16, -.12 + bb], [.2, .2], [-.2, .2]], '#2b2f3a');           // the long coat
+  const { s, c, dk } = o, { l, bb } = gait(s, o);
+  g.fillStyle = dk; g.fillRect(-s * .12, s * .14, s * .09, s * .15 + l); g.fillRect(s * .03, s * .14, s * .09, s * .15 - l);
+  poly(g, s, [[-.16, -.12 + bb], [.16, -.12 + bb], [.2, .2], [-.2, .2]], c);                   // the long coat, in the team colour
   disc(g, s, 0, -.2 + bb, .085, SKIN);
-  oval(g, s, .01, -.25 + bb, .16, .03, '#23242c'); box(g, s, -.085, -.33 + bb, .17, .09, 3, '#23242c');   // the fedora
+  oval(g, s, .01, -.25 + bb, .16, .03, dk); box(g, s, -.085, -.33 + bb, .17, .09, 3, dk);   // the fedora
   box(g, s, .12, -.04 + bb, .16, .045, 1, INK); box(g, s, .12, -.01 + bb, .045, .08, 1, INK);   // pistol: slide and grip
 };
 
