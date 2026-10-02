@@ -72,6 +72,12 @@ for production facilities that do not exist yet (Hover Lab, Mech Factory, Stealt
 Bay, plus new War Factory units). They are shown in the gallery's "Experimental" section and are not in the game or in `data/`.
 `node tools/sprite-lab/concepts.mjs [--only id,id] [--size 150] [--check]` renders them to a PNG contact sheet and checks their bounds.
 
+## Leader portraits (concept)
+
+`gallery/portraits.html` (plus `portrait-art.js` and `portraits.js`) shows four invented leaders, one per army, in seven portrait styles
+and eight dialogue layouts. The portraits are one parametric bust driven by traits in the `LEADERS` list and pushed through a style
+pipeline (flat, ink, pixel, duotone, halftone, medallion, poster); they blink and talk live. Nothing is in the game yet.
+
 ## Notes for design work
 
 - Draw at the size it will be seen. Judge every change at 120 and 40 before 176.

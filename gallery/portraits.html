@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Wars: leader portraits</title>
+<style>
+  :root { color-scheme: dark; --s: 150px; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
+  header, main { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 20px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 19px; margin: 36px 0 4px; padding-top: 22px; border-top: 1px solid #2a2d35; }
+  h3 { font-size: 15px; margin: 0; }
+  p { margin: 4px 0 12px; color: #b9b5a8; }
+  a { color: #8fc2ee; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #1b1405; background: #e8b34a; border-radius: 6px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
+  .controls { position: sticky; top: 0; z-index: 5; background: #16181dee; backdrop-filter: blur(6px); border-bottom: 1px solid #2a2d35; }
+  .controls-inner { max-width: 1040px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; }
+  .ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b9b5a8; }
+  .seg { display: inline-flex; flex-wrap: wrap; border: 1px solid #383c46; border-radius: 8px; overflow: hidden; }
+  .seg button { background: #20232b; color: #e9e6dc; border: 0; padding: 7px 11px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button + button { border-left: 1px solid #383c46; }
+  .seg button[aria-pressed="true"] { background: #3c74d6; color: #fff; }
+  input[type=range] { width: 120px; accent-color: #e8712c; }
+  canvas { display: block; }
+  .hint { font-size: 13px; color: #8a877c; }
+
+  /* the portrait styles */
+  .styles { display: grid; gap: 14px; }
+  .style-row { background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 12px; }
+  .style-row p { margin: 2px 0 10px; font-size: 13px; }
+  .faces { display: flex; flex-wrap: wrap; gap: 12px; }
+  .face { width: var(--s); }
+  .face .cap { font-size: 12px; color: #b9b5a8; margin-top: 4px; line-height: 1.3; }
+  .face canvas { width: var(--s); height: var(--s); border-radius: 6px; }
+  .sheet { overflow-x: auto; background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 12px; }
+  .sheet table { border-collapse: separate; border-spacing: 8px; }
+  .sheet th { font-size: 12px; color: #8a877c; font-weight: 500; text-align: center; }
+  .sheet td canvas { width: 96px; height: 96px; border-radius: 6px; }
+
+  /* the dialogue mock-ups */
+  .mocks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 410px), 1fr)); gap: 18px; }
+  .mock { background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 12px; }
+  .mock p { font-size: 13px; margin: 2px 0 10px; }
+  .mock .pro { color: #9be564; } .mock .con { color: #ee9b7e; }
+  .stage { position: relative; width: 100%; max-width: 390px; height: 300px; margin: 0 auto; overflow: hidden; border-radius: 10px; border: 1px solid #000;
+    background: #86b95c; }
+  .stage::before { content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, transparent 0 calc(100% - 1px), rgba(0,0,0,.07) 0) 0 0 / 39px 39px,
+      linear-gradient(0deg, transparent 0 calc(100% - 1px), rgba(0,0,0,.07) 0) 0 0 / 39px 39px,
+      radial-gradient(circle at 70% 30%, #6fa04a 0 12%, transparent 13%),
+      radial-gradient(circle at 20% 70%, #78a850 0 10%, transparent 11%); }
+  .stage > * { position: absolute; }
+  .hud { top: 0; left: 0; right: 0; height: 26px; background: rgba(14,18,30,.86); color: #f3efe2; font-size: 12px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; z-index: 1; }
+  .hud i { font-style: normal; color: #f6d35a; }
+  .tile { width: 39px; height: 39px; border-radius: 5px; }
+  .caret::after { content: "▌"; opacity: .8; animation: blink 1s steps(2) infinite; margin-left: 1px; }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  /* 1 classic box */
+  .classic { left: 8px; right: 8px; bottom: 8px; background: rgba(14,18,30,.95); border: 3px solid var(--fc); border-radius: 10px; padding: 10px; display: grid; grid-template-columns: 84px 1fr; gap: 10px; min-height: 108px; transition: border-color .2s; }
+  .classic .pt { width: 84px; height: 84px; border-radius: 6px; border: 2px solid var(--fc); overflow: hidden; }
+  .classic .pt canvas { width: 84px; height: 84px; }
+  .classic .nm { position: absolute; left: 18px; top: -13px; background: var(--fc); color: #fff; font-weight: 700; font-size: 12px; padding: 2px 10px; border-radius: 6px 6px 0 0; text-shadow: 0 1px 0 rgba(0,0,0,.4); }
+  .classic .tx { font-size: 14px; color: #f3efe2; line-height: 1.35; padding-top: 4px; }
+  .classic .nx { position: absolute; right: 12px; bottom: 6px; color: #f6d35a; font-size: 12px; animation: bob 1s ease-in-out infinite; }
+  @keyframes bob { 50% { transform: translateY(3px); } }
+
+  /* 2 visual novel */
+  .vn .cut { bottom: -44px; transition: opacity .3s, filter .3s, transform .3s; }
+  .vn .cut.a { left: -26px; } .vn .cut.b { right: -26px; transform: scaleX(-1); }
+  .vn .cut[data-on="0"] { filter: brightness(.45) saturate(.6); }
+  .vn .box { left: 10px; right: 10px; bottom: 10px; background: linear-gradient(180deg, rgba(14,18,30,.78), rgba(14,18,30,.92)); border: 1px solid rgba(255,255,255,.25); border-radius: 12px; padding: 18px 14px 12px; min-height: 84px; backdrop-filter: blur(3px); }
+  .vn .nm { position: absolute; top: -12px; background: var(--fc); color: #fff; font-weight: 700; font-size: 12px; padding: 2px 12px; border-radius: 10px; }
+  .vn .tx { font-size: 14px; color: #f3efe2; line-height: 1.35; padding-left: 0; text-align: center; }
+
+  /* 3 bubble over the map */
+  .bubble { background: #fffdf3; color: #20222b; border: 2.5px solid #20222b; border-radius: 14px; padding: 8px 10px 8px 52px; width: 224px; min-height: 52px; font-size: 13px; line-height: 1.3; z-index: 2; transition: opacity .2s; }
+  .bubble .pt { position: absolute; left: 7px; top: 7px; width: 38px; height: 38px; }
+  .bubble .pt canvas { width: 38px; height: 38px; }
+  .bubble::after { content: ""; position: absolute; bottom: -12px; left: var(--tail, 30px); border: 7px solid transparent; border-top: 12px solid #20222b; border-bottom: 0; }
+  .bubble::before { content: ""; position: absolute; bottom: -8px; left: calc(var(--tail, 30px) + 2px); border: 5px solid transparent; border-top: 9px solid #fffdf3; border-bottom: 0; z-index: 1; }
+  .bubble[data-on="0"] { opacity: 0; }
+  .hq { background: var(--fc); border: 3px solid rgba(0,0,0,.55); display: grid; place-items: center; color: #fff; font-weight: 800; font-size: 12px; }
+
+  /* 4 radio */
+  .crt { inset: 0; background: #031009; color: #6dff9a; font-family: ui-monospace, Menlo, monospace; }
+  .crt::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px); animation: flick 3s infinite; }
+  @keyframes flick { 0%, 100% { opacity: .9; } 48% { opacity: 1; } 50% { opacity: .6; } 52% { opacity: 1; } }
+  .crt > * { position: absolute; }
+  .crt-stage .hud, .vs .hud, .dossier .hud { display: none; }
+  .crt .top { left: 10px; right: 10px; top: 8px; font-size: 11px; display: flex; justify-content: space-between; letter-spacing: .12em; }
+  .crt .top b { animation: blink 1.2s steps(2) infinite; }
+  .crt .scr { left: 12px; top: 32px; width: 120px; height: 120px; border: 2px solid #1d7d41; box-shadow: 0 0 14px rgba(70,255,140,.35); overflow: hidden; }
+  .crt .scr canvas { width: 120px; height: 120px; filter: grayscale(1) sepia(1) hue-rotate(75deg) saturate(3.2) brightness(1.05) contrast(1.15); }
+  .crt .scr::after { content: ""; position: absolute; left: 0; right: 0; height: 18px; background: rgba(160,255,190,.18); animation: roll 2.6s linear infinite; }
+  @keyframes roll { from { top: -20px; } to { top: 130px; } }
+  .crt .info { left: 142px; top: 36px; right: 10px; font-size: 11px; line-height: 1.5; color: #3fcf74; }
+  .crt .info b { color: #9dffbf; font-size: 13px; }
+  .crt .tx { left: 12px; right: 12px; top: 164px; font-size: 14px; line-height: 1.4; }
+
+  /* 5 dossier */
+  .dossier { inset: 0; background: #3a3f4a; }
+  .paper { left: 18px; right: 18px; top: 34px; bottom: 14px; background: #f1e8d0; color: #2a2418; border-radius: 3px; box-shadow: 0 5px 14px rgba(0,0,0,.5); transform: rotate(-1.2deg); padding: 12px; font-family: Georgia, serif; }
+  .paper .pt { position: absolute; right: 12px; top: 12px; width: 92px; height: 92px; border: 4px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4); transform: rotate(3deg); }
+  .paper .pt canvas { width: 84px; height: 84px; }
+  .paper h4 { margin: 0; font-size: 15px; letter-spacing: .06em; text-transform: uppercase; }
+  .paper .f { font-size: 12px; line-height: 1.55; margin-top: 4px; width: 62%; }
+  .paper .f b { font-weight: 700; }
+  .paper .tx { margin-top: 14px; font-size: 13px; line-height: 1.4; border-top: 1px solid #b9ac86; padding-top: 8px; font-style: italic; min-height: 70px; }
+  .paper .ob { font-family: system-ui, sans-serif; font-size: 12px; margin-top: 6px; }
+  .stamp { right: 20px; top: 124px; transform: rotate(-12deg); border: 3px solid #c8352b; color: #c8352b; font: 800 16px/1 system-ui, sans-serif; letter-spacing: .12em; padding: 4px 8px; border-radius: 4px; opacity: .85; }
+  .clip { right: 58px; top: 2px; width: 14px; height: 34px; border: 3px solid #9aa0ac; border-radius: 8px; z-index: 2; }
+
+  /* 6 versus */
+  .vs { inset: 0; background: #14161c; }
+  .vs .L, .vs .R { top: 0; bottom: 0; }
+  .vs .L { left: 0; right: 0; background: var(--fa); clip-path: polygon(0 0, 62% 0, 38% 100%, 0 100%); animation: inL 4.5s ease-out infinite; }
+  .vs .R { left: 0; right: 0; background: var(--fb); clip-path: polygon(64% 0, 100% 0, 100% 100%, 40% 100%); animation: inR 4.5s ease-out infinite; }
+  @keyframes inL { 0% { transform: translateX(-100%); } 12%, 100% { transform: none; } }
+  @keyframes inR { 0% { transform: translateX(100%); } 12%, 100% { transform: none; } }
+  .vs .pa { left: 4px; top: 22px; } .vs .pb { right: 4px; top: 22px; }
+  .vs canvas { width: 160px; height: 160px; }
+  .vs .big { left: 50%; top: 82px; transform: translateX(-50%) skewX(-8deg); font: 900 44px/1 system-ui, sans-serif; font-style: italic; color: #fff; text-shadow: 0 3px 0 #000, 2px 0 0 #000, -2px 0 0 #000; z-index: 2; }
+  .vs .ca, .vs .cb { bottom: 10px; width: 46%; font-size: 12px; line-height: 1.3; z-index: 2; background: rgba(0,0,0,.6); padding: 6px 8px; border-radius: 6px; color: #f3efe2; }
+  .vs .ca { left: 8px; } .vs .cb { right: 8px; text-align: right; }
+  .vs .ca b, .vs .cb b { display: block; font-size: 13px; }
+
+  /* 7 toasts */
+  .toasts .t { left: 8px; right: 8px; display: flex; gap: 9px; align-items: center; background: rgba(14,18,30,.94); border-left: 5px solid var(--fc); border-radius: 8px; padding: 6px 10px 6px 6px; font-size: 13px; color: #f3efe2; opacity: 0; animation: toast 9s ease-in-out infinite; z-index: 2; box-shadow: 0 3px 10px rgba(0,0,0,.4); }
+  .toasts .t canvas { width: 38px; height: 38px; }
+  .toasts .t b { display: block; font-size: 11px; color: #f6d35a; letter-spacing: .04em; }
+  .toasts .t:nth-child(2) { top: 34px; animation-delay: 0s; } .toasts .t:nth-child(3) { top: 34px; animation-delay: 3s; } .toasts .t:nth-child(4) { top: 34px; animation-delay: 6s; }
+  @keyframes toast { 0% { opacity: 0; transform: translateY(-14px); } 5%, 28% { opacity: 1; transform: none; } 33%, 100% { opacity: 0; transform: translateY(-14px); } }
+
+  /* 8 power cut-in */
+  .power { inset: 0; background: rgba(0,0,0,.45); overflow: hidden; }
+  .power .band { left: -10%; right: -10%; top: 70px; height: 130px; background: linear-gradient(90deg, var(--fc), color-mix(in srgb, var(--fc) 60%, #fff)); transform: skewY(-6deg); border-top: 5px solid #fff; border-bottom: 5px solid #fff; animation: band 4s ease-out infinite; }
+  .power .lines { inset: 0; background: repeating-linear-gradient(-6deg, transparent 0 14px, rgba(255,255,255,.13) 14px 16px); animation: band 4s ease-out infinite; mix-blend-mode: screen; }
+  .power .cut { left: -8px; bottom: -34px; animation: person 4s ease-out infinite; z-index: 2; }
+  .power .shout { left: 140px; right: 6px; top: 86px; font: 900 32px/1.02 system-ui, sans-serif; font-style: italic; color: #fff; text-shadow: 0 3px 0 #000, 2px 0 0 #000, -2px 0 0 #000, 0 -2px 0 #000; transform: skewY(-6deg); z-index: 3; animation: shout 4s ease-out infinite; }
+  .power .sub { left: 142px; top: 164px; font-size: 12px; color: #fff; background: rgba(0,0,0,.6); padding: 3px 8px; border-radius: 4px; z-index: 3; transform: skewY(-6deg); animation: shout 4s ease-out infinite; }
+  @keyframes band { 0% { transform: translateX(-100%) skewY(-6deg); } 14%, 80% { transform: translateX(0) skewY(-6deg); } 100% { transform: translateX(110%) skewY(-6deg); } }
+  @keyframes person { 0% { transform: translateX(-120%); } 16%, 80% { transform: none; } 100% { transform: translateX(-120%); } }
+  @keyframes shout { 0%, 12% { opacity: 0; transform: skewY(-6deg) scale(1.6); } 20%, 80% { opacity: 1; transform: skewY(-6deg) scale(1); } 100% { opacity: 0; } }
+  .power .lines { animation-name: lines; } @keyframes lines { 0% { opacity: 0; } 14%, 80% { opacity: 1; } 100% { opacity: 0; } }
+</style>
+</head>
+<body>
+<header>
+  <h1>Leader portraits <span class="tag">concept, not in the game</span></h1>
+  <p>One procedural bust, driven by each leader's traits, run through seven art styles, then dropped into eight dialogue layouts. Four invented leaders, one per army. The portraits blink and talk live. <a href="./">Back to the unit gallery</a> · <a href="../">the game</a></p>
+</header>
+<div class="controls"><div class="controls-inner">
+  <div class="ctl">Expression <span class="seg" id="expr"></span></div>
+  <div class="ctl">Size <input id="size" type="range" min="80" max="220" step="4" value="150" aria-label="Portrait size"><output id="sizeOut">150 px</output></div>
+  <div class="ctl">Dialogue style <span class="seg" id="dlg"></span></div>
+</div></div>
+<main>
+  <h2 style="border-top:0;margin-top:20px">Portrait styles</h2>
+  <p>The same four faces in every style. The expression and size controls above apply to this whole section.</p>
+  <div class="styles" id="styles"></div>
+
+  <h2>Expressions</h2>
+  <p>What each leader can do with a handful of parameters: the eyebrows, eyes and mouth change, and the mouth also opens while they talk. Shown in the style picked below.</p>
+  <div class="ctl" style="margin-bottom:10px">Style <span class="seg" id="sheetStyle"></span></div>
+  <div class="sheet" id="sheet"></div>
+
+  <h2>Dialogue designs</h2>
+  <p>Eight ways to show someone speaking, each drawn at phone size over a slice of map, playing a short exchange between Cmdr. Brandt and Marshal Orlov. "Dialogue style" above swaps the portrait art inside the layouts that use a framed portrait.</p>
+  <div class="mocks" id="mocks"></div>
+  <p class="hint">Portraits are drawn by <code>gallery/portrait-art.js</code> (traits in the <code>LEADERS</code> list); layouts are plain HTML and CSS in this page.</p>
+</main>
+<script type="module">
+// Same cache-busting as the other gallery pages: find the current build via version.json, then load that build's copy of the code.
+let base = './portraits.js?t=' + Date.now();
+try {
+  const r = await fetch('../version.json', { cache: 'no-store' });
+  if (r.ok) base = '../v/' + (await r.json()).hash + '/gallery/portraits.js';
+} catch {}
+await import(base);
+</script>
+</body>
+</html>
