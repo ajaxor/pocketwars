@@ -216,11 +216,11 @@ unit and building set is richer than one line. The data lives in `data/campaign.
 | Col. Gus Harlan (you) | Lastholm | Grumpy, anti-technology old man with get-off-my-lawn energy | Stubborn: never took the Gift | The scrappy underdog: volunteers, salvage, old machines |
 | Cmdr. Ada Brandt | Ashmark | Warm, empathic, wildly optimistic farm-country ace with a cowboy hat and a country accent | Hope: sees the best in everyone, even the Chorus | Fast and aggressive infantry and light air |
 | Marshal Vex Orlov | Vantor Reach | Secretive spy in a trench coat who talks in code | Pride: certain he can keep the Gift a secret | Stealth and ambush |
-| Gen. Tomas Rey | Ironvale | Old samurai who quotes the Art of War | Duty: the wisest victory is the one with no battle | Heavy armour |
+| Gen. Hiroshi Takeda | Ironvale | Old samurai who quotes the Art of War | Duty: the wisest victory is the one with no battle | Heavy armour |
 | Dr. Ludwig Kestrel | Solace | German mad scientist with wild white hair | Curiosity: cannot leave an experiment alone | Supply, repair and gadgets |
 | Adm. Sasha Marlow | Tidehaven | Pirate admiral with an eyepatch | Greed: could not resist a treasure | Sea power and amphibious assault |
 | Wing Cmdr. Chase Vale | Skyreach | Young tech-bro flier in aviator glasses | Hype: chases whatever is newest | Light air: cheap, fast, fragile |
-| Cmdr. Kael Brask | Deepmere | Gloomy submariner in a fur hat with a Russian accent and a dark sense of humour | Loneliness: hungers for anyone who will listen | The deep sea: patient and hard to find |
+| Cmdr. Dmitri Volkov | Deepmere | Gloomy submariner in a fur hat with a Russian accent and a dark sense of humour | Loneliness: hungers for anyone who will listen | The deep sea: patient and hard to find |
 | Sovereign Lysandra Thorne | Highspire | A queen who speaks only in Shakespearean verse | Vanity: the best things are hers by right | Exotic late-game technology |
 | The Envoy | the Chorus | Warm, patient, generous; never lies; speaks as "we" | n/a | The Chorus's human avatar and the final boss |
 
@@ -228,7 +228,7 @@ See `docs/characters.md` for how each one looks and talks, and `data/speech/` fo
 
 Seven opponents is the current working number; the continent (`tools/make-continent.mjs`) can be regenerated with more or fewer lands.
 
-**Arcs once freed:** Vex is the bitter ally who knew better and gives intelligence on the Chorus; Tomas carries the most guilt and becomes
+**Arcs once freed:** Vex is the bitter ally who knew better and gives intelligence on the Chorus; Hiroshi carries the most guilt and becomes
 your shield; Ludwig is the key to reverse-engineering Gift tech and cannot stop apologising for how much he enjoyed it; Sasha is the rogue ally who
 sells you things but stays loyal; Ada, the hot-headed ace, is ashamed and furious at herself, and is the first to say "I'll follow you" to the old man. What each leader says, free and assimilated, is in `data/speech/`.
 
@@ -248,7 +248,7 @@ campaign needs each leader to have different options from the same four building
 
 | Building | Today builds | In the campaign |
 |---|---|---|
-| Barracks | infantry | infantry-family units; a leader's list swaps in their own infantry (e.g. Rey: mech; Vex: spy) |
+| Barracks | infantry | infantry-family units; a leader's list swaps in their own infantry (e.g. Takeda: mech; Vex: spy) |
 | Factory | vehicle | ground vehicles; some leaders get walkers or hovercraft here instead of wheeled units |
 | Airfield | aircraft (also resupplies them) | aircraft; some leaders get gliders or drones |
 | Shipyard | naval, amphibious | ships and marines; some leaders get hovercraft or underwater units |
@@ -265,7 +265,7 @@ cost is paid up front.
 |---|---|---|---|---|
 | Brandt | soldier, mech, sniper | recon, tank, artillery | copter, fighter, transport copter | marine, destroyer |
 | Orlov | soldier, spy | recon, phantom tank | stealth copter, bomber | submarine, destroyer |
-| Rey | soldier, mech | tank, heavy tank, strider, flak | copter | cruiser, battleship |
+| Takeda | soldier, mech | tank, heavy tank, strider, flak | copter | cruiser, battleship |
 | Kestrel | soldier, sniper | supply truck, rocket battery, tank | swarm drones, repair drone, copter | destroyer, mine layer |
 
 The exact menus are a balance question to settle with play. The point of the table is the shape: every leader has a clear identity and

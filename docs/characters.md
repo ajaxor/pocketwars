@@ -49,12 +49,12 @@ separated by `" / "`, so a dialogue box can break the line there.
 - **Sample:** "In my line of work, even the weather is a cover story."
 - **File:** `data/speech/vex.json`
 
-### Gen. Tomas Rey (Ironvale)
+### Gen. Hiroshi Takeda (Ironvale)
 
 - **Look:** Old samurai with a topknot and a big white moustache.
 - **Voice:** Formal and calm; quotes Sun Tzu's Art of War for every occasion; "Hai!".
 - **Sample:** "Sun Tzu says: opportunities multiply as they are seized. I am seizing a nap."
-- **File:** `data/speech/tomas.json`
+- **File:** `data/speech/hiroshi.json`
 
 ### Dr. Ludwig Kestrel (Solace)
 
@@ -77,12 +77,12 @@ separated by `" / "`, so a dialogue box can break the line there.
 - **Sample:** "I'm thinking of an app. It's like Uber, but for tanks. Tankr."
 - **File:** `data/speech/chase.json`
 
-### Cmdr. Kael Brask (Deepmere)
+### Cmdr. Dmitri Volkov (Deepmere)
 
 - **Look:** Stubbled submariner in a fur ushanka with a red star.
 - **Voice:** Russian accent (dropped articles, da, comrade); very dark humour; old Soviet and Radio Yerevan jokes.
 - **Sample:** "In Soviet Russia, dark humour tells you."
-- **File:** `data/speech/kael.json`
+- **File:** `data/speech/dmitri.json`
 
 ### Sovereign Lysandra Thorne (Highspire)
 
