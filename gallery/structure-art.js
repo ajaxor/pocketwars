@@ -125,33 +125,35 @@ export const BASES = {
 /** Which of the four neighbours of (x, y) are walls. */
 export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall(x + 1, y), s: !!isWall(x, y + 1), w: !!isWall(x - 1, y) });
 
-/** One wall tile: a post at the middle and an arm to every linked neighbour, so a run of walls draws as one wall. Cracked walls are darker,
- *  split by cracks, with a chunk knocked out and rubble: the variant that can be destroyed. */
+/** One wall tile, drawn like the factories (front face, lighter roof, darker side, up-and-right depth) and filling its tile: a tall post in the
+ *  middle and an arm to every linked neighbour, so a run of walls draws as one wall. Cracked walls are darker, split by cracks, with a
+ *  chunk knocked out and rubble: the variant that can be destroyed. */
 export function drawWall(g, px, py, S, owner, { links = {}, cracked = false } = {}) {
-  const X = (a) => px + a * S, Y = (b) => py + b * S;
-  const rect = (x, y, w, h, col) => { g.fillStyle = col; g.fillRect(X(x), Y(y), w * S, h * S); };
-  const top = cracked ? '#a79c8c' : '#bdbbb2', lip = cracked ? '#7a7062' : '#8a887f';
-  const T = .22, c0 = .5 - T / 2, c1 = .5 + T / 2, P = .3, p0 = .5 - P / 2, p1 = .5 + P / 2, L = .1;   // arm thickness, post size, front lip
+  const k = kit(g, px, py, S), { rect, poly, line } = k;
+  const face = cracked ? '#a3998a' : '#b9b7ad', roof = shade(face, .28), side = shade(face, -.3), dark = '#4a4338';
+  const DX = .9, DY = -.7, d = .12, dx = d * DX, dy = d * DY;
   const { n, e, s, w } = links;
-  const arms = [];
-  if (w) arms.push([0, c0, c0 + .02, T]); if (e) arms.push([c1 - .02, c0, 1 - c1 + .02, T]);
-  if (n) arms.push([c0, 0, T, c0 + .02]); if (s) arms.push([c0, c1 - .02, T, 1 - c1 + .02]);
-  rect(p0 + .03, p0 + .05, P, P + L, 'rgba(0,0,0,.2)');                                    // soft shadow to the lower right
-  for (const [x, y, ww, hh] of arms) rect(x + .03, y + .05, ww, hh, 'rgba(0,0,0,.18)');
-  if (w) rect(0, c1, c0 + .02, L, lip); if (e) rect(c1 - .02, c1, 1 - c1 + .02, L, lip);   // lips: the wall's front faces, under the horizontal arms
-  rect(p0, p1, P, L, lip);                                                                  // and under the post
-  for (const [x, y, ww, hh] of arms) rect(x, y, ww, hh, top);
-  rect(p0, p0, P, P, top);                                                                  // the post, a little wider than the arms
-  rect(p0 + .06, p0 + .06, P - .12, P - .12, owner);                                       // team-coloured cap
+  const Y0 = .5, YB = .88, H = YB - Y0;                                         // the arms' front faces run from Y0 to YB
+  const PX0 = .27, PX1 = .73, PY0 = .4;                                        // the post is a little wider and taller
+  poly([[0, YB], [1, YB], [1 + .12, YB - .07], [1 + .12, YB - .02], [.12, YB + .04], [0, YB + .04]], 'rgba(0,0,0,.2)');   // ground shadow to the lower right
+  if (n) { rect(.36, 0, .28, PY0, roof); poly([[.64, 0], [.64, PY0], [.64 + dx, PY0 + dy], [.64 + dx, dy]], side); }   // arms running up the tile: seen from above
+  if (s) { rect(.36, YB, .28, 1 - YB, face); poly([[.36, YB - .02], [.64, YB - .02], [.64 + dx, YB - .02 + dy], [.36 + dx, YB - .02 + dy]], roof); }
+  const arm = (x0, x1) => {                                                    // a horizontal arm: roof, then front face
+    poly([[x0, Y0], [x0 + dx, Y0 + dy], [x1 + dx, Y0 + dy], [x1, Y0]], roof);
+    rect(x0, Y0, x1 - x0, H, face);
+  };
+  if (w) arm(0, PX0 + .02); if (e) arm(PX1 - .02, 1);
+  if (!e) poly([[PX1, Y0], [PX1 + dx, Y0 + dy], [PX1 + dx, YB + dy], [PX1, YB]], side);
+  if (!w && !e && !s && !n) poly([[PX0, Y0], [PX0 + dx, Y0 + dy], [PX1 + dx, Y0 + dy], [PX1, Y0]], roof);
+  poly([[PX0, PY0], [PX0 + dx, PY0 + dy], [PX1 + dx, PY0 + dy], [PX1, PY0]], roof);       // the post: roof, side, front
+  poly([[PX1, PY0], [PX1 + dx, PY0 + dy], [PX1 + dx, YB + dy], [PX1, YB]], side);
+  rect(PX0, PY0, PX1 - PX0, YB - PY0, face);
+  rect(PX0, PY0 + .1, PX1 - PX0, .08, owner);                                           // team-coloured band across the post
   if (cracked) {
-    g.strokeStyle = '#4a4338'; g.lineWidth = Math.max(1, .022 * S); g.lineCap = 'round'; g.lineJoin = 'round';
-    const crack = (pts) => { g.beginPath(); pts.forEach(([a, b], i) => (i ? g.lineTo(X(a), Y(b)) : g.moveTo(X(a), Y(b)))); g.stroke(); };
-    crack([[.44, .38], [.5, .47], [.46, .54], [.52, .62]]);                                // across the post
-    if (w) crack([[.18, c0], [.24, .5], [.2, c1]]); if (e) crack([[.78, c0], [.72, .5], [.8, c1]]);
-    if (n) crack([[c0, .2], [.5, .26], [c1, .2]]); if (s) crack([[c0, .78], [.5, .72], [c1, .8]]);
-    const gap = e ? 'e' : w ? 'w' : n ? 'n' : s ? 's' : null;                              // a chunk missing from one arm, and its rubble
-    const hole = { e: [.7, c0, .12, T * .6], w: [.18, c0, .12, T * .6], n: [c0, .16, T * .6, .12], s: [c0, .72, T * .6, .12] }[gap];
-    if (hole) { rect(...hole, '#5e5a52'); rect(hole[0] + .01, hole[1] + hole[3], hole[2], .03, lip); }
-    for (const [a, b, r] of [[.64, .66, .03], [.7, .72, .022], [.3, .7, .026], [.36, .75, .02]]) disc(g, X(a), Y(b), r * S, '#8d8678');   // rubble
+    line([[.4, PY0 + .02], [.47, .56], [.43, .64], [.5, .74], [.46, YB]], dark, .025);   // a crack down the post
+    if (w) line([[.14, Y0], [.2, .62], [.15, .72], [.21, YB]], dark, .022);
+    if (e) { line([[.84, Y0], [.78, .64], [.85, .76], [.8, YB]], dark, .022); rect(.88, Y0 - .01, .1, .2, '#5e5a52'); }   // a chunk missing from the arm
+    if (!e && w) rect(.12, Y0 - .01, .1, .2, '#5e5a52');
+    for (const [a, b, r] of [[.62, .93, .03], [.7, .96, .022], [.28, .94, .026], [.34, .97, .02]]) { g.fillStyle = '#8d8678'; g.beginPath(); g.arc(k.X(a), k.Y(b), r * S, 0, 7); g.fill(); }   // rubble
   }
 }

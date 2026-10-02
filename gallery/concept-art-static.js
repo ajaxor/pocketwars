@@ -5,13 +5,13 @@ import { box, disc, oval, poly, stroke, mix, afloat, INK, STEEL, UNDER_SHADE } f
 
 const CONCRETE = '#a9a79e', CONC_DK = '#807e77', SAND_DK = '#a38d58', RED = '#d4442e';
 
-const pad = (g, s, x0 = -.4, x1 = .4) => box(g, s, x0, .25, x1 - x0, .07, 2, CONC_DK);   // the poured pad every fixture stands on
+const pad = (g, s, x0 = -.4, x1 = .4, col = CONC_DK) => box(g, s, x0, .25, x1 - x0, .07, 2, col);   // the poured pad every fixture stands on
 
-// Gun turret: a squat concrete bunker with a short machine gun that sweeps a little.
-const gunTurret = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.34, .34);
-  poly(g, s, [[-.3, .25], [-.24, -.02], [.24, -.02], [.3, .25]], CONCRETE);                  // bunker
-  box(g, s, -.3, .12, .6, .05, 0, c);                                                         // team stripe
+// Turrets read like units: one team colour for the whole fixture (a darker shade for the pad), a near-black barrel.
+// Gun turret: a squat bunker with a short machine gun that sweeps a little.
+const gunTurret = (g, { s, c, dk, w, ph, run }) => {
+  pad(g, s, -.34, .34, dk);
+  poly(g, s, [[-.3, .25], [-.24, -.02], [.24, -.02], [.3, .25]], c);                         // bunker
   const sw = run ? Math.sin(w * 1.1 + ph) * .08 : 0;
   g.save(); g.translate(.1 * s, .04 * s); g.rotate(sw);
   box(g, s, 0, -.025, .3, .05, 1, INK);                                                       // the gun
@@ -20,28 +20,27 @@ const gunTurret = (g, { s, c, w, ph, run }) => {
 
 // Cannon turret: a bigger bunker under a block turret and a long cannon that recoils.
 const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
-  pad(g, s, -.42, .42);
-  poly(g, s, [[-.38, .25], [-.3, .02], [.3, .02], [.38, .25]], CONCRETE);                     // base
+  pad(g, s, -.42, .42, dk);
+  poly(g, s, [[-.38, .25], [-.3, .02], [.3, .02], [.38, .25]], c);                            // base
   box(g, s, -.3, -.15, .46, .17, 3, c);                                                       // turret
   const rec = run ? Math.max(0, Math.sin(w * 1.3 + ph)) ** 8 * .035 : 0;
   box(g, s, .14 - rec, -.1, .34, .06, 1, INK);                                                // the cannon
-  box(g, s, -.38, .15, .76, .04, 0, dk);                                                      // armour band
 };
 
-// SAM site: a plinth carrying a launcher tipped at the sky: two tubes with red warheads.
+// SAM site: a plinth carrying a launcher tipped at the sky: two tubes.
 const samSite = (g, { s, c, dk }) => {
-  pad(g, s, -.34, .34);
-  box(g, s, -.2, .06, .4, .19, 3, dk);                                                        // plinth
+  pad(g, s, -.34, .34, dk);
+  box(g, s, -.2, .06, .4, .19, 3, c);                                                         // plinth
   g.save(); g.translate(0, .08 * s); g.rotate(-.85);
   box(g, s, -.08, -.1, .42, .2, 2, c);
-  for (const y of [-.085, .02]) poly(g, s, [[.34, y], [.44, y + .04], [.34, y + .08]], RED);
+  for (const y of [-.085, .02]) box(g, s, .34, y, .1, .07, 1, INK);                           // the tube mouths
   g.restore();
 };
 
-// Artillery emplacement: an earth berm and a gun shield, the barrel up and out; it slides back when it fires.
-const artilleryEmplacement = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.44, .44);
-  poly(g, s, [[-.44, .25], [-.36, .08], [.36, .08], [.44, .25]], SAND_DK);                    // berm
+// Artillery emplacement: a berm and a gun shield, the barrel up and out; it slides back when it fires.
+const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
+  pad(g, s, -.44, .44, dk);
+  poly(g, s, [[-.44, .25], [-.36, .08], [.36, .08], [.44, .25]], c);                          // berm
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .04 : 0;
   g.save(); g.translate(-.04 * s, .0); g.rotate(-.6);
   box(g, s, -.1 - rec, -.04, .6, .08, 1, INK);                                                // barrel
@@ -78,17 +77,17 @@ const landMine = (g, { s, c, w, ph, run }) => {
   disc(g, s, .06, .17, .022, run && Math.sin(w * 6 + ph) < -.2 ? '#6b2a22' : RED);            // the light
 };
 
-// Sea mine: a spiked ball half under the waterline on a chain.
+// Sea mine: one colour (a darker shade of it below the waterline), a spiked ball centred on the tile.
 const seaMine = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s * .8, cy = .15;
+  const cy = 0;
   afloat(g, s, w, run, -.17, .17, (light) => {
-    const col = light ? mix(c, '#2b2f36', .45) : dk, horn = light ? STEEL : mix(STEEL, dk, .5);
-    g.save(); g.translate(0, bb * s);
-    if (!light) { stroke(g, s, 0, .3, 0, .46, 2, dk); box(g, s, -.07, .46, .14, .04, 2, mix(dk, '#000000', .3)); }   // chain and anchor
-    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + .5; stroke(g, s, Math.cos(a) * .15, cy + Math.sin(a) * .15, Math.cos(a) * .24, cy + Math.sin(a) * .24, 4, horn); }
+    const col = light ? c : dk;
+    g.save(); g.translate(0, b * .8);
+    if (!light) stroke(g, s, 0, .15, 0, .36, 2, dk);                                          // anchor chain
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + .5; stroke(g, s, Math.cos(a) * .15, cy + Math.sin(a) * .15, Math.cos(a) * .24, cy + Math.sin(a) * .24, 4, col); }
     disc(g, s, 0, cy, .165, col);
     g.restore();
-  }, .17);
+  }, 0);                                                                                      // waterline through the ball's centre
 };
 
 export const SPRITES = {
@@ -97,7 +96,7 @@ export const SPRITES = {
   jammer: (g, o) => { g.save(); g.translate(0, .06 * o.s); g.scale(.92, .92); jammer(g, o); g.restore(); },
   auto_factory: autoFactory,
   land_mine: (g, o) => { g.save(); g.translate(0, -.05 * o.s); g.scale(1.25, 1.25); landMine(g, o); g.restore(); },
-  sea_mine: (g, o) => { g.save(); g.translate(0, -.02 * o.s); g.scale(.9, .9); seaMine(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); },
+  sea_mine: (g, o) => { g.save(); g.scale(.9, .9); seaMine(g, { ...o, dk: mix(o.c, o.dk, .75) }); g.restore(); },
 };
 
 // ---- shadows ----------------------------------------------------------------------------------------------------------------

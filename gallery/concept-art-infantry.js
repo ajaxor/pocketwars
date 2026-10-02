@@ -56,24 +56,24 @@ const rpgTrooper = (g, o) => {
   stroke(g, s, .1, .08 + bb, .17, -.16 + bb, 3.2, SKIN);                            // a hand on the tube
 };
 
-// ---- Mechanic: a soldier holding a big wrench ----------------------------------------------------------------------------------------
+// ---- Mechanic: a soldier holding a wrench across his chest like a rifle -------------------------------------------------------------
 const mechanic = (g, o) => {
-  const { s, dk, bb } = body(g, o, {}), t = o.run ? Math.sin(o.w * 3 + o.ph) * .06 : 0;
+  const { s, dk, bb, sw } = body(g, o, {});
   helmet(g, s, bb, dk);
-  g.save(); g.translate(.14 * s, (.12 + bb) * s); g.rotate(.55 + t);                // the wrench, held up in front
-  box(g, s, -.035, -.46, .07, .5, 3, STEEL);                                        // handle
-  g.beginPath(); g.arc(0, -.52 * s, .075 * s, -Math.PI / 2 + .75, Math.PI * 1.5 - .75); g.lineWidth = .08 * s; g.strokeStyle = STEEL; g.lineCap = 'butt'; g.stroke();   // the open jaw, a C
+  g.save(); g.translate(-.1 * s, (.1 + bb + sw * .3) * s); g.rotate(-.62);          // from the hip up to the shoulder
+  box(g, s, 0, -.02, .26, .04, 1, STEEL);                                           // handle
+  g.beginPath(); g.arc(.3 * s, 0, .045 * s, .5, Math.PI * 2 - .5); g.lineWidth = .05 * s; g.strokeStyle = STEEL; g.lineCap = 'butt'; g.stroke();   // the open jaw, a C
   g.restore();
 };
 
-// ---- Medic: a soldier carrying a white case with one red cross --------------------------------------------------------------------------
+// ---- Medic: a soldier with a white case slung on the back side and a pistol in front ---------------------------------------------------
 const medic = (g, o) => {
-  const { s, dk, bb } = body(g, o, {});
+  const { s, bb, sw } = body(g, o, {});
   helmet(g, s, bb, WHITE);
-  box(g, s, .06, .02 + bb, .24, .17, 3, WHITE);                                      // the case
-  box(g, s, .13, -.03 + bb, .1, .05, 1, mix(WHITE, '#000000', .35));                 // its handle
-  box(g, s, .12, .085 + bb, .12, .04, 0, RED); box(g, s, .15, .055 + bb, .06, .1, 0, RED);   // the cross
-  void dk;
+  box(g, s, -.34, .02 + bb, .22, .16, 3, WHITE);                                     // the case, behind
+  box(g, s, -.27, -.025 + bb, .08, .045, 1, mix(WHITE, '#000000', .35));             // its handle
+  box(g, s, -.265, .075 + bb, .1, .035, 0, RED); box(g, s, -.235, .045 + bb, .035, .095, 0, RED);   // the cross
+  box(g, s, .1, -.03 + bb + sw * .3, .15, .045, 1, INK); box(g, s, .1, -.0 + bb + sw * .3, .045, .08, 1, INK);   // pistol: slide and grip
 };
 
 // ---- Mortar team: a soldier behind a short fat tube on a baseplate; a shell rises out of it when it fires ---------------------------------
@@ -103,20 +103,15 @@ const conscript = (g, o) => {
   rifle(g, s, bb, sw);
 };
 
-// ---- Spy: a dark coat with the collar up, a hat pulled low, dark glasses, and a pistol; a little see-through while it stands still ---------
+// ---- Spy: a dark coat, a fedora pulled low, and a pistol ------------------------------------------------------------------------------
 const spy = (g, o) => {
-  const { s, c, dk, w, run } = o, { l, bb } = gait(s, o);
-  g.save(); g.globalAlpha = run && !o.moving ? .78 + .14 * Math.sin(w * 2) : .92;
+  const { s, w, run } = o, { l, bb } = gait(s, o);
+  void w; void run;
   g.fillStyle = INK; g.fillRect(-s * .12, s * .14, s * .09, s * .15 + l); g.fillRect(s * .03, s * .14, s * .09, s * .15 - l);
   poly(g, s, [[-.16, -.12 + bb], [.16, -.12 + bb], [.2, .2], [-.2, .2]], '#2b2f3a');           // the long coat
-  poly(g, s, [[-.16, -.12 + bb], [-.05, -.12 + bb], [-.02, -.04 + bb], [-.2, -.02 + bb]], '#3a3f4c');   // collar, up
   disc(g, s, 0, -.2 + bb, .085, SKIN);
-  box(g, s, -.08, -.215 + bb, .17, .035, 1, INK);                                              // dark glasses
-  oval(g, s, .01, -.25 + bb, .16, .03, '#23242c'); box(g, s, -.085, -.33 + bb, .17, .09, 3, '#23242c');   // the hat
-  box(g, s, -.085, -.26 + bb, .17, .022, 0, c);                                                // team-coloured hat band
-  stroke(g, s, .06, .04 + bb, .22, .0 + bb, 3, SKIN);                                          // the arm
-  box(g, s, .2, -.03 + bb, .1, .045, 1, INK); box(g, s, .28, -.02 + bb, .1, .025, 0, '#4a4e58');   // pistol and its long suppressor
-  g.restore();
+  oval(g, s, .01, -.25 + bb, .16, .03, '#23242c'); box(g, s, -.085, -.33 + bb, .17, .09, 3, '#23242c');   // the fedora
+  box(g, s, .12, -.04 + bb, .16, .045, 1, INK); box(g, s, .12, -.01 + bb, .045, .08, 1, INK);   // pistol: slide and grip
 };
 
 // ---- Diver ----------------------------------------------------------------------------------------------------------------------------
@@ -135,17 +130,17 @@ const diver = (g, o) => {
 };
 const diverSwim = (g, { s, c, dk, w, ph, run, moving, b }) => {
   const bb = b / s, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;
-  afloat(g, s, w, run, -.38, .4, (light) => {
+  afloat(g, s, w, run, -.3, .3, (light) => {
     const suit = light ? '#2a2e36' : mix('#2a2e36', c, .3), tank = light ? '#c9ccd2' : mix('#c9ccd2', dk, UNDER_SHADE);
     g.save(); g.translate(0, (bb - .08) * s);
-    g.save(); g.translate(-.18 * s, .1 * s); g.rotate(kick * .2);                      // legs and a fin, kicking
-    box(g, s, -.14, -.03, .16, .07, 3, suit);
-    poly(g, s, [[-.14, -.03], [-.3, -.09], [-.32, .0], [-.3, .09], [-.14, .04]], light ? '#e8a020' : mix('#e8a020', dk, UNDER_SHADE));
+    g.save(); g.translate(-.1 * s, .1 * s); g.rotate(kick * .2);                       // legs and a short fin, kicking
+    box(g, s, -.1, -.03, .12, .07, 3, suit);
+    poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], light ? '#e8a020' : mix('#e8a020', dk, UNDER_SHADE));
     g.restore();
-    box(g, s, -.2, .02, .4, .16, 7, suit);                                             // body
-    box(g, s, -.17, -.09, .27, .14, 5, tank);                                          // air tank
-    disc(g, s, .26, -.01, .115, suit);                                                 // head
-    oval(g, s, .33, -.01, .065, .05, light ? '#9fe0ff' : mix('#9fe0ff', dk, .4));      // mask
+    box(g, s, -.14, .02, .3, .16, 7, suit);                                            // body
+    box(g, s, -.12, -.09, .2, .14, 5, tank);                                           // air tank
+    disc(g, s, .2, -.01, .095, suit);                                                  // head
+    oval(g, s, .26, -.01, .055, .045, light ? '#9fe0ff' : mix('#9fe0ff', dk, .4));     // mask
     g.restore();
   }, -.02);
 };

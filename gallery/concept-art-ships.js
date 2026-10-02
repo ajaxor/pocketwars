@@ -1,7 +1,7 @@
 // Experimental concept ships (Shipyard): sprites only, NOT in the game. Same conventions as the real ships in src/render/unit-art.js:
 // drawn twice around a fixed waterline (afloat), light colour above and the UNDER_SHADE mix below, foam at both ends, no shadow.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })   SHADOWS[name](g, { s, alt, w, ph, run })
-import { box, disc, oval, poly, stroke, mix, afloat, hullPath, propeller, UNDER_SHADE, INK, STEEL } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, hullPath, deckAt, propeller, UNDER_SHADE, INK, STEEL } from '../src/render/parts.js';
 
 const WHITE = '#f4f4f0', SMOKE = 'rgba(70,70,75,', FOAMW = 'rgba(255,255,255,';
 
@@ -45,7 +45,7 @@ const gunBoat = (g, { s, c, dk, w, ph, run, moving, b }) => {
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       poly(g, s, [[-.2, .05], [-.2, -.06], [-.12, -.08], [-.02, -.08], [.04, .05]], c);         // a low raked cabin
-      mount(g, s, .1, .045, .09, .12, { dk, bar: .03 });                                       // the light cannon, near the middle
+      mount(g, s, .1, .045, .09, .12, { dk, bar: .03, elev: .52 });                                       // the light cannon, near the middle
     }
     g.restore();
   }, .12);
@@ -62,15 +62,17 @@ const gunBoat = (g, { s, c, dk, w, ph, run, moving, b }) => {
 // Dreadnought: the biggest battleship. Four twin turrets in superfiring pairs (the inner turret of each pair sits on a raised
 // barbette), two funnels, and a tall mast with THREE tiers of wings (the battleship's has two).
 const dreadnought = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s + .05, D = .02, H = { x0: -.48, x1: .48, deck: D, keel: .31, rise: .06, sweep: .12 };
+  const bb = b / s + .05, D = .02, H = { x0: -.48, x1: .48, deck: D, keel: .31, rise: .16, sweep: .55 };
   afloat(g, s, w, run, -.48, .48, (light) => {
     g.save(); g.translate(0, bb * s);
     if (!light) propeller(g, s, -.48 - .02, .29, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      box(g, s, .13, D - .06, .13, .06, 1, mix(c, dk, .35)); box(g, s, -.3, D - .06, .13, .06, 1, mix(c, dk, .35));   // barbettes
-      mount(g, s, .33, D - .005, .15, .115, { dk, n: 2, elev: .25, bar: .03 });
-      mount(g, s, .195, D - .06, .14, .115, { dk, n: 2, elev: .3, bar: .03 });
+      const slope = (x, fn) => { const f = deckAt(H, x); g.save(); g.translate(x * s, f.y * s); g.rotate(f.ang); fn(); g.restore(); };   // sits on the swept-up bow
+      slope(.2, () => box(g, s, -.065, -.06, .13, .06, 1, mix(c, dk, .35)));                         // barbette
+      box(g, s, -.3, D - .06, .13, .06, 1, mix(c, dk, .35));
+      slope(.37, () => mount(g, s, 0, -.005, .15, .115, { dk, n: 2, elev: .25, bar: .03 }));
+      slope(.2, () => mount(g, s, 0, -.06, .14, .115, { dk, n: 2, elev: .3, bar: .03 }));
       mount(g, s, -.37, D - .005, .15, .115, { dk, n: 2, elev: .25, dir: -1, bar: .03 });
       mount(g, s, -.235, D - .06, .14, .115, { dk, n: 2, elev: .3, dir: -1, bar: .03 });
       for (const x of [-.12, -.03]) box(g, s, x - .025, D - .13, .055, .13, 1, c);                  // two plain funnels

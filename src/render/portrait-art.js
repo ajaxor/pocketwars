@@ -168,7 +168,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     g.lineWidth = N.bridge; g.strokeStyle = skinShade; g.stroke();
     if (N.flare > .5) for (const sx of [-1, 1]) { g.fillStyle = 'rgba(70,28,24,.62)'; g.beginPath(); g.ellipse(tx + sx * N.w * .62, ty + .5 - N.up * .35, .8 * N.flare, .55 * N.flare, 0, 0, 7); g.fill(); }
   }
-  if (L.scar) { const sx = 61.5, sy = 50; line(sx, sy, sx + 3.2, sy + 12.5, 1.5, '#b5605f'); for (const f of [.25, .5, .75]) line(sx + 3.2 * f - 1.6, sy + 12.5 * f - .1, sx + 3.2 * f + 1.6, sy + 12.5 * f + .5, 1, '#b5605f'); }   // down the right cheek, clear of the eyes
+  if (L.scar) { const sx = 58.6, sy = 50.5; line(sx, sy, sx + 2.2, sy + 9.5, 1.5, '#b5605f'); for (const f of [.3, .65]) line(sx + 2.2 * f - 1.5, sy + 9.5 * f - .1, sx + 2.2 * f + 1.5, sy + 9.5 * f + .4, 1, '#b5605f'); }   // down the right cheek, clear of the eyes
 
   // mouth
   const MS = MOUTH_STYLES[L.mouthStyle] || MOUTH_STYLES.plain;
@@ -223,9 +223,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   if (L.hat === 'cap') {
     paint((p) => { p.moveTo(29.5, 35); p.bezierCurveTo(28, 9, 72, 9, 70.5, 35); p.quadraticCurveTo(50, 31, 29.5, 35); p.closePath(); }, c);
     paint((p) => { p.moveTo(28.5, 34.5); p.quadraticCurveTo(50, 28.5, 71.5, 34.5); p.quadraticCurveTo(50, 44, 28.5, 34.5); p.closePath(); }, dk);   // the brim, seen from the front
-    paint(poly([[50, 14], [51.8, 18.4], [56.5, 18.6], [52.8, 21.4], [54.2, 26], [50, 23.2], [45.8, 26], [47.2, 21.4], [43.5, 18.6], [48.2, 18.4]]), '#f6d35a', false);
-    paint(ell(40, 21, 4.4, 4.4), '#bfe4f0'); paint(ell(60, 21, 4.4, 4.4), '#bfe4f0');                    // goggles pushed up on the cap
-    line(35.6, 21, 64.4, 21, 1, '#5a4a3a', 'butt');
+    paint(poly([[50.0, 16.1], [51.6, 20.3], [56.1, 20.5], [52.6, 23.3], [53.8, 27.7], [50.0, 25.2], [46.2, 27.7], [47.4, 23.3], [43.9, 20.5], [48.4, 20.3]]), '#f6d35a', false);                                  // one star, centred on the cap
   }
   if (L.hat === 'cowboy') {
     const hc = '#c79552', hd = '#8a5a2a';
@@ -252,10 +250,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   if (L.hat === 'helmet') {
     const hc = mix(c, '#4b5238', .55);
     paint((p) => { p.moveTo(28, 40); p.bezierCurveTo(24, 7, 76, 7, 72, 40); p.quadraticCurveTo(50, 33, 28, 40); p.closePath(); }, hc);
-    paint((p) => { p.moveTo(27, 39); p.quadraticCurveTo(50, 31.5, 73, 39); p.lineTo(72.5, 42.5); p.quadraticCurveTo(50, 35.5, 27.5, 42.5); p.closePath(); }, dk);   // helmet band
-    paint(poly([[50, 14.5], [52, 19.5], [57, 19.8], [53, 23], [54.6, 28], [50, 25], [45.4, 28], [47, 23], [43, 19.8], [48, 19.5]]), '#d6d6d6', false);
-    line(31.5, 41, 33.5, 60, 1.4, mix(hc, '#000', .3)); line(68.5, 41, 66.5, 60, 1.4, mix(hc, '#000', .3));   // chin strap
-    if (shade) { g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.ellipse(41, 21, 9, 4, -.5, 0, 7); g.fill(); }
+    paint(poly([[50.0, 17.3], [51.5, 21.4], [55.9, 21.6], [52.5, 24.3], [53.6, 28.5], [50.0, 26.1], [46.4, 28.5], [47.5, 24.3], [44.1, 21.6], [48.5, 21.4]]), '#d6d6d6', false);                                       // one star, centred on the helmet
   }
   if (L.hairStyle === 'long') paint((p) => { p.moveTo(30, 46); p.bezierCurveTo(28, 20, 72, 20, 70, 46); p.bezierCurveTo(68, 34, 58, 31, 50, 31); p.bezierCurveTo(42, 31, 32, 34, 30, 46); p.closePath(); }, L.hair);
   if (L.hat === 'captain') {

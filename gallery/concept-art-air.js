@@ -12,12 +12,11 @@ const stealthFighter = (g, { s, c, dk, w, run }) => {
   const far = mix(c, dk, .75), mid = mix(c, dk, .55), top = mix(c, dk, .35);
   const fl = (run ? .6 + .4 * Math.sin(w * 36) : .3) * s * .06;
   poly(g, s, [[-.36, -.02], [-.36 - fl / s, .005], [-.36, .03]], ORANGE);                     // faint engine glow
-  poly(g, s, [[.06, -.05], [-.1, -.21], [-.26, -.21], [-.22, -.05]], far);                    // far wing
-  poly(g, s, [[-.16, -.06], [-.22, -.2], [-.31, -.2], [-.31, -.06]], far);                    // far tail fin
+  poly(g, s, [[.14, -.04], [-.1, -.15], [-.2, -.15], [-.2, -.09], [-.3, -.05], [-.2, -.03]], far);   // far wing: the near wing seen foreshortened, behind the body
   poly(g, s, [[.46, .01], [.3, -.045], [.1, -.075], [-.3, -.065], [-.37, -.03], [-.37, .045], [-.3, .065], [.1, .07], [.3, .04]], mid);   // fuselage
   poly(g, s, [[.46, .01], [.3, -.045], [.1, -.075], [-.3, -.065], [-.37, -.03], [-.1, 0], [.2, .01]], top);                              // lit top plane
   poly(g, s, [[.22, -.03], [.12, -.065], [.04, -.06], [.12, -.025]], GLASS);                  // flush canopy
-  poly(g, s, [[-.14, -.05], [-.22, -.21], [-.32, -.21], [-.33, -.05]], mid);                  // near tail fin, canted the other way
+  poly(g, s, [[-.27, -.06], [-.34, -.2], [-.41, -.2], [-.39, -.05]], mid);                    // one tail fin, aft, standing up from the fuselage
   poly(g, s, [[.18, .04], [-.12, .31], [-.2, .31], [-.2, .2], [-.34, .12], [-.3, .04]], top); // near wing: broad, with a notched trailing edge
 };
 

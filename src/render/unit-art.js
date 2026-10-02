@@ -251,7 +251,7 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
     if (!light) propeller(g, s, -.38 - .02, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      box(g, s, -.14, D - .18, .22, .18, 3, c);                                                      // bridge
+      poly(g, s, [[-.18, D], [-.12, D - .25], [.03, D - .25], [.1, D]], c);                                  // bridge: a tall trapezoid, wider at the deck
       box(g, s, .14, D - .05, .1, .05, 2, c);                                                        // the gun sits on a raised mount
       turret(g, s, .19, D - .05, .12, .13, { dk, bar: .035 });
     }
@@ -325,15 +325,15 @@ const stealthTank = (g, { s, c, dk, w, run, j }) => {
 };
 
 const stealthTop = [[.42, 0], [-.2, -.36], [-.27, -.33], [-.12, -.2], [-.24, -.12], [-.14, -.03], [-.2, 0]];   // plan outline: used for the shadow
-// The same 3/4 view as the fighter and bomber: a flying wing whose near half sweeps down toward the viewer (sawtooth trailing edge) and
-// whose far half is shorter and darker behind the centre body.
+// The original flying-wing plan view, tilted into the same 3/4 view as the other aircraft (the plan squashed so the near half sweeps toward
+// the viewer and the far half sits behind the body, darker).
 const stealth = (g, { s, c, dk }) => {
-  const far = mix(c, dk, .7), near = mix(c, dk, .3);
-  poly(g, s, [[.14, -.04], [-.1, -.22], [-.3, -.2], [-.2, -.05]], far);                                   // far wing
-  poly(g, s, [[.44, .0], [.22, -.075], [-.1, -.1], [-.3, -.06], [-.37, .0], [-.3, .06], [-.1, .1], [.22, .07]], mix(c, dk, .45));   // centre body
-  poly(g, s, [[.44, .0], [.22, -.075], [-.1, -.1], [-.3, -.06], [-.1, -.01], [.2, .0]], c);                 // lit top
-  poly(g, s, [[.3, -.01], [.22, -.05], [.15, -.04], [.22, -.005]], GLASS);                                // flush canopy
-  poly(g, s, [[.22, .05], [-.1, .35], [-.19, .29], [-.27, .34], [-.35, .27], [-.3, .1], [-.34, .03]], near);   // near wing, sweeping toward the viewer
+  g.save(); g.translate(0, s * .03); g.scale(1, .72);
+  poly(g, s, stealthTop, mix(c, dk, .7));                                                                  // far half
+  poly(g, s, stealthTop.map(([x, y]) => [x, -y]), mix(c, dk, .25));                              // near half, lighter
+  poly(g, s, [[.42, 0], [.02, -.14], [-.16, -.1], [-.16, .1], [.02, .14]], c);                             // the lit centre body
+  poly(g, s, [[.34, 0], [.24, -.04], [.24, .04]], GLASS);                                                  // flush canopy
+  g.restore();
 };
 
 // ships are drawn long (bow wake and all) and scaled to fit inside their tile
