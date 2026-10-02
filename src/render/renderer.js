@@ -33,6 +33,7 @@ export class Renderer {
     this.game = game;
     this.effects = effects;
     this.animator = animator;
+    this.arrivals = null;   // an Arrivals (arrivals.js): units still sliding in from off screen are drawn on their way there
     this.camera = new Camera(game.map.width, game.map.height);
     this.dpr = 1;
     // The player whose eyes the board is drawn with: units hidden from them (a submerged enemy nobody has spotted) are not drawn
@@ -89,6 +90,12 @@ export class Renderer {
   /** Advance the camera's easing; call once a frame with the frame time in ms. */
   updateCamera(ms) { this.camera.step(ms); }
 
+  /** The tiles the window shows, as {left, top, right, bottom} in (fractional) tile coordinates; outside the map the numbers go off the map. */
+  viewBounds() {
+    const { W, H, ox, oy } = this.layout, S = this.S;
+    return { left: -ox / S, top: -oy / S, right: (W - ox) / S, bottom: (H - oy) / S };
+  }
+
   /** Tile (x, y)'s rectangle in window pixels: where the windows look to decide which edge to sit on. */
   tileRect(x, y) {
     const { ox, oy } = this.layout;
@@ -131,6 +138,7 @@ export class Renderer {
   /** Which way a unit is drawn facing: along the preview path while its move is only previewed, along its slide while it moves, else as the game has it. */
   facingOf(u, view, now) {
     const current = u.facing ?? 1;
+    if (this.arrivals?.has(u.id)) return this.arrivals.facingOf(u.id, now) ?? current;
     if (this.animator.current && this.animator.current.unitId === u.id) return this.animator.facingOf(u.id, now) ?? current;   // mid-slide: turns step by step
     if (view.dest && u.id === view.selectedId && view.reach && view.reach.pathTo) return facingAlong(view.reach.pathTo(view.dest.x, view.dest.y) || [], current);   // previewed, the slide done
     return current;
@@ -139,8 +147,9 @@ export class Renderer {
   drawUnitAt(g, u, view, now, { dying = false, alpha = 1, dive = u.submerged ? 1 : 0 } = {}) {
     const { S, game, animator, effects } = this;
     const lp = dying ? u : this.logicalPos(u, view);
-    const moving = animator.current !== null && animator.current.unitId === u.id;
-    const base = animator.positionOf(u.id, now, S) || [lp.x * S, lp.y * S];
+    const arriving = !dying && !!this.arrivals?.has(u.id);
+    const moving = arriving || (animator.current !== null && animator.current.unitId === u.id);
+    const base = (arriving && this.arrivals.positionOf(u.id, now, S)) || animator.positionOf(u.id, now, S) || [lp.x * S, lp.y * S];
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn;
     const cx = Math.floor((base[0] + S / 2) / S), cy = Math.floor((base[1] + S / 2) / S);   // the tile under the unit's centre, even mid-slide
@@ -163,6 +172,7 @@ export class Renderer {
     const out = new Set();
     for (const u of state.units) {
       if (animator.current !== null && animator.current.unitId === u.id) continue;
+      if (this.arrivals?.has(u.id)) continue;
       const { x, y } = this.logicalPos(u, view);
       if (u.owner !== null && state.owners[y][x] === u.owner && game.registry.terrainDef(map.terrain[y][x]).attributes.property) out.add(tileIndex(map, x, y));
     }

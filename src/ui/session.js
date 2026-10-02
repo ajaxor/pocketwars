@@ -6,6 +6,7 @@ import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
 import { MoveAnimator } from '../render/animator.js';
+import { Arrivals, planEntrances } from '../render/arrivals.js';
 import { Effects } from '../render/effects.js';
 import { Renderer } from '../render/renderer.js';
 import { Controller } from './controller.js';
@@ -44,6 +45,9 @@ export class Session {
     this.renderer = null;
     this.effects = new Effects(game.registry, (owner) => this.renderer.colorsOf(owner));
     this.renderer = new Renderer(canvas, game, this.effects, this.animator);
+    this.arrivals = new Arrivals();   // reinforcements sliding in from off screen (see reinforce())
+    this.renderer.arrivals = this.arrivals;
+    this.intro = false;               // the opening (reinforcements and dialogue) is playing
     this.hud = new Hud(doc, { registry: game.registry, clock: () => this.pacer.now() });
     this.commentator = voices ? new Commentator(game, voices) : null;
     this.banner = voices ? new CommentaryBanner(doc) : null;
@@ -57,6 +61,7 @@ export class Session {
     // work at any time (also while the computer moves); only taps are held back until it is a human's turn.
     this.gestures = new Gestures({
       onTap: (cx, cy) => {
+        if (this.intro) { this.arrivals.finish(); return; }   // a tap during the opening brings the reinforcements in at once
         if (!this.#inputAllowed()) return;
         if (this.endArmed) { this.endArmed = false; this.hud.message(null); }
         const { x, y } = this.renderer.tileAt(cx, cy);
@@ -122,7 +127,8 @@ export class Session {
     hud.onUndo(() => this.#onUndo());
     hud.onMenu(() => this.#openMenu());
     hud.message(this.#introText());
-    if (this.banner) { this.doc.body.append(...this.banner.elements); void this.#opening(); }
+    if (this.banner) this.doc.body.append(...this.banner.elements);
+    void this.#intro();
     requestAnimationFrame(() => this.#frame());
     void game;
   }
@@ -196,20 +202,41 @@ export class Session {
     this.bannerUntil = mine ? this.#now() + (c.line.length / CPS) * 1000 + 3000 : 0;
   }
 
-  /** Before the first move, every leader says an opening line. Tap a card to read on; they also move on by themselves. */
-  async #opening() {
-    const cards = this.commentator.opening();
-    if (!cards.length) return;
+  // ---- the opening and scripted reinforcements ---------------------------------------------------------------------------------------
+  /**
+   * Bring `units` (game units that already exist) onto the map from off screen, several at once, and resolve when the last has arrived.
+   * They are drawn on their way in; the game state is not touched. A campaign script spawns its reinforcements and calls this.
+   *   from  'left' | 'right' | 'top' | 'bottom' to choose the edge, or (unit) => [[x, y], ...] for a path of your own (tiles, may start
+   *         off the map and may have waypoints); by default each comes from the nearest edge it can drive in from without turning round
+   */
+  reinforce(units, { from = null, gap, msPerTile } = {}) {
+    return new Promise((resolve) => {
+      this.arrivals.enter(planEntrances(units, this.renderer.viewBounds(), { from, gap, msPerTile }), this.#now(), resolve);
+    });
+  }
+
+  /** The start of a battle: the human players' units drive in from off screen while the leaders say their opening lines. */
+  async #intro() {
+    const { game } = this;
+    const humans = new Set(game.map.players.map((p, i) => (p.controller === 'human' ? i : -1)));
+    const mine = game.state.units.filter((u) => humans.has(u.owner));
     this.busy = true;
-    for (const c of cards) {
+    this.intro = true;
+    await Promise.all([this.reinforce(mine), this.commentator ? this.#opening() : null]);
+    this.intro = false;
+    if (this.disposed) return;
+    this.banner?.hide();
+    this.busy = false;
+  }
+
+  /** Every leader says an opening line. Tap a card to read on; they also move on by themselves. */
+  async #opening() {
+    for (const c of this.commentator.opening()) {
       if (this.disposed) return;
       const line = this.#line(c);
       const reading = (line.text.length / CPS) * 1000 + 1800 + line.text.length * 25;
       await Promise.race([this.banner.ask(line), this.pacer.wait(reading)]);
     }
-    if (this.disposed) return;
-    this.banner.hide();
-    this.busy = false;
   }
 
   /** "Col. Harlan vs Adm. Sasha. " when the teams have leaders (a random pick is only known now), else nothing. */
@@ -233,6 +260,7 @@ export class Session {
     this.lastFrame = now;
     hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
     this.animator.update(now);
+    this.arrivals.update(now);
     this.banner?.tick(now, this.pacer.fast);
     if (this.bannerUntil && now >= this.bannerUntil) { this.bannerUntil = 0; this.banner.hide(); }
     const viewer = this.#viewer();

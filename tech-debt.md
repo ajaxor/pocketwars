@@ -14,3 +14,5 @@
 - **The banner covers the bottom of the map** during opening cards and the computer's turn; it could move to the side of the screen away from the action, like the dock.
 - **Portrait colours follow the leader's own faction**, while the banner accent and the units follow the team colour, so a leader can look mismatched with their army.
 - **Eye drawing is parametric but 2D-flat:** expressions (angry, shock) only change brow and lid openness, not each style's eye shape.
+- **Reinforcements are visual only.** `Session.reinforce` animates units that already exist; there is no engine-level spawn (event or order) yet, so a campaign script must add units to `game.state.units` itself, and an undo or save would not know about the arrival. Entrances also ignore terrain and other units on the way (a straight line from the window edge), and the entry point is chosen from the window, so on a zoomed map the units drive in over whatever is between.
+

@@ -7,7 +7,7 @@ data/            game content as JSON (units, weapons, terrain, factions, rules,
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
 src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, sight (line of sight), capture, economy, victory, ai
 src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, buildings.js, color.js,
-                 terrain-art.js (trees, mountains, sea), terrain-layer.js (rounded merged tiles), effects, move animator
+                 terrain-art.js (trees, mountains, sea), terrain-layer.js (rounded merged tiles), effects, move animator, arrivals (reinforcements)
 src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/windows/chips), info + build-menu (facts as plain data),
                  presenter (events -> animations), session (frame loop, AI pacing)
 src/fonts/       the self-hosted typeface (Fredoka, OFL); declared in style.css, named for canvas text in src/render/font.js
@@ -94,3 +94,13 @@ Attribute tests build tiny synthetic rulesets (`tests/helpers/fixtures.js`) in w
 in the attribute under test, which proves the attribute (and nothing else) causes the behaviour. Shipped data is covered by
 `tests/data/` including a damage baseline (`tools/regen-damage-baseline.mjs` rewrites it after a deliberate retune). How damage and
 targeting work: `docs/combat.md`.
+
+## Reinforcements (units arriving from off screen)
+
+`src/render/arrivals.js` animates units sliding onto the map from outside the window, several at once, each on its own path (in tiles, may have
+waypoints) and delay. It is purely visual: the units already exist in `game.state`, and the renderer draws a unit that is in `Session.arrivals`
+at its place on the way in (and dims no building under it) until it has arrived. `Session.reinforce(units, { from, gap, msPerTile })` plans the
+entrances from the current camera (`Renderer.viewBounds()`, `planEntrances`, `entryPath`) and returns a promise that resolves when the last unit is in.
+
+- **Battle opening:** `#intro()` brings in every human player's units while the leaders' opening lines play; input stays locked until both are done. A tap on the map skips the entrance.
+- **Scripted events (campaign):** spawn the units into the game state, then `await session.reinforce(spawned, { from: 'left' })` (an edge name, or `(unit) => [[x, y], ...]` for your own route). By default each unit comes from the nearest window edge it can drive in from without turning round. The sequence is on the game clock (`Pacer`), so fast-forward speeds it up too.
