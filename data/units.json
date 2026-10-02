@@ -77,6 +77,19 @@
     "attributes": {},
     "render": { "sprite": "tank", "attackFx": "shot" }
   },
+  "stealth_tank": {
+    "name": "Stealth Tank",
+    "category": "vehicle",
+    "cost": 9000,
+    "move": 5,
+    "moveClass": "tread",
+    "layer": "ground",
+    "weapons": ["tank_cannon"],
+    "toughness": 1.2,
+    "armor": 0.8,
+    "attributes": {},
+    "render": { "sprite": "stealth_tank", "attackFx": "shot" }
+  },
   "heavy_tank": {
     "name": "Heavy Tank",
     "category": "vehicle",

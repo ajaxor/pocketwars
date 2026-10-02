@@ -39,6 +39,7 @@
       { "unit": "heavy_tank", "max": 2 },
       { "unit": "tank",       "max": 3 },
       { "unit": "artillery",  "max": 2 },
+      { "unit": "stealth_tank", "max": 1 },
       { "unit": "rocket_launcher", "max": 1 },
       { "unit": "recon",      "max": 1 }
     ]

@@ -230,7 +230,6 @@ const cruiser = (g, { s, c, dk, w, run, b }) => {
       box(g, s, .06, D - .05, .36, .06, 2, c);                                                      // raised forecastle
       turret(g, s, .27, D - .05, .13, .14, { dk });                                                 // the deck gun, forward
       box(g, s, -.085, D - .28, .1, .28, 2, c); box(g, s, -.15, D - .19, .22, .08, 2, c);          // plus-shaped bridge
-      box(g, s, -.1, D - .175, .13, .025, 1, GLASS);
       // the flak mount is the flak unit's wedge, half size: raked up and forward so it reads as aimed at the sky
       const mount = (x, y) => [[-.2, -.02], [-.22, -.15], [-.1, -.2], [.05, -.2], [.17, -.02]].map(([a, b]) => [x + a * .55, y + b * .55]);
       poly(g, s, mount(-.3, D), mix(dk, '#ffffff', .5));
@@ -252,7 +251,7 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
     if (!light) propeller(g, s, -.38 - .02, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      box(g, s, -.14, D - .18, .22, .18, 3, c); box(g, s, -.11, D - .15, .16, .03, 1, GLASS);       // bridge
+      box(g, s, -.14, D - .18, .22, .18, 3, c);                                                      // bridge
       box(g, s, .14, D - .05, .1, .05, 2, c);                                                        // the gun sits on a raised mount
       turret(g, s, .19, D - .05, .12, .13, { dk, bar: .035 });
     }
@@ -311,11 +310,30 @@ const dinghy = (g, { s, c, dk, w, run, b }) => {
   }, .14);
 };
 
-const stealthTop = [[.42, 0], [-.2, -.36], [-.27, -.33], [-.12, -.2], [-.24, -.12], [-.14, -.03], [-.2, 0]];
+// Stealth tank: a faceted, low-slung wedge with long side skirts hiding the tracks, resting on the ground like the other tanks. A pale glint
+// sweeps across it (the cloak shimmering).
+const stealthTank = (g, { s, c, dk, w, run, j }) => {
+  const y = (v) => v + j / s + .075;
+  g.save();
+  const hull = [[-.4, y(.06)], [-.3, y(-.06)], [-.1, y(-.15)], [.1, y(-.15)], [.34, y(-.04)], [.46, y(.04)], [.44, y(.08)]];
+  poly(g, s, hull, mix(c, dk, .3));                                                                       // the silhouette
+  poly(g, s, [[-.3, y(-.06)], [-.1, y(-.15)], [.1, y(-.15)], [.34, y(-.04)], [.14, y(-.02)], [.04, y(-.06)]], mix(c, '#ffffff', .12));   // lit top planes
+  g.fillStyle = INK; g.fillRect(s * .36, y(.0) * s, s * .115, s * .03);                                  // the gun, just out of the nose
+  poly(g, s, [[-.41, y(.19)], [-.36, y(.06)], [.3, y(.06)], [.44, y(.13)], [.4, y(.19)]], dk);           // low side skirt down to the ground
+  LIB.sheen(g, s, w, run, hull.concat([[.4, y(.19)], [-.42, y(.19)]]));
+  g.restore();
+};
+
+const stealthTop = [[.42, 0], [-.2, -.36], [-.27, -.33], [-.12, -.2], [-.24, -.12], [-.14, -.03], [-.2, 0]];   // plan outline: used for the shadow
+// The same 3/4 view as the fighter and bomber: a flying wing whose near half sweeps down toward the viewer (sawtooth trailing edge) and
+// whose far half is shorter and darker behind the centre body.
 const stealth = (g, { s, c, dk }) => {
-  poly(g, s, mirror(stealthTop), mix(c, dk, .35));
-  poly(g, s, mirror([[.42, 0], [.02, -.14], [-.16, -.1], [-.16, 0]]), c);
-  poly(g, s, mirror([[.34, 0], [.24, -.03]]).concat([[.24, .03]]).slice(0, 3), GLASS);
+  const far = mix(c, dk, .7), near = mix(c, dk, .3);
+  poly(g, s, [[.14, -.04], [-.1, -.22], [-.3, -.2], [-.2, -.05]], far);                                   // far wing
+  poly(g, s, [[.44, .0], [.22, -.075], [-.1, -.1], [-.3, -.06], [-.37, .0], [-.3, .06], [-.1, .1], [.22, .07]], mix(c, dk, .45));   // centre body
+  poly(g, s, [[.44, .0], [.22, -.075], [-.1, -.1], [-.3, -.06], [-.1, -.01], [.2, .0]], c);                 // lit top
+  poly(g, s, [[.3, -.01], [.22, -.05], [.15, -.04], [.22, -.005]], GLASS);                                // flush canopy
+  poly(g, s, [[.22, .05], [-.1, .35], [-.19, .29], [-.27, .34], [-.35, .27], [-.3, .1], [-.34, .03]], near);   // near wing, sweeping toward the viewer
 };
 
 // ships are drawn long (bow wake and all) and scaled to fit inside their tile
@@ -323,7 +341,7 @@ const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o,
 
 export const SPRITES = {
   soldier: trooper('soldier'), marine: trooper('marine'), dinghy: (g, o) => { g.save(); g.scale(.9, .9); dinghy(g, o); g.restore(); }, mech: trooper('mech'), sniper: trooper('sniper'),
-  recon, tank: tank(false), heavy_tank: tank(true), artillery, rocket_launcher: rocketLauncher, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
+  recon, tank: tank(false), stealth_tank: stealthTank, heavy_tank: tank(true), artillery, rocket_launcher: rocketLauncher, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
    fighter, bomber, stealth_bomber: stealth,
   destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
 };
@@ -338,7 +356,7 @@ const airShadow = (outline) => (g, { s, alt = 0 }) => {
 
 export const SHADOWS = {
   soldier: ground(.17, .04, .3), marine: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
-  recon: ground(.3, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
+  recon: ground(.3, .05, .285), stealth_tank: ground(.34, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
   artillery: ground(.29, .045, .285, -.01), rocket_launcher: ground(.35, .05, .285), flak: ground(.32, .05, .275),
   copter: airShadow(mirror([[.34, .0], [.2, -.1], [-.1, -.13], [-.2, -.04], [-.46, -.03], [-.46, 0]])),
   transport_copter: airShadow(mirror([[.46, 0], [.4, -.08], [-.4, -.09], [-.48, -.04], [-.48, 0]]).map(([x, y]) => [x * .85, y * .85])),

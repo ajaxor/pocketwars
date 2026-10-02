@@ -11,6 +11,8 @@ import { buildCatalog, GROUPS } from './catalog.js';
 import { createUnitsView } from './units-view.js';
 import { createCharactersView } from './characters-view.js';
 import { drawOutlined, OUTLINE_THIN } from '../src/render/outline.js';
+import { BUILDINGS } from '../src/render/buildings.js';
+import { BASES, drawWall } from './structure-art.js';
 import { SPRITES as CONCEPT_SPRITES, SHADOWS as CONCEPT_SHADOWS } from './concept-art.js';   // experimental units, not in the game
 
 const MOD = { SPRITES, SHADOWS };
@@ -25,6 +27,12 @@ export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline
   const st = STATES[state] || STATES.idle;
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
+  if (unit.kind === 'building' || unit.kind === 'wall') {                       // structures are drawn like the game's buildings, not as unit sprites
+    if (unit.kind === 'wall') drawWall(g, 0, 0, size, faction.color, { links: unit.links || { e: true, w: true }, cracked: !!unit.cracked });
+    else (unit.concept ? BASES : BUILDINGS)[unit.sprite]?.(g, 0, 0, size, faction.color);
+    if (state === 'done') { g.fillStyle = 'rgba(40,44,52,.55)'; g.fillRect(0, 0, size, size); }
+    return;
+  }
   g.save(); g.translate(size / 2, size / 2);
   const mod = unit.concept ? CONCEPT_MOD : MOD;
   const o = { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run, moving: state === 'moving', make };
@@ -66,6 +74,7 @@ async function boot() {
     },
     paint(t) { paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg: terrain[t.unit.water && state.bg === 'plain' ? 'sea' : state.bg], outline: state.outline, outlineColor: state.outlineColor }); },
   };
+  ctx.terrain = terrain; ctx.drawWall = drawWall; ctx.buildings = { game: BUILDINGS, concept: BASES };
   const units = createUnitsView(ctx, $('#view-units'));
   const characters = await createCharactersView(ctx, $('#view-chars'));
 

@@ -75,7 +75,7 @@ entry into `data/units.json`, fill in its balance numbers and add its damage row
 
 ## Experimental concept units
 
-`gallery/concept-art.js` (sprites and shadows; the newer groups live in `concept-art-infantry.js`, `-static.js`, `-gadgets.js`, `-air.js`, `-ships.js`, `-vehicles.js` and `-fleet.js`, re-exported by it) and `gallery/concepts.json` (names, facilities, costs, mechanics) hold 50 concept units
+`gallery/concept-art.js` (sprites and shadows; the newer groups live in `concept-art-infantry.js`, `-static.js`, `-air.js`, `-ships.js`, `-vehicles.js` and `-fleet.js`, re-exported by it) and `gallery/concepts.json` (names, facilities, costs, mechanics) hold the concept units, plus structures (`gallery/structure-art.js`: labs, bases, walls; the gallery's Structures tab and wall builder in `gallery/wall-lab.js`)
 for production facilities that do not exist yet (Hover Lab, Mech Factory, Stealth Lab, Glider Field, Space Port, Underwater Lab, Drone
 Bay, plus new War Factory units, a Training Ground of specialist infantry, an Engineer Works of static defences, mines and gadgets, and new aircraft and ships for the existing Airfield and Shipyard). The Rocket Launcher started here and is now a real unit. They are shown in the gallery's "Experimental" section and are not in the game or in `data/`.
 `node tools/sprite-lab/concepts.mjs [--only id,id] [--size 150] [--check] [--art file.js --data file.json]` renders them to a PNG contact sheet and checks their bounds.

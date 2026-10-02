@@ -18,6 +18,10 @@ Notes from iterating on unit sprites (mostly the naval rework) so the next round
 - Silhouette is what distinguishes units. Differentiate with superstructure shape (plus-shaped bridge, tiered wings, tall bridge) before adding detail or colour.
 - Avoid blue team colours: they vanish against water tiles.
 - Hidden units get an eye marker (white when an enemy can see them, and only when the viewer can see that), a submerge animation, and fade out instead of vanishing.
+- **Keep icons simple; minimise detail.** No windows on ships (a hull, a superstructure and one distinguishing silhouette is enough). No wing markings, airframe stripes, lamps, rails or hubs. Aircraft carriers are a deck, a runway line and a mast.
+- **Specialist infantry = a plain soldier plus one prop** (bandana and AK-47, one white case with one cross, one large wrench, a fur hat). Don't add gear that doesn't change the silhouette.
+- **Structures:** few shapes, one idea per building, no windows; walls are a post plus arms that link to neighbours.
+- Walkers' legs use the shared `pillarLeg` (a straight swinging pillar with a flat foot) rather than jointed limbs.
 
 ## Pitfalls
 - Hard-coded per-ship numbers (keel, propeller y, bridge offsets) drift apart; re-tune propellers whenever a hull changes.

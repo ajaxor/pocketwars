@@ -99,6 +99,15 @@ export const walkerLeg = (g, s, hx, hy, ph, w, walk, thick, col) => {
   box(g, s, fx - .05, fy - .035, .12, .06, 2, INK);
 };
 
+/** A plain walker leg: one straight pillar hanging from the hip (hx, hy) that swings forward and back, and a flat foot. `t` is its thickness. */
+export const pillarLeg = (g, s, hx, hy, ph, w, walk, t, col) => {
+  const a = Math.sin(w * 6 + ph) * .27 * walk, L = .29 - hy;
+  g.save(); g.translate(hx * s, hy * s); g.rotate(a);
+  box(g, s, -t / 2, 0, t, L, 2, col);
+  box(g, s, -t * .6, L - .035, t * 1.9, .05, 2, INK);
+  g.restore();
+};
+
 export const GLOW = '#7fe8ff';
 /** An anti-gravity hover system: `n` emitter pods spread between x0 and x1 under a hull whose underside is at y, each with a pulsing lens,
  *  a faint cone of light to the ground and a mote rising through the field. */

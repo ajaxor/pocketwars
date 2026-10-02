@@ -21,3 +21,7 @@
 
 - **Gallery pipeline statuses are hand-edited** in `gallery/status.json`. The 17 original units were marked `solid` by assumption (rocket launcher `draft`); nothing checks that `balanced`/`ready` match the damage baselines or the interface.
 - **Gallery has no browser test.** It was checked once with a headless Chromium script (all tabs, dialogue tester, phone width); `tests/gallery/catalog.test.js` covers only the data. `portraits.html` is still a separate design lab, and the kit icons are static (not animated).
+- **Stealth tank has no cloak yet.** It is a draft unit in the game (stats only, factory build list and AI loadout), so it plays as a fast plain tank; the cloak/hidden-unless-adjacent mechanic needs engine attributes. The AI has no logic for it.
+- **Structures are concept-only.** Walls (linking, cracked and destructible), labs, bunker, radar station, supply depot and the static defences exist only as gallery art plus prose; the engine has no wall tile, link rule, destructible terrain or capturable base types. The game's six buildings are shown there as drafts.
+- **Gallery structure art is separate from the game's** `src/render/buildings.js` (`gallery/structure-art.js` borrows its `kit` helpers); if structures ship, merge them so there is one drawing path.
+- **APC and other new concept units** (APC, divers, mortar, spy) are art only; the APC reuses the transport's carry mechanic in prose, not in data.

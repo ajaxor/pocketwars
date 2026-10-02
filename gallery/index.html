@@ -47,6 +47,10 @@
 
   /* unit cards */
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 2 + 34px), 1fr)); gap: 12px; padding: 14px 0 48px; }
+  .grid h3.section { grid-column: 1 / -1; margin: 14px 0 0; font-size: 15px; color: #cfcabb; border-bottom: 1px solid #2a2d35; padding-bottom: 4px; }
+  .wall-lab { background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 10px; margin-top: 14px; }
+  .wall-lab h3 { margin: 0 0 4px; font-size: 15px; }
+  .wl-canvas { touch-action: manipulation; margin: 8px 0; max-width: 100%; }
   .grid:empty::after, .grid[data-empty]:not([data-empty=""])::after { content: attr(data-empty); color: #8a877c; }
   .card { background: #1d2027; border: 1px solid #2a2d35; border-top: 3px solid var(--idea); border-radius: 12px; padding: 10px; }
   .card.st-draft { border-top-color: var(--draft); } .card.st-solid { border-top-color: var(--solid); } .card.st-balanced { border-top-color: var(--balanced); } .card.st-ready { border-top-color: var(--ready); }

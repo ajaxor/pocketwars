@@ -1,7 +1,7 @@
 // Experimental concept ships, "fleet" group (Shipyard): a tank landing ship and two submarines. Sprites only, NOT in the game.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })   SHADOWS[name](g, { s, alt, w, ph, run })
 // The landing ship floats like the real ships (afloat). The submarines are drawn dived, always in the underwater shade like the abyss sub.
-import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, periscope, UNDER_SHADE, GLASS, INK, STEEL, RED } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, periscope, UNDER_SHADE, INK, STEEL, RED } from '../src/render/parts.js';
 
 // A small side-view tank for the well deck: treads, hull, turret and a barrel. `col` is the team colour.
 const miniTank = (g, s, x, y, col, w, run) => {
@@ -30,13 +30,9 @@ const tankTransport = (g, { s, c, dk, w, ph, run, b }) => {
       box(g, s, -.22, D - .035, .56, .05, 1, well);                                        // the well deck, sunk between the bulwarks
       miniTank(g, s, -.03, D + .005, mix(c, '#ffffff', .12), w, run);                        // the cargo
       box(g, s, -.23, D - .05, .58, .035, 1, mix(c, dk, .25));                             // the bulwark along the near side (low: the tank stands over it)
-      box(g, s, -.23, D - .047, .58, .008, 0, mix(c, '#ffffff', .3));
-      for (let i = 0; i < 5; i++) box(g, s, -.19 + i * .12, D - .04, .05, .018, 0, mix(c, dk, .5));   // lashing plates
-      // stern bridge: small and boxy, with a window and a mast
-      box(g, s, -.38, D - .2, .13, .2, 3, c); box(g, s, -.37, D - .17, .11, .04, 1, GLASS);
-      box(g, s, -.39, D - .215, .15, .03, 1, mix(c, dk, .3));
-      stroke(g, s, -.315, D - .215, -.315, D - .29, 2, INK);
-      disc(g, s, -.315, D - .3, .012, run && Math.sin(w * 5 + ph) > .2 ? '#ff5a4a' : '#7a2a24');   // masthead light
+      // stern bridge: small and boxy, with a mast
+      box(g, s, -.38, D - .2, .13, .2, 3, c);
+      stroke(g, s, -.315, D - .2, -.315, D - .29, 2, INK);
       // the bow ramp, lowered: a hinged plate down to the water with chevron marks, and two hydraulic arms
       const sw = run ? Math.sin(w * 2 + ph) * .006 : 0;
       poly(g, s, [[x1 - .02, D - .035], [x1 + .02, D - .035], [x1 + .12, D + .1 + sw], [x1 + .08, D + .115 + sw]], mix(c, dk, .3));
@@ -56,9 +52,7 @@ const missileSub = (g, { s, c, dk, w, ph, run, b }) => {
   poly(g, s, [[-.4, .02], [-.5, -.1], [-.45, -.1], [-.33, .02]], deep);                      // upper rudder
   poly(g, s, [[-.4, .12], [-.5, .24], [-.45, .24], [-.33, .12]], deep);                      // lower rudder
   box(g, s, -.46, -.1, .92, .32, s * .15, col);                                              // big round hull
-  oval(g, s, .0, -.05, .36, .04, hi);                                                        // lit upper curve
   box(g, s, -.4, -.17, .4, .09, 3, mix(col, '#ffffff', .1));                                 // the raised missile casing behind the sail
-  box(g, s, -.4, -.17, .4, .018, 1, hi);
   for (let i = 0; i < 4; i++) {                                                              // hatch row: four silo covers
     const x = -.37 + i * .095;
     if (i === 1) {                                                                           // this one is open
@@ -67,11 +61,9 @@ const missileSub = (g, { s, c, dk, w, ph, run, b }) => {
       box(g, s, x + .015, -.2 - lift, .045, .06 + lift, 2, '#d0d4da');
       poly(g, s, [[x + .015, -.2 - lift], [x + .06, -.2 - lift], [x + .0375, -.27 - lift]], RED);
       const p = run ? .5 + .5 * Math.sin(w * 6 + ph) : .4; disc(g, s, x + .0375, -.17 - lift, .012, `rgba(255,150,70,${(.5 + .4 * p).toFixed(2)})`);
-    } else { box(g, s, x, -.155, .075, .035, 2, deep); box(g, s, x + .008, -.152, .059, .008, 1, hi); }
+    } else box(g, s, x, -.155, .075, .035, 2, deep);
   }
   box(g, s, .06, -.3, .14, .22, 4, col);                                                     // sail, ahead of the casing
-  box(g, s, .06, -.3, .14, .03, 2, hi);
-  box(g, s, .15, -.25, .04, .035, 1, GLASS);                                                 // bridge window
   box(g, s, .045, -.2, .025, .06, 1, deep);                                                   // sail plane
   periscope(g, s, .1, -.3, -.38, INK);
   poly(g, s, [[.36, .12], [.43, .02], [.43, .12]], deep);                                    // bow plane
@@ -94,7 +86,6 @@ const hunterSub = (g, { s, c, dk, w, ph, run, moving, b }) => {
   g.fillStyle = col; g.beginPath(); g.moveTo(-.44 * s, .02 * s);
   g.quadraticCurveTo(-.3 * s, -.1 * s, -.0 * s, -.1 * s); g.quadraticCurveTo(.3 * s, -.1 * s, .42 * s, -.0 * s);
   g.quadraticCurveTo(.3 * s, .14 * s, -.0 * s, .14 * s); g.quadraticCurveTo(-.3 * s, .14 * s, -.44 * s, .02 * s); g.fill();
-  g.beginPath(); g.moveTo(-.3 * s, -.04 * s); g.quadraticCurveTo(-.1 * s, -.09 * s, .2 * s, -.075 * s); g.lineTo(.2 * s, -.05 * s); g.quadraticCurveTo(-.1 * s, -.06 * s, -.3 * s, -.02 * s); g.fillStyle = hi; g.fill();
   // sonar dome on the bow, with pings spreading ahead
   disc(g, s, .38, .02, .065, mix(c, '#ffffff', .35)); disc(g, s, .365, -.005, .02, 'rgba(255,255,255,.7)');
   if (run) for (let i = 0; i < 2; i++) {
@@ -103,8 +94,6 @@ const hunterSub = (g, { s, c, dk, w, ph, run, moving, b }) => {
   }
   // swept sail with sail planes
   poly(g, s, [[-.14, -.08], [-.08, -.25], [.06, -.25], [.14, -.08]], col);
-  poly(g, s, [[-.08, -.25], [.06, -.25], [.07, -.23], [-.09, -.22]], hi);
-  box(g, s, -.02, -.2, .07, .026, 1, GLASS);
   poly(g, s, [[.0, -.14], [.12, -.16], [.1, -.13]], deep);                                    // sail plane, swept
   periscope(g, s, .04, -.25, -.33, INK);
   poly(g, s, [[.22, .08], [.3, .2], [.25, .2], [.17, .1]], deep);                              // bow plane

@@ -45,6 +45,7 @@
   "submarine": "solid",
   "cruiser": "solid",
   "battleship": "solid",
-  "stealth_bomber": "idea"
+  "stealth_bomber": "idea",
+  "stealth_tank": "draft"
  }
 }

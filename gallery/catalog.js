@@ -15,8 +15,11 @@ export const GROUPS = [
   { id: 'vehicle', label: 'Vehicles' },
   { id: 'air', label: 'Air' },
   { id: 'naval', label: 'Naval' },
-  { id: 'static', label: 'Defences' },
+  { id: 'structure', label: 'Structures' },
 ];
+
+/** Buildings the game already has (terrain render.building), shown in the Structures tab. */
+const GAME_BUILDING_NAME = { hq: 'HQ', city: 'City', factory: 'Factory', barracks: 'Barracks', airfield: 'Airfield', shipyard: 'Shipyard' };
 
 const CATEGORY_GROUP = { infantry: 'infantry', amphibious: 'infantry', vehicle: 'vehicle', aircraft: 'air', naval: 'naval' };
 
@@ -30,7 +33,7 @@ export function rangeNote(def, weapons) {
 
 /**
  * @param {{registry:object, concepts:{facilities:object[], units:object[]}, planned?:object, status:{stages:object[], units:object}}} src
- * @returns {object[]} entries: { id, name, group, stage, inGame, sprite, art ('game' | 'concept'), altitude, water, cost, move, range, role?, facility?, mechanic?, overlaps?, tags[] }
+ * @returns {object[]} entries: { id, name, group, kind ('unit' | 'building' | 'wall'), section, stage, inGame, sprite, art ('game' | 'concept'), altitude, water, cost, move, range, role?, facility?, mechanic?, overlaps?, tags[] }
  */
 export function buildCatalog({ registry, concepts, planned = {}, status }) {
   const out = [];
@@ -39,7 +42,7 @@ export function buildCatalog({ registry, concepts, planned = {}, status }) {
     const def = registry.unit(id);
     out.push({
       id, name: def.name, group: CATEGORY_GROUP[def.category] || 'vehicle', stage: stageOf(id, 'draft'), inGame: true,
-      sprite: def.render.sprite, art: 'game', altitude: def.render.altitude || 0, water: def.moveClass === 'naval',
+      sprite: def.render.sprite, waterSprite: def.render.waterSprite || null, kind: 'unit', section: null, art: 'game', altitude: def.render.altitude || 0, water: def.moveClass === 'naval',
       cost: def.cost, move: def.move, range: rangeNote(def, registry.weapons), weapons: (def.weapons || []).map((w) => registry.weapons[w]).filter(Boolean),
       tags: Object.keys(def.attributes || {}),
     });
@@ -47,16 +50,23 @@ export function buildCatalog({ registry, concepts, planned = {}, status }) {
   for (const [id, def] of Object.entries(planned)) {
     out.push({
       id, name: def.name, group: CATEGORY_GROUP[def.category] || 'air', stage: stageOf(id, 'idea'), inGame: false,
-      sprite: def.render.sprite, art: 'game', altitude: def.render.altitude || 0, water: false,
+      sprite: def.render.sprite, waterSprite: null, kind: 'unit', section: null, art: 'game', altitude: def.render.altitude || 0, water: false,
       cost: def.cost, move: def.move, range: rangeNote(def, registry.weapons), weapons: [], tags: Object.keys(def.attributes || {}),
       mechanic: def.note || 'Drawn, but not in the game yet.',
     });
+  }
+  for (const id of registry.terrainIds || Object.keys(registry.terrain || {})) {
+    const b = registry.terrain[id]?.render?.building;
+    if (!b) continue;
+    out.push({ id: `building_${id}`, name: GAME_BUILDING_NAME[id] || registry.terrain[id].name || id, group: 'structure', section: 'Game buildings', kind: 'building', stage: stageOf(`building_${id}`, 'draft'), inGame: true,
+      sprite: b, art: 'game', altitude: 0, water: false, cost: null, move: 0, range: null, weapons: [], tags: [], mechanic: registry.terrain[id].attributes?.property?.builds?.length ? `Builds: ${registry.terrain[id].attributes.property.builds.join(', ')}.` : null });
   }
   const facilities = Object.fromEntries(concepts.facilities.map((f) => [f.id, f]));
   for (const c of concepts.units) {
     out.push({
       id: c.id, name: c.name, group: c.group, stage: stageOf(c.id, 'idea'), inGame: false, sprite: c.sprite, art: 'concept',
       altitude: c.altitude || 0, water: !!c.water, cost: c.cost, move: c.move, range: null, role: c.role, facility: facilities[c.facility]?.name || c.facility,
+      kind: c.kind || 'unit', section: c.section || null, cracked: !!c.cracked, waterSprite: c.waterSprite || null,
       mechanic: c.mechanic, overlaps: c.overlaps, tags: [],
     });
   }

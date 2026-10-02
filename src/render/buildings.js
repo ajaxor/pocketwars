@@ -14,7 +14,7 @@ import { luma, shade } from './color.js';
 const SHADOW = 'rgba(0,0,0,.2)';
 const DX = .9, DY = -.7;          // the depth direction of every box: up and to the right, per unit of depth
 
-function kit(g, px, py, S) {
+export function kit(g, px, py, S) {
   const X = (a) => px + a * S;
   const Y = (b) => py + b * S;
   const poly = (pts, fill) => {

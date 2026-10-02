@@ -264,7 +264,7 @@ cost is paid up front.
 | Leader | Barracks | Factory | Airfield | Shipyard |
 |---|---|---|---|---|
 | Brandt | soldier, mech, sniper | recon, tank, artillery | copter, fighter, transport copter | marine, destroyer |
-| Orlov | soldier, spy | recon, phantom tank | stealth copter, bomber | submarine, destroyer |
+| Orlov | soldier, spy | recon, stealth tank | stealth copter, bomber | submarine, destroyer |
 | Takeda | soldier, mech | tank, heavy tank, strider, flak | copter | cruiser, battleship |
 | Kestrel | soldier, sniper | supply truck, rocket battery, tank | swarm drones, repair drone, copter | destroyer, mine layer |
 
