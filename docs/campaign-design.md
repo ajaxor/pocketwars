@@ -337,3 +337,9 @@ A suggested path that always leaves the game playable:
 - **Difficulty without a ladder** (free stage order): decide whether to scale enemies by progress or by the leader chosen.
 - **Allies**: shared army vs separate colours (see above).
 - **Save data** and a "new game" option need a decision before the first release of the campaign.
+
+## Implementation status
+
+- **Done:** Campaign button on the title screen; skippable animated intro (data/campaign.json `intro.scenes`, drawn on a canvas by `src/render/campaign-art.js`, timeline in `src/campaign/cutscene.js`); world map with five nations (your free homeland plus four assimilated); assimilated portrait variant (`assim` option in `src/render/portrait-art.js`); fifth faction Coral Tide.
+- **Not yet:** missions, leader selection, labs, allies, the final battle. The world map's mission button is a disabled placeholder.
+- The intro plays every time Campaign is pressed (Skip, Esc or Enter ends it; "Replay intro" is on the map).

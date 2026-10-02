@@ -1,19 +1,12 @@
-// Leader portraits: a parametric bust (one drawing routine, driven by each leader's traits) pushed through a handful of art STYLES,
-// so a direction can be judged on the same four faces. Nothing here is in the game yet. Browser-only (it uses canvas and getImageData).
+// Leader portraits (src/render/portrait-art.js): a parametric bust (one drawing routine, driven by each leader's traits) pushed through a handful of art STYLES,
+// so a direction can be judged on the same faces. A leader is a plain object of traits (see data/campaign.json); `assim` draws the
+// leader as assimilated by the Chorus (visor, grey uniform, flat expression). Browser-only (it uses canvas and getImageData).
 //
 //   drawPortrait(g, leader, { px, style, expr, blink, talk, bg })   paints a px x px portrait at (0, 0) of g
-//   LEADERS, STYLES, EXPRESSIONS
+//   STYLES, EXPRESSIONS, setFactions(list)   (leaders themselves are data: data/campaign.json)
 // Portraits are cached per (leader, style, expression, blink, mouth, size), so animating a blink or a talking mouth is cheap.
 
 export const EXPRESSIONS = ['neutral', 'smile', 'angry', 'shock', 'worried'];
-
-// Four invented leaders, one per faction in data/factions.json (colours come from the faction at draw time).
-export const LEADERS = [
-  { id: 'ada', faction: 'orange_star', name: 'Cmdr. Ada Brandt', tag: 'Hot-headed ace', skin: '#f0c4a0', hair: '#6b3b1e', eye: '#3b7fc4', jaw: 'oval', hat: 'cap', hairStyle: 'ponytail', brow: 1.7, medals: 2, line: 'Let\'s move out! Fast and loud!' },
-  { id: 'vex', faction: 'violet_nebula', name: 'Marshal Vex Orlov', tag: 'Cold strategist', skin: '#e3bfa6', hair: '#8c8c96', eye: '#7a7fa0', jaw: 'long', hat: 'none', hairStyle: 'bald', brow: 2.4, medals: 5, eyepatch: true, scar: true, tallCollar: true, stubble: true, line: 'Every move was already made.' },
-  { id: 'tomas', faction: 'green_earth', name: 'Gen. Tomas Rey', tag: 'Steady veteran', skin: '#c68b64', hair: '#2b2118', eye: '#4a3a24', jaw: 'square', hat: 'helmet', hairStyle: 'short', brow: 3.2, medals: 6, stache: true, wide: 1.1, line: 'Hold the line. We outlast them.' },
-  { id: 'nia', faction: 'yellow_comet', name: 'Dr. Nia Kestrel', tag: 'Tinkering genius', skin: '#8d5a3c', hair: '#1d1612', eye: '#5a3418', jaw: 'round', hat: 'headset', hairStyle: 'bun', brow: 1.5, medals: 0, glasses: true, coat: true, line: 'Calculated. Now let\'s watch it work.' },
-];
 
 export const STYLES = [
   { id: 'flat', name: 'Flat bust', note: 'Plain fills and a soft cheek shadow: the same look as the unit art, so it never clashes with the map. Cheapest to produce and to animate.' },
@@ -32,7 +25,11 @@ const INK = '#161a26';
 const canvasOf = (w, h = w) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 
 // ---- the parametric bust, drawn in a 100 x 100 space ----------------------------------------------------------------------------
-function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outline = false, shade = true, px = 100 }) {
+function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outline = false, shade = true, px = 100, assim = false }) {
+  if (assim) {                                                                                         // taken over: washed-out, flat, never blinking
+    L = { ...L, skin: mix(L.skin, '#aab6bf', .5), hair: mix(L.hair, '#59636d', .45), eye: '#7ef0ff', medals: 0, glasses: false, eyepatch: false };
+    expr = 'neutral'; blink = false; talk = 0;
+  }
   const lw = outline ? Math.max(1.1, 220 / px * 1.1 + 0.6) : 0;
   const paint = (path, fill, ink = true) => {
     g.beginPath(); path(g); g.fillStyle = fill; g.fill();
@@ -47,6 +44,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   // back hair
   if (L.hairStyle === 'ponytail') paint(ell(74, 52, 6.5, 14), L.hair);
   if (L.hairStyle === 'bun') paint(ell(50, 17, 9, 8.5), L.hair);
+  if (L.hairStyle === 'long') { paint(ell(29.5, 54, 6.5, 17), L.hair); paint(ell(70.5, 54, 6.5, 17), L.hair); }
 
   // body
   const bw = L.wide || 1, X = (x) => 50 + (x - 50) * bw;
@@ -60,6 +58,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     for (const sx of [-1, 1]) line(sx > 0 ? X(72) : X(16), 80.2, sx > 0 ? X(85) : X(29), 80.2, 1.4, '#e8c050');
     for (let i = 0; i < L.medals; i++) paint(ell(60 + (i % 3) * 4.6, 90 + Math.floor(i / 3) * 4.6, 1.8, 1.8), i % 2 ? '#d94b3a' : '#e8c050', false);
   } else line(X(10), 90, X(10), 101, 0.001, bodyCol);
+  if (assim) for (const dy of [0, 5]) paint(poly([[44, 87 + dy], [50, 91 + dy], [56, 87 + dy], [56, 89.6 + dy], [50, 93.6 + dy], [44, 89.6 + dy]]), '#7ef0ff', false);   // the Chorus chevrons
 
   // neck
   paint((p) => p.roundRect(43, 58, 14, 17, 3), L.skin, false);
@@ -135,6 +134,14 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     line(31.5, 41, 33.5, 60, 1.4, mix(hc, '#000', .3)); line(68.5, 41, 66.5, 60, 1.4, mix(hc, '#000', .3));   // chin strap
     if (shade) { g.fillStyle = 'rgba(255,255,255,.16)'; g.beginPath(); g.ellipse(41, 21, 9, 4, -.5, 0, 7); g.fill(); }
   }
+  if (L.hairStyle === 'long') paint((p) => { p.moveTo(30, 46); p.bezierCurveTo(28, 20, 72, 20, 70, 46); p.bezierCurveTo(68, 34, 58, 31, 50, 31); p.bezierCurveTo(42, 31, 32, 34, 30, 46); p.closePath(); }, L.hair);
+  if (L.hat === 'captain') {
+    paint((p) => { p.moveTo(29, 36); p.bezierCurveTo(27, 10, 73, 10, 71, 36); p.quadraticCurveTo(50, 31, 29, 36); p.closePath(); }, '#f4f6fa');
+    paint((p) => { p.moveTo(28.5, 34); p.quadraticCurveTo(50, 29, 71.5, 34); p.lineTo(71.5, 37); p.quadraticCurveTo(50, 32, 28.5, 37); p.closePath(); }, dk);   // band
+    paint((p) => { p.moveTo(26.5, 36.5); p.quadraticCurveTo(50, 30.5, 73.5, 36.5); p.quadraticCurveTo(50, 46, 26.5, 36.5); p.closePath(); }, '#1c2a44');   // peak
+    paint(ell(50, 22, 4.2, 4.2), '#e8c050'); paint(ell(50, 22, 1.8, 1.8), '#f4f6fa', false);                                  // gold badge
+    if (shade) { g.fillStyle = 'rgba(80,100,140,.14)'; g.beginPath(); g.ellipse(60, 22, 8, 10, 0, 0, 7); g.fill(); }
+  }
   if (L.hat === 'headset') {
     g.beginPath(); g.arc(50, 41, 21.5, Math.PI * 1.08, Math.PI * 1.92); g.lineWidth = 2.6; g.strokeStyle = '#3a3d4a'; g.stroke();
     paint((p) => p.roundRect(66.2, 41, 6.2, 11, 2.5), '#3a3d4a'); paint((p) => p.roundRect(27.6, 41, 6.2, 11, 2.5), '#3a3d4a');
@@ -145,6 +152,12 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     for (const [ex, ey] of eyes) { g.beginPath(); g.arc(ex, ey, 6.4, 0, 7); g.stroke(); g.fillStyle = 'rgba(190,225,245,.22)'; g.fill(); }
     line(48.4, 45, 51.6, 45, 1.3, '#2a2018'); line(35.6, 44.5, 31, 43.5, 1.1, '#2a2018'); line(64.4, 44.5, 69, 43.5, 1.1, '#2a2018');
   }
+  if (assim) {                                                                                         // the Chorus visor over the eyes, and a circuit line on the cheek
+    paint((p) => p.roundRect(32, 40.2, 36, 9.6, 4.8), '#0b1218');
+    g.fillStyle = 'rgba(126,240,255,.2)'; g.beginPath(); g.roundRect(33.5, 41.8, 33, 6.4, 3.2); g.fill();
+    line(35.5, 45, 64.5, 45, 1.9, '#7ef0ff');
+    line(67, 54, 62, 59, 1, 'rgba(126,240,255,.85)'); line(62, 59, 62, 66, 1, 'rgba(126,240,255,.85)');
+  }
   g.restore();
 }
 
@@ -152,34 +165,34 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
 const cache = new Map();
 const factionColors = {};
 export const setFactions = (list) => list.forEach((f) => { factionColors[f.id] = f; });
-const colorsOf = (L) => factionColors[L.faction] || { color: '#e8712c', dark: '#9a3f0e' };
+const colorsOf = (L, assim = false) => (assim ? factionColors.chorus : factionColors[L.faction]) || { color: assim ? '#4fd3e6' : '#e8712c', dark: assim ? '#1f3b46' : '#9a3f0e' };
 
-function renderBust(L, { px, expr, blink, talk, outline, shade = true }) {
-  const f = colorsOf(L), cv = canvasOf(px), g = cv.getContext('2d');
+function renderBust(L, { px, expr, blink, talk, outline, shade = true, assim = false }) {
+  const f = colorsOf(L, assim), cv = canvasOf(px), g = cv.getContext('2d');
   g.scale(px / 100, px / 100);
-  bust(g, L, { c: f.color, dk: f.dark }, { expr, blink, talk, outline, shade, px });
+  bust(g, L, { c: assim ? '#6b7a88' : f.color, dk: assim ? '#323c46' : f.dark }, { expr, blink, talk, outline, shade, px, assim });
   return cv;
 }
 
 const lum = (r, gg, b) => (.299 * r + .587 * gg + .114 * b) / 255;
 
-function styled(L, style, px, expr, blink, talk) {
-  const f = colorsOf(L), c = f.color, dk = f.dark, out = canvasOf(px), g = out.getContext('2d');
+function styled(L, style, px, expr, blink, talk, assim = false) {
+  const f = colorsOf(L, assim), c = f.color, dk = f.dark, out = canvasOf(px), g = out.getContext('2d');
   const S = (v) => v * px / 100;
 
   if (style === 'flat') {
     g.fillStyle = mix(c, '#ffffff', .62); g.fillRect(0, 0, px, px);
     g.fillStyle = mix(c, '#ffffff', .4); g.beginPath(); g.arc(px / 2, S(58), S(40), 0, 7); g.fill();
-    g.drawImage(renderBust(L, { px, expr, blink, talk, outline: false }), 0, 0);
+    g.drawImage(renderBust(L, { px, expr, blink, talk, outline: false, assim }), 0, 0);
   } else if (style === 'ink') {
     g.fillStyle = mix(c, '#ffffff', .15); g.fillRect(0, 0, px, px);
     g.strokeStyle = mix(c, '#ffffff', .4); g.lineWidth = S(3);
     for (let i = 0; i < 14; i++) { const a = (i / 14) * Math.PI * 2; g.beginPath(); g.moveTo(px / 2 + Math.cos(a) * S(30), S(46) + Math.sin(a) * S(30)); g.lineTo(px / 2 + Math.cos(a) * S(90), S(46) + Math.sin(a) * S(90)); g.stroke(); }
     g.lineWidth = S(2.4); g.strokeStyle = INK; g.strokeRect(S(1.2), S(1.2), px - S(2.4), px - S(2.4));
-    g.drawImage(renderBust(L, { px, expr, blink, talk, outline: true }), 0, 0);
+    g.drawImage(renderBust(L, { px, expr, blink, talk, outline: true, assim }), 0, 0);
   } else if (style === 'pixel') {
     const N = 56, small = canvasOf(N), sg = small.getContext('2d');
-    sg.drawImage(renderBust(L, { px: N, expr, blink, talk, outline: false, shade: false }), 0, 0);
+    sg.drawImage(renderBust(L, { px: N, expr, blink, talk, outline: false, shade: false, assim }), 0, 0);
     const img = sg.getImageData(0, 0, N, N), d = img.data, solid = new Uint8Array(N * N);
     for (let i = 0; i < N * N; i++) {                                                                  // posterise, then drop soft edges
       const a = d[i * 4 + 3] > 110; solid[i] = a ? 1 : 0;
@@ -197,7 +210,7 @@ function styled(L, style, px, expr, blink, talk) {
     for (let y = 0; y < N; y += 2) for (let x = (y / 2) % 2 ? 1 : 0; x < N; x += 2) g.fillRect(Math.floor(x * px / N), Math.floor(y * px / N), Math.ceil(px / N), Math.ceil(px / N));   // checker dither
     g.imageSmoothingEnabled = false; g.drawImage(small, 0, 0, px, px);
   } else if (style === 'duotone') {
-    const src = renderBust(L, { px, expr, blink, talk, outline: false }), sg = src.getContext('2d');
+    const src = renderBust(L, { px, expr, blink, talk, outline: false, assim }), sg = src.getContext('2d');
     const img = sg.getImageData(0, 0, px, px), d = img.data, lo = hex('#0d1220'), mid = hex(c), hi = hex('#fff1cf');
     for (let i = 0; i < px * px; i++) {
       const l = Math.min(1, lum(d[i * 4], d[i * 4 + 1], d[i * 4 + 2]) * 1.12), t = l < .5 ? l * 2 : (l - .5) * 2, A = l < .5 ? lo : mid, B = l < .5 ? mid : hi;
@@ -209,7 +222,7 @@ function styled(L, style, px, expr, blink, talk) {
     g.drawImage(src, 0, 0);
   } else if (style === 'halftone') {
     g.fillStyle = '#f4ead2'; g.fillRect(0, 0, px, px);
-    const src = renderBust(L, { px, expr, blink, talk, outline: false }), sg = src.getContext('2d');
+    const src = renderBust(L, { px, expr, blink, talk, outline: false, assim }), sg = src.getContext('2d');
     const d = sg.getImageData(0, 0, px, px).data;
     g.fillStyle = mix(c, '#ffffff', .35);
     g.beginPath(); g.arc(px / 2, S(56), S(42), 0, 7); g.fill();
@@ -230,7 +243,7 @@ function styled(L, style, px, expr, blink, talk) {
     g.fillStyle = mix(c, '#ffffff', .4); g.beginPath(); g.arc(cx, cy, R * .86, 0, 7); g.fill();
     g.save(); g.beginPath(); g.arc(cx, cy, R * .86, 0, 7); g.clip();
     g.fillStyle = mix(c, '#ffffff', .2); g.beginPath(); g.arc(cx, cy + R * .3, R * .62, 0, 7); g.fill();
-    g.drawImage(renderBust(L, { px, expr, blink, talk, outline: false }), 0, S(2));
+    g.drawImage(renderBust(L, { px, expr, blink, talk, outline: false, assim }), 0, S(2));
     g.restore();
     g.fillStyle = '#f6d35a';
     for (let i = 0; i < 12; i++) { const a = (i / 12) * Math.PI * 2 - Math.PI / 2; g.beginPath(); g.arc(cx + Math.cos(a) * R * .965, cy + Math.sin(a) * R * .965, px * .012, 0, 7); g.fill(); }
@@ -238,7 +251,7 @@ function styled(L, style, px, expr, blink, talk) {
     g.fillStyle = dk; g.fillRect(0, 0, px, px);
     g.fillStyle = c;
     for (let i = 0; i < 16; i += 2) { const a0 = (i / 16) * Math.PI * 2, a1 = ((i + 1) / 16) * Math.PI * 2; g.beginPath(); g.moveTo(px / 2, S(48)); g.arc(px / 2, S(48), px * 1.2, a0, a1); g.closePath(); g.fill(); }
-    const fig = renderBust(L, { px, expr, blink, talk, outline: true }), sil = canvasOf(px), sg = sil.getContext('2d');
+    const fig = renderBust(L, { px, expr, blink, talk, outline: true, assim }), sil = canvasOf(px), sg = sil.getContext('2d');
     sg.drawImage(fig, 0, 0); sg.globalCompositeOperation = 'source-in'; sg.fillStyle = '#ffffff'; sg.fillRect(0, 0, px, px);   // white silhouette for the sticker edge
     const w = Math.max(2, S(2.6));
     for (let i = 0; i < 16; i++) { const a = (i / 16) * Math.PI * 2; g.drawImage(sil, Math.cos(a) * w, Math.sin(a) * w); }
@@ -251,19 +264,19 @@ function styled(L, style, px, expr, blink, talk) {
 }
 
 /** Paint one portrait at (0, 0), `px` device pixels square. `talk` is 0 (mouth closed) .. 1; it is rounded to three mouth shapes. */
-export function drawPortrait(g, leader, { px, style = 'flat', expr = 'neutral', blink = false, talk = 0 }) {
+export function drawPortrait(g, leader, { px, style = 'flat', expr = 'neutral', blink = false, talk = 0, assim = false }) {
   const t = talk <= 0 ? 0 : talk < .5 ? .5 : 1;
-  const key = `${leader.id}|${style}|${expr}|${blink ? 1 : 0}|${t}|${px}`;
+  const key = `${leader.id}|${assim?'A':'n'}|${style}|${expr}|${blink ? 1 : 0}|${t}|${px}`;
   let cv = cache.get(key);
-  if (!cv) { cv = styled(leader, style, px, expr, blink, t); cache.set(key, cv); if (cache.size > 900) cache.delete(cache.keys().next().value); }
+  if (!cv) { cv = styled(leader, style, px, expr, blink, t, assim); cache.set(key, cv); if (cache.size > 900) cache.delete(cache.keys().next().value); }
   g.drawImage(cv, 0, 0);
 }
 
 /** A bust with no background (for half-body cut-outs and layouts that supply their own backdrop). */
-export function drawCutout(g, leader, { px, expr = 'neutral', blink = false, talk = 0, outline = true }) {
+export function drawCutout(g, leader, { px, expr = 'neutral', blink = false, talk = 0, outline = true, assim = false }) {
   const t = talk <= 0 ? 0 : talk < .5 ? .5 : 1;
-  const key = `cut|${leader.id}|${expr}|${blink ? 1 : 0}|${t}|${px}|${outline ? 1 : 0}`;
+  const key = `cut|${leader.id}|${assim?'A':'n'}|${expr}|${blink ? 1 : 0}|${t}|${px}|${outline ? 1 : 0}`;
   let cv = cache.get(key);
-  if (!cv) { cv = renderBust(leader, { px, expr, blink, talk: t, outline }); cache.set(key, cv); }
+  if (!cv) { cv = renderBust(leader, { px, expr, blink, talk: t, outline, assim }); cache.set(key, cv); }
   g.drawImage(cv, 0, 0);
 }

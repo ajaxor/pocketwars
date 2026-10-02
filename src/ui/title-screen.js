@@ -10,7 +10,8 @@
 //   showUpdate(onClick)      show the "new version available" button
 //   remove()                 take the overlay away (the game is underneath)
 //   onStart                  called when the main button is pressed; set by the launcher
-//   onSkirmish               called when the Skirmish button is pressed; set by the launcher
+//   setCampaign(enabled)     turn the Campaign button on or off (it needs the campaign data, so it waits for the load)
+//   onSkirmish / onCampaign  called when those buttons are pressed; set by the launcher
 
 // The scene: a dusk battlefield with two tanks squaring off, built here as inline SVG so it shows before anything else has
 // loaded. The motion (drifting clouds, a plane, muzzle flashes, idling tanks) is CSS in style.css and stops for people who
@@ -54,6 +55,7 @@ export class TitleScreen {
     this.ready = false;
     this.onStart = () => {};
     this.onSkirmish = () => {};
+    this.onCampaign = () => {};
     this.onUpdate = () => {};
 
     const art = h('div', 'title-scene'); art.innerHTML = ART;
@@ -62,6 +64,8 @@ export class TitleScreen {
     this.status = h('div', 'title-status', 'Starting...');
     this.go = h('button', 'btn btn--primary btn--lg title-go', 'Loading'); this.go.disabled = true;
     this.go.addEventListener('click', () => this.onStart());
+    this.campaign = h('button', 'btn btn--lg title-campaign', 'Campaign'); this.campaign.disabled = true;
+    this.campaign.addEventListener('click', () => this.onCampaign());
     this.skirmish = h('button', 'btn btn--lg title-skirmish', 'Skirmish'); this.skirmish.disabled = true;
     this.skirmish.addEventListener('click', () => this.onSkirmish());
     this.links = h('nav', 'title-links');
@@ -76,7 +80,7 @@ export class TitleScreen {
     const body = h('div', 'title-body');
     const logo = h('h1', 'title-logo');
     logo.append(h('span', 'logo-top', 'Pocket'), h('span', 'logo-main', 'Wars'));
-    body.append(logo, loading, this.go, this.skirmish, this.links, this.upd, this.ver);
+    body.append(logo, loading, this.go, this.campaign, this.skirmish, this.links, this.upd, this.ver);
     this.root = h('div', 'title');
     this.root.append(art, body);
     doc.body.append(this.root);
@@ -86,7 +90,8 @@ export class TitleScreen {
   setVersion(text) { this.ver.textContent = text; }
   setReady() { this.ready = true; this.go.disabled = false; this.go.textContent = 'Quick Start'; this.setProgress(100, 'Ready'); this.loading.classList.add('is-done'); }
   setSkirmish(enabled) { this.skirmish.disabled = !enabled; }
-  setFailed(message) { this.ready = false; this.skirmish.disabled = true; this.go.disabled = false; this.go.textContent = 'Retry'; this.setProgress(0, 'Could not load the game: ' + message); }
+  setCampaign(enabled) { this.campaign.disabled = !enabled; }
+  setFailed(message) { this.ready = false; this.skirmish.disabled = true; this.campaign.disabled = true; this.go.disabled = false; this.go.textContent = 'Retry'; this.setProgress(0, 'Could not load the game: ' + message); }
   showUpdate(onClick) { this.onUpdate = onClick; this.upd.hidden = false; }
   remove() { this.root.remove(); }
 }

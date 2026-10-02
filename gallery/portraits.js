@@ -1,9 +1,12 @@
 // Leader portrait gallery: builds the style grid, the expression sheet and eight dialogue mock-ups, and animates the portraits
 // (blinking, and a flapping mouth while a mock-up is "typing"). Art lives in portrait-art.js; layouts are CSS in portraits.html.
-import { LEADERS, STYLES, EXPRESSIONS, drawPortrait, drawCutout, setFactions } from './portrait-art.js';
+import { STYLES, EXPRESSIONS, drawPortrait, drawCutout, setFactions } from '../src/render/portrait-art.js';
 
 const DATA = await (await fetch(new URL('data.json', import.meta.url))).json();
-setFactions(DATA.factions);
+const CAMPAIGN = await (await fetch(new URL('../data/campaign.json', import.meta.url))).json();
+setFactions([...DATA.factions, { id: 'chorus', ...CAMPAIGN.chorus }]);
+const LEADERS = CAMPAIGN.leaders.filter((l) => l.id !== 'envoy');   // the five faction leaders
+
 const fac = (L) => DATA.factions.find((f) => f.id === L.faction);
 const $ = (s) => document.querySelector(s);
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -28,12 +31,12 @@ function frame(now) {
     const talk = talking ? (Math.floor(now / 120) % 2 ? 1 : .5) : 0;
     const expr = (sc && sc.expr && sc.expr[p.who]) || (p.follow ? state.expr : p.expr);
     const style = sc && state.dlg !== 'auto' && !p.cut && !p.fixedStyle ? state.dlg : p.style;
-    const key = `${style}|${expr}|${blink}|${talk}|${p.px}`;
+    const key = `${p.assim ? 'A' : 'n'}|${style}|${expr}|${blink}|${talk}|${p.px}`;
     if (key === p.last) continue;
     p.last = key;
     p.g.clearRect(0, 0, p.px, p.px);
-    if (p.cut) drawCutout(p.g, p.L, { px: p.px, expr, blink, talk });
-    else drawPortrait(p.g, p.L, { px: p.px, style, expr, blink, talk });
+    if (p.cut) drawCutout(p.g, p.L, { px: p.px, expr, blink, talk, outline: false, assim: !!p.assim });
+    else drawPortrait(p.g, p.L, { px: p.px, style, expr, blink, talk, assim: !!p.assim });
   }
   requestAnimationFrame(frame);
 }
@@ -82,6 +85,20 @@ function buildSheet() {
 }
 seg($('#sheetStyle'), STYLES.map((s) => [s.id, s.name]), state.sheetStyle, (v) => { state.sheetStyle = v; buildSheet(); });
 buildSheet();
+
+// ---- section 2b: assimilated -----------------------------------------------------------------------------------------------------
+{
+  const row = el('div', 'faces');
+  for (const L of CAMPAIGN.leaders) {
+    for (const assim of L.id === 'envoy' ? [false] : [false, true]) {
+      const f = el('div', 'face'), p = portrait(L, { style: 'flat', cssPx: 130, follow: true });
+      p.assim = assim; p.sizeBound = true; p.cv.style.width = p.cv.style.height = ''; p.cv.style.borderRadius = '6px';
+      p.px = Math.round(state.size * dpr); p.cv.width = p.cv.height = p.px;
+      f.append(p.cv, el('div', 'cap', `<b>${L.name}</b><br>${assim ? 'Assimilated' : L.id === 'envoy' ? L.tag : 'Free'}`)); row.append(f);
+    }
+  }
+  $('#assim').append(row);
+}
 
 // ---- section 3: dialogue mock-ups -----------------------------------------------------------------------------------------------
 const A = LEADERS[0], B = LEADERS[1];

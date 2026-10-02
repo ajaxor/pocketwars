@@ -1,0 +1,366 @@
+{
+ "chorus": {
+  "name": "The Chorus",
+  "color": "#4fd3e6",
+  "dark": "#1f3b46"
+ },
+ "home": "orange_star",
+ "leaders": [
+  {
+   "id": "ada",
+   "faction": "orange_star",
+   "name": "Cmdr. Ada Brandt",
+   "tag": "Hot-headed ace",
+   "skin": "#f0c4a0",
+   "hair": "#6b3b1e",
+   "eye": "#3b7fc4",
+   "jaw": "oval",
+   "hat": "cap",
+   "hairStyle": "ponytail",
+   "brow": 1.7,
+   "medals": 2,
+   "line": "Let's move out! Fast and loud!"
+  },
+  {
+   "id": "vex",
+   "faction": "violet_nebula",
+   "name": "Marshal Vex Orlov",
+   "tag": "Cold strategist",
+   "skin": "#e3bfa6",
+   "hair": "#8c8c96",
+   "eye": "#7a7fa0",
+   "jaw": "long",
+   "hat": "none",
+   "hairStyle": "bald",
+   "brow": 2.4,
+   "medals": 5,
+   "eyepatch": true,
+   "scar": true,
+   "tallCollar": true,
+   "stubble": true,
+   "line": "Every move was already made."
+  },
+  {
+   "id": "tomas",
+   "faction": "green_earth",
+   "name": "Gen. Tomas Rey",
+   "tag": "Steady veteran",
+   "skin": "#c68b64",
+   "hair": "#2b2118",
+   "eye": "#4a3a24",
+   "jaw": "square",
+   "hat": "helmet",
+   "hairStyle": "short",
+   "brow": 3.2,
+   "medals": 6,
+   "stache": true,
+   "wide": 1.1,
+   "line": "Hold the line. We outlast them."
+  },
+  {
+   "id": "nia",
+   "faction": "yellow_comet",
+   "name": "Dr. Nia Kestrel",
+   "tag": "Tinkering genius",
+   "skin": "#8d5a3c",
+   "hair": "#1d1612",
+   "eye": "#5a3418",
+   "jaw": "round",
+   "hat": "headset",
+   "hairStyle": "bun",
+   "brow": 1.5,
+   "medals": 0,
+   "glasses": true,
+   "coat": true,
+   "line": "Calculated. Now let's watch it work."
+  },
+  {
+   "id": "sasha",
+   "faction": "coral_tide",
+   "name": "Adm. Sasha Marlow",
+   "tag": "Sea-wolf strategist",
+   "skin": "#d9a37c",
+   "hair": "#26324d",
+   "eye": "#2f8f9a",
+   "jaw": "oval",
+   "hat": "captain",
+   "hairStyle": "long",
+   "brow": 2.0,
+   "medals": 4,
+   "line": "The tide turns when I say it does."
+  },
+  {
+   "id": "envoy",
+   "faction": "chorus",
+   "name": "The Envoy",
+   "tag": "Voice of the Chorus",
+   "skin": "#eadcd0",
+   "hair": "#d6dde2",
+   "eye": "#6fdcf0",
+   "jaw": "oval",
+   "hat": "none",
+   "hairStyle": "short",
+   "brow": 1.2,
+   "medals": 0,
+   "tallCollar": true,
+   "line": "We bring you unity."
+  }
+ ],
+ "nations": [
+  {
+   "id": "north",
+   "name": "Violet Reach",
+   "leader": "vex",
+   "faction": "violet_nebula",
+   "theme": "Stealth and ambush: cloaked units strike from the dark.",
+   "capital": [
+    50,
+    24
+   ],
+   "outline": [
+    [
+     10,
+     34
+    ],
+    [
+     22,
+     16
+    ],
+    [
+     50,
+     8
+    ],
+    [
+     78,
+     16
+    ],
+    [
+     92,
+     40
+    ],
+    [
+     64,
+     36
+    ],
+    [
+     36,
+     36
+    ]
+   ]
+  },
+  {
+   "id": "west",
+   "name": "Coral Coast",
+   "leader": "sasha",
+   "faction": "coral_tide",
+   "theme": "Sea power: fleets, hovercraft and marines.",
+   "capital": [
+    20,
+    52
+   ],
+   "outline": [
+    [
+     36,
+     36
+    ],
+    [
+     30,
+     60
+    ],
+    [
+     14,
+     84
+    ],
+    [
+     8,
+     58
+    ],
+    [
+     10,
+     34
+    ]
+   ]
+  },
+  {
+   "id": "east",
+   "name": "Green Marches",
+   "leader": "tomas",
+   "faction": "green_earth",
+   "theme": "Heavy armour and walkers that roll over rough ground.",
+   "capital": [
+    78,
+    50
+   ],
+   "outline": [
+    [
+     64,
+     36
+    ],
+    [
+     92,
+     40
+    ],
+    [
+     90,
+     66
+    ],
+    [
+     70,
+     62
+    ]
+   ]
+  },
+  {
+   "id": "centre",
+   "name": "Comet Heights",
+   "leader": "nia",
+   "faction": "yellow_comet",
+   "theme": "Drones, repair and supply: the army that never runs dry.",
+   "capital": [
+    50,
+    52
+   ],
+   "outline": [
+    [
+     36,
+     36
+    ],
+    [
+     64,
+     36
+    ],
+    [
+     70,
+     62
+    ],
+    [
+     50,
+     76
+    ],
+    [
+     30,
+     60
+    ]
+   ]
+  },
+  {
+   "id": "south",
+   "name": "Orange Star",
+   "leader": "ada",
+   "faction": "orange_star",
+   "theme": "Your homeland: fast, aggressive, and the last nation still free.",
+   "capital": [
+    50,
+    90
+   ],
+   "home": true,
+   "outline": [
+    [
+     30,
+     60
+    ],
+    [
+     50,
+     76
+    ],
+    [
+     70,
+     62
+    ],
+    [
+     90,
+     66
+    ],
+    [
+     80,
+     90
+    ],
+    [
+     56,
+     108
+    ],
+    [
+     30,
+     104
+    ],
+    [
+     14,
+     84
+    ]
+   ]
+  }
+ ],
+ "intro": {
+  "scenes": [
+   {
+    "id": "peace",
+    "kind": "map",
+    "duration": 6,
+    "state": "free",
+    "caption": "For a hundred years, five nations shared one continent in an uneasy peace."
+   },
+   {
+    "id": "arrival",
+    "kind": "arrival",
+    "duration": 5,
+    "caption": "Then, one night, a light fell from the sky."
+   },
+   {
+    "id": "envoy",
+    "kind": "talk",
+    "duration": 9,
+    "left": null,
+    "right": "envoy",
+    "lines": [
+     {
+      "who": "envoy",
+      "expr": "smile",
+      "text": "Friends. I am the Envoy. I bring you unity."
+     },
+     {
+      "who": "envoy",
+      "expr": "neutral",
+      "text": "Join us, and there will be no more war."
+     }
+    ]
+   },
+   {
+    "id": "fall",
+    "kind": "fall",
+    "duration": 12,
+    "order": [
+     "north",
+     "east",
+     "centre",
+     "west"
+    ],
+    "caption": "One by one, the nations accepted. Or were taken."
+   },
+   {
+    "id": "holdout",
+    "kind": "talk",
+    "duration": 9,
+    "left": "ada",
+    "right": null,
+    "lines": [
+     {
+      "who": "ada",
+      "expr": "worried",
+      "text": "Four nations gone in a single month."
+     },
+     {
+      "who": "ada",
+      "expr": "angry",
+      "text": "Orange Star is the last one standing. Time to take them back!"
+     }
+    ]
+   },
+   {
+    "id": "title",
+    "kind": "title",
+    "duration": 4,
+    "text": "Liberate the continent"
+   }
+  ]
+ }
+}
