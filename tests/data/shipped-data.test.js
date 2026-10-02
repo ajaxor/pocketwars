@@ -39,11 +39,11 @@ test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
   assert.deepEqual(withAttr('capture'), ['marine', 'mech', 'soldier']);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['soldier']);
-  assert.deepEqual(withAttr('indirect'), ['artillery', 'sniper']);
+  assert.deepEqual(withAttr('indirect'), ['artillery', 'rocket_launcher', 'sniper']);
   assert.deepEqual(withAttr('submerge'), ['submarine']);
   assert.deepEqual(withAttr('sonar'), ['destroyer']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'transport_copter']);
-  assert.deepEqual(withAttr('ammo'), ['transport_copter']);
+  assert.deepEqual(withAttr('ammo'), ['rocket_launcher', 'transport_copter']);
   assert.deepEqual(withAttr('deploy'), ['transport_copter']);
 });
 

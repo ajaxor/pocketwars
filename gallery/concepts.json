@@ -9,7 +9,7 @@
   {
    "id": "hover_lab",
    "name": "Hover Lab",
-   "blurb": "Air-cushion craft that skim land, shoals and sea alike. Fast and flexible, thinly armoured, and they overlap with the War Factory, the Shipyard and the Airfield.",
+   "blurb": "Anti-gravity craft that float over land, shoals and sea alike. Fast and flexible, thinly armoured, and they overlap with the War Factory, the Shipyard and the Airfield.",
    "overlap": "new"
   },
   {
@@ -23,6 +23,30 @@
    "name": "Stealth Lab",
    "blurb": "Cloaked variants of ordinary roles. Invisible unless an enemy ends a move next to them, which makes scouting and sonar-style detection matter on land and in the air.",
    "overlap": "new"
+  },
+  {
+   "id": "training_ground",
+   "name": "Training Ground",
+   "blurb": "Specialist infantry: healers, engineers, heavy-weapon troopers and a cheap draftee. They fill the gaps between the soldier, the mech and the sniper, and make the front line sustainable.",
+   "overlap": "existing: soldier, mech, sniper"
+  },
+  {
+   "id": "engineer_works",
+   "name": "Engineer Works",
+   "blurb": "Builds immobile static defences that are placed next to your property and cannot move (move 0). Cheap to hold ground with, impossible to reposition.",
+   "overlap": "new"
+  },
+  {
+   "id": "airfield",
+   "name": "Airfield (new aircraft)",
+   "blurb": "New aircraft for the existing Airfield: a stealth interceptor, a ship-killing torpedo plane, an airborne radar, and cheap wartime-era fighters and bombers.",
+   "overlap": "existing: transport copter, copter, fighter, bomber"
+  },
+  {
+   "id": "shipyard",
+   "name": "Shipyard (new ships)",
+   "blurb": "New hulls for the existing Shipyard: a floating airstrip, a nimble patrol boat and the heaviest gun platform afloat.",
+   "overlap": "existing: destroyer, submarine, cruiser, battleship"
   },
   {
    "id": "glider_field",
@@ -61,18 +85,6 @@
    "role": "Support",
    "overlaps": "Resupply at an airfield",
    "mechanic": "Refills the ammo of every friendly unit next to it when it waits, at the usual price per round. Lets copters work far from an airfield. Unarmed."
-  },
-  {
-   "id": "rocket_battery",
-   "name": "Rocket Battery",
-   "facility": "war_factory",
-   "sprite": "rocket_battery",
-   "altitude": 0,
-   "cost": 9000,
-   "move": 4,
-   "role": "Indirect fire",
-   "overlaps": "Artillery",
-   "mechanic": "Range 3 to 5 with a minimum range, big damage, but empties its tubes after 3 salvos and then needs a Supply Truck. Cannot move and fire."
   },
   {
    "id": "hover_scout",
@@ -161,14 +173,14 @@
   {
    "id": "spy",
    "name": "Spy",
-   "facility": "stealth_lab",
+   "facility": "training_ground",
    "sprite": "spy",
    "altitude": 0,
    "cost": 2500,
    "move": 3,
    "role": "Saboteur",
    "overlaps": "Soldier",
-   "mechanic": "Cloaked infantry that cannot attack. Instead of capturing, it sabotages an enemy property: halves its income and stops it building for a turn."
+   "mechanic": "Cloaked infantry: invisible to the enemy unless one of their units is adjacent. Stealth, but weak: only a feeble pistol (range 1, a third of a soldier's damage), few hit points' worth of toughness and no capture. Instead of capturing, it sabotages an enemy property: halves its income and stops it building for a turn."
   },
   {
    "id": "troop_glider",
@@ -292,6 +304,299 @@
    "role": "Support",
    "overlaps": "Supply Truck",
    "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Unarmed."
+  },
+  {
+   "id": "commando",
+   "name": "Commando",
+   "facility": "training_ground",
+   "sprite": "commando",
+   "altitude": 0,
+   "cost": 2500,
+   "move": 3,
+   "role": "Elite infantry",
+   "overlaps": "Soldier",
+   "mechanic": "Gets double the usual terrain defence bonus, so a commando in a forest or on a mountain is very hard to dislodge. If it does not move in a turn it heals 1 hit point of itself at the start of the next. Rifle attack, same range as a soldier."
+  },
+  {
+   "id": "rpg_trooper",
+   "name": "RPG Trooper",
+   "facility": "training_ground",
+   "sprite": "rpg_trooper",
+   "altitude": 0,
+   "cost": 2800,
+   "move": 3,
+   "role": "Anti-armour infantry",
+   "overlaps": "Mech",
+   "mechanic": "Carries a single rocket (ammo 1). Fires at range 2-3 but cannot move and fire in the same turn. Hits vehicles hard and infantry lightly; with its rocket spent it is a defenceless rifleman until resupplied."
+  },
+  {
+   "id": "mechanic",
+   "name": "Mechanic",
+   "facility": "training_ground",
+   "sprite": "mechanic",
+   "altitude": 0,
+   "cost": 2000,
+   "move": 3,
+   "role": "Support engineer",
+   "overlaps": "Repair at a base",
+   "mechanic": "At the start of your turn each friendly vehicle next to it regains hit points. Can clear a mine by moving onto or next to a mine tile, which removes it. Unarmed."
+  },
+  {
+   "id": "medic",
+   "name": "Medic",
+   "facility": "training_ground",
+   "sprite": "medic",
+   "altitude": 0,
+   "cost": 2000,
+   "move": 3,
+   "role": "Support healer",
+   "overlaps": "Repair at a base",
+   "mechanic": "At the start of your turn each friendly infantry unit next to it regains hit points. Does not heal vehicles, aircraft or ships. Unarmed, so keep it behind the line."
+  },
+  {
+   "id": "mortar_team",
+   "name": "Mortar Team",
+   "facility": "training_ground",
+   "sprite": "mortar_team",
+   "altitude": 0,
+   "cost": 3000,
+   "move": 2,
+   "role": "Indirect infantry fire",
+   "overlaps": "Artillery",
+   "mechanic": "Indirect attack at range 2-4 (cannot hit adjacent units), and cannot move and fire in the same turn. Carries limited shells. Light damage against vehicles but good against infantry; weak to anything that reaches it."
+  },
+  {
+   "id": "conscript",
+   "name": "Conscript",
+   "facility": "training_ground",
+   "sprite": "conscript",
+   "altitude": 0,
+   "cost": 600,
+   "move": 3,
+   "role": "Cheap infantry",
+   "overlaps": "Soldier",
+   "mechanic": "A cheaper soldier with an old rifle: lower attack than a soldier and no terrain bonus advantage. Can still capture properties. Good for screening and blocking when funds are short."
+  },
+  {
+   "id": "diver",
+   "name": "Diver",
+   "facility": "training_ground",
+   "sprite": "diver",
+   "altitude": 0,
+   "cost": 4500,
+   "move": 4,
+   "role": "Submersible infantry",
+   "overlaps": "Submarine",
+   "water": true,
+   "mechanic": "Moves through water and can dive like a submarine: hidden unless an enemy is adjacent. Harpoon gun attacks adjacent targets only, strong against ships' hulls and other divers, helpless against anything that can shoot it when spotted."
+  },
+  {
+   "id": "gun_turret",
+   "name": "Gun Turret",
+   "facility": "engineer_works",
+   "sprite": "gun_turret",
+   "altitude": 0,
+   "cost": 2000,
+   "move": 0,
+   "role": "Static, anti-infantry",
+   "overlaps": "Soldier, Mech",
+   "mechanic": "A light machine-gun pillbox with range 1-2 that fires at anything on the ground, best against infantry and weak against vehicles (low damage to tanks). It cannot move and has modest armour."
+  },
+  {
+   "id": "cannon_turret",
+   "name": "Cannon Turret",
+   "facility": "engineer_works",
+   "sprite": "cannon_turret",
+   "altitude": 0,
+   "cost": 6000,
+   "move": 0,
+   "role": "Static, anti-vehicle",
+   "overlaps": "Tank, Heavy Tank",
+   "mechanic": "A heavily armoured cannon with range 1-3 that hits ground vehicles hard and infantry only lightly. It has high armour, takes little damage from small arms, and cannot move or hit aircraft."
+  },
+  {
+   "id": "sam_site",
+   "name": "SAM Site",
+   "facility": "engineer_works",
+   "sprite": "sam_site",
+   "altitude": 0,
+   "cost": 5000,
+   "move": 0,
+   "role": "Static, anti-air",
+   "overlaps": "Flak",
+   "mechanic": "Shoots only aircraft, with range 1-4 and heavy damage to fighters, bombers and copters. It cannot attack ground or naval units and is fragile against them."
+  },
+  {
+   "id": "artillery_emplacement",
+   "name": "Artillery Emplacement",
+   "facility": "engineer_works",
+   "sprite": "artillery_emplacement",
+   "altitude": 0,
+   "cost": 7000,
+   "move": 0,
+   "role": "Static, indirect fire",
+   "overlaps": "Artillery",
+   "mechanic": "A fixed howitzer in a sandbagged pit that fires indirectly at range 3-6 with a minimum range of 2, so it cannot hit adjacent enemies. It cannot move at all, even by transport, and is vulnerable to anything that gets close."
+  },
+  {
+   "id": "wall",
+   "name": "Wall",
+   "facility": "engineer_works",
+   "sprite": "wall",
+   "altitude": 0,
+   "cost": 1000,
+   "move": 0,
+   "role": "Static, barrier",
+   "overlaps": "none",
+   "mechanic": "A defensive wall segment that blocks the movement of ground units. It has many hit points and can be destroyed, but it cannot attack."
+  },
+  {
+   "id": "jammer",
+   "name": "Jammer",
+   "facility": "engineer_works",
+   "sprite": "jammer",
+   "altitude": 0,
+   "cost": 8000,
+   "move": 0,
+   "role": "Static support",
+   "overlaps": "Fog of war, Radar-style vision units",
+   "mechanic": "Enemy units within 3 tiles of it can only see adjacent tiles, so fog of war closes in on everything inside the radius. Unarmed and fragile (about the toughness of a recon), so it needs an escort or it will be picked off."
+  },
+  {
+   "id": "auto_factory",
+   "name": "Automated Factory",
+   "facility": "engineer_works",
+   "sprite": "auto_factory",
+   "altitude": 0,
+   "cost": 14000,
+   "move": 0,
+   "role": "Static producer",
+   "overlaps": "Factory, Mech Factory",
+   "mechanic": "Every other turn it spawns a free light robot (a weak walker that cannot capture) on a free adjacent tile, up to 3 alive at once. Immobile and unarmed; it has the toughness of a tank and can be destroyed, or captured by infantry like a normal building."
+  },
+  {
+   "id": "land_mine",
+   "name": "Land Mine",
+   "facility": "engineer_works",
+   "sprite": "land_mine",
+   "altitude": 0,
+   "cost": 400,
+   "move": 0,
+   "role": "Trap",
+   "overlaps": "Artillery (area denial)",
+   "mechanic": "One mine is placed per use. The first ground unit to enter the tile takes about 50% damage and the mine is spent. Invisible to the enemy unless one of their units is adjacent; engineers and mechanics can clear it safely."
+  },
+  {
+   "id": "sea_mine",
+   "name": "Sea Mine",
+   "facility": "engineer_works",
+   "sprite": "sea_mine",
+   "altitude": 0,
+   "cost": 600,
+   "move": 0,
+   "water": true,
+   "role": "Naval trap",
+   "overlaps": "Mine Layer, Submarine (area denial)",
+   "mechanic": "A ship that enters the tile takes about 40% damage and the mine is spent. Hidden unless an enemy unit is adjacent; mine-clearing units can remove it safely."
+  },
+  {
+   "id": "stealth_fighter",
+   "name": "Stealth Fighter",
+   "facility": "airfield",
+   "sprite": "stealth_fighter",
+   "altitude": 0.16,
+   "cost": 16000,
+   "move": 9,
+   "role": "Air superiority",
+   "overlaps": "Fighter, stealth bomber",
+   "mechanic": "Hidden from enemies unless one of them is adjacent. Fires air-to-air missiles at the high air layer with a fighter's punch, range 1, limited ammo. Costs far more than a fighter and has only half its armour, so anything that finds it kills it quickly."
+  },
+  {
+   "id": "torpedo_bomber",
+   "name": "Torpedo Bomber",
+   "facility": "airfield",
+   "sprite": "torpedo_bomber",
+   "altitude": 0.07,
+   "cost": 9000,
+   "move": 7,
+   "role": "Anti-ship strike",
+   "overlaps": "Bomber, destroyer, cruiser",
+   "mechanic": "Flies in the low air layer, so copters and flak can reach it. Its single torpedo hits ships and submarines (surfaced or shallow) very hard, but does little to ground units. 2 ammo; has to return to an airfield to reload."
+  },
+  {
+   "id": "radar_plane",
+   "name": "Radar Plane",
+   "facility": "airfield",
+   "sprite": "radar_plane",
+   "altitude": 0.1,
+   "cost": 11000,
+   "move": 5,
+   "role": "Scout / sight",
+   "overlaps": "Recon, copter, Drone Bay sensors",
+   "mechanic": "Unarmed. Reveals everything within 5 tiles (hidden stealth units and submarines only within 3) and adds that sight to the whole team's fog of war. Slow and fragile: keep it behind a fighter screen."
+  },
+  {
+   "id": "vintage_fighter",
+   "name": "Vintage Fighter",
+   "facility": "airfield",
+   "sprite": "vintage_fighter",
+   "altitude": 0.1,
+   "cost": 5000,
+   "move": 7,
+   "role": "Cheap air cover",
+   "overlaps": "Fighter",
+   "mechanic": "A propeller fighter: costs half a fighter, moves 7 instead of 9 and deals half the damage. Can still attack air units, so a screen of them is a cheap way to deny the sky. Dies quickly to a real fighter."
+  },
+  {
+   "id": "vintage_bomber",
+   "name": "Vintage Bomber",
+   "facility": "airfield",
+   "sprite": "vintage_bomber",
+   "altitude": 0.1,
+   "cost": 6500,
+   "move": 6,
+   "role": "Cheap bombing",
+   "overlaps": "Bomber",
+   "mechanic": "A propeller bomber: about half the price of a bomber, with lower move and half the damage, and it flies lower, so flak, copters and fighters all hit it hard. Good for flooding a front with cheap bombs."
+  },
+  {
+   "id": "aircraft_carrier",
+   "name": "Aircraft Carrier",
+   "facility": "shipyard",
+   "sprite": "aircraft_carrier",
+   "altitude": 0,
+   "cost": 20000,
+   "move": 5,
+   "role": "Air base",
+   "overlaps": "Airfield, Transport Copter",
+   "mechanic": "Carries 2 aircraft: planes can land on it, and each carried plane is refuelled and rearmed at the start of your turn. Only weak guns (a little damage, short range), so it needs an escort.",
+   "water": true
+  },
+  {
+   "id": "gun_boat",
+   "name": "Gun Boat",
+   "facility": "shipyard",
+   "sprite": "gun_boat",
+   "altitude": 0,
+   "cost": 3000,
+   "move": 8,
+   "role": "Patrol",
+   "overlaps": "Destroyer, Recon",
+   "mechanic": "A cheap, very fast patrol boat with a light cannon (ships and ground targets from 1 tile) and a machine gun that hurts infantry. Weak armour: it dies quickly to any proper warship.",
+   "water": true
+  },
+  {
+   "id": "dreadnought",
+   "name": "Dreadnought",
+   "facility": "shipyard",
+   "sprite": "dreadnought",
+   "altitude": 0,
+   "cost": 26000,
+   "move": 3,
+   "role": "Heavy artillery ship",
+   "overlaps": "Battleship",
+   "mechanic": "Four heavy guns with range 2-5 and far more punch than the battleship; it cannot fire after moving. Very thick armour, but slow and costly, and vulnerable to submarines and bombers.",
+   "water": true
   }
  ]
 }

@@ -8,7 +8,7 @@
 // run = 1 while animating (0 when the unit has acted), b / j = bob / jitter in pixels.
 // Coordinates are fractions of the tile size s; +x is forward, +y is down.
 
-const GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238';
+const RED = '#d4442e', GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238';
 const hexToRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
 const mix = (a, b, t) => { const A = hexToRgb(a), B = hexToRgb(b); return '#' + [0, 1, 2].map((i) => Math.round(A[i] + (B[i] - A[i]) * t).toString(16).padStart(2, '0')).join(''); };
 
@@ -97,6 +97,23 @@ const recon = (g, { s, c, dk, w, run, j }) => {
   wheel(g, s, -.19, .2, .08, w, run, 10); wheel(g, s, .19, .2, .08, w, run, 10);
 };
 
+// Rocket launcher: a truck carrying a raised pod of tubes, tipped skyward, a pair of rockets showing at the muzzle.
+const rocketLauncher = (g, { s, c, dk, w, ph, run, j }) => {
+  const jj = j / s;
+  box(g, s, -.36, .03 + jj, .72, .14, 3, dk);
+  box(g, s, .17, -.08 + jj, .19, .17, 3, c); box(g, s, .22, -.05 + jj, .12, .07, 2, GLASS);   // cab
+  box(g, s, -.32, -.02 + jj, .44, .06, 2, c);                                                // flatbed
+  const rec = Math.max(0, Math.sin(w * 1.4 + ph)) * .018 * run;                              // the pod rocks back as if firing
+  g.save(); g.translate(-.2 * s, -.02 * s + j); g.rotate(-.62);   // the pod pivots well back on the bed, clear of the cab
+  box(g, s, -.05 - rec, -.1, .46, .2, 3, dk);                                                // the pod
+  box(g, s, -.02 - rec, -.075, .4, .05, 1, c); box(g, s, -.02 - rec, .025, .4, .05, 1, c);   // two rows of tubes
+  box(g, s, .34 - rec, -.075, .12, .045, 1, STEEL); box(g, s, .34 - rec, .03, .12, .045, 1, STEEL);   // the rockets
+  poly(g, s, [[.46 - rec, -.075], [.52 - rec, -.052], [.46 - rec, -.03]], RED); poly(g, s, [[.46 - rec, .03], [.52 - rec, .052], [.46 - rec, .075]], RED);
+  g.restore();
+  box(g, s, -.225, -.0 + jj, .05, .05, 1, '#3b3b3b');                                        // the pivot
+  wheel(g, s, -.25, .2, .085, w, run, 10); wheel(g, s, -.04, .2, .085, w, run, 10); wheel(g, s, .26, .2, .085, w, run, 10);
+};
+
 const artillery = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s, bell = c === dk ? c : mix(c, dk, .5);
   poly(g, s, [[-.16, .1 + jj], [-.35, .27], [-.3, .29], [-.1, .16 + jj]], dk);              // trail leg with spade
@@ -129,7 +146,7 @@ const flak = (g, { s, c, dk, w, ph, run, j }) => {
 
 // ---- aircraft (plan view, facing right) ----------------------------------------------------------------------
 const copter = (g, { s, c, dk, w, run }) => {
-  stroke(g, s, -.12, .25, .22, .25, 2, INK); stroke(g, s, -.05, .1, -.05, .25, 2, INK); stroke(g, s, .14, .1, .14, .25, 2, INK);
+  stroke(g, s, -.2, .25, .2, .25, 2, INK); stroke(g, s, -.1, .1, -.1, .25, 2, INK); stroke(g, s, .1, .1, .1, .25, 2, INK);   // the skid is centred under the body
   box(g, s, -.44, -.04, .34, .06, 1, dk); box(g, s, -.46, -.16, .05, .22, 1, dk);
   oval(g, s, 0, 0, .24, .15, c); oval(g, s, .12, -.02, .1, .09, GLASS);                       // one cockpit
   g.fillStyle = INK; g.fillRect(s * .22, s * .05, s * .13, s * .03);
@@ -376,7 +393,7 @@ const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o,
 
 export const SPRITES = {
   soldier: trooper('soldier'), marine: trooper('marine'), dinghy: (g, o) => { g.save(); g.scale(.9, .9); dinghy(g, o); g.restore(); }, mech: trooper('mech'), sniper: trooper('sniper'),
-  recon, tank: tank(false), heavy_tank: tank(true), artillery, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
+  recon, tank: tank(false), heavy_tank: tank(true), artillery, rocket_launcher: rocketLauncher, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
    fighter, bomber, stealth_bomber: stealth,
   destroyer: shrunk(destroyer, .88), submarine: shrunk(submarine, .88), cruiser: shrunk(cruiser, .86), battleship: shrunk(battleship, .86),
 };
@@ -392,7 +409,7 @@ const airShadow = (outline) => (g, { s, alt = 0 }) => {
 export const SHADOWS = {
   soldier: ground(.17, .04, .3), marine: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
   recon: ground(.3, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
-  artillery: ground(.29, .045, .285, -.01), flak: ground(.32, .05, .275),
+  artillery: ground(.29, .045, .285, -.01), rocket_launcher: ground(.35, .05, .285), flak: ground(.32, .05, .275),
   copter: airShadow(mirror([[.34, .0], [.2, -.1], [-.1, -.13], [-.2, -.04], [-.46, -.03], [-.46, 0]])),
   transport_copter: airShadow(mirror([[.46, 0], [.4, -.08], [-.4, -.09], [-.48, -.04], [-.48, 0]]).map(([x, y]) => [x * .85, y * .85])),
   fighter: airShadow(mirror([[.42, 0], [.05, -.07], [-.2, -.32], [-.27, -.32], [-.29, -.08], [-.38, -.14], [-.34, -.03], [-.32, 0]])),

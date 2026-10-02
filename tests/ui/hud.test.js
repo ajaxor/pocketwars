@@ -139,11 +139,11 @@ function openBuild(funds, extra = {}) {
 
 test('the build menu has a row per unit with its price, and no details below the list', () => {
   const { rows, byClass, texts } = openBuild(8000);
-  assert.equal(rows().length, 5);
+  assert.equal(rows().length, 6);
   assert.deepEqual(texts(byClass('win-title')), ['Factory']);
   assert.deepEqual(texts(byClass('win-tag')), [], 'the menu does not show the player\'s funds');
-  assert.deepEqual(texts(byClass('build-name')), ['Recon', 'Tank', 'Heavy Tank', 'Artillery', 'Flak']);
-  assert.deepEqual(texts(byClass('build-cost')), ['4,000', '7,000', '10,000', '6,000', '6,000']);
+  assert.deepEqual(texts(byClass('build-name')), ['Recon', 'Tank', 'Heavy Tank', 'Artillery', 'Rocket Launcher', 'Flak']);
+  assert.deepEqual(texts(byClass('build-cost')), ['4,000', '7,000', '10,000', '6,000', '9,000', '6,000']);
   assert.equal(byClass('build-detail').length, 0, 'the extended unit info is gone');
   assert.equal(byClass('btn--primary').length, 0, 'and so is the Build button');
   assert.equal(rows().filter((r) => r.classList.contains('is-picked')).length, 0, 'nothing is pre-selected');

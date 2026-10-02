@@ -2,7 +2,7 @@
   "default": {
     "build": {
       "barracks": ["soldier", "mech", "sniper"],
-      "factory":  ["recon", "tank", "heavy_tank", "artillery", "flak"],
+      "factory":  ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak"],
       "airfield": ["transport_copter", "copter", "fighter", "bomber"],
       "shipyard": ["marine", "destroyer", "submarine", "cruiser", "battleship"]
     },

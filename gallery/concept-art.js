@@ -3,6 +3,11 @@
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 //   SHADOWS[name](g, { s, alt, w, ph, run })
 import { PARTS } from '../src/render/unit-art.js';
+import * as INFANTRY from './concept-art-infantry.js';
+import * as STATIC from './concept-art-static.js';
+import * as GADGETS from './concept-art-gadgets.js';
+import * as AIR from './concept-art-air.js';
+import * as SHIPS from './concept-art-ships.js';
 
 const { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE } = PARTS;
 const BRASS = '#d9b44a', RED = '#d4442e', GREEN = '#46b86a', ORANGE = '#ff9a2e', PANEL = '#2f5fa8';
@@ -22,71 +27,51 @@ const supplyTruck = (g, { s, c, dk, w, run, j }) => {
   wheel(g, s, -.25, .2, .085, w, run, 10); wheel(g, s, -.04, .2, .085, w, run, 10); wheel(g, s, .26, .2, .085, w, run, 10);
 };
 
-// Rocket battery: a truck carrying a raised pod of tubes, tipped skyward, a pair of rockets showing at the muzzle.
-const rocketBattery = (g, { s, c, dk, w, ph, run, j }) => {
-  const jj = j / s;
-  box(g, s, -.36, .03 + jj, .72, .14, 3, dk);
-  box(g, s, .17, -.08 + jj, .19, .17, 3, c); box(g, s, .22, -.05 + jj, .12, .07, 2, GLASS);   // cab
-  box(g, s, -.32, -.02 + jj, .44, .06, 2, c);                                                // flatbed
-  const rec = Math.max(0, Math.sin(w * 1.4 + ph)) * .018 * run;                              // the pod rocks back as if firing
-  g.save(); g.translate(-.1 * s, -.02 * s + j); g.rotate(-.62);
-  box(g, s, -.05 - rec, -.1, .46, .2, 3, dk);                                                // the pod
-  box(g, s, -.02 - rec, -.075, .4, .05, 1, c); box(g, s, -.02 - rec, .025, .4, .05, 1, c);   // two rows of tubes
-  box(g, s, .34 - rec, -.075, .12, .045, 1, STEEL); box(g, s, .34 - rec, .03, .12, .045, 1, STEEL);   // the rockets
-  poly(g, s, [[.46 - rec, -.075], [.52 - rec, -.052], [.46 - rec, -.03]], RED); poly(g, s, [[.46 - rec, .03], [.52 - rec, .052], [.46 - rec, .075]], RED);
-  g.restore();
-  box(g, s, -.12, -.0 + jj, .05, .05, 1, '#3b3b3b');                                         // the pivot
-  wheel(g, s, -.25, .2, .085, w, run, 10); wheel(g, s, -.04, .2, .085, w, run, 10); wheel(g, s, .26, .2, .085, w, run, 10);
-};
-
 // ---- Hover Lab --------------------------------------------------------------------------------------------------------------
-// A hovercraft rides on an air cushion: a dark flexible skirt along the bottom, puffs of dust or spray blowing out under it, and a
-// ducted fan at the back. The three hulls differ in size, not in how they hover.
-const skirt = (g, s, x0, x1, y, w, run) => {
-  box(g, s, x0, y, x1 - x0, .075, .035 * s, '#2b2f36');
-  for (let i = 0; i < 5; i++) {                                                              // dust blowing out from under the skirt
-    const f = (w * 1.3 + i * .21) % 1, x = x0 + (i / 4) * (x1 - x0) + (i % 2 ? 0 : -.01);
-    oval(g, s, x - f * .05, y + .085 - f * .02, .035 * (1 - f * .4), .016, `rgba(255,255,255,${(run ? .38 * (1 - f) : .2).toFixed(2)})`);
+// Hover craft ride on an anti-gravity field, not a fan or a skirt: a row of dark emitter pods under the hull, each with a glowing
+// lens that pulses, a faint cone of light down to the ground, and a few motes of light drifting up through the field.
+const GLOW = '#7fe8ff';
+const antigrav = (g, s, x0, x1, y, w, run, n = 3) => {
+  for (let i = 0; i < n; i++) {
+    const x = x0 + (x1 - x0) * (n === 1 ? .5 : i / (n - 1)), pulse = run ? .65 + .35 * Math.sin(w * 7 + i * 1.7) : .8;
+    poly(g, s, [[x - .05, y + .03], [x + .05, y + .03], [x + .09, y + .115], [x - .09, y + .115]], `rgba(127,232,255,${(.2 * pulse).toFixed(2)})`);   // the cone of light
+    box(g, s, x - .06, y - .01, .12, .05, .02 * s, '#2b2f36');                                  // emitter housing
+    oval(g, s, x, y + .045, .05, .017, `rgba(127,232,255,${pulse.toFixed(2)})`);                // glowing lens
+    oval(g, s, x, y + .045, .025, .008, `rgba(255,255,255,${(.9 * pulse).toFixed(2)})`);
+    const f = (w * 1.1 + i * .37) % 1;                                                          // a mote rising through the field
+    if (run) disc(g, s, x + Math.sin(f * 6 + i) * .025, y + .12 - f * .08, .007, `rgba(200,250,255,${(.8 * (1 - f)).toFixed(2)})`);
   }
-};
-const fan = (g, s, x, y, r, w, run, col) => {                                                // a ducted fan seen from the side: a ring and a flickering blade
-  box(g, s, x - .035, y - r, .07, r * 2, 2, col);
-  const l = (run ? Math.abs(Math.cos(w * 24)) : .6) * r * .9 + r * .1;
-  stroke(g, s, x, y - l, x, y + l, 2.5, INK);
 };
 
 const hoverScout = (g, { s, c, dk, w, run, j }) => {
   const jj = j / s;
-  skirt(g, s, -.3, .34, .17 + jj, w, run);
+  antigrav(g, s, -.22, .24, .15 + jj, w, run, 2);
   poly(g, s, [[-.32, .17 + jj], [-.3, .02 + jj], [-.1, -.05 + jj], [.14, -.05 + jj], [.4, .07 + jj], [.36, .17 + jj]], c);   // low wedge hull
   poly(g, s, [[.14, -.05 + jj], [.4, .07 + jj], [.3, .07 + jj], [.1, -.0 + jj]], mix(c, dk, .4));
   oval(g, s, .06, -.06 + jj, .1, .055, GLASS);                                               // bubble canopy
   box(g, s, -.12, -.2 + jj, .03, .14, 1, STEEL); disc(g, s, -.105, -.21 + jj, .03, dk);      // mast with a small sensor dish
-  fan(g, s, -.36, -.0 + jj, .12, w, run, dk);
 };
 
 const hoverTank = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s;
-  skirt(g, s, -.36, .36, .17 + jj, w, run);
+  antigrav(g, s, -.26, .26, .15 + jj, w, run, 3);
   box(g, s, -.36, -.02 + jj, .72, .2, 5, c);                                                 // wide hull
   poly(g, s, [[.36, .0 + jj], [.4, .1 + jj], [.36, .17 + jj]], c);                           // sloped nose
   box(g, s, -.1, -.17 + jj, .28, .16, 4, dk);                                                // turret
   const rec = Math.max(0, Math.sin(w * 1.6 + ph)) * .012 * run;
   g.fillStyle = INK; g.fillRect((.16 - rec) * s, (-.12 + jj) * s, s * .28, s * .04);         // gun
   box(g, s, -.02, -.2 + jj, .08, .05, 1, GLASS);                                             // commander's hatch
-  fan(g, s, -.4, .03 + jj, .12, w, run, dk); fan(g, s, -.4, .12 + jj, .06, w, run, dk);
 };
 
 const hoverCarrier = (g, { s, c, dk, w, run, j }) => {
   const jj = j / s;
-  skirt(g, s, -.4, .4, .18 + jj, w, run);
+  antigrav(g, s, -.3, .3, .16 + jj, w, run, 4);
   box(g, s, -.4, -.14 + jj, .8, .33, 6, c);                                                  // long box hull
   poly(g, s, [[.4, -.1 + jj], [.4, .19 + jj], [.28, .19 + jj], [.28, -.1 + jj]], dk);       // bow ramp, folded up
   box(g, s, .3, -.07 + jj, .06, .22, 1, mix(dk, '#ffffff', .2));
   for (let i = 0; i < 4; i++) box(g, s, -.3 + i * .15, -.06 + jj, .09, .09, 2, GLASS);       // troop windows
   box(g, s, -.4, -.14 + jj, .8, .04, 2, dk);                                                 // roofline stripe
   box(g, s, .05, -.2 + jj, .13, .07, 2, dk); box(g, s, .08, -.19 + jj, .08, .04, 1, GLASS); // cockpit bump
-  fan(g, s, -.44, .0 + jj, .15, w, run, dk);
 };
 
 // ---- Mech Factory -----------------------------------------------------------------------------------------------------------
@@ -131,17 +116,27 @@ const shimmer = (g, s, w, run, clipPts, x0 = -.4, x1 = .4) => {
   g.restore();
 };
 
+// Phantom tank: a low faceted wedge like a stealth jet on the ground. Long side armour hangs down over the treads (only a sliver of
+// track shows under it), the upper hull is a stack of flat planes with no turret, and the gun sits in a faceted mantlet in the nose.
 const phantomTank = (g, { s, c, dk, w, run, j }) => {
-  const jj = j / s;
-  g.save(); g.globalAlpha = .88;
-  treads(g, s, -.34, .34, .1 + jj, .17, w, run);
-  const hull = [[-.34, .1 + jj], [-.3, -.02 + jj], [-.12, -.12 + jj], [.14, -.12 + jj], [.36, .0 + jj], [.4, .1 + jj]];
-  poly(g, s, hull, mix(c, dk, .35));
-  poly(g, s, [[-.12, -.12 + jj], [.14, -.12 + jj], [.36, .0 + jj], [-.3, -.02 + jj]], mix(c, '#ffffff', .12));   // the lit top plane
-  poly(g, s, [[-.3, -.02 + jj], [.36, .0 + jj], [.4, .1 + jj], [-.34, .1 + jj]], dk);        // the dark side plane
-  box(g, s, .08, -.09 + jj, .1, .03, 1, GLASS);                                              // a slit sensor
-  g.fillStyle = INK; g.fillRect(s * .3, (-.04 + jj) * s, s * .17, s * .035);                 // gun, barely out of the nose
-  shimmer(g, s, w, run, hull);
+  const jj = j / s, y = (v) => v + jj;
+  g.save(); g.globalAlpha = .9;
+  treads(g, s, -.36, .36, y(.08), .13, w, run);                                              // the tracks, mostly hidden
+  const hull = [[-.4, y(.06)], [-.3, y(-.06)], [-.1, y(-.15)], [.1, y(-.15)], [.34, y(-.04)], [.46, y(.04)], [.44, y(.08)]];
+  poly(g, s, hull, mix(c, dk, .3));                                                          // silhouette
+  poly(g, s, [[-.3, y(-.06)], [-.1, y(-.15)], [.1, y(-.15)], [.04, y(-.06)]], mix(c, '#ffffff', .16));   // rear top plane, lit
+  poly(g, s, [[.1, y(-.15)], [.34, y(-.04)], [.14, y(-.02)], [.04, y(-.06)]], mix(c, '#ffffff', .05));   // glacis plane
+  poly(g, s, [[-.4, y(.06)], [-.3, y(-.06)], [.04, y(-.06)], [.14, y(-.02)], [.34, y(-.04)], [.46, y(.04)]], mix(c, dk, .5));   // dark flank band
+  poly(g, s, [[-.1, y(-.15)], [.1, y(-.15)], [.04, y(-.06)], [-.04, y(-.06)]], mix(c, dk, .15));   // raised ridge
+  box(g, s, .13, y(-.095), .1, .025, 1, GLASS);                                              // a slit sensor
+  g.fillStyle = INK; g.fillRect(s * .36, y(.0) * s, s * .115, s * .03);                     // gun, just out of the nose
+  poly(g, s, [[.3, y(-.005)], [.38, y(-.03)], [.4, y(.045)], [.3, y(.04)]], mix(dk, '#ffffff', .1));   // faceted mantlet
+  // low-riding side armour: long plates with sharp ends, down to a sliver above the ground
+  const skirt = [[-.41, y(.19)], [-.36, y(.06)], [.3, y(.06)], [.44, y(.13)], [.4, y(.19)]];
+  poly(g, s, skirt, dk);
+  poly(g, s, [[-.36, y(.06)], [.3, y(.06)], [.44, y(.13)], [.4, y(.19)], [.36, y(.19)], [.3, y(.11)], [-.3, y(.11)]], mix(c, dk, .3));   // lit upper edge of the plate
+  for (const x of [-.22, .0, .2]) stroke(g, s, x, y(.11), x, y(.19), 1.2, mix(dk, '#000000', .35));   // plate seams
+  shimmer(g, s, w, run, hull.concat([[.4, y(.19)], [-.42, y(.19)]]));
   g.restore();
 };
 
@@ -361,8 +356,8 @@ const repairDrone = (g, { s, c, dk, w, run }) => {
   g.restore();
 };
 
-export const SPRITES = {
-  supply_truck: supplyTruck, rocket_battery: rocketBattery,
+const OWN_SPRITES = {
+  supply_truck: supplyTruck,
   hover_scout: hoverScout, hover_tank: hoverTank, hover_carrier: hoverCarrier,
   strider, titan,
   phantom_tank: phantomTank, stealth_copter: (g, o) => { g.save(); g.scale(.9, .9); stealthCopter(g, o); g.restore(); }, spy,
@@ -384,8 +379,8 @@ const airShadow = (outline, k = 1) => (g, { s, alt = 0 }) => {
 };
 const bar = (hw) => mirror([[hw, 0], [hw * .8, -.07], [-hw * .8, -.07], [-hw, 0]]);
 
-export const SHADOWS = {
-  supply_truck: ground(.35, .05, .285), rocket_battery: ground(.35, .05, .285),
+const OWN_SHADOWS = {
+  supply_truck: ground(.35, .05, .285),
   hover_scout: ground(.34, .045, .29), hover_tank: ground(.38, .05, .29), hover_carrier: ground(.42, .05, .29),
   strider: ground(.24, .045, .295), titan: ground(.34, .055, .295),
   phantom_tank: ground(.34, .05, .275), stealth_copter: airShadow(mirror([[.4, .0], [.2, -.1], [-.1, -.12], [-.4, -.06], [-.45, 0]]), .9), spy: ground(.18, .04, .3),
@@ -396,3 +391,7 @@ export const SHADOWS = {
   abyss_sub: none, mine_layer: none, torpedo_drone: none,
   swarm_drones: airShadow(mirror([[.3, 0], [.15, -.08], [-.2, -.08], [-.3, 0]])), repair_drone: airShadow(bar(.3)),
 };
+
+// the new concept groups live in their own files (infantry, static defences, gadgets, aircraft, ships)
+export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...GADGETS.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES };
+export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...GADGETS.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS };

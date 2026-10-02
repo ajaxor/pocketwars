@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Renders the experimental concept units (gallery/concept-art.js, described in gallery/concepts.json) to a PNG contact sheet.
-//   node concepts.mjs [--size 150] [--bg plain|sea|road] [--only id,id] [--t 0.35] [--moving] [--out file.png]
+//   node concepts.mjs [--art gallery/concept-art-x.js --data gallery/parts/x.json] [--size 150] [--bg plain|sea|road] [--only id,id] [--t 0.35] [--moving] [--out file.png]
 import { createCanvas } from '@napi-rs/canvas';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
@@ -10,8 +10,8 @@ import { drawFrameAlpha } from '../../src/render/unit-frame.js';
 
 const argv = process.argv.slice(2), arg = {};
 for (let i = 0; i < argv.length; i++) if (argv[i].startsWith('--')) { const v = argv[i + 1]; if (v === undefined || v.startsWith('--')) arg[argv[i].slice(2)] = true; else { arg[argv[i].slice(2)] = v; i++; } }
-const mod = await import(pathToFileURL(path.join(REPO, 'gallery/concept-art.js')).href);
-const data = JSON.parse(readFileSync(path.join(REPO, 'gallery/concepts.json'), 'utf8'));
+const mod = await import(pathToFileURL(path.join(REPO, arg.art || 'gallery/concept-art.js')).href);
+const data = JSON.parse(readFileSync(path.join(REPO, arg.data || 'gallery/concepts.json'), 'utf8'));
 const S = Number(arg.size || 150), cols = Number(arg.cols || 5), bg = arg.bg || 'plain', t = Number(arg.t ?? .35);
 const only = typeof arg.only === 'string' ? arg.only.split(',') : null;
 const list = data.units.filter((u) => !only || only.includes(u.id));
@@ -22,7 +22,7 @@ list.forEach((u, i) => {
   FACTION_IDS.slice(0, 2).forEach((fid, fi) => {
     const x = pad + (((i % cols) * 2) + fi) * (S + pad), y = pad + Math.floor(i / cols) * (S + pad);
     const f = factions[fid];
-    const water = ['mine_layer', 'torpedo_drone', 'abyss_sub'].includes(u.id);
+    const water = !!u.water;
     paintTile(g, arg.bg ? bg : water ? 'sea' : 'plain', x, y, S);
     g.save(); g.translate(x + S / 2, y + S / 2);
     drawFrameAlpha(g, mod, u.sprite, { s: S, c: f.color, dk: f.dark, alt: u.altitude || 0, w: t, ph: i * .9, run: 1, moving: !!arg.moving, make }, 1);
@@ -47,7 +47,7 @@ if (arg.check) {   // bounding box of every body (and its shadow) as a fraction 
     const alt = (u.altitude || 0), bt = b ? b.t - alt : 0, bb2 = b ? b.b - alt : 0;
     const notes = [];
     if (b && (b.l < -.5 || b.r > .5 || bt < -.5 || bb2 > .5)) notes.push('OVERFLOWS (after lift)');
-    if (!sh && !['abyss_sub', 'mine_layer', 'torpedo_drone'].includes(u.id)) notes.push('no shadow');
+    if (!sh && !u.water) notes.push('no shadow');
     console.log(u.id.padEnd(15), b ? `l${f(b.l)} r${f(b.r)} t${f(b.t)} b${f(b.b)}` : 'draws nothing', notes.join(', '));
   }
 }

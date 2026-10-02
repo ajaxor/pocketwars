@@ -70,7 +70,7 @@
     "name": "Factory",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] }, "blocksLineOfSight": 2 },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] }, "resupply": { "range": 1, "categories": ["vehicle"] }, "blocksLineOfSight": 2 },
     "render": { "building": "factory" }
   },
   "barracks": {

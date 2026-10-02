@@ -103,6 +103,19 @@
     "attributes": { "indirect": true },
     "render": { "sprite": "artillery", "attackFx": "arc" }
   },
+  "rocket_launcher": {
+    "name": "Rocket Launcher",
+    "category": "vehicle",
+    "cost": 9000,
+    "move": 4,
+    "moveClass": "wheels",
+    "layer": "ground",
+    "weapons": ["rockets"],
+    "toughness": 1,
+    "armor": 0.45,
+    "attributes": { "indirect": true, "ammo": { "max": 3, "low": 1, "cost": 600 } },
+    "render": { "sprite": "rocket_launcher", "attackFx": "arc" }
+  },
   "flak": {
     "name": "Flak",
     "category": "vehicle",

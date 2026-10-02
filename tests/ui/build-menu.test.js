@@ -16,8 +16,8 @@ test('a factory lists the vehicles in menu order with what the player can and ca
   const m = buildMenuModel(game, 0, f.x, f.y);
   assert.equal(m.title, 'Factory');
   assert.equal(m.funds, 8000);
-  assert.deepEqual(m.options.map((o) => o.id), ['recon', 'tank', 'heavy_tank', 'artillery', 'flak']);
-  assert.deepEqual(m.options.map((o) => o.affordable), [true, true, false, true, true]);
+  assert.deepEqual(m.options.map((o) => o.id), ['recon', 'tank', 'heavy_tank', 'artillery', 'rocket_launcher', 'flak']);
+  assert.deepEqual(m.options.map((o) => o.affordable), [true, true, false, true, false, true]);
   const heavy = m.options.find((o) => o.id === 'heavy_tank');
   assert.equal(heavy.missing, 2000);
   assert.equal(m.options[0].missing, 0);
