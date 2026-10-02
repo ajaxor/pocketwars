@@ -8,14 +8,14 @@ import { buildOptions, buildProblem, cheapestBuildableCost, menuFor } from '../.
 import { planBuild, playTurn } from '../../src/engine/ai.js';
 import { Game } from '../../src/engine/game.js';
 import { loadMap, loadRegistry } from '../../src/data/loader.js';
-import { withLeaders } from '../../src/data/formation.js';
+import { placeStart, withLeaders } from '../../src/data/formation.js';
 import { buildMenuModel } from '../../src/ui/build-menu.js';
 
 const LAB = { name: 'Lab', defense: 3, moveCost: { foot: 1, wheel: 1, air: 1 }, attributes: { property: { income: 1000, capturePoints: 20, repair: 2, builds: ['ground'] } }, render: { base: '#86b95c' } };
 const legend = { ...LEGEND, n: { terrain: 'base' }, l: { terrain: 'lab', owner: 0 }, L: { terrain: 'lab', owner: 1 } };
 const units = { a: { cost: 1000 }, b: { cost: 3000 }, c: { cost: 2000, category: 'special' } };
 const loadouts = {
-  default: { build: { base: ['a'] }, start: [] },
+  default: { build: { base: ['a'] }, start: {} },
   leaders: { x: { build: { base: ['b'] } }, y: {}, z: { build: { base: ['b', 'c'] } } },
 };
 const players = (l0, l1, funds = 5000) => [
@@ -104,13 +104,13 @@ test('two AI teams with different kits build only what their menus allow, over a
   const base = await loadRegistry(readData);
   const custom = JSON.parse(JSON.stringify(await readData('loadouts.json')));
   custom.leaders.ada = { build: { barracks: ['soldier'], factory: ['tank'] } };
-  custom.leaders.vex = { build: { barracks: ['sniper', 'mech'], factory: ['artillery', 'recon'] }, start: [{ unit: 'soldier', at: [0, 1] }] };
+  custom.leaders.vex = { build: { barracks: ['sniper', 'mech'], factory: ['artillery', 'recon'] }, start: { hq: [{ unit: 'soldier', at: [0, 1] }], barracks: [], factory: [], airfield: [] } };
   const registry = await loadRegistry(async (p) => (p === 'loadouts.json' ? custom : readData(p)));
   const classic = await loadMap(readData, registry, 'classic');
   const rich = { ...classic, players: classic.players.map((p) => ({ ...p, controller: 'ai', funds: 40000 })) };
   const g = new Game(registry, withLeaders(rich, registry, ['ada', 'vex']));
-  assert.equal(g.state.units.filter((u) => u.owner === 1).length, 1, 'vex starts with the one soldier her kit gives');
-  assert.equal(g.state.units.filter((u) => u.owner === 0).length, base.loadoutFor('ada').start.length);
+  assert.equal(g.state.units.filter((u) => u.owner === 1).length, 1, 'vex starts with the one soldier her kit gives (no sets for her factories)');
+  assert.equal(g.state.units.filter((u) => u.owner === 0).length, placeStart(classic, base, 0, base.loadoutFor('ada').start).units.length);
 
   const built = { 0: { barracks: new Set(), factory: new Set() }, 1: { barracks: new Set(), factory: new Set() } };
   for (let turn = 0; turn < 24 && !g.isOver; turn++) {

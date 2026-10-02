@@ -2,10 +2,16 @@
 //
 //   hqOf(map, registry, owner)                    the player's HQ tile { x, y } (else any property they own, else null)
 //   frontOf(map, registry, owner, hq)             which way is "forward": [dx, dy], one of the four directions, toward the enemy
-//   placeFormation(map, registry, owner, start, taken)   where a kit's `start` formation goes: { units, hq, front, moved, skipped } or null
+//   placeFormation(map, registry, owner, list, taken, origin)   where one formation (a list of { unit, at }) goes around `origin`
+//                                                 (default: the HQ): { units, hq, front, moved, skipped } or null
+//   placeStart(map, registry, owner, start, taken)   all of a kit's `start`: the HQ set, then a set around every production building
+//                                                 the player owns whose type the kit lists: { units, sites, moved, skipped } or null
 //   withLeaders(map, registry, leaders)           a copy of the map in which player i fights with leaders[i] (an id or null)
 //
-// THE FORMATION. A kit's `start` (data/loadouts.json) lists units with an offset [side, forward] from the HQ. "Forward" is the
+// THE START. A kit's `start` (data/loadouts.json) is { hq: [...], barracks: [...], factory: [...], ... }: one formation around the
+// HQ, and one around EACH production building of that type the player owns (two factories get two copies of the factory set).
+// Sets are placed in this order: the HQ's, then buildings in reading order. A set is a list of units with an offset [side, forward]
+// from its building. "Forward" is the
 // direction of the enemy (the average of the other players' HQs, snapped to north, south, east or west) and "side" is toward the
 // right hand of a player facing that way, so the same formation works for a player at the top, bottom, left or right of a map. The
 // order of the list is the order the units are placed in: the first one gets its spot first.
@@ -86,15 +92,15 @@ function regionOf(map, registry, hq, moveClass) {
  * units are placed. Returns null when the player has no HQ (and no property) to build around.
  * @returns {{units:{type:string, owner:number, x:number, y:number}[], hq:{x:number,y:number}, front:number[], moved:number, skipped:string[]} | null}
  */
-export function placeFormation(map, registry, owner, start, taken = new Set()) {
-  const hq = hqOf(map, registry, owner);
+export function placeFormation(map, registry, owner, list, taken = new Set(), origin = hqOf(map, registry, owner)) {
+  const hq = origin;
   if (!hq) return null;
   const [fx, fy] = frontOf(map, registry, owner, hq);
   const [rx, ry] = [-fy, fx];   // the right hand of someone facing forward (y grows downward)
   const regions = new Map();
   const units = [], skipped = [];
   let moved = 0;
-  for (const { unit, at: [side, ahead] } of start) {
+  for (const { unit, at: [side, ahead] } of list) {
     const { moveClass } = registry.unit(unit);
     if (!regions.has(moveClass)) regions.set(moveClass, regionOf(map, registry, hq, moveClass));
     const region = regions.get(moveClass);
@@ -121,9 +127,36 @@ export function placeFormation(map, registry, owner, start, taken = new Set()) {
 }
 
 /**
+ * Place all of a kit's starting units for `owner`: the `hq` set around their HQ, and each other set around every building the
+ * player owns of that terrain type. Returns null when the player has no HQ (and no property) to build around.
+ * @returns {{units:object[], sites:{site:string, x:number, y:number, placed:number}[], moved:number, skipped:string[]} | null}
+ */
+export function placeStart(map, registry, owner, start, taken = new Set()) {
+  const hq = hqOf(map, registry, owner);
+  if (!hq) return null;
+  const sites = [];
+  if (start.hq?.length) sites.push({ site: 'hq', ...hq, list: start.hq });
+  for (let y = 0; y < map.height; y++) {
+    for (let x = 0; x < map.width; x++) {
+      const list = map.owners[y][x] === owner ? start[map.terrain[y][x]] : null;
+      if (list?.length && !(x === hq.x && y === hq.y)) sites.push({ site: map.terrain[y][x], x, y, list });
+    }
+  }
+  const out = { units: [], sites: [], moved: 0, skipped: [] };
+  for (const { site, x, y, list } of sites) {
+    const r = placeFormation(map, registry, owner, list, taken, { x, y });
+    out.units.push(...r.units);
+    out.moved += r.moved;
+    out.skipped.push(...r.skipped);
+    out.sites.push({ site, x, y, placed: r.units.length });
+  }
+  return out;
+}
+
+/**
  * A copy of `map` (frozen) in which player i fights with the leader leaders[i] (an id from the registry, or null for none). Their
- * build menus follow the leader's loadout, and their starting units are the loadout's formation around their HQ instead of the
- * units the map file gives them.
+ * build menus follow the leader's loadout, and their starting units are the loadout's sets around their HQ and factories instead
+ * of the units the map file gives them.
  */
 export function withLeaders(map, registry, leaders) {
   const placeable = leaders.map((id, owner) => (id && hqOf(map, registry, owner) ? id : null));
@@ -131,7 +164,7 @@ export function withLeaders(map, registry, leaders) {
   const taken = new Set(kept.map((u) => key(u.x, u.y)));
   const units = [...kept];
   placeable.forEach((id, owner) => {
-    if (id) units.push(...placeFormation(map, registry, owner, registry.loadoutFor(id).start, taken).units);
+    if (id) units.push(...placeStart(map, registry, owner, registry.loadoutFor(id).start, taken).units);
   });
   const players = map.players.map((p, i) => (leaders[i] ? { ...p, leader: leaders[i] } : { ...p }));
   return deepFreeze({ ...map, players, units });

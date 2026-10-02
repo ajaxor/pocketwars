@@ -1,10 +1,10 @@
 // Loads every data file and every map in data/maps/index.json and reports all problems. Exit code 1 on error.
 //   npm run validate
-// Also checks that each leader's whole starting formation can be placed on each map (see src/data/formation.js).
+// Also checks that each leader's starting units can be placed on each map (see src/data/formation.js).
 import { readData } from '../tests/helpers/node-io.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../src/data/loader.js';
 import { loadCampaign } from '../src/data/campaign.js';
-import { placeFormation } from '../src/data/formation.js';
+import { placeStart } from '../src/data/formation.js';
 
 let failed = false;
 try {
@@ -21,11 +21,11 @@ try {
       const map = await loadMap(readData, registry, id);
       if (map.id !== id) throw new Error(`file declares id "${map.id}" but is indexed as "${id}"`);
       console.log(`map ok: ${id} (${map.width}x${map.height}, ${map.players.length} players, ${map.units.length} units)`);
-      // every leader on every team: the formation must fit (nobody skipped), however many units are pushed off their spot
+      // every leader on every team: every set must fit (nobody skipped), however many units are pushed off their spot
       const unplaced = [];
       for (const leader of registry.leaderIds) {
         map.players.forEach((_, owner) => {
-          const r = placeFormation(map, registry, owner, registry.loadoutFor(leader).start);
+          const r = placeStart(map, registry, owner, registry.loadoutFor(leader).start);
           if (!r) unplaced.push(`${leader} on team ${owner + 1}: no HQ or property to build around`);
           else if (r.skipped.length) unplaced.push(`${leader} on team ${owner + 1}: no room for ${r.skipped.join(', ')}`);
         });

@@ -6,16 +6,28 @@
       "airfield": ["transport_copter", "copter", "fighter", "bomber"],
       "shipyard": ["marine", "destroyer", "submarine", "cruiser", "battleship"]
     },
-    "start": [
-      { "unit": "tank",      "at": [0, 1] },
-      { "unit": "mech",      "at": [-1, 1] },
-      { "unit": "sniper",    "at": [1, 1] },
-      { "unit": "soldier",   "at": [-2, 1] },
-      { "unit": "soldier",   "at": [2, 1] },
-      { "unit": "recon",     "at": [-1, 2] },
-      { "unit": "soldier",   "at": [1, 2] },
-      { "unit": "artillery", "at": [0, -1] }
-    ]
+    "start": {
+      "hq": [
+        { "unit": "mech",      "at": [-1, 1] },
+        { "unit": "sniper",    "at": [1, 1] },
+        { "unit": "soldier",   "at": [0, 1] }
+      ],
+      "barracks": [
+        { "unit": "soldier",   "at": [-1, 1] },
+        { "unit": "soldier",   "at": [1, 1] }
+      ],
+      "factory": [
+        { "unit": "tank",      "at": [0, 1] },
+        { "unit": "recon",     "at": [1, 1] },
+        { "unit": "artillery", "at": [0, -1] }
+      ],
+      "airfield": [
+        { "unit": "copter",    "at": [0, 1] }
+      ],
+      "shipyard": [
+        { "unit": "destroyer", "at": [0, 1] }
+      ]
+    }
   },
   "leaders": {
     "harlan": {},

@@ -210,8 +210,11 @@ export const MAX_START_UNITS = 24;
  * loadouts.json (optional): what a leader brings to a battle. `default` is the standard kit, used by any leader that does not
  * override a part of it; `leaders` has one entry per playable leader id. A kit has two parts:
  *   build  { <terrain id>: [unit ids] }       the menu of that production building (replaces what its `builds` categories give)
- *   start  [{ unit, at: [side, forward] }]    the starting formation, as tile offsets from the HQ (see src/data/formation.js)
- * A leader entry may hold either part, both or neither ({}): a part it leaves out is the default's.
+ *   start  { hq | <terrain id>: [{ unit, at: [side, forward] }] }   starting units: one set around the HQ, and one set around EACH
+ *          production building of that type the player owns (so two factories get two copies); offsets from that building (see
+ *          src/data/formation.js)
+ * A leader entry may hold either part, both or neither ({}): a part it leaves out is the default's (inside `build` and `start`, a building it names replaces just that building's list;
+ * an empty start list means none).
  */
 export function validateLoadouts(loadouts, units, terrain, problems) {
   if (loadouts === undefined) return;
@@ -240,20 +243,29 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
   };
 
   const checkStart = (start, where) => {
-    if (!Array.isArray(start)) return problems.push(`${where}: start must be an array of { unit, at } entries`);
-    if (start.length > MAX_START_UNITS) problems.push(`${where}: start has more than ${MAX_START_UNITS} units`);
-    const spots = new Set();
-    start.forEach((s, i) => {
-      const at = `${where}: start[${i}]`;
-      if (!isObj(s)) return problems.push(`${at} must be an object like { "unit": "tank", "at": [0, 1] }`);
-      for (const k of Object.keys(s)) if (k !== 'unit' && k !== 'at') problems.push(`${at}: unknown key "${k}"`);
-      if (!isObj(units[s.unit])) problems.push(`${at}: unknown unit "${s.unit}"`);
-      if (!Array.isArray(s.at) || s.at.length !== 2 || !s.at.every(Number.isInteger)) { problems.push(`${at}: at must be [side, forward] whole numbers`); return; }
-      if (s.at[0] === 0 && s.at[1] === 0) problems.push(`${at}: [0, 0] is the HQ itself`);
-      const key = s.at.join(',');
-      if (spots.has(key)) problems.push(`${at}: another unit already has the spot [${key}]`);
-      spots.add(key);
-    });
+    if (!isObj(start)) return problems.push(`${where}: start must be an object keyed by "hq" or a building (terrain) id`);
+    for (const [site, list] of Object.entries(start)) {
+      const here = `${where}: start.${site}`;
+      if (site !== 'hq') {
+        const t = terrain[site];
+        const builds = isObj(t) && isObj(t.attributes) && isObj(t.attributes.property) ? t.attributes.property.builds : null;
+        if (!Array.isArray(builds) || !builds.length) { problems.push(`${here}: "${site}" is neither "hq" nor a production building`); continue; }
+      }
+      if (!Array.isArray(list)) { problems.push(`${here} must be an array of { unit, at } entries`); continue; }
+      if (list.length > MAX_START_UNITS) problems.push(`${here} has more than ${MAX_START_UNITS} units`);
+      const spots = new Set();
+      list.forEach((s, i) => {
+        const at = `${here}[${i}]`;
+        if (!isObj(s)) return problems.push(`${at} must be an object like { "unit": "tank", "at": [0, 1] }`);
+        for (const k of Object.keys(s)) if (k !== 'unit' && k !== 'at') problems.push(`${at}: unknown key "${k}"`);
+        if (!isObj(units[s.unit])) problems.push(`${at}: unknown unit "${s.unit}"`);
+        if (!Array.isArray(s.at) || s.at.length !== 2 || !s.at.every(Number.isInteger)) { problems.push(`${at}: at must be [side, forward] whole numbers`); return; }
+        if (s.at[0] === 0 && s.at[1] === 0) problems.push(`${at}: [0, 0] is the building itself`);
+        const key = s.at.join(',');
+        if (spots.has(key)) problems.push(`${at}: another unit already has the spot [${key}]`);
+        spots.add(key);
+      });
+    }
   };
 
   const checkKit = (kit, where, whole) => {

@@ -5,6 +5,7 @@ import { readData } from '../helpers/node-io.js';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../../src/data/loader.js';
 import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction } from '../../src/data/skirmish.js';
+import { placeStart } from '../../src/data/formation.js';
 import { loadCampaign } from '../../src/data/campaign.js';
 import { SkirmishScreen } from '../../src/ui/skirmish-screen.js';
 import { TitleScreen } from '../../src/ui/title-screen.js';
@@ -139,14 +140,15 @@ test('Random rolls a leader no other team has, unless there is no other choice',
   assert.deepEqual(resolveLeaders([{}, { leader: null }, { leader: 'x' }], ['x'], seq(0)), [null, null, 'x']);
 });
 
+const armyOf = (map, owner, leader) => placeStart(map, registry, owner, registry.loadoutFor(leader).start).units;
+
 test('applying settings with leaders: their units, build menus and a random pick, all in a frozen copy', () => {
   const s = defaultSkirmish(classic, ids);
   s.players[0].leader = 'ada';
   const m = applySkirmish(classic, s, registry, seq(0));
   assert.deepEqual(m.players.map((p) => p.leader), ['ada', 'harlan'], 'the computer rolled the first leader that is not ada');
   assert.ok(Object.isFrozen(m) && Object.isFrozen(m.players[1]) && Object.isFrozen(m.units));
-  const start = registry.loadoutFor('ada').start;
-  for (const o of [0, 1]) assert.deepEqual(m.units.filter((u) => u.owner === o).map((u) => u.type).sort(), start.map((x) => x.unit).sort(), `team ${o + 1} has the leader's army`);
+  for (const o of [0, 1]) assert.deepEqual(m.units.filter((u) => u.owner === o).map((u) => u.type).sort(), armyOf(classic, o, 'ada').map((x) => x.type).sort(), `team ${o + 1} has the leader's army`);
   assert.notDeepEqual(m.units, classic.units, 'the map\'s own soldiers, tank and artillery are replaced');
   assert.equal(classic.units.length, 10, 'the original map is untouched');
   assert.equal(classic.players[0].leader, undefined);
@@ -162,7 +164,7 @@ test('applying settings without leaders keeps the map\'s own units, exactly as b
   some.players[0].leader = null; some.players[1].leader = 'vex';
   const mixed = applySkirmish(classic, some, registry);
   assert.deepEqual(mixed.units.filter((u) => u.owner === 0), classic.units.filter((u) => u.owner === 0), 'a team without a leader keeps its own units');
-  assert.equal(mixed.units.filter((u) => u.owner === 1).length, registry.loadoutFor('vex').start.length);
+  assert.equal(mixed.units.filter((u) => u.owner === 1).length, armyOf(classic, 1, 'vex').length);
   assert.throws(() => applySkirmish(classic, some), /needs the registry/);
 });
 
@@ -171,7 +173,8 @@ test('every map plays with every leader pairing the shipped kits allow (no unit 
     const s = defaultSkirmish(m, ids);
     s.players.forEach((p, i) => { p.leader = ids[i % ids.length]; });
     const applied = applySkirmish(m, s, registry);
-    assert.equal(applied.units.length, m.players.length * registry.loadoutFor(null).start.length, m.id);
+    assert.equal(applied.units.length, m.players.reduce((n, _, o) => n + armyOf(m, o, ids[o % ids.length]).length, 0), m.id);
+    for (const a of m.players.map((_, o) => placeStart(m, registry, o, registry.loadoutFor(null).start))) assert.deepEqual(a.skipped, [], m.id);
   }
 });
 
@@ -265,6 +268,6 @@ test('launcher: Skirmish offers the campaign\'s leaders, and Start plays a map w
   open.find((e) => e.className === 'btn-label' && e.textContent === 'Start battle')[0].parent.click();
   const m = played[0];
   assert.deepEqual(m.players.map((p) => p.leader), ['harlan', 'ada'], 'the human is the hero of the home nation; the computer rolled the first other leader');
-  assert.equal(m.units.filter((u) => u.owner === 0).length, registry.loadoutFor('harlan').start.length);
+  assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'harlan').length);
   assert.ok(Object.isFrozen(m));
 });
