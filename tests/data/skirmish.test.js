@@ -191,7 +191,7 @@ test('each team gets a strip: Random, every leader, then None; the human starts 
   const { s, strips, notes } = screen();
   assert.equal(strips().length, 2);
   for (const strip of strips()) {
-    assert.deepEqual(strip.children.map(nameOf), ['Random', 'Harlan', 'Ada', 'Vex', 'Hiroshi', 'Ludwig', 'Sasha', 'Chase', 'Dmitri', 'Lysandra', 'None']);
+    assert.deepEqual(strip.children.map(nameOf), ['Random', 'Harlan', 'Ada', 'Vex', 'Hiroshi', 'Ludwig', 'Rex', 'Chase', 'Dmitri', 'Lysandra', 'None']);
   }
   assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Random']]);
   assert.match(notes()[0], /^Col\. Harlan - Lastholm - Grizzled veteran$/);
@@ -203,10 +203,10 @@ test('each team gets a strip: Random, every leader, then None; the human starts 
 test('tapping a leader picks them for that team only; Random and None are on the strip too', () => {
   const { s, strips, notes } = screen();
   const tap = (slot, label) => strips()[slot].children.find((b) => b.attrs['aria-label'] === label).click();
-  tap(1, 'Adm. Sasha');
-  assert.deepEqual(s.settings.players.map((p) => p.leader), ['harlan', 'sasha']);
-  assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Sasha']]);
-  assert.match(notes()[1], /^Adm\. Sasha - Tidehaven - /);
+  tap(1, 'Adm. Rex');
+  assert.deepEqual(s.settings.players.map((p) => p.leader), ['harlan', 'rex']);
+  assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Rex']]);
+  assert.match(notes()[1], /^Adm\. Rex - Tidehaven - /);
   tap(1, 'No leader');
   assert.equal(s.settings.players[1].leader, null);
   assert.match(notes()[1], /No leader: this map's own units/);

@@ -1,16 +1,16 @@
 {
  "id": "dmitri",
- "voice": "Soviet-style commander in a fur winter hat: Russian accent (dropped articles, da, comrade), very dark sense of humour, loves old Soviet and Radio Yerevan jokes.",
+ "voice": "Soviet-style commander in a fur winter hat: thick Deepmere accent (dropped articles, da, comrade), very dark sense of humour, loves old Soviet and Radio Yerevan jokes.",
  "lines": {
   "greeting": [
    "Ah, comrade! Is good to see you. Is not good, is not bad. Is Tuesday.",
    "Dobry den! You look healthy. For now. I make joke. Mostly.",
    "Come in, sit. Vodka? Is breakfast, lunch and dinner. Is also medicine.",
-   "In Soviet Russia, greeting greets you. Is old joke.",
+   "In Deepmere, greeting greets you. Is old joke.",
    "Welcome. Do not mind the cold. Is warm compared to funeral."
   ],
   "battle_start": [
-   "Is time for battle. In Soviet Russia, battle fights you.",
+   "Is time for battle. In Deepmere, battle fights you.",
    "Forward, comrades! Or backward. Is same. Everything is forward with enough vodka.",
    "We fight for the motherland. Or whichever land is closest.",
    "Remember: if you die, I will tell nice joke at your funeral.",
@@ -18,15 +18,15 @@
   ],
   "attack": [
    "Is not personal. Is delivery.",
-   "In Soviet Russia, shell finds you.",
+   "In Deepmere, shell finds you.",
    "Do svidaniya, comrade.",
    "Is a gift from the motherland. Please accept.",
    "Boom. Is how we say hello in submarine."
   ],
   "unit_lost": [
    "Is sad. But he was ugly, so...",
-   "He is gone. Do not worry. In Soviet Russia, funeral is party.",
-   "A moment of silence. Okay, enough. Is long enough. Is Russian silence.",
+   "He is gone. Do not worry. In Deepmere, funeral is party.",
+   "A moment of silence. Okay, enough. Is long enough. Is Deepmere silence.",
    "He has joined the great collective in the sky. Is cold there too.",
    "Radio Yerevan: 'Is it bad to lose a unit?' 'In principle yes, but we have many.'"
   ],
@@ -34,7 +34,7 @@
    "Is ours now. Is also yours. Is nobody's. Is Soviet.",
    "New base! Is like old base, but with more vodka.",
    "We take it. Is called redistribution.",
-   "Excellent. In Soviet Russia, base captures you. But today we are lucky.",
+   "Excellent. In Deepmere, base captures you. But today we are lucky.",
    "A fine acquisition. Please, no questions about paperwork."
   ],
   "danger": [
@@ -47,21 +47,21 @@
   "victory": [
    "We win! Is wonderful! Now, we celebrate with vodka and sorrow.",
    "Victory! Tell the motherland. Or whoever is left.",
-   "Is good day. I will sleep like a baby. A cold, Russian baby.",
+   "Is good day. I will sleep like a baby. A cold, Deepmere baby.",
    "Is a triumph! Please, hold applause. My ears are frozen.",
    "We have won, comrades! Now we can begin to worry about next thing."
   ],
   "defeat": [
    "Is okay. We lose today. Tomorrow we lose tomorrow. Is consistent.",
    "Retreat! Is not defeat. Is advance in reverse.",
-   "I have lost. Is fine. Is Russian tradition. Next.",
+   "I have lost. Is fine. Is Deepmere tradition. Next.",
    "We fought bravely. And lost bravely. Is two brave things.",
    "Radio Yerevan: 'What is retreat?' 'Is attack, but with better excuse.'"
   ],
   "taunt": [
    "Your army is like Soviet bread line: long, slow, and nobody wins.",
    "You fight like Moscow tram: late and full of confused people.",
-   "Is brave to challenge me. Is also stupid. Is same thing in Russia.",
+   "Is brave to challenge me. Is also stupid. Is same thing in Deepmere.",
    "I have seen better strategy in Soviet cabbage lottery.",
    "Your tactics are like Soviet car: ugly, slow, and likely to explode."
   ],
@@ -73,7 +73,7 @@
    "You are strong like bear. Is compliment. Bears are scary."
   ],
   "idle": [
-   "In Soviet Russia, dark humour tells you.",
+   "In Deepmere, dark humour tells you.",
    "Is cold outside. Is cold inside. Is cold in my heart. Is fine.",
    "Man asks: 'When will I get my car?' 'Ten years.' 'Morning or afternoon?' Is joke. Is also real life.",
    "I like submarines. Quiet. Dark. No one asks how you feel.",
@@ -102,7 +102,7 @@
   ],
   "first_blood": [
    "First kill. Is good. Is also tragedy. Is both.",
-   "One enemy down. In Soviet Russia, enemy kills you. Here, you kill enemy. Progress.",
+   "One enemy down. In Deepmere, enemy kills you. Here, you kill enemy. Progress.",
    "Da. First one. They will not be last. Is dark joke. Also military plan.",
    "One less to sing sad songs with. Pity."
   ],
@@ -114,19 +114,19 @@
   ],
   "hq_threat": [
    "They come for the headquarters! Is not good. Is also not surprising.",
-   "Enemy at HQ! In Soviet Russia, headquarters defends you. Not today.",
+   "Enemy at HQ! In Deepmere, headquarters defends you. Not today.",
    "Comrades, defend the base! Is only place with warm soup!",
    "They threaten the heart of the army. Is bad. Is also somewhat funny."
   ],
   "building_lost": [
-   "Building lost. In Soviet Russia, building loses you.",
+   "Building lost. In Deepmere, building loses you.",
    "They take building. I did not like the heating anyway.",
    "Da. One less roof to leak on us.",
    "We lose property. Is fine. Property is theft anyway."
   ],
   "outnumbered": [
-   "We are outnumbered. In Soviet Russia, number outnumbers you.",
-   "Many of them, few of us. Is traditional Russian odds.",
+   "We are outnumbered. In Deepmere, number outnumbers you.",
+   "Many of them, few of us. Is traditional Deepmere odds.",
    "Da, fewer men. Means more vodka for each.",
    "Numbers against us. Is fine. I expected worse. I always expect worse."
   ],
@@ -134,12 +134,12 @@
    "We are winning. Do not tell me this. I do not trust good news.",
    "We have more soldiers. Is rare. Enjoy it, comrades.",
    "Is going well. Something terrible is about to happen. Wait for it.",
-   "We have advantage. In Soviet Russia, advantage has you. We shall see."
+   "We have advantage. In Deepmere, advantage has you. We shall see."
   ],
   "killing_spree": [
    "Another one falls. Is a long list. Is a very dark list.",
    "Da, many gone. Enemy should hire better insurance.",
-   "Is efficient. Is also bleak. Is Russian.",
+   "Is efficient. Is also bleak. Is Deepmere.",
    "They keep dying. I keep not smiling."
   ],
   "heavy_losses": [
@@ -152,7 +152,7 @@
    "Da. We move. Let us see which way disappointment arrives.",
    "Begin. Is only war. Not first time.",
    "We start. Please try not to cheer. Is ominous.",
-   "The turn starts. In Soviet Russia, turn takes you."
+   "The turn starts. In Deepmere, turn takes you."
   ]
  }
 }

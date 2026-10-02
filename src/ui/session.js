@@ -239,7 +239,7 @@ export class Session {
     }
   }
 
-  /** "Col. Harlan vs Adm. Sasha. " when the teams have leaders (a random pick is only known now), else nothing. */
+  /** "Col. Harlan vs Adm. Rex. " when the teams have leaders (a random pick is only known now), else nothing. */
   #matchup() {
     const names = this.game.map.players.map((p) => (p.leader ? this.leaderName(p.leader) : null)).filter(Boolean);
     return names.length ? `${names.join(' vs ')}. ` : '';

@@ -45,7 +45,7 @@ async function boot() {
   setFactions([...Object.values(registry.factions), { id: 'chorus', ...campaign.chorus }]);
   const catalog = buildCatalog({ registry, concepts, planned, status });
   const factions = Object.values(registry.factions).map((f) => ({ id: f.id, name: f.name, color: f.color, dark: f.dark }));
-  const terrain = Object.fromEntries(['plain', 'road', 'sea'].map((id) => [id, registry.terrain[id].render.base]));
+  const terrain = Object.fromEntries(['plain', 'road', 'sea'].map((id) => [id, registry.terrain[id].render.base || registry.terrain[id].render.mini]));
 
   const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
   let clock = 0, last = performance.now();

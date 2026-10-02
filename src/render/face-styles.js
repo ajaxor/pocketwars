@@ -46,8 +46,8 @@ export const CHIN_STYLES = {
   jut:      { parts: [['ell', 50, 67, 13, 7]], crease: true },
   weak:     { none: true, crease: true },
   cleft:    { parts: [['ell', 50, 65.5, 12, 8]], dimple: 'cleft' },
-  angular:  { parts: [['poly', [34, 58], [66, 58], [60.5, 71], [50, 73.5], [39.5, 71]]] },
+  angular:  { parts: [['poly', [37, 56], [63, 56], [59.5, 69.5], [50, 72.5], [40.5, 69.5]]] },
   double:   { parts: [['ell', 50, 66.5, 13.5, 8], ['ell', 50, 71, 10, 5]], fold: true },
   delicate: { parts: [['poly', [39, 58], [61, 58], [55, 69], [50, 71], [45, 69]]] },
-  smooth:   { parts: [['ell', 50, 69, 9.5, 8.5]] },
+  smooth:   { parts: [['ell', 50, 64.5, 12.5, 7]] },
 };

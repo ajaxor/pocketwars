@@ -1,0 +1,147 @@
+{
+ "id": "rex",
+ "voice": "Cheerful Australian wildlife-show admiral: bubbling enthusiasm and a broad accent (crikey, strewth, mate, ripper, beauty, fair dinkum, no worries, she'll be right, cranky), treats the enemy as wild animals to wrestle and admire, whispers when sneaking, shouts 'danger, danger, danger!' when it goes wrong, fond of crocodiles.",
+ "lines": {
+  "greeting": [
+   "G'day, mate! Crikey, come on in, don't mind the crocodile, she's only a little bit cranky!",
+   "Hello, beautiful! Look at ya, you're a ripper! Come and have a sit on the bridge.",
+   "Strewth, a visitor! Gentle now, no sudden moves, I don't wanna spook ya. Just kidding, welcome aboard!",
+   "Ahh, you beauty! A brand new face! Stand still a tick so I can get a good look at ya."
+  ],
+  "battle_start": [
+   "Crikey, mates, look at that enemy fleet! Isn't she a beauty? Right, let's go and poke her with a stick!",
+   "Righto, crew! We're gonna get right up close to these blokes, and she'll be dangerous, but that's the fun bit!",
+   "Oh, you little ripper! Full steam ahead! Danger, danger, danger! Let's go and get 'em!",
+   "Okay, listen up! Nice and calm, nice and steady, and nobody feed the sharks. Well, not yet. Fire!"
+  ],
+  "attack": [
+   "Whoa, look at her go! Beautiful shot! Right in the flamin' chops!",
+   "Easy, easy, steady now, and... bang! Isn't that gorgeous?",
+   "Crikey! She's got a lot of fight in her, this one! Here, have another!",
+   "Fire! That's it, mate, she didn't see that coming, the poor little thing!"
+  ],
+  "unit_lost": [
+   "Oh no! Oh, mate! She was a beauty, she was! Gutted, I'm absolutely gutted!",
+   "Strewth, that one bit back! Poor old girl. She gave it everything!",
+   "Crikey, that's a shame. She was a cracking little vessel, rest easy, mate.",
+   "Oh, you little beauty, she's gone down fighting! Absolutely heartbreaking, mate, absolutely heartbreaking!"
+  ],
+  "capture": [
+   "Gotcha! Look at that, caught her fair and square! Isn't she a stunner?",
+   "She's ours! Easy now, don't spook her, we'll just give her a bit of a pat and settle her down.",
+   "Ahh, you beauty! Another one for the collection! I'm gonna put a plaque on it!",
+   "Bloody beautiful! Captured with barely a scratch! Well, a bit of a scratch."
+  ],
+  "danger": [
+   "Danger, danger, danger! The HQ's in a spot of bother, mates! Stay calm, stay calm!",
+   "Crikey, that's not good! That's a very cranky bunch, that is! Everybody stay sharp!",
+   "Whoa, we're in the water with the big ones now! Keep it steady, keep it steady, no splashing!",
+   "Strewth, they're all over the shop! This is getting dangerous, and I mean the bad kind!",
+   "Okay, mates, little bit hairy, little bit hairy. Nothing we can't wrestle!"
+  ],
+  "victory": [
+   "Ahh, you beauty! Did you see that? What a ripper of a day! Everyone get a cuppa!",
+   "We did it, mates! Crikey, what a magnificent bunch of blokes you are! Let's let 'em go back to the wild!",
+   "Victory! Look at that, a total champion performance! I could kiss a crocodile! Won't, though.",
+   "Righto, that's a wrap! Beautiful, beautiful work, the lot of ya!"
+  ],
+  "defeat": [
+   "Crikey, she got us good that time. Okay, fair dinkum, I'm gonna need a bit of a lie down.",
+   "Ahh, nature wins again, mate. You gotta respect the animal. We'll be back, stronger!",
+   "Strewth. Well, that was educational! Painful, but educational. Next time we bring a bigger boat.",
+   "That went pear-shaped! Never mind, no worries, she'll be right. Eventually!"
+  ],
+  "taunt": [
+   "Oi, you with the funny hat! You look like a very cranky cassowary, mate. I mean that with love.",
+   "Look at ya, strutting about! Absolutely magnificent display, and I'm still gonna sink ya!",
+   "You're not scary, mate, I've had breakfast with scarier. And the crocodile won.",
+   "Ooh, he's feeling brave! Look at the puffed-up chest on him! Adorable! Fire!",
+   "Easy, big fella. I've wrestled bigger than you before lunch!"
+  ],
+  "praise": [
+   "Look at you go! Beautiful, mate! Absolutely beautiful! Can I get a photo of that?",
+   "Ahh, you're a natural! A proper ripper! Crikey, I'm proud!",
+   "What a champion! That is some of the finest work I have ever seen, and I've seen a lot of crocs!",
+   "Good on ya, mate! That was a cracker!"
+  ],
+  "idle": [
+   "Did you know a croc can hold its breath for ages? Me, I can't. I tried. Don't try it.",
+   "Ahh, the ocean! Full of beautiful, deadly things that wanna eat me. Love it!",
+   "I reckon the best part of the job is the wildlife. Second best is the explosions.",
+   "Gotta keep moving, mate. If you stand still too long the barnacles start to get ideas.",
+   "Look at that sunrise! Gorgeous! Right, who's got the bug spray?"
+  ],
+  "tech": [
+   "Crikey, look at that gadget! It's like a brand new species! Don't poke it, mate. Okay, I'm poking it.",
+   "The Gift? Beautiful bit of kit, but it's got teeth, I reckon. I've seen that look on a snake before.",
+   "Whoa, that's a very clever critter, that is! And a very dangerous one! My favourite kind!",
+   "Strewth, the Chorus! Never seen a beast like that. I wanna go and say hello. Everyone say I shouldn't."
+  ],
+  "joined": [
+   "Ahh, you beauty! Welcome to the pack, mate! Don't mind the crocodile, she's friendly. Mostly.",
+   "Crikey, I'm free! Feels brilliant! Right, let's go and save some animals, and by that I mean blokes.",
+   "Good to be back, mates! That was a proper rotten snake pit. Never again!",
+   "Strewth, what a ride! Thanks for pulling me out, you're a legend. Let's go and sink something!"
+  ],
+  "assimilated": [
+   "Crikey... it's very... quiet in here. Where's the... the wildlife... The... we... we...",
+   "G'day. We are very calm. We are... Danger, danger... no. No danger. Only harmony.",
+   "Mate, I... I can't see the crocodile. We do not need the crocodile. We are the crocodile.",
+   "Whoa. Nice and still, nice and steady. We... we do not... wrestle. We... join."
+  ],
+  "first_blood": [
+   "First one down! Ahh, you beauty! Wasn't she a stunner? Right, who's next?",
+   "Gotcha! First blood to us, mates! Crikey, it's good to be alive!",
+   "There she goes! Beautiful shot! The first of many, I reckon!",
+   "Ahh, got him! Easy as pie, mate. A very dangerous, explosive pie."
+  ],
+  "first_loss": [
+   "Oh no, we lost one! That's a bit of a shock, mates. They've got some teeth on 'em, haven't they?",
+   "Crikey, first one's gone! Right, no panicking, panicking spooks the animals!",
+   "Strewth, they bit back! Fair play. Now I'm cranky!",
+   "Oh, that's a shame, poor little thing. Okay, now we get serious!"
+  ],
+  "hq_threat": [
+   "Danger, danger, danger! They're at the HQ! Everybody back, back, back!",
+   "Crikey, they're at the front door! Gentle now, don't make any sudden moves!",
+   "Whoa, whoa, whoa! That's way too close to the nest! Move it, mates!",
+   "Strewth! They're crawling right up to the HQ! Not on my watch, ya cheeky blighters!"
+  ],
+  "building_lost": [
+   "Oi, they took the building! That's like stealing a croc's lunch! Rude!",
+   "Crikey, that's a cheeky one! Ahh, never mind, we'll have it back by arvo!",
+   "Strewth, they got it! Poor little base. We'll rescue her, mates, promise!",
+   "That's a nasty bite. Right, someone go and grab it back before she gets cold!"
+  ],
+  "outnumbered": [
+   "Crikey, there's heaps of 'em! Okay, deep breath, mates. Look at the size of that herd!",
+   "Whoa, we're a bit outnumbered, but that's what makes it exciting, isn't it? Isn't it?",
+   "Strewth, a whole flamin' pack of 'em! Nice and calm, nobody run, they can smell fear!",
+   "Danger, danger! That is a lot of cranky blokes for a small boat!"
+  ],
+  "dominant": [
+   "Look at that! We've got 'em cornered like a little lizard! Beautiful! Gently now!",
+   "Ahh, you beauty! They're on the run, mates! Mind the splashing!",
+   "We've got the upper hand, fair dinkum! Don't get cocky, that's when ya get bitten!",
+   "Crikey, they're properly rattled! Lovely, lovely stuff, crew!"
+  ],
+  "killing_spree": [
+   "Whoa, we're on fire! Look at that, one after another! Isn't she a ripper?",
+   "Crikey, we're unstoppable, mates! It's like feeding time at the zoo!",
+   "That's three! Four! Ahh, I've lost count! Absolutely beautiful work!",
+   "Strewth, this is the best day ever! Somebody get a camera!"
+  ],
+  "heavy_losses": [
+   "Crikey, we're losing too many, mates! Gotta stay calm, but also, very much not calm!",
+   "Ahh, that is not going well! Poor little blokes! Hang in there, we'll regroup!",
+   "Strewth, they're really biting hard today! Fall back, fall back, and mind the tail!",
+   "Danger, danger, danger! Too many gone! Okay, new plan, mates, quick as you like!"
+  ],
+  "first_turn": [
+   "Righto, mates, here we go! Nice and easy, don't spook the neighbours! Let's move!",
+   "Okay, crew, first move! Slow, steady, and ready for a bit of a bite! Go go go!",
+   "Ahh, you beauty, the hunt begins! Let's get a good look at these blokes!",
+   "Crikey, I love the first move! It's like the first splash of the day! Go!"
+  ]
+ }
+}

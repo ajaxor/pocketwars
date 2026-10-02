@@ -71,12 +71,12 @@ gives a random line for a situation, never the same line twice in a row, and use
 - **Sample:** "Did you know ze entropy of ze universe always increases? So does my laundry."
 - **File:** `data/speech/ludwig.json`
 
-### Adm. Sasha (Tidehaven)
+### Adm. Rex (Tidehaven)
 
-- **Look:** Eyepatch, long dark hair, white admiral's cap.
-- **Voice:** Australian pirate admiral drowning in nautical jargon: mate, crikey, strewth, galah, drongo, broadside, hard a-lee, keelhaul, Davy Jones.
-- **Sample:** "Hard a-lee, crew! Man the guns, we're sailin' into a squall and I reckon it'll be a ripper!"
-- **File:** `data/speech/sasha.json`
+- **Look:** Male. Eyepatch, stubble, shaggy sun-bleached hair, white admiral's cap.
+- **Voice:** Cheerful Australian wildlife-show admiral: crikey, strewth, mate, ripper, beauty, cranky; treats the enemy as magnificent, dangerous animals; shouts "danger, danger, danger!" when it goes wrong.
+- **Sample:** "Crikey, mates, look at that enemy fleet! Isn't she a beauty? Right, let's go and poke her with a stick!"
+- **File:** `data/speech/rex.json`
 
 ### Wing Cmdr. Chase (Skyreach)
 
@@ -88,8 +88,8 @@ gives a random line for a situation, never the same line twice in a row, and use
 ### Cmdr. Dmitri (Deepmere)
 
 - **Look:** Stubbled submariner in a fur ushanka with a red star.
-- **Voice:** Russian accent (dropped articles, da, comrade); very dark humour; old Soviet and Radio Yerevan jokes.
-- **Sample:** "In Soviet Russia, dark humour tells you."
+- **Voice:** thick Deepmere accent (dropped articles, da, comrade); very dark humour; old Soviet and Radio Yerevan jokes.
+- **Sample:** "In Deepmere, dark humour tells you."
 - **File:** `data/speech/dmitri.json`
 
 ### Sovereign Lysandra (Highspire)
@@ -110,7 +110,7 @@ gives a random line for a situation, never the same line twice in a row, and use
 
 1. Add the leader to `data/campaign.json` (`leaders`) with portrait traits, a `bio` and a `flaw`.
 2. Add `data/speech/<id>.json` with a `voice` note and at least four lines for every situation. The test suite fails until all of them exist.
-3. Portrait traits the art supports: `hat` (cap, helmet, headset, captain, cowboy, ushanka, crown), `hairStyle` (ponytail, bun, long, short, bald, wild, topknot), `jaw`, and flags `eyepatch`, `scar`, `tallCollar`, `stubble`, `stache`, `glasses`, `aviators`, `coat`, `trench`, `freckles`, `wide`, and `eyeStyle` (required, and no two leaders may share one): the eyes, defined in `src/render/eye-styles.js` (weary, bright, cold, serene, manic, fierce, cocky, deadpan, regal, glow). A style sets eye shape, tilt, lids, iris and pupil size, lashes, bags, eye-shadow and glints; add a new style there for a new leader. Likewise `noseStyle` (broad, button, long, hawk, pointed, roman, slim, bulb, refined, minimal), `mouthStyle` (grim, grin, thin, firm, pursed, sneer, smirk, slit, full, tiny) and `chinStyle` (block, soft, point, jut, weak, cleft, angular, double, delicate, smooth) are required and unique per leader, defined in `src/render/face-styles.js`. Portrait backdrops are dark (tinted towards the faction colour) so any skin or hair stands out.
+3. Portrait traits the art supports: `hat` (cap, helmet, headset, captain, cowboy, ushanka, crown), `hairStyle` (ponytail, bun, long, short, shaggy, regal, bald, wild, topknot), `jaw`, and flags `eyepatch`, `scar`, `tallCollar`, `stubble`, `stache`, `glasses`, `aviators`, `coat`, `trench`, `freckles`, `wide`, and `eyeStyle` (required, and no two leaders may share one): the eyes, defined in `src/render/eye-styles.js` (weary, bright, cold, serene, manic, fierce, cocky, deadpan, regal, glow). A style sets eye shape, tilt, lids, iris and pupil size, lashes, bags, eye-shadow and glints; add a new style there for a new leader. Likewise `noseStyle` (broad, button, long, hawk, pointed, roman, slim, bulb, refined, minimal), `mouthStyle` (grim, grin, thin, firm, pursed, sneer, smirk, slit, full, tiny) and `chinStyle` (block, soft, point, jut, weak, cleft, angular, double, delicate, smooth) are required and unique per leader, defined in `src/render/face-styles.js`. Portrait backdrops are dark (tinted towards the faction colour) so any skin or hair stands out.
 
 ## In battle
 

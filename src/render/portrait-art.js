@@ -49,6 +49,13 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   if (L.hairStyle === 'ponytail') paint(ell(74, 52, 6.5, 14), L.hair);
   if (L.hairStyle === 'bun') paint(ell(50, 17, 9, 8.5), L.hair);
   if (L.hairStyle === 'long') { paint(ell(29.5, 54, 6.5, 17), L.hair); paint(ell(70.5, 54, 6.5, 17), L.hair); }
+  if (L.hairStyle === 'regal') {                                                                       // a queen's mane: a long, glossy fall behind both shoulders
+    paint((p) => { p.moveTo(30, 40); p.bezierCurveTo(11, 50, 14, 86, 20, 101); p.lineTo(80, 101); p.bezierCurveTo(86, 86, 89, 50, 70, 40); p.closePath(); }, L.hair);
+    for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(50 + sx * 25, 48); g.quadraticCurveTo(50 + sx * 31, 62, 50 + sx * 27.5, 78); g.lineWidth = 1.1; g.strokeStyle = mix(L.hair, '#8a7a50', .35); g.lineCap = 'round'; g.stroke(); }
+  }
+  if (L.hairStyle === 'shaggy') {                                                                      // a sun-bleached mop sticking out in tufts around the ears
+    for (const sx of [-1, 1]) paint(poly([[50 + sx * 21, 36], [50 + sx * 26.5, 40], [50 + sx * 24, 43.5], [50 + sx * 27.5, 48], [50 + sx * 24.5, 51], [50 + sx * 26.5, 55], [50 + sx * 21, 54]]), L.hair);
+  }
   if (L.hairStyle === 'wild') {                                                                        // a mad-scientist cloud of hair
     paint(ell(50, 25, 27, 20), L.hair);
     for (const [x, y, r] of [[26, 38, 8], [74, 38, 8], [30, 20, 8], [70, 20, 8], [40, 8, 7], [60, 8, 7], [50, 5, 6], [21, 28, 6], [79, 28, 6]]) paint(ell(x, y, r, r * 0.9), L.hair);
@@ -71,9 +78,13 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   } else line(X(10), 90, X(10), 101, 0.001, bodyCol);
   if (assim) for (const dy of [0, 5]) paint(poly([[44, 87 + dy], [50, 91 + dy], [56, 87 + dy], [56, 89.6 + dy], [50, 93.6 + dy], [44, 89.6 + dy]]), '#7ef0ff', false);   // the Chorus chevrons
 
-  // neck
+  // neck: plain skin with a soft shadow cast by the chin
+  const CS = CHIN_STYLES[L.chinStyle] || CHIN_STYLES.plain;
+  const chinY = Math.max(66, ...(CS.parts || []).map(([kind, ...a]) => (kind === 'ell' ? a[1] + a[3] : Math.max(...a.map((q) => q[1]))))) + (L.jaw === 'long' ? 3 : 0);
   paint((p) => p.roundRect(43, 58, 14, 17, 3), L.skin, false);
-  paint(poly([[43, 63], [57, 63], [57, 70], [50, 74], [43, 70]]), skinShade, false);
+  { const gr = g.createLinearGradient(0, chinY - 3, 0, chinY + 8); gr.addColorStop(0, 'rgba(70,30,15,.42)'); gr.addColorStop(1, 'rgba(70,30,15,0)');
+    g.save(); g.beginPath(); g.roundRect(43, 58, 14, 17, 3); g.clip(); g.fillStyle = gr; g.fillRect(40, 58, 20, 20); g.restore(); }
+  if (!outline) for (const x of [43, 57]) line(x, 62, x, 74, 1.1, mix(L.skin, '#1c0f0c', .7), 'butt');   // the neck's edges, thin like the face outline
   if (L.tallCollar) {
     const cc = trench ? '#a48b58' : mix(c, dk, .55);
     paint(poly([[36, 76], [38, 57], [46, 62], [46, 77]]), cc);
@@ -81,28 +92,26 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     if (!trench) { line(38, 59, 46, 63, 1, '#e8c050'); line(62, 59, 54, 63, 1, '#e8c050'); }
   }
 
-  // ears and head
-  paint(ell(30.8, 47, 3.4, 5), L.skin); paint(ell(69.2, 47, 3.4, 5), L.skin);
+  // ears and head: a thin dark rim round the whole silhouette, drawn first under every fill so the pieces join without seams
   const head = { oval: (p) => p.ellipse(50, 44, 19, 22, 0, 0, 7), long: (p) => p.ellipse(50, 45, 17.5, 24.5, 0, 0, 7), round: (p) => p.ellipse(50, 45, 21, 21, 0, 0, 7), square: (p) => p.roundRect(31.5, 22, 37, 45, [11, 11, 16, 16]) }[L.jaw];
-  const CS = CHIN_STYLES[L.chinStyle] || CHIN_STYLES.plain;
-  for (const [kind, ...a] of CS.parts || []) paint(kind === 'ell' ? ell(...a) : poly(a), L.skin);   // the chin, under the face
+  const chinShapes = (CS.parts || []).map(([kind, ...a]) => (kind === 'ell' ? ell(...a) : poly(a)));
+  const ears = [ell(30.8, 47, 3.4, 5), ell(69.2, 47, 3.4, 5)];
+  if (!outline) {
+    g.strokeStyle = mix(L.skin, '#1c0f0c', .7); g.lineWidth = 2.1; g.lineJoin = 'round';
+    for (const s of [...ears, ...chinShapes, head]) { g.beginPath(); s(g); g.stroke(); }
+  }
+  for (const s of ears) paint(s, L.skin);
+  for (const s of chinShapes) paint(s, L.skin);                                                       // the chin, under the face
   paint(head, L.skin);
-  if (shade) {                                                                                         // soft shadow down the far side of the face and under the hair
-    g.save(); g.beginPath(); head(g); g.clip();
-    g.fillStyle = 'rgba(70,30,15,.16)'; g.beginPath(); g.ellipse(70, 50, 14, 30, 0, 0, 7); g.fill();
-    g.fillStyle = 'rgba(70,30,15,.12)'; g.fillRect(30, 62, 40, 10);
-    g.restore();
+  const face = (fn) => { g.save(); g.beginPath(); head(g); for (const s of chinShapes) s(g); g.clip(); fn(); g.restore(); };   // head and chin together
+  if (shade) {                                                                                         // soft shadow down the far side of the face, and a gentle fade towards the jaw
+    face(() => {
+      g.fillStyle = 'rgba(70,30,15,.16)'; g.beginPath(); g.ellipse(70, 50, 14, 30, 0, 0, 7); g.fill();
+      const gr = g.createLinearGradient(0, 55, 0, 69); gr.addColorStop(0, 'rgba(70,30,15,0)'); gr.addColorStop(1, 'rgba(70,30,15,.15)');
+      g.fillStyle = gr; g.fillRect(25, 55, 50, 30);
+    });
   }
-  if (L.stubble) { g.save(); g.beginPath(); head(g); g.clip(); g.fillStyle = 'rgba(70,70,80,.26)'; g.beginPath(); g.ellipse(50, 66, 21, 13, 0, 0, 7); g.fill(); g.restore(); }
-  if (CS.parts && (shade || L.stubble)) {                                                              // the chin below the face gets the same shade and stubble (outside the head only)
-    g.save(); g.beginPath(); g.rect(0, 0, 100, 100); head(g); g.clip('evenodd');
-    for (const [kind, ...a] of CS.parts) {
-      g.beginPath(); (kind === 'ell' ? ell(...a) : poly(a))(g);
-      if (shade) { g.fillStyle = 'rgba(70,30,15,.12)'; g.fill(); }
-      if (L.stubble) { g.fillStyle = 'rgba(70,70,80,.26)'; g.fill(); }
-    }
-    g.restore();
-  }
+  if (L.stubble) face(() => { g.fillStyle = 'rgba(70,70,80,.24)'; g.beginPath(); g.ellipse(50, 67, 21, 14, 0, 0, 7); g.fill(); });
 
   // expression
   const E = { neutral: { open: 1, brow: 0, mouth: 'flat' }, smile: { open: .8, brow: -.5, mouth: 'smile' }, angry: { open: .8, brow: 3.6, mouth: 'shout' }, shock: { open: 1.25, brow: -3.4, mouth: 'o' }, worried: { open: 1, brow: -3.2, mouth: 'wave' } }[expr] || { open: 1, brow: 0, mouth: 'flat' };
@@ -159,7 +168,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     g.lineWidth = N.bridge; g.strokeStyle = skinShade; g.stroke();
     if (N.flare > .5) for (const sx of [-1, 1]) { g.fillStyle = 'rgba(70,28,24,.62)'; g.beginPath(); g.ellipse(tx + sx * N.w * .62, ty + .5 - N.up * .35, .8 * N.flare, .55 * N.flare, 0, 0, 7); g.fill(); }
   }
-  if (L.scar) { line(34.5, 35, 45, 55, 1.5, '#b5605f'); for (const t of [.3, .55, .8]) line(34.5 + 10.5 * t - 1.6, 35 + 20 * t + .2, 34.5 + 10.5 * t + 1.6, 35 + 20 * t - .2, 1, '#b5605f'); }
+  if (L.scar) { const sx = 61.5, sy = 50; line(sx, sy, sx + 3.2, sy + 12.5, 1.5, '#b5605f'); for (const f of [.25, .5, .75]) line(sx + 3.2 * f - 1.6, sy + 12.5 * f - .1, sx + 3.2 * f + 1.6, sy + 12.5 * f + .5, 1, '#b5605f'); }   // down the right cheek, clear of the eyes
 
   // mouth
   const MS = MOUTH_STYLES[L.mouthStyle] || MOUTH_STYLES.plain;
@@ -191,6 +200,17 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   if (L.hairStyle === 'ponytail') paint((p) => { p.moveTo(29.5, 44); p.bezierCurveTo(28, 22, 72, 22, 70.5, 44); p.bezierCurveTo(68, 33, 56, 30, 50, 29.5); p.bezierCurveTo(44, 30, 32, 33, 29.5, 44); p.closePath(); }, L.hair);
   if (L.hairStyle === 'short') paint((p) => { p.moveTo(31.5, 40); p.bezierCurveTo(29, 14, 71, 14, 68.5, 40); p.lineTo(66, 32); p.bezierCurveTo(55, 25, 45, 25, 34, 32); p.closePath(); }, L.hair);
   if (L.hairStyle === 'bun') paint((p) => { p.moveTo(30, 44); p.bezierCurveTo(28, 14, 72, 14, 70, 44); p.bezierCurveTo(68, 33, 58, 28, 50, 28); p.bezierCurveTo(42, 28, 32, 33, 30, 44); p.closePath(); }, L.hair);
+  if (L.hairStyle === 'regal') {                                                                       // centre-parted, swept back over the ears into ringlets
+    for (const sx of [-1, 1]) {
+      paint((p) => { p.moveTo(50, 26); p.bezierCurveTo(50 + sx * 10, 25.5, 50 + sx * 19, 31, 50 + sx * 20.5, 50); p.bezierCurveTo(50 + sx * 18.5, 53, 50 + sx * 15.5, 52, 50 + sx * 15.5, 49); p.bezierCurveTo(50 + sx * 15.5, 40, 50 + sx * 9, 33, 50, 31.5); p.closePath(); }, L.hair);
+      for (const [y, r] of [[55, 3], [61, 2.8], [67, 2.5]]) paint(ell(50 + sx * 20.5 + (y - 55) * sx * -.15, y, r, r), L.hair);
+    }
+    if (shade) for (const sx of [-1, 1]) { g.beginPath(); g.moveTo(50 + sx * 2, 27.5); g.quadraticCurveTo(50 + sx * 15, 28, 50 + sx * 18.5, 42); g.lineWidth = 1; g.strokeStyle = hairLight; g.lineCap = 'round'; g.stroke(); }
+  }
+  if (L.hairStyle === 'shaggy') {                                                                      // a messy fringe swept across the brow, with long sideburns
+    paint(poly([[31, 52], [30, 36], [34, 24], [43, 19], [57, 19], [66, 24], [70, 36], [69, 52], [66.5, 44], [66, 40], [61, 36], [57, 40], [53, 35], [48, 41], [44, 35], [39, 39], [35, 38], [33.5, 44]]), L.hair);
+    if (shade) { g.beginPath(); g.moveTo(40, 24); g.quadraticCurveTo(50, 22, 60, 25); g.lineWidth = 1.2; g.strokeStyle = hairLight; g.lineCap = 'round'; g.stroke(); }
+  }
   if (L.hairStyle === 'wild') {                                                                        // the fringe, sticking up
     paint(poly([[31, 38], [30, 26], [36, 31], [38, 19], [43, 28], [47, 16], [51, 27], [56, 17], [59, 28], [64, 21], [64, 31], [70, 27], [69, 38], [66, 32], [58, 28], [42, 28], [34, 32]]), L.hair);
   }
@@ -252,9 +272,9 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   }
   if (L.aviators) {                                                                                    // gold-rimmed, dark teardrop lenses
     for (const [ex, ey, side] of eyes) {
-      paint((p) => { p.moveTo(ex - side * 7.2, ey - 4.6); p.quadraticCurveTo(ex + side * 1, ey - 6.4, ex + side * 6.4, ey - 3); p.quadraticCurveTo(ex + side * 7.6, ey + 6.4, ex, ey + 6.6); p.quadraticCurveTo(ex - side * 8.4, ey + 5.6, ex - side * 7.2, ey - 4.6); p.closePath(); }, 'rgba(52,44,30,.5)');
+      paint((p) => { p.moveTo(ex - side * 7.2, ey - 4.6); p.quadraticCurveTo(ex + side * 1, ey - 6.4, ex + side * 6.4, ey - 3); p.quadraticCurveTo(ex + side * 7.6, ey + 6.4, ex, ey + 6.6); p.quadraticCurveTo(ex - side * 8.4, ey + 5.6, ex - side * 7.2, ey - 4.6); p.closePath(); }, '#2e2619');
       g.lineWidth = 1.2; g.strokeStyle = '#e0b84a'; g.stroke();
-      if (shade) { g.fillStyle = 'rgba(160,210,255,.4)'; g.beginPath(); g.ellipse(ex - side * 2.6, ey - 2.2, 2.4, 1.1, -.5 * side, 0, 7); g.fill(); }
+      if (shade) { g.fillStyle = 'rgba(190,225,255,.55)'; g.beginPath(); g.ellipse(ex - side * 2.8, ey - 2.4, 2.6, 1.1, -.5 * side, 0, 7); g.fill(); }
     }
     line(48.6, 42.6, 51.4, 42.6, 1.1, '#e0b84a'); line(35.2, 42, 31, 41.4, 1.1, '#e0b84a'); line(64.8, 42, 69, 41.4, 1.1, '#e0b84a');
   }
