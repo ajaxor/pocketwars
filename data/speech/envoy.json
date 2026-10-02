@@ -99,6 +99,60 @@
    "We have no wish to hurt. We have no wish at all. We simply are.",
    "All voices, one voice. All hands, one hand.",
    "We are legion. We are lovely. We are listening."
+  ],
+  "first_blood": [
+   "We have ended one of you. We are sorry. We will remember the shape of it.",
+   "A first loss for your side. We hold no grudge. We hold everything.",
+   "One has fallen. We feel it, as we feel everything.",
+   "It is done. We took nothing that was not already ending."
+  ],
+  "first_loss": [
+   "One of ours has gone quiet. We will sing a little louder.",
+   "We lost a voice. It is not truly lost. It is only elsewhere.",
+   "A voice falls silent. Another will be tuned in its place.",
+   "We notice the absence. It is a small, bright sorrow."
+  ],
+  "hq_threat": [
+   "You are standing in our home. We do not mind. But we must ask you to leave.",
+   "You reach for our centre. We will gently prevent it.",
+   "The heart of the Chorus is not for taking. Please step back.",
+   "Our centre is under your hand. We will be very polite when we remove it."
+  ],
+  "building_lost": [
+   "You have taken a place of ours. We had so many. You may keep it for a while.",
+   "A house falls into your hands. We will visit it later.",
+   "That place was ours. It will be again. We are patient.",
+   "We lose a room. We do not lose the house."
+  ],
+  "outnumbered": [
+   "You are many. We are all of us. It does not feel like fewer.",
+   "We see how many of you there are. It is lovely. Truly.",
+   "Numbers are only a way of counting. We are better at the other ways.",
+   "You outnumber this part of us. We are not only this part."
+  ],
+  "dominant": [
+   "We are many here. You may find that overwhelming. We hope you do not.",
+   "The numbers favour us. We take no pleasure. A little pleasure.",
+   "We are very near the end. It is a warm feeling.",
+   "You are surrounded by kindness. It is also a lot of units."
+  ],
+  "killing_spree": [
+   "Another has gone quiet. We are sorry. We are always sorry. We do it anyway.",
+   "The list grows. We keep it gently.",
+   "More of you rest now. It is not unkind.",
+   "We are gentle. We are also thorough."
+  ],
+  "heavy_losses": [
+   "Many of our voices have gone. We feel them all, like a chord that is missing notes.",
+   "We have lost so many. The song is thinner, but it is still a song.",
+   "The Chorus is wounded. It will sing anyway.",
+   "Our losses are heavy. Do not think this makes us gentle."
+  ],
+  "first_turn": [
+   "We begin. We have been looking forward to this. We have been looking forward to everything.",
+   "It is our turn. We will be gentle. We will be thorough.",
+   "Let us proceed. We have such plans for you.",
+   "We move now. Please do not be afraid. It is mostly pointless."
   ]
  }
 }

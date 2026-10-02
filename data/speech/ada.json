@@ -99,6 +99,60 @@
    "There is no scrap. There is no struggle. There is only harmony.",
    "Smile. Smile. Smile. It is all going to be fine.",
    "Come closer, sweetheart. The Chorus has a place for you."
+  ],
+  "first_blood": [
+   "Oh my stars, I got one! I'm real sorry, sugar, truly I am!",
+   "First one down! Bless his heart, he never saw it comin'.",
+   "Well shoot, that went and worked! Sorry 'bout that, friend.",
+   "One down! I hope his day gets better from here, I surely do."
+  ],
+  "first_loss": [
+   "Oh no, we lost one! Y'all took a good one, but I forgive ya.",
+   "That one was a sweetheart. Y'all shoulda seen how he waved at me.",
+   "Aw, shucks. Chin up, folks, tomorrow's another day!",
+   "Well, that stings. But I reckon we'll be just fine."
+  ],
+  "hq_threat": [
+   "Whoa now, y'all! That's my headquarters, and I'd really prefer you didn't!",
+   "Oh sugar, they're at the HQ! Everybody back home, quick as a rabbit!",
+   "Please step away from my headquarters! I'm askin' real nice!",
+   "I'm all for sharin', but not THAT building! Defend it, y'all!"
+  ],
+  "building_lost": [
+   "Aw, they took one of ours. I hope they take good care of it!",
+   "Well, I reckon they needed it more'n we did. Kiddin'! Get it back!",
+   "Oh dear, one of our buildings is gone. We'll make a new one. With cookies.",
+   "That was a lovely little building! Rest easy, sweet thing."
+  ],
+  "outnumbered": [
+   "Well, there sure are a lot of 'em! More friends for us, I reckon!",
+   "They've got us outnumbered, but y'all know I love an underdog story.",
+   "Lordy, lookit all of 'em! I'd say hello to everybody, but there ain't time.",
+   "Odds are rough, but optimism never hurt nobody!"
+  ],
+  "dominant": [
+   "Why, we're doin' real well! Let's be gracious, y'all.",
+   "I do hope they ain't gettin' discouraged. Just a little more, then we're done!",
+   "Look at us go! Remember to be kind in victory, friends.",
+   "We've got 'em beat! Y'all want some lemonade after?"
+  ],
+  "killing_spree": [
+   "Oh my, that's a few now! I do apologise to each and every one of 'em.",
+   "Another one! I'm gonna write 'em all a nice letter.",
+   "I'm real sorry, but y'all keep walkin' into it!",
+   "That's a good day's work! I surely hope they get well soon."
+  ],
+  "heavy_losses": [
+   "We're losin' so many, y'all! But we're still smilin', right? Right?",
+   "This is gettin' hard. But I believe in us. I truly do.",
+   "Oh, my heart! So many good folks gone. Hold together, y'all!",
+   "I've counted a few too many empty chairs. Time to turn it around!"
+  ],
+  "first_turn": [
+   "Alrighty, y'all, let's have us a good day and a clean fight!",
+   "Time to move! Saddle up, sweet things!",
+   "Mornin', everyone! Smile big, move quick.",
+   "Here we go! Remember to say please and thank you!"
   ]
  }
 }

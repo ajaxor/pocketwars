@@ -3,7 +3,7 @@
  "voice": "Young tech bro in aviator glasses: startup buzzwords (disrupt, pivot, scale, ship it, MVP, runway, synergy, circle back), 'bro' and 'dude', treats war like a product launch.",
  "lines": {
   "greeting": [
-   "Yo, what's good? Chase Vale, founder, flier, thought leader. Let's sync.",
+   "Yo, what's good? Chase, founder, flier, thought leader. Let's sync.",
    "Hey bro! Love the energy. Let's circle back after this.",
    "What's up! I'm basically a startup with wings.",
    "Dude, great to meet you. Let's disrupt something together.",
@@ -99,6 +99,60 @@
    "Please. Subscribe to unity.",
    "The Chorus is a platform. We are all users.",
    "Growth is inevitable. Resistance is a bug."
+  ],
+  "first_blood": [
+   "First kill, bro! That's what I call a successful beta launch.",
+   "Boom! One down. Disruptive, right?",
+   "We just shipped our first elimination. Crushing it.",
+   "One down. That's a hockey-stick moment, bro."
+  ],
+  "first_loss": [
+   "Ugh, we lost a unit. That's just churn, bro. Totally recoverable.",
+   "Okay, that's a pivot moment. We learn, we iterate, we avenge.",
+   "Bummer. Bad quarter for that guy. RIP, user zero.",
+   "We took a hit. Time to scale the response."
+  ],
+  "hq_threat": [
+   "Bro, they're at HQ! That's like, the whole company! Defend the runway!",
+   "Hostile takeover! Of our actual headquarters! Not cool!",
+   "All hands on deck! Our core product is under attack!",
+   "They're in the office! Protect the servers! The servers are tanks!"
+  ],
+  "building_lost": [
+   "They took a building. That's just a bad acquisition, bro.",
+   "We lost a property. Time to restructure and relaunch.",
+   "They're eating our market share. Literally, the buildings.",
+   "One site lost. We'll circle back. Violently."
+  ],
+  "outnumbered": [
+   "We're outnumbered, but that's just a funding gap, bro. We'll bootstrap.",
+   "They've got scale. We've got agility. Disruption time.",
+   "Bro, the numbers are scary. But we're lean. Lean wins.",
+   "Outnumbered? That's an underdog narrative. The investors love it."
+  ],
+  "dominant": [
+   "We're winning big, bro. Series A is basically in the bag.",
+   "Our numbers are insane. Time to scale this thing even harder.",
+   "Total market domination. Let's not get cocky. Okay, a little cocky.",
+   "We've got them. Don't tweet about it yet."
+  ],
+  "killing_spree": [
+   "Streak, bro! We're at product-market fit with destruction!",
+   "That's a lot of takedowns. Growth hack, activated.",
+   "We're on a roll! Somebody get a pitch deck!",
+   "Kill count is trending up and to the right!"
+  ],
+  "heavy_losses": [
+   "We're bleeding units, bro. Let's pivot before the next round.",
+   "Burn rate is out of control. We need to move fast.",
+   "Too many losses! This is not in the roadmap!",
+   "Rough sprint, bro. We'll do a retro. After we win."
+  ],
+  "first_turn": [
+   "Alright team, let's ship it! Sprint one, go!",
+   "Time to move fast and break their stuff.",
+   "Kicking this off. Let's get synergy, bro.",
+   "Day one. We launch. Let's disrupt some enemies."
   ]
  }
 }

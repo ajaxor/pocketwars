@@ -32,7 +32,7 @@ Status: **decided direction: the Chorus seduces with technology ("the Gift"). Na
 - A new power, placeholder name **the Chorus** (an alien collective that presents as a human conqueror, see below), arrives and takes the nations one at a time. A conquered nation is **assimilated**: its
   leader is taken over (a visor, cold eyes, a new uniform in the Chorus colours), its army is re-equipped with Chorus tech, and its
   people march as one.
-- **All eight nations fall, with no exceptions.** The player is not a nation's leader: they are **Col. Gus Harlan**, a retired veteran who lives alone on
+- **All eight nations fall, with no exceptions.** The player is not a nation's leader: they are **Col. Harlan**, a retired veteran who lives alone on
   **Lastholm**, a small island off the coast. The intro shows the continent going dark nation by nation until only his island's light is
   left, and a grumbling decision to take it all back.
 - Every stage on the continent map is a nation to **liberate**. This is why the stages can be fought in any order: the Chorus holds all
@@ -49,8 +49,8 @@ faction's own tech tree, which is richer than one theme per nation.
 2. **The Gift.** Every nation is offered what it wants most. Nobody is told what the others were given.
 3. **Dependence.** Within a year the nation's factories, supply and defence run on Lattice. Its best equipment only works on Chorus tech.
 4. **The turn.** The last step is plugging the army into the shared network. Leaders who connect are **assimilated**: harmonised, not killed.
-5. **Every nation says yes**, Ashmark included. Ada Brandt, tired of a lifetime of making do, grabbed it with both hands.
-6. **The one that was never plugged in.** Col. Gus Harlan, retired, lives alone on Lastholm with a radio, a workshop and a long memory. The
+5. **Every nation says yes**, Ashmark included. Ada, tired of a lifetime of making do, grabbed it with both hands.
+6. **The one that was never plugged in.** Col. Harlan, retired, lives alone on Lastholm with a radio, a workshop and a long memory. The
    signal never reached his rock, and he would not have taken it anyway: he has heard "it's free" before. He is the only person with a
    free army, and the army is a handful of volunteers and a lot of scrap, which is exactly why the Chorus cannot switch it off.
 
@@ -213,15 +213,15 @@ unit and building set is richer than one line. The data lives in `data/campaign.
 
 | Leader | Nation | Personality | Flaw (why they fell) | Leaning |
 |---|---|---|---|---|
-| Col. Gus Harlan (you) | Lastholm | Grumpy, anti-technology old man with get-off-my-lawn energy | Stubborn: never took the Gift | The scrappy underdog: volunteers, salvage, old machines |
-| Cmdr. Ada Brandt | Ashmark | Warm, empathic, wildly optimistic farm-country ace with a cowboy hat and a country accent | Hope: sees the best in everyone, even the Chorus | Fast and aggressive infantry and light air |
-| Marshal Vex Orlov | Vantor Reach | Secretive spy in a trench coat who talks in code | Pride: certain he can keep the Gift a secret | Stealth and ambush |
-| Gen. Hiroshi Takeda | Ironvale | Old samurai who quotes the Art of War | Duty: the wisest victory is the one with no battle | Heavy armour |
-| Dr. Ludwig Kestrel | Solace | German mad scientist with wild white hair | Curiosity: cannot leave an experiment alone | Supply, repair and gadgets |
-| Adm. Sasha Marlow | Tidehaven | Pirate admiral with an eyepatch | Greed: could not resist a treasure | Sea power and amphibious assault |
-| Wing Cmdr. Chase Vale | Skyreach | Young tech-bro flier in aviator glasses | Hype: chases whatever is newest | Light air: cheap, fast, fragile |
-| Cmdr. Dmitri Volkov | Deepmere | Gloomy submariner in a fur hat with a Russian accent and a dark sense of humour | Loneliness: hungers for anyone who will listen | The deep sea: patient and hard to find |
-| Sovereign Lysandra Thorne | Highspire | A queen who speaks only in Shakespearean verse | Vanity: the best things are hers by right | Exotic late-game technology |
+| Col. Harlan (you) | Lastholm | Grumpy, anti-technology old man with get-off-my-lawn energy | Stubborn: never took the Gift | The scrappy underdog: volunteers, salvage, old machines |
+| Cmdr. Ada | Ashmark | Warm, empathic, wildly optimistic farm-country ace with a cowboy hat and a country accent | Hope: sees the best in everyone, even the Chorus | Fast and aggressive infantry and light air |
+| Marshal Vex | Vantor Reach | Secretive spy in a trench coat who talks in code | Pride: certain he can keep the Gift a secret | Stealth and ambush |
+| Gen. Hiroshi | Ironvale | Old samurai who quotes the Art of War | Duty: the wisest victory is the one with no battle | Heavy armour |
+| Dr. Ludwig | Solace | German mad scientist with wild white hair | Curiosity: cannot leave an experiment alone | Supply, repair and gadgets |
+| Adm. Sasha | Tidehaven | Australian pirate admiral with an eyepatch | Greed: could not resist a treasure | Sea power and amphibious assault |
+| Wing Cmdr. Chase | Skyreach | Young tech-bro flier in aviator glasses | Hype: chases whatever is newest | Light air: cheap, fast, fragile |
+| Cmdr. Dmitri | Deepmere | Gloomy submariner in a fur hat with a Russian accent and a dark sense of humour | Loneliness: hungers for anyone who will listen | The deep sea: patient and hard to find |
+| Sovereign Lysandra | Highspire | A haughty medieval queen (thees, thous and inventive insults) | Vanity: the best things are hers by right | Exotic late-game technology |
 | The Envoy | the Chorus | Warm, patient, generous; never lies; speaks as "we" | n/a | The Chorus's human avatar and the final boss |
 
 See `docs/characters.md` for how each one looks and talks, and `data/speech/` for what they say.

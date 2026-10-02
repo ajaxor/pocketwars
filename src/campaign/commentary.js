@@ -17,19 +17,20 @@ export const MIN_GAP = 3200;
 
 /** In priority order (the first that is due is the one said). `n` counts the leader's own tally; `ctx` has { mine, strongest, turns, hqThreat }. */
 export const MILESTONES = [
-  { id: 'hq_threat', situation: 'danger', due: (n, ctx) => ctx.hqThreat },
-  { id: 'first_loss', situation: 'unit_lost', due: (n) => n.losses >= 1 },
-  { id: 'first_kill', situation: 'taunt', due: (n) => n.kills >= 1 },
+  { id: 'hq_threat', situation: 'hq_threat', due: (n, ctx) => ctx.hqThreat },
+  { id: 'first_loss', situation: 'first_loss', due: (n) => n.losses >= 1 },
+  { id: 'first_kill', situation: 'first_blood', due: (n) => n.kills >= 1 },
   { id: 'first_capture', situation: 'capture', due: (n) => n.captures >= 1 },
-  { id: 'first_building_lost', situation: 'danger', due: (n) => n.buildingsLost >= 1 },
-  { id: 'outnumbered', situation: 'danger', due: (n, ctx) => ctx.turns >= 2 && ctx.mine * 2 < ctx.strongest },
-  { id: 'dominant', situation: 'taunt', due: (n, ctx) => ctx.turns >= 2 && ctx.strongest > 0 && ctx.mine >= ctx.strongest * 2 },
+  { id: 'first_building_lost', situation: 'building_lost', due: (n) => n.buildingsLost >= 1 },
+  { id: 'outnumbered', situation: 'outnumbered', due: (n, ctx) => ctx.turns >= 2 && ctx.mine * 2 < ctx.strongest },
+  { id: 'dominant', situation: 'dominant', due: (n, ctx) => ctx.turns >= 2 && ctx.strongest > 0 && ctx.mine >= ctx.strongest * 2 },
   { id: 'first_attack', situation: 'attack', due: (n) => n.attacks >= 1 },
-  { id: 'third_kill', situation: 'attack', due: (n) => n.kills >= 3 },
-  { id: 'third_loss', situation: 'unit_lost', due: (n) => n.losses >= 3 },
+  { id: 'third_kill', situation: 'killing_spree', due: (n) => n.kills >= 3 },
+  { id: 'third_loss', situation: 'heavy_losses', due: (n) => n.losses >= 3 },
   { id: 'third_capture', situation: 'capture', due: (n) => n.captures >= 3 },
   { id: 'sixth_kill', situation: 'taunt', due: (n) => n.kills >= 6 },
-  { id: 'first_turn', situation: 'idle', due: (n, ctx) => ctx.turns >= 1 },
+  { id: 'first_turn', situation: 'first_turn', due: (n, ctx) => ctx.turns >= 1 },
+  { id: 'long_battle', situation: 'idle', due: (n, ctx) => ctx.turns >= 6 },
 ];
 
 export class Commentator {

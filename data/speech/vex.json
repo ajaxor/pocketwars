@@ -99,6 +99,60 @@
    "I have nothing to hide. I have nothing.",
    "The Chorus knows. The Chorus has always known.",
    "Please. Surrender your secrets. We will keep them. All of them."
+  ],
+  "first_blood": [
+   "Target neutralised. Code name: Wednesday.",
+   "One down. Don't ask who. Please. I'd hate to be rude.",
+   "Contact eliminated. This conversation never happened.",
+   "Operation Silent Thursday is underway. One asset removed."
+  ],
+  "first_loss": [
+   "We've lost an operative. The file will be shredded, naturally.",
+   "One of mine is gone. I'll file it under 'regrettable' and 'classified'.",
+   "Agent down. Initiate Protocol Seven. Pretend you didn't see.",
+   "They got one. Interesting. Someone leaked."
+  ],
+  "hq_threat": [
+   "Code Red. They're at the nest. Repeat: the nest.",
+   "Someone is in my headquarters. Which is, technically, not on any map.",
+   "Breach at Headquarters. Defend it, and then deny everything.",
+   "The safe house is compromised! Extract and engage!"
+  ],
+  "building_lost": [
+   "A safehouse has fallen. I never liked that cover story anyway.",
+   "They took one of our sites. I'll consider it a controlled burn.",
+   "A location lost. Don't worry; I have seventeen more. Some of them real.",
+   "Facility compromised. We were planning to lose it. Probably."
+  ],
+  "outnumbered": [
+   "Outnumbered. As planned. Possibly.",
+   "They have the numbers. We have secrets. Secrets win. Usually.",
+   "The odds are against us. Fortunately I don't believe in odds. Or in telling you what I do believe in.",
+   "Many of them, few of us. Perfect cover for something clever."
+  ],
+  "dominant": [
+   "Our position is strong. Which is exactly what they'd expect us to say.",
+   "We have the upper hand. Whose hand? Classified.",
+   "All proceeding according to plan. Don't ask which plan.",
+   "Surplus of force. Time to look humble and strike anyway."
+  ],
+  "killing_spree": [
+   "The body count is climbing. I'd say a few. I'd never say how many.",
+   "Another asset removed. At this rate I'll need a bigger shredder.",
+   "Quietly efficient, as always. You didn't see me. Ever.",
+   "The list is getting shorter. Theirs, not mine."
+  ],
+  "heavy_losses": [
+   "Heavy losses. The cover story: 'training exercise'.",
+   "Too many agents lost. Someone in this operation talks. I wonder who.",
+   "Casualties mounting. Destroy the evidence and press on.",
+   "This is going poorly. I'll deny everything at the hearing."
+  ],
+  "first_turn": [
+   "Moving into position. If anyone asks, I was never here.",
+   "Commencing the operation. The coffee is not a code word.",
+   "The eagle has left the nest. Or the rooster. Whichever is classified.",
+   "Operation begins. Radio silence."
   ]
  }
 }

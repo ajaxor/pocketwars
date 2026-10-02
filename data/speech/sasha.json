@@ -1,104 +1,150 @@
 {
  "id": "sasha",
- "voice": "Pirate admiral with an eyepatch: arr, matey, ye, me hearties, plunder, rum, scallywags and Davy Jones.",
+ "voice": "Pirate admiral with a broad Australian accent (mate, crikey, strewth, reckon, bloody, no worries, she'll be right, arvo, flamin', galah, drongo) drenched in nautical jargon: starboard and port, bow and stern, keelhaul, broadside, hard a-lee, three sheets to the wind, bilge, fathoms, squalls, Davy Jones.",
  "lines": {
   "greeting": [
-   "Ahoy, matey! State yer business or walk the plank!",
-   "Arr, a new face! Don't be shy, I only bite on Tuesdays.",
-   "Well shiver me timbers, look what the tide dragged in!",
-   "Welcome aboard, ye scallywag! Mind the rum.",
-   "Avast! Ye look like trouble. I like trouble."
+   "G'day, ya barnacle! Come aboard and mind the bloody deck, she's freshly swabbed.",
+   "Ahoy, mate! Take a seat on the capstan, the grog's flowin' like the tide.",
+   "Strewth, a new face on me quarterdeck! State yer business before I keelhaul ya, no worries.",
+   "Fair winds, ya good-lookin' bilge rat! Welcome to the flamin' fleet.",
+   "Crikey, look what the tide dragged in! Mind yer boots on me planks, mate."
   ],
   "battle_start": [
-   "Hoist the colours! We sail for plunder!",
-   "Arr, it's a fine day for a battle! Load the cannons!",
-   "Batten down the hatches, ye bilge rats! We fight!",
-   "Weigh anchor and full speed ahead! The sea calls!",
-   "Show no mercy, me hearties! There's treasure to be had!"
+   "All hands on deck, ya drongos! Hoist the colours, load the cannons and brace for a bloody broadside!",
+   "Hard a-lee, crew! Man the guns, we're sailin' into a squall and I reckon it'll be a ripper!",
+   "Weigh anchor and run out the guns, ya galahs! Not a single flamin' one of 'em sees the sunset!",
+   "Batten the hatches, mates! We're about to give 'em a proper walloping, port to starboard!",
+   "Crikey, smell that salt? That's the smell of a good ol' fashioned plunderin'. Fire at will!"
   ],
   "attack": [
-   "Broadside! Feast on that, ye barnacle-faced landlubber!",
-   "Yo ho ho and a bottle of boom!",
-   "Arr! That'll leave a mark!",
-   "Fire in the hole, ye scurvy dog!",
-   "Take that, and call it a donation to me treasure chest!"
+   "Fire the port battery! Give 'em a flamin' broadside, mate!",
+   "Hard to starboard and let 'er rip! Right across yer bow, ya bilge rat!",
+   "Take that, ya scurvy sea slug! Straight down to Davy Jones with ya!",
+   "Shiver me timbers, ya hit like a wet jellyfish! Here's how it's done, bow to stern!",
+   "Cannons loaded, rum's low, temper's lower. Fire!"
   ],
   "unit_lost": [
-   "Blast me eyes, she's gone down to Davy Jones!",
-   "Another good ship swallowed by the briny deep. I'll miss her.",
-   "Arrr, that stings worse than a jellyfish!",
-   "Ye'll pay for that, ye lily-livered swabbie!",
-   "A moment of silence fer the fallen. Okay, enough. Revenge!"
+   "Strewth! Down she goes, fathoms deep. Raise a tot for the poor bastard.",
+   "Blimey, that's a hole below the waterline! Somebody bail, ya galahs!",
+   "Ya cheeky mongrel! That one was me best bosun, and ya'll pay for it in splinters!",
+   "Ah, she's gone to Davy Jones' locker. Poor ol' girl. I'll avenge ya, mate!"
   ],
   "capture": [
-   "Hah! This be mine now! Plunder, plunder, plunder!",
-   "Another jewel fer me crown! Raise the Jolly Roger!",
-   "Arr, shiver me timbers! What a fine port!",
-   "Finders keepers, ye landlubbers!",
-   "Open the chest! Count the coins! Aye, it's grand!"
+   "Dropped anchor and claimed her, mate! Fly the Jolly Roger from the bloody rafters!",
+   "She's ours! Plunder's divvied up and the rum's on the house, ya beauties!",
+   "Ha! Another port in me pocket. Bloody beauty, that is!",
+   "Claimed in the name o' the flamin' fleet! Lash a flag to her mast, ya drongos!"
   ],
   "danger": [
-   "Arr, the seas be rough! Hold tight!",
-   "We be takin' on water! All hands on deck!",
-   "A storm's brewin', and I don't mean the weather!",
-   "Stand yer ground, ye cowards! I've seen worse from a kraken!",
-   "Ye'll not take me ship, ye blackhearted dogs!"
+   "We're takin' on water, crew! Man the pumps and keep her off the rocks, or we're all shark bait!",
+   "Crikey, the HQ's listin' hard to port! All hands, bail like yer lives depend on it, because they do!",
+   "She's breakin' up, mates! Hold the line or it's a swim home with the sharks!",
+   "Strewth, we're in a proper squall! Reef the sails and fight like a cornered croc!",
+   "Red sky at night, and it's bloody ominous! Hold fast, ya galahs!"
   ],
   "victory": [
-   "Hah! The sea be ours! Break out the rum!",
-   "Victory, me hearties! Drinks all round!",
-   "Another one for the logbook! Sing the shanty!",
-   "Arr, I do love a good plunder!",
-   "The Jolly Roger flies high today, matey!"
+   "Land ahoy, and it's ours! Splice the mainbrace, mates, the drinks are on me!",
+   "Another one for Davy Jones! Raise the Jolly Roger and fire the cannons in salute, she'll be right!",
+   "Ripper of a battle, crew! Dinner's plunder and the grog is flowin' till dawn!",
+   "Hoist the colours, ya scallywags! The seas are ours and the bloody sun's out!"
   ],
   "defeat": [
-   "Retreat, ye scallywags! Live to plunder another day!",
-   "Arr, the tide has turned against us. We'll be back.",
-   "Ye may have won the battle, but I'll steal yer ship!",
-   "Back to port! We'll patch the sails and curse a bit!",
-   "Blast it all to the depths! We regroup!"
+   "Strewth, we've been sunk. Fair dinkum, ya got me. Bloody well played.",
+   "She's goin' down, mates. Tell me tale o' the Aussie Admiral... and keep it generous.",
+   "I'll be back, ya sea slug. Even Davy Jones can't keep a good pirate down.",
+   "Ah, bugger. Abandon ship, then! Next time I'll bring a bigger bloody boat."
   ],
   "taunt": [
-   "Yer army looks like a sack of wet biscuits!",
-   "Come closer, ye barnacle-brained landlubber!",
-   "I've fought sea monsters tougher than ye!",
-   "Surrender yer treasure, or I'll feed ye to the fishes!",
-   "Ye fight like a drunken seagull!"
+   "Ya fight like a flamin' sea cucumber, mate! I've seen better steerin' from a drunk dugong!",
+   "Ya couldn't navigate a bathtub, ya galah! Even the barnacles are laughin'!",
+   "Come on, ya yellow-bellied bilge rat! I've fed bigger fish than you to bloody sharks!",
+   "Is that the best ya got? I've had worse from a stiff breeze, ya drongo!",
+   "Ya sail like a three-legged turtle with a hangover. Pathetic!"
   ],
   "praise": [
-   "Arr, ye've got the makin's of a fine pirate!",
-   "Well plundered, me hearty!",
-   "A fine bit o' sailin', that was!",
-   "I'd share me rum with ye any day!",
-   "Ye've earned a spot on me crew, matey!"
+   "Good on ya, mate! That was a beaut. Ya'd make a fine first mate!",
+   "Ripper shot, that! Ya handled that like a seasoned deckhand, no worries!",
+   "Fair dinkum, you're a legend. Splice the mainbrace, ya beauty!",
+   "Crikey, that was smoother than a calm sea at dawn. Well done, mate!"
   ],
   "idle": [
-   "Never trust a sober sailor. Or a seagull. Or a map.",
-   "I once saw a mermaid. Turned out to be a manatee. Still, great hair.",
-   "Ye know what the sea needs? More cannons.",
-   "Rum, then plunder, then rum again. That's the proper order.",
-   "Me parrot knows nothin'. But he's very loyal."
+   "Calm seas never made a good sailor, I always say. Pass the grog, would ya?",
+   "Nothin' beats a salty breeze and a sunburnt nose. Smells like adventure, mate!",
+   "I've had barnacles for company longer than most folks have had friends. Worth it, though.",
+   "Bloody hell, where'd I put me eyepatch? Oh, it's on me forehead. Right as rain!",
+   "Spent half me life on a ship and the other half lookin' for one. She'll be right."
   ],
   "tech": [
-   "A magic treasure from the sky? I'll take it! And the sky!",
-   "Never look a gift kraken in the mouth. Er, the other way 'round.",
-   "Aye, the finest treasure I ever got. Free, even! Hah! What could go wrong?",
-   "Cunnin' folk, these aliens. I almost admire 'em. Almost.",
-   "Gadgets be fer landlubbers. But this one's shiny. I'll keep it."
+   "Blimey, a robot? Strewth, I can't even trust a compass, let alone a talkin' toaster!",
+   "Bloody gizmos! Give me a sextant, a star and a stiff tot of rum any day.",
+   "That Chorus lot reckon they can steer a ship from the inside of yer skull? Over me dead body, mate!",
+   "Crikey, what's that Gift thing? Smells fishier than a week-old mackerel!"
   ],
   "joined": [
-   "Back at the helm, me hearties! Where's me rum?",
-   "Thank ye for the rescue! I'll repay ye in plunder!",
-   "Ye saved me from a fate worse than the plank!",
-   "Aye, I be yer captain now. Er, yer crew. Er, whichever.",
-   "Hoist the colours! The admiral's back!"
+   "Ahoy, I'm yours, mate! Where's the nearest ship and a bloody good brawl?",
+   "Reckon I'll sign on. Pay's good, grog's better, and I've got a score to settle!",
+   "Crew's got a new admiral, mates! Hoist the colours, there's work to do!",
+   "Sailin' under yer flag, captain. Just point me at the horizon and say go!"
   ],
   "assimilated": [
-   "The sea is one. The Chorus is the sea. Arr... arr... arr.",
-   "A fair trade, for all. No plunder. No rum. Only harmony.",
-   "Join the crew. The crew is... everyone.",
-   "All treasure is shared. There is no treasure.",
-   "Yo ho ho. Yo ho ho. Yo ho ho. Yo ho ho."
+   "Strewth... the sea's gone quiet... so quiet... all the waves speak the one voice...",
+   "Aye... aye... the tide says we are one... and bloody lovely it is...",
+   "No more grog... no more squalls... only the Chorus... and the calm...",
+   "The compass... points only one way now... mate... *glub*..."
+  ],
+  "first_blood": [
+   "First blood to the fleet! Chalk it on the mast, ya galahs!",
+   "Down she goes! One sunk and the day's only just begun, mate!",
+   "Ha! The first of many, ya bilge rat. Add it to the tally!",
+   "There's the first cannonball well spent. Fire at will, crew!"
+  ],
+  "first_loss": [
+   "Blimey, they've holed one of ours! Not a word to the crew, ya hear?",
+   "Strewth, first casualty! Pour a tot over the side and keep sailin'!",
+   "Ya cheeky sods! That's first blood to you, and the last, I swear!",
+   "One down already? Right, now I'm properly narky, mate."
+  ],
+  "hq_threat": [
+   "Strewth, they're at the bloody flagship! Repel boarders, ya galahs!",
+   "Hard a-port, crew! The enemy's tryin' to board the HQ, ya won't take her while I draw breath!",
+   "Boarders! Cutlasses out, ya scurvy lot, or we're all feedin' the fishes!",
+   "Crikey, the HQ's under siege! All hands to the quarterdeck, now!"
+  ],
+  "building_lost": [
+   "They've taken a port, the cheeky mongrels! We'll sail back and sink the lot!",
+   "Crikey, we've lost a harbour! Chart a new course and take it back, mates!",
+   "Ya thieving sea slugs! That was a perfectly good dock, and I'll have it back by sundown!",
+   "Bloody oath, there goes another port. Somebody's gettin' keelhauled for this!"
+  ],
+  "outnumbered": [
+   "Strewth, they've got more hulls on the water than us! Fight smarter, ya galahs!",
+   "Outgunned and outnumbered, mates? Bloody typical. Never stopped a good pirate yet!",
+   "Crikey, count the sails on that horizon... we'll need to be sneaky, crew!",
+   "Plenty of 'em, but they're all bilge. We take 'em one broadside at a time!"
+  ],
+  "dominant": [
+   "Look at that, crew, we've got 'em outgunned and outsailed! Don't let up, ya beauties!",
+   "Smooth sailin', mates! The enemy's runnin' like rats off a sinking ship!",
+   "We've got 'em, mates! Wind at our backs and the bloody tide too!",
+   "Fair dinkum, we're ruling these waves. Keep the pressure on!"
+  ],
+  "killing_spree": [
+   "That's three down, ya beauties! Keep the cannons hot, she's goin' a treat!",
+   "Another one for the deep! The sharks'll eat well tonight, mates!",
+   "Ripper, that's a hat-trick! Notch the mast, ya galahs!",
+   "Down they go like skittles! Davy Jones is gonna need a bigger locker!"
+  ],
+  "heavy_losses": [
+   "Strewth, the fleet's gettin' thin, mates! Hold the line or we're all goin' to the bottom!",
+   "That's three of ours gone to Davy Jones. Don't let their deaths be for nothin'!",
+   "Blimey, we're bleedin' hulls! Dig in, ya galahs, and make 'em pay!",
+   "She's gettin' ugly out there, mates. Stay sharp and fight like cornered crocs!"
+  ],
+  "first_turn": [
+   "Right then, crew! Wind's fair, tide's turned, and the grog's still warm. Let's have a crack!",
+   "Chart's laid out, cannons loaded. Let's see what they've got, mates!",
+   "Hoist the mainsail and let's have a bloody good go!",
+   "Eyes on the horizon, ya scallywags. The first move's ours!"
   ]
  }
 }

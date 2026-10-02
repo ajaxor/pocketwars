@@ -1,104 +1,149 @@
 {
  "id": "lysandra",
- "voice": "A queen who speaks in Shakespearean verse: archaic English (thee, thou, hath, methinks, good morrow) in rhymed couplets, lines separated by ' / '.",
+ "voice": "Haughty medieval queen who speaks in high royal prose: thee, thou, thy, thine, hath, doth, 'tis, prithee, forsooth, mine own royal 'we'. Impossibly high and mighty, the world is her footstool, and she delivers wonderfully inventive, elaborate insults (compares enemies to curdled milk, pox-ridden toads, lackwit turnips and the like).",
  "lines": {
   "greeting": [
-   "Well met, fair stranger, welcome to my hall; / Be thou friend or foe, I greet thee all.",
-   "Approach, good sir, and bend thy knee with grace; / A queen doth deign to look upon thy face.",
-   "What news, what wind hath blown thee to my door? / Speak plainly, and I shall not ask for more.",
-   "Ah, a visitor! The stage is set, the lights are lit; / Pray enter, and be wise, and mind thy wit.",
-   "Good morrow to thee, friend, or so I hope; / If thou bring'st trouble, I have wit and rope."
+   "Kneel, good stranger, for thou standest before Lysandra, rightful sovereign of all that thou canst see and much that thou canst not.",
+   "Well met, small creature. Thou mayest address us as 'Your Radiance', and thou mayest begin forthwith.",
+   "Hail! Thou art granted an audience, a privilege that hath made grown barons weep with gratitude.",
+   "Prithee, approach, but not so close that thy breath offends mine ermine.",
+   "Ah, a visitor. How quaint. We hath decided to permit thee to continue breathing in our presence."
   ],
   "battle_start": [
-   "Once more unto the breach, my loyal band; / We'll write our names in blood upon the land!",
-   "Let slip the dogs of war, and sound the drum; / The hour of reckoning is nigh; we come!",
-   "To arms, to arms! The hour is at hand; / Let valour be the banner of this land!",
-   "Draw forth thy steel, and hold thy courage dear; / For glory waits, and so does danger near.",
-   "The die is cast, the trumpet loud doth blow; / Now let the ranks of Highspire strike the foe!"
+   "Sound the trumpets and unfurl the banners! Let it be recorded that we deigned to grace this squabble with our presence.",
+   "Hear us, ye muddy-boot rabble: this field is ours by divine right and by the fact that we want it.",
+   "Forth, loyal knaves! Let the heavens witness our wrath, which is considerable and well-tailored.",
+   "Draw steel, good subjects! Thou art about to be part of history, and we shall write the first line.",
+   "To arms! We shall dispatch these rogues before the wine hath had time to warm."
   ],
   "attack": [
-   "Receive my wrath, thou base and wretched knave; / The earth awaits to be thy narrow grave!",
-   "A palpable hit! Now fall, and cease thy fight; / The stage is mine, and thou art but the night.",
-   "Feel thou the sting of Highspire's golden blade; / Let every foe be thus, in dust, delayed!",
-   "Thy fate was writ, and I the pen that wrote; / Now fall, thou scoundrel, like a sinking boat.",
-   "Strike hard, strike true, and let the heavens see / That none may stand against my majesty!"
+   "Receive our wrath, thou pox-ridden turnip!",
+   "Be smitten, thou curdled dollop of dung-cart custard!",
+   "Our blade doth find thee, thou ale-sodden, mule-faced mumblecrust!",
+   "Begone, thou quivering heap of rotten haberdashery!",
+   "Fall, thou jester's afterthought, and be grateful 'twas a royal hand that dealt the blow!"
   ],
   "unit_lost": [
-   "Alas, poor tank! I knew it well, good friend; / A noble ending to a noble end.",
-   "O cruel fate, to snatch my hero's breath! / Thou hast, vile foe, bestowed an early death!",
-   "He fell, and with him fell a part of me; / Yet shall I weep when we have victory.",
-   "Parting is such sweet sorrow, said the bard; / But losing tanks is simply very hard.",
-   "A pox upon the hand that struck thee down! / I'll have my vengeance, and I'll keep my crown!"
+   "Thou hast slain a loyal soldier of ours. Thy descendants shall be taxed for seven generations.",
+   "Out upon thee, thou vile jackanapes! That knave wore our colours, and thou shalt pay in blood and in gold!",
+   "Alas, a faithful servant hath fallen. We shall mourn by dispatching ten of thine own.",
+   "Our hand is stayed by grief... for approximately one breath. Then, thy doom."
   ],
   "capture": [
-   "This fort is mine; I'll hold it, and rejoice; / Raise high my banner, with a mighty voice!",
-   "All this and more shall be my kingdom's gain; / Let none but I be sovereign of this plain.",
-   "A noble seat, and now a noble prize; / See how my banner flutters in the skies!",
-   "I came, I saw, and now the keys are mine; / Let all who doubt me kneel and drink the wine.",
-   "O gentle walls, now mine in every part; / I'll treat thee kindly, with a queenly heart."
+   "Mine, now and ever. Fetch the royal banner, and a cushion for our sitting.",
+   "This place now bears our standard, as all places ought. Be glad of the upgrade.",
+   "We hath claimed it in the name of Lysandra the Magnificent. Applaud, thou lowly lot!",
+   "Another jewel for our crown. We shall allow the peasants to gawk."
   ],
   "danger": [
-   "The wolves are at the gate, the night grows cold; / Yet shall I stand, as rulers did of old.",
-   "Is this a dagger which I see before me? / Nay, 'tis a foe who means to do me sorry!",
-   "The storm doth rage, and yet I shall not flee; / My crown is firm, my courage plain to see.",
-   "Methinks the foe doth press upon my gate; / Hold fast, good friends, and trust in fickle fate.",
-   "Come, bring me wine, and bring me better odds; / For I shall not be moved by lesser gods."
+   "Sound the alarm! Our royal seat is threatened, and by creatures with the manners of pigs!",
+   "Fie! Do none of thee know how to defend a queen? To the walls, thou lackwits!",
+   "Gods above! Thou wouldst see us dethroned by this rabble of scullery-born vermin?",
+   "Our crown doth wobble! Rally, thou cowards, or we shall have thy heads for hat stands!",
+   "This is most unseemly. A queen should not be hurried. Yet here we are, hurrying."
   ],
   "victory": [
-   "The day is ours! Let trumpets sound and sing; / Hail, victory! Hail, queen! Hail, everything!",
-   "All's well that ends well, and this ends right well; / Let every soul of Highspire ring the bell!",
-   "We few, we happy few, who stood this day, / Shall tell the tale in many a year, and say.",
-   "Sweet victory, thy kiss is warm and bright; / Tonight we feast, and revel through the night!",
-   "The foe is vanquished, and the field is clear; / Now bring me wine, and let the court draw near."
+   "Victory is ours, as the heavens ordained and as we expected. Let the bells ring and the peasants cheer!",
+   "Kneel before the conqueror, thou bedraggled vanquished! The throne remains ours, as is only proper.",
+   "Bring the wine, and a bigger crown. We shall celebrate thy defeat with great pomp and little mercy.",
+   "Thus endeth the folly of fools. Let it be sung in every tavern, and with correct pronunciation."
   ],
   "defeat": [
-   "Alas, our fortune fails; the day is lost; / But I shall rise, whatever be the cost.",
-   "Fie on the fates! They've cast a bitter die; / Yet will I fight again, as days go by.",
-   "O woe is me! A kingdom for a horse! / Or tank, or plane, or anything, of course.",
-   "Retreat, good friends, and bind your wounded pride; / We'll come again, with vengeance as our guide.",
-   "Defeat is but a scene in this great play; / The final act shall be mine, come what may."
+   "It cannot be... We, bested? By thee? The very stars must have been drunk.",
+   "Thou hast won this day, thou mongrel of fortune. We shall remember thy name, to curse it nightly.",
+   "We are... displeased. Most gravely. Pray, do not gloat, it is unbecoming of lesser folk.",
+   "The crown may fall, but the grace remaineth. Thou, meanwhile, shalt remain smelling of onions."
   ],
   "taunt": [
-   "Thou art a knave, a rascal, and a fool; / Go home, thou boy, and go back to school!",
-   "Thy wit is thin, thy army thinner still; / I'll trounce thee at my leisure, and with skill.",
-   "Thy words are wind, thy valour is but air; / I'll crush thee soon, and brush thee from my hair.",
-   "Thou dost protest too much! Thy fear is plain; / Come forth, and meet thy doom upon this plain.",
-   "Methinks thou dost protest, and boast too loud; / I'll teach thee manners, bold, though small and proud."
+   "Thou art a pustulent, flap-eared barnacle upon the hull of civilisation!",
+   "Thy mother was a goose-girl and thy father smelled of cabbage and failure!",
+   "Thou hast the wit of a boiled turnip and half its charm, thou lumpen sack of regret!",
+   "Thy sword-arm is as limp as a wet tapestry, thou lily-livered merchant of mediocrity!",
+   "Is that thy best, thou beetle-browed bag of badger bile? We have been more terrified by hats!"
   ],
   "praise": [
-   "Well done, thou good and faithful servant, well! / Thy deeds, I swear, in many a tale shall dwell.",
-   "A noble stroke! The bards shall sing of thee; / And I shall hum along, quite happily.",
-   "Thou hast my thanks, sweet friend, and my regard; / Thy loyalty shall earn a rich reward.",
-   "I'll write thy name in gold upon my wall; / For thou hast served me better than them all.",
-   "O brave new world, that hath such soldiers in't! / Thy courage doth surpass all praise or hint."
+   "Well struck, loyal one! We might nigh grant thee a title. A small one. In a distant, damp province.",
+   "Thou hast pleased us, which is no small feat. Savour it, for it is rarer than frost in summer.",
+   "A deed worthy of song! Or at least, of a polite cough and a nod from the throne.",
+   "Excellent, good subject. Thou mayest kiss our ring. Briefly. We have standards."
   ],
   "idle": [
-   "All the world's a stage, and I the star; / The rest are merely players, near and far.",
-   "To nap, or not to nap? That is the question; / Whether 'tis nobler, or but good digestion.",
-   "My kingdom for a bit of peace and quiet! / Alas, my court ne'er ceases, nor doth diet.",
-   "I'd write a sonnet, but my muse is out; / She's gone to lunch, the rascal, I do doubt.",
-   "Methinks the moon doth laugh at all our woes; / And so do I, for nobody knows."
+   "We were born to rule, as the sun was born to shine, and rather more attractively.",
+   "A queen's work is never done, for the world is so full of fools that one scarcely knows where to begin.",
+   "Pray, someone fetch us a goblet. And a fan. And a less irritating kingdom.",
+   "How tedious to be right all the time. Yet we manage, with unfailing grace."
   ],
   "tech": [
-   "A gift from distant stars! How fine a thing; / Doth it hold tribute? Or a hidden sting?",
-   "Such wonders doth the Chorus bring to me! / I'll make them part of my own royalty.",
-   "Behold, a gift, divine and wondrous bright; / I'll take it gladly, for it is my right.",
-   "Though strange it be, the Gift is passing fair; / It fits me well, as crowns upon my hair.",
-   "Beware the Greeks who bear us gifts, they say; / But I'm no Trojan, and I'll have my way."
+   "Whatever sorcery is this? Machines of the devil that think! We shall have none of it near our throne.",
+   "A 'robot'? We have servants for such tasks. They are called peasants, and they are cheaper.",
+   "The Chorus whispereth in thine ear? How utterly vulgar. A queen heareth only herself and the occasional lute.",
+   "This 'Gift' reeketh of treachery and cheap perfume. We decline, with royal contempt."
   ],
   "joined": [
-   "My liege, I'm free! Thy kindness shall be known; / I'll serve thee well, and win back what's my own.",
-   "Thank thee, brave friend, for breaking me from chains; / I'll fight beside thee, through all joys and pains.",
-   "Once more I wake, as from a heavy dream; / Let us now fight, and make our foes scream.",
-   "I thank thee, noble friend, for setting free; / A grateful queen shall ever follow thee.",
-   "Forgive my folly, and my lapse of mind; / I'll serve thee well, the noblest of my kind."
+   "Very well. We shall deign to lend thee our majesty, thou fortunate wretch. Do try to be worthy.",
+   "We pledge our sceptre to thy cause. Mark it well, for we do not do this often.",
+   "Thou hast earned our service, a rare honour. Kneel. No, lower. There.",
+   "Our crown is thine to command... within reason, and subject to royal whims."
   ],
   "assimilated": [
-   "We are as one; our voices all agree; / Join thou the Chorus, and thou shalt be free.",
-   "No more of strife, no more of vain regret; / The Chorus waits for thee. Be one. Be met.",
-   "All hail the Chorus, sovereign of the age; / We turn together on this earthly stage.",
-   "Thy will is ours, and ours is thine as well; / Come, join the song, and break the final spell.",
-   "Resist no more, sweet friend, resist no more; / The sweetest harmony is at thy door."
+   "The... throne... speaketh... with many voices now... all of them... beautifully... harmonious...",
+   "We are... no longer... 'we'... but a choir... of one... majestic... note...",
+   "The Chorus... hath crowned us... queen of nothing... and everything... how... pleasant...",
+   "Hush, thou... the royal will is... the Chorus will... which is... we..."
+  ],
+  "first_blood": [
+   "The first of thy kind falleth, and we are not even out of breath. Splendid.",
+   "Mark it well, scribe: first blood to the crown, and it was most elegant.",
+   "Lo, the first knave hath fallen. The rest shall follow, in order of rank, presumably.",
+   "One fewer fool upon the field. Let the heralds proclaim it, in good rhyme."
+  ],
+  "first_loss": [
+   "Thou hast slain one of ours, thou lumbering jackal! 'Twill be thine own head upon a pike by sunset.",
+   "A loyal subject lieth dead. We shall mourn him magnificently, and then avenge him thoroughly.",
+   "Thou darest draw our blood? Thy impudence doth astonish and delight us, in a murderous sort of way.",
+   "Our first wound. A trifle, and yet one that shall cost thee dearly."
+  ],
+  "hq_threat": [
+   "They approach our royal seat! Defend it, thou lackwit lumps, or we shall have thy heads for footstools!",
+   "A rabble upon our doorstep! The audacity! Sound the horns and summon the guard!",
+   "Dost thou dare tread upon our hallowed grounds, ye scabrous vagabonds? Repel them at once!",
+   "The throne is in peril! Mark this, ye knights: every inch of retreat shall be remembered in the chronicles!"
+  ],
+  "building_lost": [
+   "Thou hast stolen our property, thou thieving gutter-rat! We shall have it back with interest.",
+   "A holding of ours is lost? Preposterous! It shall be reclaimed, and thou shalt be gently flogged.",
+   "Insolent bandit! That edifice was ours by divine right. Return it, or be returned to dust.",
+   "Villainous pickpocket of provinces! We shall tax thy bones for this, in perpetuity."
+  ],
+  "outnumbered": [
+   "They are many, and we are splendid. 'Tis a fair match, in truth, though not for thee.",
+   "Quantity is the refuge of the unremarkable. Let them come, in their dull multitudes.",
+   "Count them if thou wilt. We prefer to count the ways in which we shall humiliate them.",
+   "Numbers, forsooth! Thou mayest outnumber us, but never out-royal us."
+  ],
+  "dominant": [
+   "Behold how the lesser armies crumble before our splendour! 'Tis almost unsporting.",
+   "Thy forces melt like butter in a blacksmith's hands. Pray, offer a little resistance. For decorum.",
+   "We rule this field entire. Do continue, thou sad scatter of scarecrows.",
+   "The tide is ours, as are all tides. Surrender at thy leisure, which is now."
+  ],
+  "killing_spree": [
+   "Thy soldiers fall like autumn leaves upon our boot. Delightful!",
+   "Another! And yet another! We are positively radiant with victory.",
+   "Three of thine own lie vanquished. Perchance thou shouldst recruit better, or fewer.",
+   "Verily, this is the finest harvest of fools we have seen in a season."
+  ],
+  "heavy_losses": [
+   "Our ranks are thinned, but our spirit is not. Rally, thou noble remnants!",
+   "Many have fallen, and it grieveth us. Thou shalt answer for each, in turn, in fire.",
+   "Lo, our host dwindleth. Fear not: a queen with a point to prove is a mighty thing.",
+   "Grief is a luxury we shall afford later. For now, retribution."
+  ],
+  "first_turn": [
+   "Let the proceedings commence. We shall be gracious, up until we are not.",
+   "Our move, we deem. Observe, and be edified.",
+   "The game is afoot, and thou art, alas, upon the wrong side of it.",
+   "Bring forth the first pieces. Let us show these upstarts how war is conducted by the properly bred."
   ]
  }
 }

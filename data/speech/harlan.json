@@ -99,6 +99,60 @@
    "Keep your gift. I never liked surprises, and I really don't like free ones.",
    "Join you? I wouldn't join my own birthday party.",
    "Get off my island and take your fancy glowing nonsense with you."
+  ],
+  "first_blood": [
+   "Got one! Bah, don't look so surprised, kid. I was doing this before you were a rumour.",
+   "First one down. No gadgets, no gizmos. Just good old-fashioned shooting.",
+   "One down. Somebody write that on a napkin; I'm not touching that phone thing.",
+   "There. Dead is dead, kid. No software update required."
+  ],
+  "first_loss": [
+   "Bah! Lost one. Back in my day we called that Tuesday.",
+   "Dammit. That one had a mother. Probably. Moving on.",
+   "They got one of mine. Fine. Now I'm irritated, and you don't want me irritated.",
+   "Lost a good one there. I'll grumble about it later. Right now, shooting."
+  ],
+  "hq_threat": [
+   "Get off my lawn! That's my headquarters you're sitting on, you thieving whippersnapper!",
+   "They're at my HQ! Over my dead body. Which, don't push it.",
+   "Nobody takes my front porch! Everybody on defence, NOW!",
+   "That building has a leaky roof and a lot of history. You can't have it!"
+  ],
+  "building_lost": [
+   "They took a building. Bah. Never liked the wallpaper anyway.",
+   "Lost another one. I'll want it back, and a sandwich.",
+   "That's mine, kid! Well. It WAS mine. Not for long.",
+   "Fine, have the shed. I'll take the barn."
+  ],
+  "outnumbered": [
+   "Outnumbered? Back in my day that was called a fair fight.",
+   "More of them than us. Good. Saves me walking around looking for 'em.",
+   "Bad odds, kid. I've had worse. Had a cold once, that was worse.",
+   "They've got numbers. I've got stubbornness. Stubbornness has a better track record."
+  ],
+  "dominant": [
+   "We've got them outgunned. Don't get cocky, kid. Cocky gets you killed.",
+   "Winning, are we? I've seen this movie. It's never over till it's over.",
+   "Plenty of us, not many of them. Still no excuse for sloppiness.",
+   "This is going well. I don't trust it."
+  ],
+  "killing_spree": [
+   "That's what a real soldier does. Take notes, kid.",
+   "Another one down! You'd think they'd learn.",
+   "I count a few. I stopped at the third. No point showing off.",
+   "Still hitting what I aim at. Eyesight's fine. Don't let anyone tell you otherwise."
+  ],
+  "heavy_losses": [
+   "I'm losing too many. This is why I don't do tech: no spare parts.",
+   "Bah! They're chewing through my boys. Pull it together!",
+   "Too many gone. I'll be having words with someone. Preferably the enemy.",
+   "That hurts. But I've buried worse days. Keep moving."
+  ],
+  "first_turn": [
+   "My move. Try not to blink, kid.",
+   "Alright. Let's see if my knees still work.",
+   "Right. Standard procedure: advance, shoot, complain.",
+   "Time to move. Somebody pass me my cap."
   ]
  }
 }

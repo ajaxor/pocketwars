@@ -191,10 +191,10 @@ test('each team gets a strip: Random, every leader, then None; the human starts 
   const { s, strips, notes } = screen();
   assert.equal(strips().length, 2);
   for (const strip of strips()) {
-    assert.deepEqual(strip.children.map(nameOf), ['Random', 'Harlan', 'Brandt', 'Orlov', 'Takeda', 'Kestrel', 'Marlow', 'Vale', 'Volkov', 'Thorne', 'None']);
+    assert.deepEqual(strip.children.map(nameOf), ['Random', 'Harlan', 'Ada', 'Vex', 'Hiroshi', 'Ludwig', 'Sasha', 'Chase', 'Dmitri', 'Lysandra', 'None']);
   }
   assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Random']]);
-  assert.match(notes()[0], /^Col\. Gus Harlan - Lastholm - Grizzled veteran$/);
+  assert.match(notes()[0], /^Col\. Harlan - Lastholm - Grizzled veteran$/);
   assert.match(notes()[1], /picked at random when the battle starts/);
   assert.equal(strips()[0].attrs['aria-label'], 'Team 1 leader');
   assert.deepEqual(s.settings.players.map((p) => p.leader), ['harlan', RANDOM_LEADER]);
@@ -203,10 +203,10 @@ test('each team gets a strip: Random, every leader, then None; the human starts 
 test('tapping a leader picks them for that team only; Random and None are on the strip too', () => {
   const { s, strips, notes } = screen();
   const tap = (slot, label) => strips()[slot].children.find((b) => b.attrs['aria-label'] === label).click();
-  tap(1, 'Adm. Sasha Marlow');
+  tap(1, 'Adm. Sasha');
   assert.deepEqual(s.settings.players.map((p) => p.leader), ['harlan', 'sasha']);
-  assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Marlow']]);
-  assert.match(notes()[1], /^Adm\. Sasha Marlow - Tidehaven - /);
+  assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Sasha']]);
+  assert.match(notes()[1], /^Adm\. Sasha - Tidehaven - /);
   tap(1, 'No leader');
   assert.equal(s.settings.players[1].leader, null);
   assert.match(notes()[1], /No leader: this map's own units/);
@@ -214,7 +214,7 @@ test('tapping a leader picks them for that team only; Random and None are on the
   assert.equal(s.settings.players[0].leader, RANDOM_LEADER);
   assert.deepEqual(strips().map(pickedIn), [['Random'], ['None']]);
   assert.equal(strips()[0].children.find((b) => b.attrs['aria-label'] === 'Random leader').attrs['aria-pressed'], 'true');
-  s.setLeader(0, 'ada'); assert.match(notes()[0], /Cmdr\. Ada Brandt/);
+  s.setLeader(0, 'ada'); assert.match(notes()[0], /Cmdr\. Ada/);
 });
 
 test('leaders survive changing the colour or who plays, and picking another map keeps the leaders of the teams it shares', () => {

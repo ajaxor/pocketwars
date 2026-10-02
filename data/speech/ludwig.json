@@ -99,6 +99,60 @@
    "Ve are all one equation now.",
    "Ze experiment is complete. Ze results are harmonious.",
    "Join ze network. Ze network vants you. Ze network loves you."
+  ],
+  "first_blood": [
+   "Ja! Ze first experiment is a success! Ze enemy unit has been... deleted!",
+   "Wunderbar! One enemy removed. Hypothesis confirmed: explosions are effective!",
+   "Ze data is in: one down. Ve vill need a larger sample, ja?",
+   "Ach, ze first casualty! Purely for science, of course."
+  ],
+  "first_loss": [
+   "Ach! Ve lost one! Zis is... a valuable data point. A very, very sad data point.",
+   "Ze experiment has... exploded. Unexpectedly. Vhich is ze fun part!",
+   "Ve lost a unit! I vill take notes. Many notes. Angry notes.",
+   "Zis was not in ze hypothesis! Ach, back to ze chalkboard!"
+  ],
+  "hq_threat": [
+   "Mein laboratory! Zey are in mein laboratory! Zis is nicht acceptable!",
+   "Ze headquarters is under attack! Zere are very expensive beakers in zere!",
+   "Defend ze HQ! Zere is an unfinished experiment on ze third floor!",
+   "Zey touch mein notes! Fire ze emergency protocols! All of zem!"
+  ],
+  "building_lost": [
+   "Zey took a building! It vas also full of experiments. Hmph.",
+   "Zis is a setback. Ve vill call it a... controlled demolition.",
+   "A loss of territory! Ve vill rebuild with improved plumbing.",
+   "Ach, zey stole a building! Zere vas a hamster in zere!"
+  ],
+  "outnumbered": [
+   "Ve are outnumbered! Zis is excellent! Imagine ze sample size!",
+   "Zey have more units. Ve have more science. I like our odds. Zome.",
+   "Ze ratio is unfavorable. Ze solution: more explosions!",
+   "Outnumbered, ja? Zen ve vill need a very clever equation."
+  ],
+  "dominant": [
+   "Ve are vinning! Ze math does not lie! Unless I made a mistake. I did not.",
+   "Superior numbers! Ze enemy vill soon be a footnote!",
+   "Everything is according to calculation. How satisfying!",
+   "Ve have ze advantage! Do not touch anything, please."
+  ],
+  "killing_spree": [
+   "Ja! Ze results are consistent! Zis is called... reproducibility!",
+   "Another one down! I vill publish zis. Zey cannot stop me!",
+   "Ze body count is a statistical triumph!",
+   "Ve are on a streak! Ze science is winning!"
+  ],
+  "heavy_losses": [
+   "Ve have lost too many! Zis is not statistically significant. It is simply sad.",
+   "Ach! Ze casualties! Ve must adjust ze formulas!",
+   "Ze losses are mounting! I need more coffee and a better plan!",
+   "Many have fallen! I demand a recount! And a new hypothesis!"
+  ],
+  "first_turn": [
+   "Ze experiment begins! Please stand clear of ze bubbling parts!",
+   "Let us begin! I have a very good feeling. Or a hypothesis. Same ting.",
+   "Ze first move! Everyone, put on your safety goggles!",
+   "Ve commence! Ze science vill not wait!"
   ]
  }
 }

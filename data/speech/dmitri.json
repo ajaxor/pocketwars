@@ -99,6 +99,60 @@
    "The Chorus is warm. Come, comrade. Is warm.",
    "Do not resist. Resistance is cold. Is very cold.",
    "I am happy. Is the happiest I have been. Is not a joke."
+  ],
+  "first_blood": [
+   "First kill. Is good. Is also tragedy. Is both.",
+   "One enemy down. In Soviet Russia, enemy kills you. Here, you kill enemy. Progress.",
+   "Da. First one. They will not be last. Is dark joke. Also military plan.",
+   "One less to sing sad songs with. Pity."
+  ],
+  "first_loss": [
+   "We lose one. Is okay. Nothing lasts, comrade. Not even tanks.",
+   "One of mine is gone. They were a good soldier. Probably. I did not ask names.",
+   "Da, they strike first. Is fine. I am used to disappointment.",
+   "A soldier falls. At least he does not pay taxes now."
+  ],
+  "hq_threat": [
+   "They come for the headquarters! Is not good. Is also not surprising.",
+   "Enemy at HQ! In Soviet Russia, headquarters defends you. Not today.",
+   "Comrades, defend the base! Is only place with warm soup!",
+   "They threaten the heart of the army. Is bad. Is also somewhat funny."
+  ],
+  "building_lost": [
+   "Building lost. In Soviet Russia, building loses you.",
+   "They take building. I did not like the heating anyway.",
+   "Da. One less roof to leak on us.",
+   "We lose property. Is fine. Property is theft anyway."
+  ],
+  "outnumbered": [
+   "We are outnumbered. In Soviet Russia, number outnumbers you.",
+   "Many of them, few of us. Is traditional Russian odds.",
+   "Da, fewer men. Means more vodka for each.",
+   "Numbers against us. Is fine. I expected worse. I always expect worse."
+  ],
+  "dominant": [
+   "We are winning. Do not tell me this. I do not trust good news.",
+   "We have more soldiers. Is rare. Enjoy it, comrades.",
+   "Is going well. Something terrible is about to happen. Wait for it.",
+   "We have advantage. In Soviet Russia, advantage has you. We shall see."
+  ],
+  "killing_spree": [
+   "Another one falls. Is a long list. Is a very dark list.",
+   "Da, many gone. Enemy should hire better insurance.",
+   "Is efficient. Is also bleak. Is Russian.",
+   "They keep dying. I keep not smiling."
+  ],
+  "heavy_losses": [
+   "We lose many. Is like winter. Long, cold, and unfair.",
+   "So many fallen. I will make a sad song about it.",
+   "Heavy losses. Is not good. Is not surprising.",
+   "Many dead. Many more to follow, if we do not stop. This is optimistic."
+  ],
+  "first_turn": [
+   "Da. We move. Let us see which way disappointment arrives.",
+   "Begin. Is only war. Not first time.",
+   "We start. Please try not to cheer. Is ominous.",
+   "The turn starts. In Soviet Russia, turn takes you."
   ]
  }
 }

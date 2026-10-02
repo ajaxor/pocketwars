@@ -1,6 +1,6 @@
 // What each character says. Every character has a speech file (data/speech/<id>.json) with a `voice` note (how they talk) and, for each
 // situation below, a handful of lines. The game asks a Talker for a line for a situation and gets a random one, never the same
-// line twice in a row, and every line is used once before any repeats. Verse lines are separated by ' / ' (a dialogue box can break there).
+// line twice in a row, and every line is used once before any repeats. 
 //
 //   SITUATIONS                       the situations, with what each means
 //   speechProblems(speech, id)       a list of human-readable problems (empty = valid)
@@ -21,6 +21,15 @@ export const SITUATIONS = {
   tech: 'reacting to technology, the Chorus and the Gift',
   joined: 'joining the player after being freed (for the Envoy: welcoming someone into the Chorus)',
   assimilated: 'what they say while under the Chorus (for Harlan, who is never taken: turning down the Chorus)',
+  first_blood: 'landing their first kill of a battle',
+  first_loss: 'losing their first unit of a battle',
+  hq_threat: 'an enemy closing in on their headquarters',
+  building_lost: 'having a building captured',
+  outnumbered: 'being badly outnumbered',
+  dominant: 'having the upper hand over the enemy',
+  killing_spree: 'a run of kills',
+  heavy_losses: 'a run of losses',
+  first_turn: 'the first move of a battle',
 };
 
 export const MIN_LINES = 4;

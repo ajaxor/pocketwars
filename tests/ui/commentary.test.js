@@ -32,7 +32,7 @@ const t = (i) => i * MIN_GAP;   // moments far enough apart that nobody is still
 test('a milestone is said once: the first kill gets a line, and later kills only at their own milestones', () => {
   const c = new Commentator(game(null, 'y'), voices());   // only y has a leader here
   const out = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => c.react([kill(1, 0)], t(i), 1)?.situation ?? null);
-  assert.deepEqual(out.slice(0, 3), ['taunt', 'attack', 'attack'], 'the first kill, the first attack (once), the third kill');
+  assert.deepEqual(out.slice(0, 3), ['first_blood', 'attack', 'killing_spree'], 'the first kill, the first attack (once), the third kill');
   assert.deepEqual(out.slice(3, 5), [null, null], 'the fourth and fifth kills are not remarked on');
   assert.equal(out[5], 'taunt', 'the sixth kill is');
   assert.deepEqual(out.slice(6), [null, null]);
@@ -42,7 +42,7 @@ test('the loser of a unit, a building and the one who took it each speak up once
   const c = new Commentator(game('x', 'y'), voices());
   const seq = [[[kill(0, 1)], 1], [[], 1], [[capture(0, 1)], 1], [[], 1], [[], 1], [[capture(0, 1)], 1], [[capture(0, 1)], 0], [[], 0]]
     .map(([events, prefer], i) => { const r = c.react(events, t(i + 1), prefer); return r && `${r.owner}:${r.situation}`; });
-  assert.deepEqual(seq, ['1:unit_lost', '0:taunt', '1:danger', '0:capture', '0:attack', null, '0:capture', null],
+  assert.deepEqual(seq, ['1:first_loss', '0:first_blood', '1:building_lost', '0:capture', '0:attack', null, '0:capture', null],
     'y loses a unit; x gloats; y loses a building; x took it; x\'s first attack; the second capture is not remarked on, the third is');
 });
 
@@ -50,24 +50,24 @@ test('an enemy starting to capture the HQ is a danger once, for the one whose HQ
   const c = new Commentator(game('x', 'y'), voices());
   const threat = capture(0, 1, false, true);
   const r = c.react([threat], t(1), 0);
-  assert.deepEqual([r.owner, r.situation], [1, 'danger'], 'y worries, though it is x\'s turn');
+  assert.deepEqual([r.owner, r.situation], [1, 'hq_threat'], 'y worries, though it is x\'s turn');
   assert.equal(c.react([threat], t(2), 1), null, 'once');
   assert.equal(c.react([capture(0, 1, false, false)], t(3), 0), null, 'a plain building under capture is no threat to the HQ');
 });
 
 test('turns bring the state milestones: a first idle remark, being outnumbered, being far ahead', () => {
   const c = new Commentator(game('x', 'y', [['a', 0, 0, 1], ['a', 0, 1, 1], ['a', 0, 2, 1], ['a', 1, 3, 1]]), voices());
-  assert.equal(c.turnStart(1, t(1))?.situation, 'idle', 'the first turn: just a remark');
-  assert.equal(c.turnStart(1, t(2))?.situation, 'danger', 'outnumbered three to one');
+  assert.equal(c.turnStart(1, t(1))?.situation, 'first_turn', 'the first turn: just a remark');
+  assert.equal(c.turnStart(1, t(2))?.situation, 'outnumbered', 'outnumbered three to one');
   assert.equal(c.turnStart(1, t(3)), null, 'and not again');
-  assert.equal(c.turnStart(0, t(4))?.situation, 'idle');
-  assert.equal(c.turnStart(0, t(5))?.situation, 'taunt', 'three to one ahead');
+  assert.equal(c.turnStart(0, t(4))?.situation, 'first_turn');
+  assert.equal(c.turnStart(0, t(5))?.situation, 'dominant', 'three to one ahead');
   assert.equal(new Commentator(game('x', null), voices()).turnStart(1, 0), null, 'a team without a leader is silent');
 });
 
 test('after a comment a leader is quiet for a while, and a milestone that comes due meanwhile waits', () => {
   const c = new Commentator(game(null, 'y'), voices());
-  assert.equal(c.react([kill(1, 0)], 0, 1)?.situation, 'taunt');
+  assert.equal(c.react([kill(1, 0)], 0, 1)?.situation, 'first_blood');
   assert.equal(c.react([kill(1, 0)], MIN_GAP - 1, 1), null);
   assert.equal(c.react([], MIN_GAP, 1)?.situation, 'attack', 'its turn comes when the pause is over');
 });

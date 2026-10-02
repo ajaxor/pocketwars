@@ -99,6 +99,60 @@
    "Peace has arrived. Sun Tzu agrees. Sun Tzu is no longer in the room.",
    "All will be one. There is no enemy. There is no you.",
    "I have studied the art of war. The art of unity is superior."
+  ],
+  "first_blood": [
+   "Hai. The first blow has fallen. Sun Tzu says: the supreme art is to win without fighting. I am but a modest student.",
+   "One enemy falls. Sun Tzu says: all warfare is based on deception. I deceived nobody. I merely aimed.",
+   "Hai! The first has fallen. Let us be humble about it.",
+   "The first strike was ours. Sun Tzu says: speed is the essence of war."
+  ],
+  "first_loss": [
+   "A loyal soldier falls. Sun Tzu says: treat your soldiers as your beloved sons. I grieve.",
+   "Hai. We have lost one. Honour them, then continue.",
+   "Sun Tzu says: in the midst of chaos, there is also opportunity. I am still looking for it.",
+   "A sorrow. But we do not let sorrow command the field."
+  ],
+  "hq_threat": [
+   "The headquarters is threatened. Sun Tzu says: the wise general is prepared. I am, in fact, mildly annoyed.",
+   "Hai! They approach our centre. Defend it as the mountain defends the valley.",
+   "Sun Tzu says: invincibility lies in the defence. Let us be invincible, please.",
+   "Our heart is under siege. Calm, everyone. Calm, and then very quick."
+  ],
+  "building_lost": [
+   "A building falls. Sun Tzu says: he who occupies the ground first has the advantage. We shall reclaim it.",
+   "We have lost ground. A river does not mourn a stone.",
+   "Hai. They hold what was ours. For now.",
+   "Sun Tzu says: the ground is ever shifting. So shall be the outcome."
+  ],
+  "outnumbered": [
+   "Hai. They are many, we are few. Sun Tzu says: if outnumbered, be elusive. I will begin by sitting very still.",
+   "Fewer than the enemy. The bamboo bends, but does not break.",
+   "Sun Tzu says: numbers alone confer no advantage. I am choosing to believe him.",
+   "We are outnumbered. This is the time for patience and tea."
+  ],
+  "dominant": [
+   "We are strong. Sun Tzu says: when strong, appear weak. I am attempting to appear weak. It is difficult.",
+   "Hai. The advantage is ours. Let us not become proud.",
+   "Sun Tzu says: victorious warriors win first and then go to war. I am enjoying the first part.",
+   "Our numbers are great. Great numbers still require great discipline."
+  ],
+  "killing_spree": [
+   "Hai. Several have fallen. Sun Tzu says: supreme excellence is breaking resistance without fighting. I am not excellent today.",
+   "The enemy thins. Let us not take pleasure, only note it.",
+   "Hai! The tide turns. Sun Tzu says: the opportunity of defeating the enemy is provided by the enemy himself.",
+   "Again the blade falls true. I will meditate on it later."
+  ],
+  "heavy_losses": [
+   "Hai. Our losses grow heavy. Sun Tzu says: no country has ever benefited from prolonged warfare. Let us end it.",
+   "Many have fallen. I will carry their names.",
+   "Sun Tzu says: when your army is weak, retreat. When it is wounded, fight smarter.",
+   "Our ranks thin. The mountain still stands."
+  ],
+  "first_turn": [
+   "Hai. We move. Sun Tzu says: let your plans be dark as night, and strike like thunder.",
+   "The sun rises. So do we.",
+   "Let us begin. Calm hands, sharp eyes.",
+   "Hai! The first move. Make it a good one."
   ]
  }
 }

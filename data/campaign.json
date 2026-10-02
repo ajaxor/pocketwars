@@ -9,7 +9,7 @@
   {
    "id": "harlan",
    "faction": "lastholm",
-   "name": "Col. Gus Harlan",
+   "name": "Col. Harlan",
    "tag": "Grizzled veteran",
    "skin": "#c99b78",
    "hair": "#d9d9d4",
@@ -32,7 +32,7 @@
   {
    "id": "ada",
    "faction": "ashmark",
-   "name": "Cmdr. Ada Brandt",
+   "name": "Cmdr. Ada",
    "tag": "Hot-headed ace",
    "skin": "#f3d2b6",
    "hair": "#c4421f",
@@ -53,7 +53,7 @@
   {
    "id": "vex",
    "faction": "vantor_reach",
-   "name": "Marshal Vex Orlov",
+   "name": "Marshal Vex",
    "tag": "Cold strategist",
    "skin": "#e3bfa6",
    "hair": "#8c8c96",
@@ -78,7 +78,7 @@
   {
    "id": "hiroshi",
    "faction": "ironvale",
-   "name": "Gen. Hiroshi Takeda",
+   "name": "Gen. Hiroshi",
    "tag": "Steady veteran",
    "skin": "#c68b64",
    "hair": "#d4d6dc",
@@ -100,7 +100,7 @@
   {
    "id": "ludwig",
    "faction": "solace",
-   "name": "Dr. Ludwig Kestrel",
+   "name": "Dr. Ludwig",
    "tag": "Mad scientist",
    "skin": "#f0d2b8",
    "hair": "#f7f7f3",
@@ -122,7 +122,7 @@
   {
    "id": "sasha",
    "faction": "tidehaven",
-   "name": "Adm. Sasha Marlow",
+   "name": "Adm. Sasha",
    "tag": "Pirate admiral",
    "skin": "#d9a37c",
    "hair": "#26324d",
@@ -136,14 +136,14 @@
    "hairStyle": "long",
    "brow": 2,
    "medals": 4,
-   "bio": "A pirate admiral with an eyepatch and a taste for plunder. She took the Gift because it was the finest treasure ever offered, sure she was the one fleecing them.",
+   "bio": "An Australian pirate admiral with an eyepatch, a mouthful of nautical slang and a taste for plunder. She took the Gift because it was the finest treasure ever offered, sure she was the one fleecing them.",
    "flaw": "Greed: cannot resist a treasure she did not have to steal",
    "eyepatch": true
   },
   {
    "id": "chase",
    "faction": "skyreach",
-   "name": "Wing Cmdr. Chase Vale",
+   "name": "Wing Cmdr. Chase",
    "tag": "Tech-bro flier",
    "skin": "#efc9a6",
    "hair": "#e8c66c",
@@ -165,7 +165,7 @@
   {
    "id": "dmitri",
    "faction": "deepmere",
-   "name": "Cmdr. Dmitri Volkov",
+   "name": "Cmdr. Dmitri",
    "tag": "Gloomy submariner",
    "skin": "#b98a6a",
    "hair": "#1a1a22",
@@ -186,8 +186,8 @@
   {
    "id": "lysandra",
    "faction": "highspire",
-   "name": "Sovereign Lysandra Thorne",
-   "tag": "Verse-speaking queen",
+   "name": "Sovereign Lysandra",
+   "tag": "Haughty medieval queen",
    "skin": "#f3d9c4",
    "hair": "#e8e0c8",
    "eye": "#8a6ad0",
@@ -201,7 +201,7 @@
    "brow": 1.8,
    "medals": 6,
    "tallCollar": true,
-   "bio": "A queen who speaks only in verse and believes every moment deserves a stage. She thought the Gift a tribute owed to her crown.",
+   "bio": "A queen who speaks in thees and thous, insults with great invention, and believes the world is her footstool. She thought the Gift a tribute owed to her crown.",
    "flaw": "Vanity: believes the best things are hers by right"
   },
   {

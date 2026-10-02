@@ -6,8 +6,7 @@ per character. The loader (`src/data/campaign.js`) requires a valid speech file 
 ## Speech files
 
 Each file has a `voice` note (the rules for writing more lines in that voice) and, for each situation below, at least four lines. A `Talker`
-gives a random line for a situation, never the same line twice in a row, and uses every line once before repeating. Verse lines are
-separated by `" / "`, so a dialogue box can break the line there.
+gives a random line for a situation, never the same line twice in a row, and uses every line once before repeating.
 
 | Situation | When it is used |
 |---|---|
@@ -25,70 +24,79 @@ separated by `" / "`, so a dialogue box can break the line there.
 | `tech` | reacting to technology, the Chorus and the Gift |
 | `joined` | joining the player after being freed (for the Envoy: welcoming someone into the Chorus) |
 | `assimilated` | what they say while under the Chorus (for Harlan, who is never taken: turning down the Chorus) |
+| `first_blood` | landing their first kill of a battle |
+| `first_loss` | losing their first unit of a battle |
+| `hq_threat` | an enemy closing in on their headquarters |
+| `building_lost` | having a building captured |
+| `outnumbered` | being badly outnumbered |
+| `dominant` | having the upper hand |
+| `killing_spree` | a run of kills (the third) |
+| `heavy_losses` | a run of losses (the third) |
+| `first_turn` | the first move of a battle |
 
 ## The characters
 
-### Col. Gus Harlan (Lastholm (you))
+### Col. Harlan (Lastholm (you))
 
 - **Look:** Grizzled retired colonel; olive cap, white moustache, scar.
 - **Voice:** Grumpy old man, get-off-my-lawn energy, hates technology. "Back in my day", "kid", "bah", "gadgets".
 - **Sample:** "Kids these days can't even fix a fence. Or a tank. Or a toaster."
 - **File:** `data/speech/harlan.json`
 
-### Cmdr. Ada Brandt (Ashmark)
+### Cmdr. Ada (Ashmark)
 
 - **Look:** Red-haired girl with freckles and a cowboy hat.
 - **Voice:** Country accent (y'all, reckon, sugar, dropped g's). Super empathic and wildly, madly optimistic; apologises to the enemy while shooting them.
 - **Sample:** "Y'know, I reckon every day's a gift. Even the ones with explosions!"
 - **File:** `data/speech/ada.json`
 
-### Marshal Vex Orlov (Vantor Reach)
+### Marshal Vex (Vantor Reach)
 
 - **Look:** Bald, scarred, stubbled, in a trench coat with the collar up.
 - **Voice:** Secretive spy: code names, code phrases, spy jokes, "if I told you I would have to kill you".
 - **Sample:** "In my line of work, even the weather is a cover story."
 - **File:** `data/speech/vex.json`
 
-### Gen. Hiroshi Takeda (Ironvale)
+### Gen. Hiroshi (Ironvale)
 
 - **Look:** Old samurai with a topknot and a big white moustache.
 - **Voice:** Formal and calm; quotes Sun Tzu's Art of War for every occasion; "Hai!".
 - **Sample:** "Sun Tzu says: opportunities multiply as they are seized. I am seizing a nap."
 - **File:** `data/speech/hiroshi.json`
 
-### Dr. Ludwig Kestrel (Solace)
+### Dr. Ludwig (Solace)
 
 - **Look:** Mad scientist: wild white hair, round glasses, lab coat.
 - **Voice:** German accent (ze, vill, ja, wunderbar); everything is an experiment; constant science talk.
 - **Sample:** "Did you know ze entropy of ze universe always increases? So does my laundry."
 - **File:** `data/speech/ludwig.json`
 
-### Adm. Sasha Marlow (Tidehaven)
+### Adm. Sasha (Tidehaven)
 
 - **Look:** Eyepatch, long dark hair, white admiral's cap.
-- **Voice:** Pirate talk: arr, matey, ye, plunder, rum, Davy Jones.
-- **Sample:** "Never trust a sober sailor. Or a seagull. Or a map."
+- **Voice:** Australian pirate admiral drowning in nautical jargon: mate, crikey, strewth, galah, drongo, broadside, hard a-lee, keelhaul, Davy Jones.
+- **Sample:** "Hard a-lee, crew! Man the guns, we're sailin' into a squall and I reckon it'll be a ripper!"
 - **File:** `data/speech/sasha.json`
 
-### Wing Cmdr. Chase Vale (Skyreach)
+### Wing Cmdr. Chase (Skyreach)
 
 - **Look:** Young blond flier in gold aviator glasses.
 - **Voice:** Tech bro: bro, disrupt, pivot, scale, ship it, runway, synergy; war is a product launch.
 - **Sample:** "I'm thinking of an app. It's like Uber, but for tanks. Tankr."
 - **File:** `data/speech/chase.json`
 
-### Cmdr. Dmitri Volkov (Deepmere)
+### Cmdr. Dmitri (Deepmere)
 
 - **Look:** Stubbled submariner in a fur ushanka with a red star.
 - **Voice:** Russian accent (dropped articles, da, comrade); very dark humour; old Soviet and Radio Yerevan jokes.
 - **Sample:** "In Soviet Russia, dark humour tells you."
 - **File:** `data/speech/dmitri.json`
 
-### Sovereign Lysandra Thorne (Highspire)
+### Sovereign Lysandra (Highspire)
 
 - **Look:** Platinum-haired queen in a golden crown.
-- **Voice:** Shakespearean verse: thee, thou, methinks, in rhymed couplets (lines separated by " / ").
-- **Sample:** "All the world's a stage, and I the star; / The rest are merely players, near and far."
+- **Voice:** High-and-mighty medieval queen: thee, thou, hath, doth, the royal "we", and elaborately inventive insults.
+- **Sample:** "Be smitten, thou curdled dollop of dung-cart custard!"
 - **File:** `data/speech/lysandra.json`
 
 ### The Envoy (the Chorus)
