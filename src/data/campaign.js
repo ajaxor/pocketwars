@@ -8,6 +8,10 @@
 import { DataError } from './validate.js';
 import { speechProblems } from '../campaign/speech.js';
 import { EYE_STYLES } from '../render/eye-styles.js';
+import { CHIN_STYLES, MOUTH_STYLES, NOSE_STYLES } from '../render/face-styles.js';
+
+// the features every leader must have a style of their own for (the styles are in src/render/)
+const FEATURES = { eyeStyle: EYE_STYLES, noseStyle: NOSE_STYLES, mouthStyle: MOUTH_STYLES, chinStyle: CHIN_STYLES };
 
 const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
 const isStr = (v) => typeof v === 'string' && v.length > 0;
@@ -22,16 +26,18 @@ export function campaignProblems(raw, registry) {
   if (!isObj(raw.chorus) || !isStr(raw.chorus.name) || !isColor(raw.chorus.color) || !isColor(raw.chorus.dark)) p.push('campaign: chorus needs name, color and dark');
 
   const leaders = new Map();
-  const eyeStyles = new Map();   // every leader has eyes of their own
+  const taken = Object.fromEntries(Object.keys(FEATURES).map((k) => [k, new Map()]));   // who has which style: nobody shares one
   if (!Array.isArray(raw.leaders) || !raw.leaders.length) p.push('campaign: leaders must be a non-empty array');
   else for (const L of raw.leaders) {
     if (!isObj(L) || !isStr(L.id)) { p.push('campaign: every leader needs an id'); continue; }
     if (leaders.has(L.id)) p.push(`campaign: duplicate leader "${L.id}"`);
     leaders.set(L.id, L);
     if (!isStr(L.name)) p.push(`campaign: leader "${L.id}" needs a name`);
-    if (!isStr(L.eyeStyle) || !EYE_STYLES[L.eyeStyle]) p.push(`campaign: leader "${L.id}" needs an eyeStyle (one of ${Object.keys(EYE_STYLES).join(', ')})`);
-    else if (eyeStyles.has(L.eyeStyle)) p.push(`campaign: leaders "${eyeStyles.get(L.eyeStyle)}" and "${L.id}" share the eyeStyle "${L.eyeStyle}"`);
-    else eyeStyles.set(L.eyeStyle, L.id);
+    for (const [trait, styles] of Object.entries(FEATURES)) {
+      if (!isStr(L[trait]) || !styles[L[trait]]) p.push(`campaign: leader "${L.id}" needs ${trait} (one of ${Object.keys(styles).join(', ')})`);
+      else if (taken[trait].has(L[trait])) p.push(`campaign: leaders "${taken[trait].get(L[trait])}" and "${L.id}" share the ${trait} "${L[trait]}"`);
+      else taken[trait].set(L[trait], L.id);
+    }
     if (!isStr(L.bio)) p.push(`campaign: leader "${L.id}" needs a bio (their personality)`);
     if (L.faction !== 'chorus' && !registry.factions[L.faction]) p.push(`campaign: leader "${L.id}" has unknown faction "${L.faction}"`);
     // everyone who can be fielded needs a loadout (data/loadouts.json); the Chorus' own leader is not one of them

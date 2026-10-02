@@ -10,6 +10,7 @@ import { loadRegistry } from '../../src/data/loader.js';
 import { MapError, parseMap, serializeMap } from '../../src/data/map-format.js';
 import { campaignProblems, loadCampaign } from '../../src/data/campaign.js';
 import { EYE_STYLES } from '../../src/render/eye-styles.js';
+import { CHIN_STYLES, MOUTH_STYLES, NOSE_STYLES } from '../../src/render/face-styles.js';
 import { frontOf, hqOf, placeFormation, placeStart, withLeaders } from '../../src/data/formation.js';
 
 const registry = await loadRegistry(readData);
@@ -35,18 +36,23 @@ test('campaign validation catches a leader without a loadout and a loadout witho
   assert.match(p, /loadouts.json has a loadout for "vex", who is not a leader/);
 });
 
-test('every leader has eyes of their own, and the campaign check enforces it', async () => {
-  const styles = campaign.leaders.map((l) => l.eyeStyle);
-  assert.equal(new Set(styles).size, styles.length, 'no two leaders share an eye style');
-  assert.ok(styles.every((s) => EYE_STYLES[s]));
+test('every leader has eyes, a nose, a mouth and a chin of their own, and the campaign check enforces it', async () => {
+  const features = { eyeStyle: EYE_STYLES, noseStyle: NOSE_STYLES, mouthStyle: MOUTH_STYLES, chinStyle: CHIN_STYLES };
+  for (const [trait, styles] of Object.entries(features)) {
+    const used = campaign.leaders.map((l) => l[trait]);
+    assert.equal(new Set(used).size, used.length, `no two leaders share a ${trait}`);
+    assert.ok(used.every((s) => styles[s]), trait);
+  }
   const raw = JSON.parse(JSON.stringify(await readData('campaign.json')));
   raw.leaders[1].eyeStyle = raw.leaders[0].eyeStyle;
-  raw.leaders[2].eyeStyle = 'nope';
-  delete raw.leaders[3].eyeStyle;
+  raw.leaders[2].noseStyle = 'nope';
+  delete raw.leaders[3].mouthStyle;
+  raw.leaders[4].chinStyle = raw.leaders[5].chinStyle;
   const p = campaignProblems(raw, registry).join('\n');
   assert.match(p, /share the eyeStyle "weary"/);
-  assert.match(p, /leader "vex" needs an eyeStyle/);
-  assert.match(p, /leader "hiroshi" needs an eyeStyle/);
+  assert.match(p, /leader "vex" needs noseStyle/);
+  assert.match(p, /leader "hiroshi" needs mouthStyle/);
+  assert.match(p, /share the chinStyle "weak"|share the chinStyle "cleft"/);
 });
 
 test('the standard kit lists what the building categories give (a unit added to units.json has to be added to the kit as well)', () => {
