@@ -2,9 +2,8 @@
 // Same conventions as src/render/unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }), centred on (0, 0), +x forward.
 // The trooper body and walk cycle idea is the game's own (legs swing while moving, bob b breathes); each unit gets a distinct
 // silhouette from its headgear, pack and weapon.
-import { PARTS } from '../src/render/unit-art.js';
+import { box, disc, oval, poly, stroke, mix, afloat, GLASS, INK, STEEL, SKIN, OLIVE, UNDER_SHADE, legs, torso, head, dome } from '../src/render/parts.js';
 
-const { box, disc, oval, poly, stroke, mix, afloat, GLASS, INK, STEEL, SKIN, OLIVE, UNDER_SHADE } = PARTS;
 const RED = '#d4442e', GREEN = '#46b86a', YELLOW = '#f2c230', WHITE = '#f4f4ee', BRASS = '#d9b44a', WOOD = '#6b4a2b';
 
 /** Walk state: leg offset l, rifle swing sw (pixels) and bob bb (tile fractions). */
@@ -12,10 +11,6 @@ const gait = (s, { w, ph, run, moving, b }) => {
   const walk = run && moving ? 1 : 0, k = Math.sin(w * 8 + ph);
   return { walk, l: k * s * .05 * walk, sw: k * s * .02 * walk, bb: b / s };
 };
-const legs = (g, s, l, col) => { g.fillStyle = col; g.fillRect(-s * .14, s * .12, s * .1, s * .17 + l); g.fillRect(s * .04, s * .12, s * .1, s * .17 - l); };
-const torso = (g, s, bb, col) => box(g, s, -.16, -.12 + bb, .32, .28, 4, col);
-const head = (g, s, bb) => disc(g, s, 0, -.2 + bb, .09, SKIN);
-const dome = (g, s, bb, r, col) => { g.fillStyle = col; g.beginPath(); g.arc(0, (-.21 + bb) * s, r * s, Math.PI, 0); g.fill(); };
 /** A green plus floating up from a unit that is healing: the idle cue for the healers. */
 const plus = (g, s, x, y, r, a, col = GREEN) => {
   g.save(); g.globalAlpha = a;

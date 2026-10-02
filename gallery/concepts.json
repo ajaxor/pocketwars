@@ -597,6 +597,93 @@
    "overlaps": "Battleship",
    "mechanic": "Four heavy guns with range 2-5 and far more punch than the battleship; it cannot fire after moving. Very thick armour, but slow and costly, and vulnerable to submarines and bombers.",
    "water": true
+  },
+  {
+   "id": "amphibious_tank",
+   "name": "Amphibious Tank",
+   "facility": "war_factory",
+   "sprite": "amphibious_tank",
+   "altitude": 0,
+   "cost": 8000,
+   "move": 4,
+   "role": "Land-and-sea assault vehicle: brings tank firepower ashore from the water.",
+   "overlaps": "Tank (land fighting), Dinghy (water crossing)",
+   "mechanic": "Moves over sea and shoals as well as land: move cost 2 on sea and shoals, 1 everywhere else. Armoured more lightly than a tank (takes noticeably more damage), cannot capture, and fires its gun at 1 range like a tank."
+  },
+  {
+   "id": "sam_launcher",
+   "name": "SAM Launcher",
+   "facility": "war_factory",
+   "sprite": "sam_launcher",
+   "altitude": 0,
+   "cost": 9000,
+   "move": 3,
+   "role": "Tracked anti-air battery that threatens every aircraft in a wide ring.",
+   "overlaps": "Flak (anti-air), Fighter (air denial)",
+   "mechanic": "Anti-air only: range 1-4, hits both low and high air, and cannot attack ground or sea units. It can fire after moving but then has only 2 missiles; it must sit out a turn to reload to its full 4 missiles. Fragile against ground attack."
+  },
+  {
+   "id": "rocket_buggy",
+   "name": "Rocket Buggy",
+   "facility": "war_factory",
+   "sprite": "rocket_buggy",
+   "altitude": 0,
+   "cost": 3500,
+   "move": 7,
+   "role": "Very fast open-frame raider that strikes light vehicles and infantry.",
+   "overlaps": "Recon (speed), Rocket Launcher (rockets)",
+   "mechanic": "Direct-fire unguided rockets, range 1-2, strong against infantry and light vehicles, weak against tanks. Very fragile: any real hit cripples it, and it cannot capture."
+  },
+  {
+   "id": "motorcycle",
+   "name": "Motorcycle Infantry",
+   "facility": "training_ground",
+   "sprite": "motorcycle",
+   "altitude": 0,
+   "cost": 2000,
+   "move": 5,
+   "role": "Fast capturing infantry for grabbing distant property.",
+   "overlaps": "Soldier (capture), Recon (speed)",
+   "mechanic": "Infantry that can capture buildings, with move 5, but it cannot enter mountains. Its rifle does half damage when it has moved that turn, full damage when it stays put."
+  },
+  {
+   "id": "tank_transport",
+   "name": "Tank Transport",
+   "facility": "shipyard",
+   "sprite": "tank_transport",
+   "altitude": 0,
+   "cost": 9000,
+   "move": 5,
+   "role": "Landing ship",
+   "overlaps": "Transport Copter, Lander",
+   "mechanic": "Carries one tank in a single cargo slot, like the transport copter. After moving it can unload the tank onto an adjacent land tile, and the empty ship is then just a hull. Unarmed and thin-skinned, so it needs an escort.",
+   "water": true
+  },
+  {
+   "id": "missile_sub",
+   "name": "Missile Sub",
+   "facility": "shipyard",
+   "sprite": "missile_sub",
+   "altitude": 0,
+   "cost": 14000,
+   "move": 4,
+   "role": "Strategic launcher",
+   "overlaps": "Artillery, Missile Truck, Submarine",
+   "mechanic": "When surfaced it can fire long-range missiles (range 3-6, indirect, artillery-like damage, ground units and ships) but cannot move and fire in the same turn. While submerged it is hidden and cannot fire, so it is only exposed on the turn it launches. Few missiles per sortie; weak against anything that reaches it.",
+   "water": true
+  },
+  {
+   "id": "hunter_sub",
+   "name": "Hunter Sub",
+   "facility": "shipyard",
+   "sprite": "hunter_sub",
+   "altitude": 0,
+   "cost": 10000,
+   "move": 6,
+   "role": "Hunter-killer",
+   "overlaps": "Submarine, Destroyer",
+   "mechanic": "Fast attack sub with strong torpedoes against ships and submarines (range 1), and a sonar that reveals submerged enemy subs within 3 tiles. Weak against air units and cannot hit land.",
+   "water": true
   }
  ]
 }

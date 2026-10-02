@@ -2,14 +2,15 @@
 // gallery's "Experimental" section. Same conventions as src/render/unit-art.js (which supplies the drawing helpers):
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 //   SHADOWS[name](g, { s, alt, w, ph, run })
-import { PARTS } from '../src/render/unit-art.js';
+import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, antigrav, sheen, bubbles, GLOW } from '../src/render/parts.js';
 import * as INFANTRY from './concept-art-infantry.js';
 import * as STATIC from './concept-art-static.js';
 import * as GADGETS from './concept-art-gadgets.js';
 import * as AIR from './concept-art-air.js';
 import * as SHIPS from './concept-art-ships.js';
+import * as VEHICLES from './concept-art-vehicles.js';
+import * as FLEET from './concept-art-fleet.js';
 
-const { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE } = PARTS;
 const BRASS = '#d9b44a', RED = '#d4442e', GREEN = '#46b86a', ORANGE = '#ff9a2e', PANEL = '#2f5fa8';
 
 // ---- War Factory ----------------------------------------------------------------------------------------------------------
@@ -30,19 +31,6 @@ const supplyTruck = (g, { s, c, dk, w, run, j }) => {
 // ---- Hover Lab --------------------------------------------------------------------------------------------------------------
 // Hover craft ride on an anti-gravity field, not a fan or a skirt: a row of dark emitter pods under the hull, each with a glowing
 // lens that pulses, a faint cone of light down to the ground, and a few motes of light drifting up through the field.
-const GLOW = '#7fe8ff';
-const antigrav = (g, s, x0, x1, y, w, run, n = 3) => {
-  for (let i = 0; i < n; i++) {
-    const x = x0 + (x1 - x0) * (n === 1 ? .5 : i / (n - 1)), pulse = run ? .65 + .35 * Math.sin(w * 7 + i * 1.7) : .8;
-    poly(g, s, [[x - .05, y + .03], [x + .05, y + .03], [x + .09, y + .115], [x - .09, y + .115]], `rgba(127,232,255,${(.2 * pulse).toFixed(2)})`);   // the cone of light
-    box(g, s, x - .06, y - .01, .12, .05, .02 * s, '#2b2f36');                                  // emitter housing
-    oval(g, s, x, y + .045, .05, .017, `rgba(127,232,255,${pulse.toFixed(2)})`);                // glowing lens
-    oval(g, s, x, y + .045, .025, .008, `rgba(255,255,255,${(.9 * pulse).toFixed(2)})`);
-    const f = (w * 1.1 + i * .37) % 1;                                                          // a mote rising through the field
-    if (run) disc(g, s, x + Math.sin(f * 6 + i) * .025, y + .12 - f * .08, .007, `rgba(200,250,255,${(.8 * (1 - f)).toFixed(2)})`);
-  }
-};
-
 const hoverScout = (g, { s, c, dk, w, run, j }) => {
   const jj = j / s;
   antigrav(g, s, -.22, .24, .15 + jj, w, run, 2);
@@ -76,16 +64,9 @@ const hoverCarrier = (g, { s, c, dk, w, run, j }) => {
 
 // ---- Mech Factory -----------------------------------------------------------------------------------------------------------
 // Legged walkers. A leg swings from the hip to a foot that lifts and plants; they only step while the unit is moving.
-const leg = (g, s, hx, hy, ph, w, walk, thick, col, len = .17) => {
-  const a = w * 6 + ph, fx = hx + Math.sin(a) * .08 * walk, lift = Math.max(0, Math.cos(a)) * .05 * walk;
-  const fy = .27 - lift, kx = hx + .09 + Math.sin(a) * .03 * walk, ky = hy + (fy - hy) * .45;
-  stroke(g, s, hx, hy, kx, ky, thick, col); stroke(g, s, kx, ky, fx, fy - .02, thick * .9, col);
-  box(g, s, fx - .05, fy - .035, .12, .06, 2, INK);
-  void len;
-};
 const strider = (g, { s, c, dk, w, run, moving, b }) => {
   const walk = run && moving ? 1 : 0, bb = b / s;
-  leg(g, s, -.1, -.0 + bb, 0, w, walk, 7, dk); leg(g, s, .06, -.0 + bb, Math.PI, w, walk, 7, mix(dk, '#ffffff', .15));
+  walkerLeg(g, s, -.1, -.0 + bb, 0, w, walk, 7, dk); walkerLeg(g, s, .06, -.0 + bb, Math.PI, w, walk, 7, mix(dk, '#ffffff', .15));
   box(g, s, -.26, -.2 + bb, .46, .24, 5, c);                                                 // torso
   box(g, s, -.28, -.16 + bb, .1, .16, 3, dk);                                                // backpack
   box(g, s, .06, -.17 + bb, .17, .09, 3, GLASS);                                             // cockpit slit
@@ -95,7 +76,7 @@ const strider = (g, { s, c, dk, w, run, moving, b }) => {
 
 const titan = (g, { s, c, dk, w, run, moving, b }) => {
   const walk = run && moving ? 1 : 0, bb = b / s;
-  leg(g, s, -.14, .02 + bb, 0, w, walk, 11, dk); leg(g, s, .1, .02 + bb, Math.PI, w, walk, 11, mix(dk, '#ffffff', .15));
+  walkerLeg(g, s, -.14, .02 + bb, 0, w, walk, 11, dk); walkerLeg(g, s, .1, .02 + bb, Math.PI, w, walk, 11, mix(dk, '#ffffff', .15));
   box(g, s, -.3, -.28 + bb, .6, .34, 6, c);                                                  // huge torso
   box(g, s, -.3, -.04 + bb, .6, .06, 2, dk);                                                 // belt
   box(g, s, -.34, -.38 + bb, .24, .16, 3, dk);                                               // shoulder armour
@@ -109,15 +90,6 @@ const titan = (g, { s, c, dk, w, run, moving, b }) => {
 
 // ---- Stealth Lab ------------------------------------------------------------------------------------------------------------
 // Cloaked units: faceted, dull, a little see-through, with a bright glint that sweeps across them (the cloak shimmering).
-const shimmer = (g, s, w, run, clipPts, x0 = -.4, x1 = .4) => {
-  const k = run ? ((w * .5) % 1) : .35, x = x0 + (x1 - x0) * k;
-  g.save(); g.beginPath(); clipPts.forEach(([px, py], i) => (i ? g.lineTo(px * s, py * s) : g.moveTo(px * s, py * s))); g.closePath(); g.clip();
-  poly(g, s, [[x - .02, -.4], [x + .06, -.4], [x + .0, .4], [x - .08, .4]], 'rgba(255,255,255,.28)');
-  g.restore();
-};
-
-// Phantom tank: a low faceted wedge like a stealth jet on the ground. Long side armour hangs down over the treads (only a sliver of
-// track shows under it), the upper hull is a stack of flat planes with no turret, and the gun sits in a faceted mantlet in the nose.
 const phantomTank = (g, { s, c, dk, w, run, j }) => {
   const jj = j / s, y = (v) => v + jj;
   g.save(); g.globalAlpha = .9;
@@ -136,7 +108,7 @@ const phantomTank = (g, { s, c, dk, w, run, j }) => {
   poly(g, s, skirt, dk);
   poly(g, s, [[-.36, y(.06)], [.3, y(.06)], [.44, y(.13)], [.4, y(.19)], [.36, y(.19)], [.3, y(.11)], [-.3, y(.11)]], mix(c, dk, .3));   // lit upper edge of the plate
   for (const x of [-.22, .0, .2]) stroke(g, s, x, y(.11), x, y(.19), 1.2, mix(dk, '#000000', .35));   // plate seams
-  shimmer(g, s, w, run, hull.concat([[.4, y(.19)], [-.42, y(.19)]]));
+  sheen(g, s, w, run, hull.concat([[.4, y(.19)], [-.42, y(.19)]]));
   g.restore();
 };
 
@@ -149,7 +121,7 @@ const stealthCopter = (g, { s, c, dk, w, run }) => {
   poly(g, s, [[.3, .0], [.17, -.05], [.08, -.02], [.22, .03]], GLASS);                        // slit canopy
   const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .34 + s * .05;                     // pale rotor blur
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, 'rgba(34,34,34,.6)'); g.fillStyle = INK; g.fillRect(-s * .02, -s * .2, s * .04, s * .07);
-  shimmer(g, s, w, run, body, -.5, .45);
+  sheen(g, s, w, run, body, -.5, .45);
   g.restore();
 };
 
@@ -249,10 +221,6 @@ const satellite = (g, { s, c, dk, w, run }) => {
 };
 
 // ---- Underwater Lab ---------------------------------------------------------------------------------------------------------
-const bubbles = (g, s, w, run, x, y, n = 3) => {
-  if (!run) return;
-  for (let i = 0; i < n; i++) { const f = (w * 1.1 + i / n) % 1; oval(g, s, x + Math.sin(w * 5 + i * 2) * .02, y - f * .25, .014, .014, `rgba(200,225,250,${(.65 * (1 - f)).toFixed(2)})`); }
-};
 
 // Abyss sub: a deep diver. Round pressure hull, a big viewport throwing a cone of light, a claw arm; always drawn under water.
 const abyssSub = (g, { s, c, dk, w, run, b }) => {
@@ -392,6 +360,6 @@ const OWN_SHADOWS = {
   swarm_drones: airShadow(mirror([[.3, 0], [.15, -.08], [-.2, -.08], [-.3, 0]])), repair_drone: airShadow(bar(.3)),
 };
 
-// the new concept groups live in their own files (infantry, static defences, gadgets, aircraft, ships)
-export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...GADGETS.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES };
-export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...GADGETS.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS };
+// the new concept groups live in their own files (infantry, static defences, gadgets, aircraft, ships, vehicles, fleet)
+export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...GADGETS.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES, ...VEHICLES.SPRITES, ...FLEET.SPRITES };
+export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...GADGETS.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS, ...VEHICLES.SHADOWS, ...FLEET.SHADOWS };

@@ -1,8 +1,7 @@
 // Experimental concept units, Engineer Works group: immobile static defences. Same conventions as concept-art.js.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
-import { PARTS } from '../src/render/unit-art.js';
+import { box, disc, oval, poly, stroke, mirror, mix, GLASS, INK, STEEL } from '../src/render/parts.js';
 
-const { box, disc, oval, poly, stroke, mirror, mix, GLASS, INK, STEEL } = PARTS;
 const CONCRETE = '#a9a79e', CONC_DK = '#807e77', SAND = '#c9b27c', SAND_DK = '#a38d58', ORANGE = '#ff9a2e', RED = '#d4442e';
 
 // A static unit sits on a poured pad so it reads as a fixture, not a vehicle.

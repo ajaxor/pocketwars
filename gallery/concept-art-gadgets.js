@@ -1,8 +1,7 @@
 // Experimental concept units, group "gadgets": static defences and field devices. Sprites only; described in parts/gadgets.json.
 // Same conventions as concept-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }) centred on (0, 0), +x forward, sizes are tile fractions.
-import { PARTS } from '../src/render/unit-art.js';
+import { box, disc, oval, poly, stroke, mirror, mix, afloat, GLASS, INK, STEEL, UNDER_SHADE } from '../src/render/parts.js';
 
-const { box, disc, oval, poly, stroke, mirror, mix, afloat, GLASS, INK, STEEL, UNDER_SHADE } = PARTS;
 const RED = '#d4442e', GREEN = '#46b86a', ORANGE = '#ff9a2e', YELLOW = '#ffd84a';
 const rgba = (r, g_, b_, a) => `rgba(${r},${g_},${b_},${Math.max(0, a).toFixed(2)})`;
 

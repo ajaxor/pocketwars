@@ -9,6 +9,7 @@ Notes from iterating on unit sprites (mostly the naval rework) so the next round
 - **Ask which element is meant** when a description could match two parts; otherwise restate your reading in the reply.
 
 ## Conventions that held up
+- **Build from the parts library** (`src/render/parts.js`, catalogued in `render-parts.md`) and add a part there when a second sprite needs the same thing, instead of copying it. Moving code into the library must leave the sprite-lab sheets byte-identical.
 - Sprites are drawn facing right; the frame mirrors for `face`. Infantry-type units opt out with `render.facing: false`.
 - Flat shading only. Thin outline in the team's dark colour (stamped silhouette in `outline.js`) unifies every unit.
 - Ships are drawn twice, clipped above and below a fixed waterline, so bobbing changes how much is under water. Underwater = light colour mixed toward dark (`UNDER_SHADE` .45), not the full dark.

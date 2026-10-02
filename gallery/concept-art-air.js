@@ -1,26 +1,10 @@
 // Experimental concept units, group "air": new aircraft for the existing Airfield. NOTHING here is in the game.
 // Same conventions as gallery/concept-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }) centred on (0, 0), +x forward,
 // sizes are fractions of the tile s. Drawn like the fighter and bomber: a 3/4 view, near wing toward the viewer, far wing darker.
-import { PARTS } from '../src/render/unit-art.js';
+import { box, disc, oval, poly, stroke, mirror, mix, GLASS, INK, STEEL, propDisc, sheen } from '../src/render/parts.js';
 
-const { box, disc, oval, poly, stroke, mirror, mix, GLASS, INK, STEEL } = PARTS;
 const ORANGE = '#ff9a2e', RED = '#d4442e', BRASS = '#d9b44a';
 
-// A spinning propeller seen nearly end-on: a translucent disc and a blade that flickers in length.
-const propDisc = (g, s, x, y, r, w, run, ph = 0, col = INK) => {
-  oval(g, s, x, y, .016, r, 'rgba(235,235,235,.34)');
-  const l = (run ? Math.abs(Math.cos(w * 31 + ph)) : .6) * r * .92 + r * .08;
-  stroke(g, s, x, y - l, x, y + l, 2.4, col);
-  disc(g, s, x, y, .017, STEEL);
-};
-
-// A glint that sweeps along a faceted body (the low-observable skin catching the light), clipped to the body outline.
-const glint = (g, s, w, run, pts, x0, x1) => {
-  const k = run ? ((w * .45) % 1) : .4, x = x0 + (x1 - x0) * k;
-  g.save(); g.beginPath(); pts.forEach(([px, py], i) => (i ? g.lineTo(px * s, py * s) : g.moveTo(px * s, py * s))); g.closePath(); g.clip();
-  poly(g, s, [[x - .02, -.4], [x + .05, -.4], [x - .02, .4], [x - .09, .4]], 'rgba(255,255,255,.26)');
-  g.restore();
-};
 
 // ---- Stealth fighter ----------------------------------------------------------------------------------------------------------
 const stealthFighter = (g, { s, c, dk, w, run }) => {
@@ -43,7 +27,7 @@ const stealthFighter = (g, { s, c, dk, w, run }) => {
   poly(g, s, [[-.14, .13], [-.3, .05], [-.2, .03]], far);                                     // trailing facet
   stroke(g, s, .06, .06, -.03, .08, 1, '#00000055');                                          // weapons-bay door line
   box(g, s, -.02, .05, .12, .02, 1, mix(STEEL, c, .2));                                       // missile peeking from the bay
-  glint(g, s, w, run, body.concat(wing), -.4, .45);
+  sheen(g, s, w, run, body.concat(wing), -.4, .45, { speed: .45, at: .4, alpha: .26 });
 };
 
 // ---- Torpedo bomber -----------------------------------------------------------------------------------------------------------

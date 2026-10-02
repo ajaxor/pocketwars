@@ -34,6 +34,8 @@ body, an unexpectedly small unit. Run it after every edit.
 
 ## The game's unit art
 
+Shared pieces (wheels, treads, propellers, hull and waterline handling, turrets, tubes, dishes, legs...) live in `src/render/parts.js`; see `docs/render-parts.md`.
+
 The art is `src/render/unit-art.js` (exports `SPRITES` and `SHADOWS`); `src/render/unit-frame.js` composes one frame
 (shadow, altitude, bob and jitter) and `src/render/unit-sprites.js` `drawUnit` calls it. The lab, the gallery and the
 game all run those same files, so what you review is what ships. `variants/flat.js` just re-exports the game art so the lab
@@ -67,7 +69,7 @@ entry into `data/units.json`, fill in its balance numbers and add its damage row
 
 ## Experimental concept units
 
-`gallery/concept-art.js` (sprites and shadows; the newer groups live in `concept-art-infantry.js`, `-static.js`, `-gadgets.js`, `-air.js` and `-ships.js`, re-exported by it) and `gallery/concepts.json` (names, facilities, costs, mechanics) hold 43 concept units
+`gallery/concept-art.js` (sprites and shadows; the newer groups live in `concept-art-infantry.js`, `-static.js`, `-gadgets.js`, `-air.js`, `-ships.js`, `-vehicles.js` and `-fleet.js`, re-exported by it) and `gallery/concepts.json` (names, facilities, costs, mechanics) hold 50 concept units
 for production facilities that do not exist yet (Hover Lab, Mech Factory, Stealth Lab, Glider Field, Space Port, Underwater Lab, Drone
 Bay, plus new War Factory units, a Training Ground of specialist infantry, an Engineer Works of static defences, mines and gadgets, and new aircraft and ships for the existing Airfield and Shipyard). The Rocket Launcher started here and is now a real unit. They are shown in the gallery's "Experimental" section and are not in the game or in `data/`.
 `node tools/sprite-lab/concepts.mjs [--only id,id] [--size 150] [--check] [--art file.js --data file.json]` renders them to a PNG contact sheet and checks their bounds.

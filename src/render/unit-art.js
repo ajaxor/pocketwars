@@ -1,34 +1,16 @@
 // Pocket Wars unit art: simple flat shapes, no outlines, one sprite and one shadow per unit.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, b, j })   draws the unit, centred on (0, 0) in a tile of size s
 //   SHADOWS[name](g, { s, alt, w, ph, run })            draws the ground shadow, shaped like the unit
-// `render.sprite` in data/units.json selects the name. Self-contained and browser-safe (no imports); the game
+// `render.sprite` in data/units.json selects the name. Built from the shared parts in parts.js; browser-safe. The game
 // (unit-sprites.js), the gallery page and the sprite lab all run this same file.
 //
 // Params: c / dk = faction colour / dark colour, w = animation clock (s), ph = per-unit phase offset,
 // run = 1 while animating (0 when the unit has acted), b / j = bob / jitter in pixels.
 // Coordinates are fractions of the tile size s; +x is forward, +y is down.
 
-const RED = '#d4442e', GLASS = '#cfe6f5', INK = '#222', STEEL = '#9a9a9a', SKIN = '#f1c99b', OLIVE = '#4b5238';
-const hexToRgb = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
-const mix = (a, b, t) => { const A = hexToRgb(a), B = hexToRgb(b); return '#' + [0, 1, 2].map((i) => Math.round(A[i] + (B[i] - A[i]) * t).toString(16).padStart(2, '0')).join(''); };
-
-const box = (g, s, x, y, w, h, r, fill) => { g.fillStyle = fill; g.beginPath(); g.roundRect(x * s, y * s, w * s, h * s, r); g.fill(); };
-const disc = (g, s, x, y, r, fill) => { g.fillStyle = fill; g.beginPath(); g.arc(x * s, y * s, r * s, 0, 7); g.fill(); };
-const oval = (g, s, x, y, rx, ry, fill) => { g.fillStyle = fill; g.beginPath(); g.ellipse(x * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
-const poly = (g, s, pts, fill) => { g.fillStyle = fill; g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x * s, y * s) : g.moveTo(x * s, y * s))); g.closePath(); g.fill(); };
-const stroke = (g, s, x1, y1, x2, y2, width, col) => { g.strokeStyle = col; g.lineWidth = width; g.lineCap = 'round'; g.beginPath(); g.moveTo(x1 * s, y1 * s); g.lineTo(x2 * s, y2 * s); g.stroke(); };
-const mirror = (top) => top.concat(top.slice(1, -1).reverse().map(([x, y]) => [x, -y]));
-const both = (pts, fn) => { fn(pts); fn(pts.map(([x, y]) => [x, -y])); };
-
-const wheel = (g, s, x, y, r, w, run, speed) => {
-  disc(g, s, x, y, r, INK);
-  stroke(g, s, x, y, x + Math.cos(w * speed * run) * r * .9, y + Math.sin(w * speed * run) * r * .9, 1.5, '#aaa');
-};
-const treads = (g, s, x0, x1, y, h, w, run, j) => {
-  box(g, s, x0, y, x1 - x0, h, h * s * .5, '#2b2b2b');   // a full pill: the radius follows the tread's height, so it stays round at any size
-  g.fillStyle = STEEL; const off = (w * s * .3 * run) % (s * .12);
-  for (let i = 0; i < 6; i++) { const x = x0 * s + s * .02 + i * s * .12 + off; if (x < x1 * s - s * .05) g.fillRect(x, (y + h * .4) * s, s * .05, s * .04); }
-};
+import { RED, GLASS, INK, STEEL, SKIN, OLIVE, FOAM, UNDER_SHADE, LINE, mix, box, disc, oval, poly, stroke, mirror, both, wheel, treads, skyClip, seaClip,
+  propeller, afloat, hullPath, deckAt, turret } from './parts.js';
+import * as LIB from './parts.js';
 
 // ---- the marine's own parts, shared by the marine on land and the one riding a dinghy ----------------------------------------------
 // Drawn in the soldier's coordinates (head centred on (0, -.2 + bb)); callers translate for a different seat.
@@ -54,15 +36,15 @@ const marineRifle = (g, s, bb, sw) => {
 const trooper = (kind) => (g, { s, c, dk, w, ph, run, moving, b }) => {
   const walk = run && moving ? 1 : 0;                                                          // legs only step while the unit moves
   const l = Math.sin(w * 8 + ph) * s * .05 * walk, sw = Math.sin(w * 8 + ph) * s * .02 * walk;
-  g.fillStyle = dk; g.fillRect(-s * .14, s * .12, s * .1, s * .17 + l); g.fillRect(s * .04, s * .12, s * .1, s * .17 - l);
+  LIB.legs(g, s, l, dk);
   if (kind === 'mech') box(g, s, -.24, -.1 + b / s, .09, .22, 3, dk);                         // rocket pack
   else if (kind === 'sniper') box(g, s, -.24, -.08 + b / s, .09, .2, 3, mix(c, '#56643a', .6)); // ghillie-covered pack
-  box(g, s, -.16, -.12 + b / s, .32, .28, 4, c);
-  disc(g, s, 0, -.2 + b / s, .09, SKIN);
+  LIB.torso(g, s, b / s, c);
+  LIB.head(g, s, b / s);
   if (kind === 'marine') {
     marineCover(g, s, { c, dk, w, ph, run }, b / s);
   } else {
-    g.fillStyle = dk; g.beginPath(); g.arc(0, -s * .21 + b, s * .11, Math.PI, 0); g.fill(); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
+    LIB.dome(g, s, b / s, .11, dk); g.fillRect(-s * .13, -s * .22 + b, s * .26, s * .03);
   }
   if (kind === 'mech') {          // bazooka on the shoulder, tube clear of the body
     stroke(g, s, -.2, .04 + b / s, .3, -.2 + b / s + sw / s, Math.max(4, s * .11), OLIVE);
@@ -219,58 +201,6 @@ const bomber = (g, { s, c, dk, w, run }) => {
 // flak; the battleship is the longest, its deck sweeping up at the bow, with two armoured turrets (the forward one tilted to the
 // slope); the submarine is a low cigar with a fin, and dived only its periscope shows. Ships cast no shadow; foam curls at both ends.
 // Below the waterline a ship is drawn in a shade between its light colour and its dark one (UNDER_SHADE): lighter than the full dark colour.
-const UNDER_SHADE = .45;
-const FOAM = 'rgba(255,255,255,.6)';
-const LINE = .14;                                   // the waterline, in tile fractions (fixed: only the ship moves)
-const skyClip = (g, s, line) => { g.beginPath(); g.rect(-s, -s * 1.5, s * 2, (line + 1.5) * s); g.clip(); };
-const seaClip = (g, s, line) => { g.beginPath(); g.rect(-s, line * s, s * 2, s * 2); g.clip(); };
-/** A propeller at (x, y) on the stern, the hull's own colour `col` (dark under water): a blurred blade whose length
- *  flickers as it turns, and (`bubbles`) a stream of bubbles astern. Draw it inside the ship's own transform so it bobs with it. */
-const propeller = (g, s, x, y, w, run, col, bubbles = true) => {
-  const blade = col, a = run ? w * 17 : .5, len = .08 * (.35 + .65 * Math.abs(Math.cos(a)));
-  oval(g, s, x, y, .018, len, blade);
-  oval(g, s, x, y, .018, .018, blade);
-  if (!run || !bubbles) return;
-  for (let i = 0; i < 3; i++) {
-    const f = (w * 1.6 + i / 3) % 1;                          // each bubble drifts back and fades
-    oval(g, s, x - .03 - f * .17, y + Math.sin(w * 16 + i * 2.1) * .03, .016 * (1 - f * .5), .016 * (1 - f * .5), `rgba(190,215,245,${(.6 * (1 - f)).toFixed(2)})`);
-  }
-};
-/** Run `draw(light)` above the waterline (light = true) and again below it (false), then lay foam along the waterline and curl it at both ends. */
-const afloat = (g, s, w, run, x0, x1, draw, line = LINE) => {
-  g.save(); skyClip(g, s, line); draw(true); g.restore();
-  g.save(); seaClip(g, s, line); draw(false); g.restore();
-  const p = .8 + .2 * Math.sin(w * 4) * run, q = .8 + .2 * Math.sin(w * 4 + 2) * run;
-  g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(x0 * s, (line - .012) * s, (x1 - x0) * s, .026 * s);
-  oval(g, s, x1 + .005, line + .005, .065 * p, .028, FOAM); oval(g, s, x1 - .07, line + .02, .05 * p, .018, 'rgba(255,255,255,.35)');   // bow
-  oval(g, s, x0 - .005, line + .005, .065 * q, .028, FOAM); oval(g, s, x0 + .07, line + .02, .05 * q, .018, 'rgba(255,255,255,.35)');   // stern
-};
-/** Hull outline: deck at y = deck, keel at y = keel (below the waterline), stern at x0, bow at x1; `rise` sweeps the bow's deck up. */
-const hullPath = (g, s, { x0, x1, deck, keel, rise = 0, sweep = .2 }) => {
-  g.beginPath(); g.moveTo(x0 * s, deck * s); g.lineTo((x1 - sweep) * s, deck * s);
-  if (rise) g.quadraticCurveTo((x1 - sweep * .55) * s, deck * s, x1 * s, (deck - rise) * s); else g.lineTo(x1 * s, (deck - .02) * s);
-  g.lineTo((x1 - .1) * s, keel * s); g.lineTo((x0 + .06) * s, keel * s); g.lineTo(x0 * s, (keel - .07) * s); g.closePath();
-};
-/** The deck's height and slope (radians, negative = rising) at x on a hull with a swept-up bow. */
-const deckAt = ({ x1, deck, rise = 0, sweep = .2 }, x) => {
-  const x0 = x1 - sweep, xc = x1 - sweep * .55;
-  if (!rise || x <= x0) return { y: deck, ang: 0 };
-  let lo = 0, hi = 1;
-  for (let i = 0; i < 24; i++) { const t = (lo + hi) / 2; ((1 - t) * (1 - t) * x0 + 2 * (1 - t) * t * xc + t * t * x1 < x ? (lo = t) : (hi = t)); }
-  const t = lo;
-  return { y: deck - t * t * rise, ang: Math.atan2(-2 * t * rise, 2 * (1 - t) * (xc - x0) + 2 * t * (x1 - xc)) };
-};
-/** An armoured turret like a tank's: a rounded block, lighter than the dark hull, with barrels out of its front. The block is tilted by `ang`
- *  (to sit on a slope); the barrels are raised `elev` radians on their own, and `dir` -1 points them aft. */
-const turret = (g, s, x, y, w, len, { ang = 0, elev = 0, n = 1, dk = '#3a3d45', bar = .04, dir = 1 } = {}) => {
-  dk = mix(dk, '#ffffff', .5);                                    // lighter than the underwater hull, so it never reads as part of it
-  g.save(); g.translate(x * s, y * s); g.rotate(ang);
-  box(g, s, -w * .5, -w * .5, w, w * .5, 4, dk);
-  g.translate(dir * w * .3 * s, -w * .38 * s); g.rotate(dir > 0 ? -elev : elev);
-  g.fillStyle = INK;
-  for (let i = 0; i < n; i++) g.fillRect(dir > 0 ? 0 : -len * s, (-bar * .5 + (i - (n - 1) / 2) * bar * 1.4) * s, len * s, bar * s);
-  g.restore();
-};
 
 const battleship = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s + .05, H = { x0: -.47, x1: .47, deck: .0, keel: .3, rise: .2, sweep: .6 };
@@ -419,5 +349,5 @@ export const SHADOWS = {
   dinghy: none, destroyer: none, submarine: none, cruiser: none, battleship: none,
 };
 
-// The drawing helpers, shared with the experimental concept sprites in gallery/concept-art.js (not used by the game itself).
-export const PARTS = { box, disc, oval, poly, stroke, mirror, both, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, OLIVE, FOAM, UNDER_SHADE };
+// The shared parts library (parts.js), re-exported under the old name for the experimental concept sprites in gallery/concept-art*.js.
+export const PARTS = { ...LIB };

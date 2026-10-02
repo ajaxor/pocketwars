@@ -1,9 +1,8 @@
 // Experimental concept ships (Shipyard): sprites only, NOT in the game. Same conventions as the real ships in src/render/unit-art.js:
 // drawn twice around a fixed waterline (afloat), light colour above and the UNDER_SHADE mix below, foam at both ends, no shadow.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })   SHADOWS[name](g, { s, alt, w, ph, run })
-import { PARTS } from '../src/render/unit-art.js';
+import { box, disc, oval, poly, stroke, mix, afloat, hullPath, propeller, UNDER_SHADE, GLASS, INK, STEEL, plume } from '../src/render/parts.js';
 
-const { box, disc, oval, poly, stroke, mix, afloat, hullPath, propeller, UNDER_SHADE, GLASS, INK, STEEL } = PARTS;
 const WHITE = '#f4f4f0', SMOKE = 'rgba(70,70,75,', FOAMW = 'rgba(255,255,255,';
 
 // A gun mount lighter than the underwater hull, barrels near black (the real ships' turret rule). `dk` is the underwater colour.
@@ -14,12 +13,6 @@ const mount = (g, s, x, y, w, len, { dk, n = 1, elev = 0, dir = 1, bar = .035, r
   g.fillStyle = INK;
   for (let i = 0; i < n; i++) g.fillRect(dir > 0 ? -rec * s : -len * s + rec * s, (-bar * .5 + (i - (n - 1) / 2) * bar * 1.5) * s, len * s, bar * s);
   g.restore();
-};
-const plume = (g, s, x, y, w, run, ph, k = 1) => {                // smoke drifting aft from a funnel
-  for (let i = 0; i < 3; i++) {
-    const f = ((run ? w * .5 : 0) + ph + i / 3) % 1;
-    oval(g, s, x - f * .16 * k, y - f * .07 - .01, (.022 + f * .03) * k, (.018 + f * .022) * k, `${SMOKE}${(.4 * (1 - f)).toFixed(2)})`);
-  }
 };
 
 // ---- Shipyard ---------------------------------------------------------------------------------------------------------------
