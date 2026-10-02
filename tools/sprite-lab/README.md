@@ -65,6 +65,13 @@ sprite that used to be the bomber). It lives here, not in `data/`, so the game n
 include these units (marked PLANNED); the plain `bomber` is now a four-engine transport-style jet. To ship one, move its
 entry into `data/units.json`, fill in its balance numbers and add its damage rows.
 
+## Experimental concept units
+
+`gallery/concept-art.js` (sprites and shadows) and `gallery/concepts.json` (names, facilities, costs, mechanics) hold 20 concept units
+for production facilities that do not exist yet (Hover Lab, Mech Factory, Stealth Lab, Glider Field, Space Port, Underwater Lab, Drone
+Bay, plus new War Factory units). They are shown in the gallery's "Experimental" section and are not in the game or in `data/`.
+`node tools/sprite-lab/concepts.mjs [--only id,id] [--size 150] [--check]` renders them to a PNG contact sheet and checks their bounds.
+
 ## Notes for design work
 
 - Draw at the size it will be seen. Judge every change at 120 and 40 before 176.

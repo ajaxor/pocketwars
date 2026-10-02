@@ -6,8 +6,10 @@
 import { SPRITES, SHADOWS } from '../src/render/unit-art.js';
 import { drawFrameAlpha, DISABLED_TINT } from '../src/render/unit-frame.js';
 import { drawOutlined, OUTLINE_THIN } from '../src/render/outline.js';
+import { SPRITES as CONCEPT_SPRITES, SHADOWS as CONCEPT_SHADOWS } from './concept-art.js';   // experimental units, not in the game
 
 const MOD = { SPRITES, SHADOWS };
+const CONCEPT_MOD = { SPRITES: CONCEPT_SPRITES, SHADOWS: CONCEPT_SHADOWS };
 export const STATES = { idle: { run: 1, speed: 1, alpha: 1 }, moving: { run: 1, speed: 2, alpha: 1 }, done: { run: 0, speed: 1, alpha: 1, tint: DISABLED_TINT } };
 
 /** Paint one tile (backdrop + unit) into a 2D context that is already scaled to CSS pixels. Pure drawing: no DOM. */
@@ -19,10 +21,11 @@ export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
   g.save(); g.translate(size / 2, size / 2);
+  const mod = unit.concept ? CONCEPT_MOD : MOD;
   const o = { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run, moving: state === 'moving', make };
   const k = OUTLINES[outline] || 0;
-  if (k) drawOutlined(g, MOD, unit.sprite, o, { r: Math.max(1, size * k), color: OUTLINE_COLORS[outlineColor] || faction.dark, tint: st.tint || null, make });
-  else drawFrameAlpha(g, MOD, unit.sprite, o, st.alpha, st.tint || null);
+  if (k) drawOutlined(g, mod, unit.sprite, o, { r: Math.max(1, size * k), color: OUTLINE_COLORS[outlineColor] || faction.dark, tint: st.tint || null, make });
+  else drawFrameAlpha(g, mod, unit.sprite, o, st.alpha, st.tint || null);
   g.restore();
 }
 
@@ -48,6 +51,30 @@ async function boot() {
     card.append(name, note, row); grid.append(card);
   });
 
+  // the experimental concept units: grouped by the production facility that would build them
+  const CONCEPTS = await (await fetch(new URL('concepts.json', import.meta.url))).json();
+  const text = (tag, cls, str) => { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = str; return e; };
+  const facs = $('#cfacs');
+  CONCEPTS.facilities.forEach((fac, fi) => {
+    const sec = document.createElement('div'); sec.className = 'fac';
+    const mine = CONCEPTS.units.filter((u) => u.facility === fac.id);
+    sec.append(text('h3', '', fac.name), text('p', '', fac.blurb), text('div', 'also', `Builds: ${mine.map((u) => u.name).join(', ')} · ${fac.overlap}`));
+    const cg = document.createElement('div'); cg.className = 'cgrid';
+    mine.forEach((cu, ui) => {
+      const unit = { name: cu.name, sprite: cu.sprite, altitude: cu.altitude, concept: true, water: !!cu.water };
+      const card = document.createElement('div'); card.className = 'card ccard';
+      const row = document.createElement('div'); row.className = 'row';
+      DATA.factions.slice(0, 2).forEach((faction, fx) => {
+        const canvas = document.createElement('canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `${cu.name}, ${faction.name}`);
+        row.append(canvas);
+        tiles.push({ canvas, g: canvas.getContext('2d'), unit, faction, phase: (fi * 5 + ui) * 1.3 + fx * .7, visible: true });
+      });
+      card.append(text('div', 'name', cu.name), text('div', 'meta', `${cu.role} · ${cu.cost.toLocaleString('en-US')} · move ${cu.move}`), row, text('p', 'mech', cu.mechanic), text('div', 'ov', `Overlaps: ${cu.overlaps}`));
+      cg.append(card);
+    });
+    sec.append(cg); facs.append(sec);
+  });
+
   const io = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((e) => { tiles.find((t) => t.canvas === e.target).visible = e.isIntersecting; })) : null;
   if (io) tiles.forEach((t) => io.observe(t.canvas));
 
@@ -58,8 +85,7 @@ async function boot() {
     draw();
   }
   function draw() {
-    const bg = DATA.terrain[state.bg];
-    for (const t of tiles) if (t.visible) paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg, outline: state.outline, outlineColor: state.outlineColor });
+    for (const t of tiles) if (t.visible) paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg: DATA.terrain[t.unit.water && state.bg === 'plain' ? 'sea' : state.bg], outline: state.outline, outlineColor: state.outlineColor });
   }
   function frame(now) {
     if (!state.paused) clock += (now - last) / 1000;

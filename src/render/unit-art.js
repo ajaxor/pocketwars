@@ -401,3 +401,6 @@ export const SHADOWS = {
   // ships sit in the water and cast no shadow (their foam is part of the sprite)
   dinghy: none, destroyer: none, submarine: none, cruiser: none, battleship: none,
 };
+
+// The drawing helpers, shared with the experimental concept sprites in gallery/concept-art.js (not used by the game itself).
+export const PARTS = { box, disc, oval, poly, stroke, mirror, both, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, OLIVE, FOAM, UNDER_SHADE };

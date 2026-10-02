@@ -1,0 +1,297 @@
+{
+ "facilities": [
+  {
+   "id": "war_factory",
+   "name": "War Factory",
+   "blurb": "The workhorse. Wheeled and tracked ground units, plus the support trucks the new Resupply rules need.",
+   "overlap": "existing: recon, tank, heavy tank, artillery, flak"
+  },
+  {
+   "id": "hover_lab",
+   "name": "Hover Lab",
+   "blurb": "Air-cushion craft that skim land, shoals and sea alike. Fast and flexible, thinly armoured, and they overlap with the War Factory, the Shipyard and the Airfield.",
+   "overlap": "new"
+  },
+  {
+   "id": "mech_factory",
+   "name": "Mech Factory",
+   "blurb": "Legged walkers. Slow, tough and unfazed by terrain: they climb mountains that stop every wheel and tread.",
+   "overlap": "new"
+  },
+  {
+   "id": "stealth_lab",
+   "name": "Stealth Lab",
+   "blurb": "Cloaked variants of ordinary roles. Invisible unless an enemy ends a move next to them, which makes scouting and sonar-style detection matter on land and in the air.",
+   "overlap": "new"
+  },
+  {
+   "id": "glider_field",
+   "name": "Glider Field",
+   "blurb": "Cheap, silent, unpowered aircraft. No fuel, no engine, one way trips: they trade range and survivability for price.",
+   "overlap": "new"
+  },
+  {
+   "id": "space_port",
+   "name": "Space Port",
+   "blurb": "Orbital and re-entry hardware. Very expensive and very fast; the satellite is the only unit that can strike without ever being in reach.",
+   "overlap": "new"
+  },
+  {
+   "id": "underwater_lab",
+   "name": "Underwater Lab",
+   "blurb": "Deep-sea hardware built on the coast: deeper divers than the submarine, sea mines, and expendable torpedo drones.",
+   "overlap": "new"
+  },
+  {
+   "id": "drone_bay",
+   "name": "Drone Bay",
+   "blurb": "Small unmanned aircraft. Individually weak, they win by numbers, sight and by keeping everyone else fighting.",
+   "overlap": "new"
+  }
+ ],
+ "units": [
+  {
+   "id": "supply_truck",
+   "name": "Supply Truck",
+   "facility": "war_factory",
+   "sprite": "supply_truck",
+   "altitude": 0,
+   "cost": 5000,
+   "move": 5,
+   "role": "Support",
+   "overlaps": "Resupply at an airfield",
+   "mechanic": "Refills the ammo of every friendly unit next to it when it waits, at the usual price per round. Lets copters work far from an airfield. Unarmed."
+  },
+  {
+   "id": "rocket_battery",
+   "name": "Rocket Battery",
+   "facility": "war_factory",
+   "sprite": "rocket_battery",
+   "altitude": 0,
+   "cost": 9000,
+   "move": 4,
+   "role": "Indirect fire",
+   "overlaps": "Artillery",
+   "mechanic": "Range 3 to 5 with a minimum range, big damage, but empties its tubes after 3 salvos and then needs a Supply Truck. Cannot move and fire."
+  },
+  {
+   "id": "hover_scout",
+   "name": "Hover Scout",
+   "facility": "hover_lab",
+   "sprite": "hover_scout",
+   "altitude": 0.04,
+   "cost": 5000,
+   "move": 8,
+   "role": "Recon",
+   "overlaps": "Recon, marine",
+   "mechanic": "The fastest ground-level unit. Crosses land, shoals and sea at the same cost, sees 2 tiles further than other ground units, but any hit hurts."
+  },
+  {
+   "id": "hover_tank",
+   "name": "Hover Tank",
+   "facility": "hover_lab",
+   "sprite": "hover_tank",
+   "altitude": 0.04,
+   "cost": 8000,
+   "move": 5,
+   "role": "Assault",
+   "overlaps": "Tank, marine",
+   "mechanic": "A light tank that skims water. Cannot be hit by sea mines and cannot capture. Loses its cover bonus on every tile, since it floats above it."
+  },
+  {
+   "id": "hover_carrier",
+   "name": "Hover Carrier",
+   "facility": "hover_lab",
+   "sprite": "hover_carrier",
+   "altitude": 0.04,
+   "cost": 7000,
+   "move": 6,
+   "role": "Transport",
+   "overlaps": "Transport copter",
+   "mechanic": "Carries one foot unit across water and land. The passenger unloads from the bow ramp after the carrier moves, like a Deploy that does not use ammo."
+  },
+  {
+   "id": "strider",
+   "name": "Strider",
+   "facility": "mech_factory",
+   "sprite": "strider",
+   "altitude": 0,
+   "cost": 6500,
+   "move": 4,
+   "role": "Assault",
+   "overlaps": "Tank",
+   "mechanic": "A bipedal walker with a cannon. Treats mountains and forest like plain ground (move cost 1) but is weaker against tank rounds than a tread."
+  },
+  {
+   "id": "titan",
+   "name": "Titan",
+   "facility": "mech_factory",
+   "sprite": "titan",
+   "altitude": 0,
+   "cost": 16000,
+   "move": 3,
+   "role": "Heavy assault",
+   "overlaps": "Heavy tank, battleship",
+   "mechanic": "Twin heavy cannons and the most hit points in the game. Walks over woods and mountains and flattens forest it crosses into plain ground."
+  },
+  {
+   "id": "phantom_tank",
+   "name": "Phantom Tank",
+   "facility": "stealth_lab",
+   "sprite": "phantom_tank",
+   "altitude": 0,
+   "cost": 9000,
+   "move": 5,
+   "role": "Ambush",
+   "overlaps": "Tank, recon",
+   "mechanic": "Cloaked: invisible to the enemy unless one of their units is adjacent. Fires only after it has been revealed, and is revealed for the turn when it attacks."
+  },
+  {
+   "id": "stealth_copter",
+   "name": "Stealth Copter",
+   "facility": "stealth_lab",
+   "sprite": "stealth_copter",
+   "altitude": 0.07,
+   "cost": 12000,
+   "move": 6,
+   "role": "Strike air",
+   "overlaps": "Copter",
+   "mechanic": "A silent attack copter, hidden from anything that is not adjacent or on flak range. Only half the armour of a normal copter."
+  },
+  {
+   "id": "spy",
+   "name": "Spy",
+   "facility": "stealth_lab",
+   "sprite": "spy",
+   "altitude": 0,
+   "cost": 2500,
+   "move": 3,
+   "role": "Saboteur",
+   "overlaps": "Soldier",
+   "mechanic": "Cloaked infantry that cannot attack. Instead of capturing, it sabotages an enemy property: halves its income and stops it building for a turn."
+  },
+  {
+   "id": "troop_glider",
+   "name": "Troop Glider",
+   "facility": "glider_field",
+   "sprite": "troop_glider",
+   "altitude": 0.1,
+   "cost": 2500,
+   "move": 7,
+   "role": "Transport",
+   "overlaps": "Transport copter",
+   "mechanic": "Carries one soldier. Costs very little, but after unloading it is consumed. No ammo and no fuel, and it can only land on open ground."
+  },
+  {
+   "id": "scout_glider",
+   "name": "Scout Glider",
+   "facility": "glider_field",
+   "sprite": "scout_glider",
+   "altitude": 0.1,
+   "cost": 1500,
+   "move": 6,
+   "role": "Recon",
+   "overlaps": "Hover Scout, fighter",
+   "mechanic": "A hang glider with a pilot. Almost free, sees 4 tiles, unarmed. Falls out of the sky if anything at all hits it."
+  },
+  {
+   "id": "drop_pod",
+   "name": "Drop Pod",
+   "facility": "space_port",
+   "sprite": "drop_pod",
+   "altitude": 0,
+   "cost": 3500,
+   "move": 0,
+   "role": "Orbital insertion",
+   "overlaps": "Transport copter",
+   "mechanic": "Launched, not driven: lands on any visible tile within 8 tiles of a friendly property, arrives with a Mech aboard, then the pod stays as a bunker (1 hit point more defence)."
+  },
+  {
+   "id": "shuttle",
+   "name": "Shuttle",
+   "facility": "space_port",
+   "sprite": "shuttle",
+   "altitude": 0.13,
+   "cost": 18000,
+   "move": 12,
+   "role": "Fast transport",
+   "overlaps": "Transport copter, bomber",
+   "mechanic": "Moves 12 and carries two foot units. Flies above fighters' reach: only flak can hit it, at half damage."
+  },
+  {
+   "id": "satellite",
+   "name": "Orbital Satellite",
+   "facility": "space_port",
+   "sprite": "satellite",
+   "altitude": 0.13,
+   "cost": 25000,
+   "move": 1,
+   "role": "Strategic",
+   "overlaps": "Artillery, bomber",
+   "mechanic": "Placed on the board edge. Every third turn its laser can hit any tile in view of your units, for heavy damage. Cannot be attacked except by another satellite."
+  },
+  {
+   "id": "abyss_sub",
+   "name": "Abyss Sub",
+   "facility": "underwater_lab",
+   "sprite": "abyss_sub",
+   "altitude": 0,
+   "cost": 14000,
+   "move": 4,
+   "role": "Deep diver",
+   "overlaps": "Submarine",
+   "mechanic": "Dives to a deeper layer than a submarine: sonar sees it only when adjacent. Slower, but its heavy torpedo outranges destroyers.",
+   "water": true
+  },
+  {
+   "id": "mine_layer",
+   "name": "Mine Layer",
+   "facility": "underwater_lab",
+   "sprite": "mine_layer",
+   "altitude": 0,
+   "cost": 6000,
+   "move": 6,
+   "role": "Area denial",
+   "overlaps": "Destroyer",
+   "mechanic": "Drops a hidden mine on the tile it leaves. A ship that enters a mined tile takes 40% damage and the mine is spent. Mines are visible to units next to them.",
+   "water": true
+  },
+  {
+   "id": "torpedo_drone",
+   "name": "Torpedo Drone",
+   "facility": "underwater_lab",
+   "sprite": "torpedo_drone",
+   "altitude": 0,
+   "cost": 3500,
+   "move": 8,
+   "role": "Expendable strike",
+   "overlaps": "Cruiser, submarine",
+   "mechanic": "Cheap and fast; one attack, then it is destroyed. Cannot be built unless you already own a Mine Layer or Abyss Sub.",
+   "water": true
+  },
+  {
+   "id": "swarm_drones",
+   "name": "Swarm Drones",
+   "facility": "drone_bay",
+   "sprite": "swarm_drones",
+   "altitude": 0.08,
+   "cost": 3000,
+   "move": 7,
+   "role": "Harass",
+   "overlaps": "Copter, fighter",
+   "mechanic": "A pack of small drones: hits hard against infantry, little against armour. Weakens as its strength drops, since each drone lost is a quarter of the unit."
+  },
+  {
+   "id": "repair_drone",
+   "name": "Repair Drone",
+   "facility": "drone_bay",
+   "sprite": "repair_drone",
+   "altitude": 0.08,
+   "cost": 5500,
+   "move": 5,
+   "role": "Support",
+   "overlaps": "Supply Truck",
+   "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Unarmed."
+  }
+ ]
+}
