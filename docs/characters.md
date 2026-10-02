@@ -115,10 +115,11 @@ gives a random line for a situation, never the same line twice in a row, and use
 ## In battle
 
 When a battle has leaders, each says a `battle_start` line on a card before the first move. After that a leader only speaks at **milestones**, each
-of which fires once per battle (`src/campaign/commentary.js`, `MILESTONES`): an enemy starting to capture their HQ (`danger`), their first unit
-lost (`unit_lost`), their first kill (`taunt`), first building captured (`capture`), first building lost (`danger`), being outnumbered two to one
-(`danger`) or far ahead (`taunt`), their first attack, third kill, third loss, third capture, sixth kill, and a remark on their first turn (`idle`).
-When it is over the winner has a `victory` line. After a comment a leader is quiet for a few seconds; a milestone that comes due meanwhile waits.
+of which fires once per battle (`src/campaign/commentary.js`, `MILESTONES`), each with its own situation: an enemy capturing their HQ (`hq_threat`),
+their first unit lost (`first_loss`), first kill (`first_blood`), first building captured (`capture`), first building lost (`building_lost`),
+being outnumbered two to one (`outnumbered`) or far ahead (`dominant`), their first attack (`attack`), third kill (`killing_spree`), third loss
+(`heavy_losses`), third capture (`capture`), sixth kill (`taunt`), a remark on their first turn (`first_turn`) and one once the battle passes six
+turns (`idle`). When it is over the winner has a `victory` line. After a comment a leader is quiet for a few seconds; a milestone that comes due meanwhile waits.
 A line within a situation is never repeated soon (the Talker's bag).
 
 Comments show in a banner with the leader's portrait (108 px, 20 px text): at the bottom during the computer's turn, and at the top (going away by
