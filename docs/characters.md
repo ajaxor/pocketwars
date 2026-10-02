@@ -106,6 +106,15 @@ separated by `" / "`, so a dialogue box can break the line there.
 
 ## In battle
 
-When a battle has leaders (a skirmish with leaders picked), each leader says a `battle_start` line on a card before the first move (tap to read on; the cards also move on by themselves). During the computer's turn that leader's portrait sits in a banner at the bottom of the screen with a line: a `taunt` (or `danger` when outnumbered) as the turn begins, then now and then `attack`, `capture` or `unit_lost` as those things happen (at most four comments a turn, with a pause between them). The logic is `src/campaign/commentary.js`, the banner `src/ui/commentary-banner.js`.
+When a battle has leaders, each says a `battle_start` line on a card before the first move. After that a leader only speaks at **milestones**, each
+of which fires once per battle (`src/campaign/commentary.js`, `MILESTONES`): an enemy starting to capture their HQ (`danger`), their first unit
+lost (`unit_lost`), their first kill (`taunt`), first building captured (`capture`), first building lost (`danger`), being outnumbered two to one
+(`danger`) or far ahead (`taunt`), their first attack, third kill, third loss, third capture, sixth kill, and a remark on their first turn (`idle`).
+When it is over the winner has a `victory` line. After a comment a leader is quiet for a few seconds; a milestone that comes due meanwhile waits.
+A line within a situation is never repeated soon (the Talker's bag).
 
-Pressing and holding the screen during the computer's turn fast-forwards it (four times the speed, no pauses between units); let go to return to normal (`src/ui/pacing.js`, the `onHold` gesture).
+Comments show in a banner with the leader's portrait (108 px, 20 px text): at the bottom during the computer's turn, and at the top (going away by
+itself) during the player's turn. Every leader comments, the player's and the computer's. Pressing and holding the screen during the computer's turn
+fast-forwards it. To add a milestone, add an entry to `MILESTONES` (and a counter in `#tally` if it needs a new count). Code:
+`src/ui/commentary-banner.js`, `src/ui/pacing.js`.
+

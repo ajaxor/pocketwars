@@ -10,7 +10,7 @@
 - **Leaders are independent of team colour**; they could be tied together later.
 - **Not visually verified.** The picker's layout at phone width was not checked in a browser (the sandbox browser could not reach localhost); only unit tests cover it.
 - **Session has no automated test.** The commentary logic, banner, pacer and hold gesture are unit-tested, but the Session wiring (opening cards, the banner during the computer's turn, fast-forward) was only checked with a throwaway headless-browser script. A small browser smoke test in `tools/` would pay for itself.
-- **Only the computer's leader talks, only in its own turn.** The human's leader has no commentary, and nobody reacts to game over (victory/defeat lines exist but are unused).
+- **Milestones share situations.** The commentary milestones reuse the speech files' existing situations (a first kill is a `taunt`, a lost building a `danger`). Dedicated situations (`first_kill`, `hq_threat`, ...) with their own lines would let each milestone sound specific; `greeting`, `praise` and `tech` are still unused in battle.
 - **The banner covers the bottom of the map** during opening cards and the computer's turn; it could move to the side of the screen away from the action, like the dock.
 - **Portrait colours follow the leader's own faction**, while the banner accent and the units follow the team colour, so a leader can look mismatched with their army.
 - **Eye drawing is parametric but 2D-flat:** expressions (angry, shock) only change brow and lid openness, not each style's eye shape.

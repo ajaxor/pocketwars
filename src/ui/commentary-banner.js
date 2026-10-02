@@ -101,7 +101,7 @@ export class CommentaryBanner {
     if (!c || c.drawn === mouth || !c.leader || !c.leader.skin) return;
     const g = this.face.getContext?.('2d');
     if (!g) return;
-    const px = 72 * Math.min(2, globalThis.devicePixelRatio || 1);
+    const px = 108 * Math.min(2, globalThis.devicePixelRatio || 1);
     if (this.face.width !== px) this.face.width = this.face.height = px;
     g.clearRect(0, 0, px, px);
     drawPortrait(g, c.leader, { px, style: 'flat', expr: 'neutral', talk: mouth });

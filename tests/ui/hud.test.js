@@ -134,39 +134,33 @@ function openBuild(funds, extra = {}) {
   const model = buildMenuModel(t.game, 0, f.x, f.y);
   t.hud.build(model, { choice: extra.choice ?? model.options[0].id, faction: colors, onBuild: (id) => calls.push(['build', id]), onClose: () => calls.push(['close']) });
   const rows = () => t.byClass('build-row');
-  const buy = () => t.byClass('btn--primary')[0];
-  return { ...t, calls, rows, buy, label: (b) => b.children.at(-1).textContent };
+  return { ...t, calls, rows };
 }
 
-test('the build menu has a row per unit, and a Build button for the picked unit', () => {
-  const { rows, byClass, texts, buy, label } = openBuild(8000);
+test('the build menu has a row per unit with its price, and no details below the list', () => {
+  const { rows, byClass, texts } = openBuild(8000);
   assert.equal(rows().length, 5);
   assert.deepEqual(texts(byClass('win-title')), ['Factory']);
   assert.deepEqual(texts(byClass('win-tag')), [], 'the menu does not show the player\'s funds');
   assert.deepEqual(texts(byClass('build-name')), ['Recon', 'Tank', 'Heavy Tank', 'Artillery', 'Flak']);
   assert.deepEqual(texts(byClass('build-cost')), ['4,000', '7,000', '10,000', '6,000', '6,000']);
-  assert.ok(rows()[0].classList.contains('is-picked'));
-  assert.equal(label(buy()), 'Build Recon - 4,000');
+  assert.equal(byClass('build-detail').length, 0, 'the extended unit info is gone');
+  assert.equal(byClass('btn--primary').length, 0, 'and so is the Build button');
+  assert.equal(rows().filter((r) => r.classList.contains('is-picked')).length, 0, 'nothing is pre-selected');
 });
 
-test('tapping a row only selects it (and shows its details); the Build button spends the money', () => {
-  const { rows, calls, buy, byClass, texts, label } = openBuild(8000);
+test('one tap on a row builds that unit', () => {
+  const { rows, calls } = openBuild(8000);
   rows()[1].click();
-  assert.deepEqual(calls, [], 'selecting never builds');
-  assert.ok(rows()[1].classList.contains('is-picked') && !rows()[0].classList.contains('is-picked'));
-  assert.equal(label(buy()), 'Build Tank - 7,000');
-  assert.ok(texts(byClass('note')).some((n) => n.startsWith('Tank cannon: 80 damage, range 1.')));
-  buy().click();
   assert.deepEqual(calls, [['build', 'tank']]);
 });
 
-test('an unaffordable unit can be looked at but not built, and says how much is missing', () => {
-  const { rows, buy, label, calls } = openBuild(8000);
+test('an unaffordable row is dimmed, and tapping it is passed on so the game can say there is not enough money', () => {
+  const { rows, calls } = openBuild(8000);
   assert.ok(rows()[2].classList.contains('is-poor'));
+  assert.ok(!rows()[1].classList.contains('is-poor'));
   rows()[2].click();
-  assert.equal(label(buy()), 'Need 2,000 more');
-  assert.equal(buy().disabled, true);
-  assert.deepEqual(calls, []);
+  assert.deepEqual(calls, [['build', 'heavy_tank']]);
 });
 
 test('Close calls onClose, and a new model replaces the old window', () => {
@@ -227,22 +221,6 @@ test('tapping an attribute tag shows what it does; tapping it again, or the next
   assert.ok(!captures.classList.contains('is-open') && cover.classList.contains('is-open'));
   cover.click();
   assert.equal(help.hidden, true);
-});
-
-test('tapping the picked row a second time builds it; the first tap on a row never does', () => {
-  const { rows, calls } = openBuild(8000);
-  rows()[0].click();                       // the row that starts highlighted still needs an explicit first tap
-  assert.deepEqual(calls, []);
-  rows()[1].click();
-  assert.deepEqual(calls, []);
-  rows()[1].click();
-  assert.deepEqual(calls, [['build', 'tank']]);
-});
-
-test('a second tap on a row the player cannot afford builds nothing', () => {
-  const { rows, calls } = openBuild(8000);
-  rows()[2].click(); rows()[2].click();
-  assert.deepEqual(calls, []);
 });
 
 test('the gear opens a menu; Reset and Quit ask first, Resume closes it', () => {

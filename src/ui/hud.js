@@ -250,41 +250,31 @@ export class Hud {
   // ---- build menu ----------------------------------------------------------------------------------------------------------
 
   /**
-   * The build menu. `model` is buildMenuModel(); `choice` the id shown selected; `onBuild(id)` and `onClose()` are the two
-   * ways out. Tapping a row selects it (details appear under the list); tapping the selected row again, or the big
-   * button, builds it, so a single stray tap never spends money.
+   * The build menu. `model` is buildMenuModel(); `onBuild(id)` and `onClose()` are the two ways out. Tapping a row builds that unit
+   * at once (a unit that costs too much is passed on as well, and the controller says so); Close leaves without building.
+   * (`choice` and `faction` are accepted for older callers: `faction` colours the window and the pictures.)
    */
-  build(model, { choice, faction, onBuild, onClose }) {
+  build(model, { faction, onBuild, onClose }) {
     this.el.main.replaceChildren();
     this.buildList = null;
     if (!model) { this.buildState = null; return; }
-    this.buildState = { model, choice, faction, onBuild, onClose };
+    this.buildState = { model, faction, onBuild, onClose };
     this.#drawBuild();
   }
 
   #drawBuild() {
     const d = this.doc;
-    const { model, choice, faction, onBuild, onClose } = this.buildState;
-    const again = !!this.buildList;                                    // choosing a row redraws the window: it must not pop in again,
-    const scrolled = again ? this.buildList.scrollTop : 0;             // and the list stays where it was
+    const { model, faction, onBuild, onClose } = this.buildState;
     this.el.main.replaceChildren();
     const w = windowBox(d, { title: model.title, accent: faction?.color, cls: 'win--build' });
-    if (again) w.root.classList.add('win--still');
     const list = h(d, 'div', 'build-list');
-    list.setAttribute('role', 'listbox');
-    const picked = model.options.find((o) => o.id === choice) || model.options[0];
+    list.setAttribute('role', 'list');
     for (const o of model.options) {
       const row = button(d, {
-        cls: `build-row${o.id === picked?.id ? ' is-picked' : ''}${o.affordable ? '' : ' is-poor'}`,
+        cls: `build-row${o.affordable ? '' : ' is-poor'}`,
         kids: [this.#icon({ ...o, faction }, BUILD_ICON)],
-        onClick: () => {
-          // a second tap on a row the player has already picked builds it; the first tap only selects
-          if (this.buildState.armed === o.id && o.affordable) { onBuild(o.id); return; }
-          this.buildState.choice = o.id; this.buildState.armed = o.id; this.#drawBuild();
-        },
+        onClick: () => onBuild(o.id),
       });
-      row.setAttribute('role', 'option');
-      row.setAttribute('aria-selected', o.id === picked?.id ? 'true' : 'false');
       const main = h(d, 'span', 'build-main');
       main.append(h(d, 'span', 'build-name', o.name));
       const weapon = o.weapons[0];
@@ -296,32 +286,12 @@ export class Hud {
       list.append(row);
     }
     w.body.append(list);
-    if (picked) w.body.append(this.#buildDetail(picked));
     const foot = h(d, 'div', 'btn-row');
-    foot.append(button(d, { label: 'Close', variant: 'ghost', onClick: () => onClose() }));
-    const buy = picked && picked.affordable;
-    foot.append(button(d, {
-      label: !picked ? 'Nothing to build' : buy ? `Build ${picked.name} - ${fmtMoney(picked.cost)}` : `Need ${fmtMoney(picked.missing)} more`,
-      variant: 'primary', disabled: !buy, cls: 'btn--grow', onClick: () => onBuild(picked.id),
-    }));
+    foot.append(button(d, { label: 'Close', variant: 'ghost', cls: 'btn--grow', onClick: () => onClose() }));
     w.body.append(foot);
     this.el.main.append(w.root);
-    list.scrollTop = scrolled;
     this.buildList = list;
     this.drawIcons(this.clock());   // the new pictures are not blank for a frame
-  }
-
-  #buildDetail(o) {
-    const d = this.doc;
-    const box = h(d, 'div', 'build-detail');
-    for (const wpn of o.weapons) {
-      box.append(h(d, 'div', 'note', `${wpn.name}: ${wpn.damage} damage, range ${weaponRange(wpn)}. Hits ${wpn.hits.join(', ').toLowerCase()}.`));
-    }
-    const tags = [...o.tags];
-    if (o.layer) tags.unshift(o.layer);
-    tags.push(`Armor ${o.armor}%`, `Toughness x${o.toughness}`);
-    box.append(this.#tags(tags));
-    return box;
   }
 
   // ---- game over -----------------------------------------------------------------------------------------------------------
