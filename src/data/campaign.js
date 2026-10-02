@@ -44,12 +44,13 @@ export function campaignProblems(raw, registry) {
       if (!registry.factions[n.faction]) p.push(`campaign: nation "${n.id}" has unknown faction "${n.faction}"`);
       if (!Array.isArray(n.capital) || n.capital.length !== 2 || !n.capital.every(isNum)) p.push(`campaign: nation "${n.id}" needs a capital [x, y]`);
       if (!Array.isArray(n.outline) || n.outline.length < 3 || !n.outline.every((q) => Array.isArray(q) && q.length === 2 && q.every(isNum))) p.push(`campaign: nation "${n.id}" needs an outline of at least three [x, y] points`);
-      if (!isStr(n.gift)) p.push(`campaign: nation "${n.id}" needs a gift (what the Chorus offered, or "Refused")`);
       if (n.home) homes++;
     }
     if (homes !== 1) p.push('campaign: exactly one nation must be the home nation');
     if (raw.home && !raw.nations.some((n) => n.faction === raw.home && n.home)) p.push('campaign: home must be the faction of the home nation');
   }
+
+  if (raw.islands !== undefined && (!Array.isArray(raw.islands) || !raw.islands.every((o) => Array.isArray(o) && o.length >= 3 && o.every((q) => Array.isArray(q) && q.length === 2 && q.every(isNum))))) p.push('campaign: islands must be a list of polygons');
 
   const scenes = raw.intro && raw.intro.scenes;
   if (!Array.isArray(scenes) || !scenes.length) p.push('campaign: intro.scenes must be a non-empty array');

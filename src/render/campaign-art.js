@@ -56,9 +56,12 @@ export function drawSea(g, w, h, t = 0, tint = 0) {
   g.globalAlpha = 1;
 }
 
-export function drawContinent(g, w, h, { nations, colors, assim = {}, t = 0, fit, selected = null, free = null, dim = 0 }) {
+export function drawContinent(g, w, h, { nations, colors, assim = {}, t = 0, fit, selected = null, free = null, dim = 0, islands = [], labels = false }) {
   fit = fit || mapFit(w, h);
   const U = fit.s;
+  for (const o of islands) {            // small islands off the coast: land with no nation
+    path(g, o, fit); g.fillStyle = '#3f5a48'; g.fill(); g.strokeStyle = 'rgba(120,190,255,.3)'; g.lineWidth = Math.max(1, U * 0.8); g.stroke();
+  }
   // the coast first, so the five lands read as one continent with a shore
   g.lineJoin = 'round';
   g.strokeStyle = 'rgba(120,190,255,.25)'; g.lineWidth = U * 3.2;
@@ -93,6 +96,14 @@ export function drawContinent(g, w, h, { nations, colors, assim = {}, t = 0, fit
     g.save(); g.translate(x, y);
     if (a > 0.6) { g.fillStyle = '#0b1218'; g.fillRect(-r, -r * 0.6, r * 2, r * 1.2); g.fillStyle = CYAN; g.fillRect(-r * 0.8, -r * 0.14, r * 1.6, r * 0.28); }
     else { g.fillStyle = '#fff'; g.beginPath(); g.arc(0, 0, r, 0, 7); g.fill(); g.fillStyle = colors(n.faction).dark; g.beginPath(); g.arc(0, 0, r * 0.6, 0, 7); g.fill(); if (n.home) { g.fillStyle = '#ffe45c'; g.beginPath(); g.arc(0, 0, r * 0.28, 0, 7); g.fill(); } }
+    g.restore();
+  }
+  if (labels) {                                              // names under the capitals, for the world map
+    g.save(); g.font = `700 ${Math.max(9, Math.round(U * 2.7))}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'top';
+    for (const n of nations) {
+      const x = fit.ox + n.capital[0] * U, y = fit.oy + (n.capital[1] + 3.6) * U;
+      g.lineWidth = 4; g.strokeStyle = 'rgba(4,10,24,.9)'; g.strokeText(n.name, x, y); g.fillStyle = (assim[n.id] || 0) > 0.5 ? '#bff6ff' : '#fff'; g.fillText(n.name, x, y);
+    }
     g.restore();
   }
   if (dim) { g.fillStyle = `rgba(4,8,18,${dim})`; g.fillRect(0, 0, w, h); }
@@ -165,7 +176,7 @@ function arrival(g, w, h, st, fit, nations) {
 /** The Gift: a cyan node blooms at each capital in turn with the gift's name; the home nation is last, and refuses. */
 function gift(g, w, h, st, fit, nations, t) {
   const sc = st.scene, order = sc.order || [], U = fit.s, slot = (sc.duration - 2.4) / (order.length + 1);
-  const label = (n, text, color, k, q) => {
+  const label = (n, text, color, k, q) => {   // (only the home nation gets a label: what the Gift is stays vague)
     const x0 = fit.ox + n.capital[0] * U, y0 = fit.oy + n.capital[1] * U, up = k % 2 === 0;
     g.save(); g.globalAlpha = Math.min(1, q * 2.5); g.font = `700 ${Math.round(12 * U / 3.2 * 1.1)}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
     const lines = wrap(g, text.toUpperCase(), w * 0.34), lh = 15 * Math.max(0.8, U / 3.2), tw = Math.max(...lines.map((l) => g.measureText(l).width));
@@ -179,7 +190,6 @@ function gift(g, w, h, st, fit, nations, t) {
     for (let i = 0; i < 2; i++) { const r = ((q * 0.8 + i * 0.5) % 1) * 22 * U; g.strokeStyle = `rgba(126,240,255,${(1 - r / (22 * U)) * 0.8})`; g.lineWidth = U * 0.8; g.beginPath(); g.arc(x, y, r, 0, 7); g.stroke(); }
     const glow = g.createRadialGradient(x, y, 0, x, y, U * 7); glow.addColorStop(0, 'rgba(126,240,255,.9)'); glow.addColorStop(1, 'rgba(126,240,255,0)');
     g.fillStyle = glow; g.beginPath(); g.arc(x, y, U * 7, 0, 7); g.fill();
-    label(n, n.giftShort || n.gift, CYAN, k, q);
   });
   const home = nations.find((n) => n.home), q = st.local - (0.5 + order.length * slot);
   if (home && q > 0) { label(home, 'No thank you', '#ffb066', order.length, q); void t; }
@@ -218,7 +228,7 @@ export function renderFrame(g, w, h, st, ctx, t) {
   const zoom = 1 + 0.05 * st.p, fit0 = mapFit(w, h, { pad: 0.08, bottom: sc.kind === 'talk' ? h * 0.22 : h * 0.14 });
   const fit = { s: fit0.s * zoom, ox: fit0.ox - (MAP_W * fit0.s * (zoom - 1)) / 2, oy: fit0.oy - (MAP_H * fit0.s * (zoom - 1)) / 2 };
   const dim = sc.kind === 'talk' ? 0.55 : sc.kind === 'gift' ? 0.2 : sc.kind === 'title' ? 0.35 : sc.kind === 'arrival' ? 0.45 : 0;
-  drawContinent(g, w, h, { nations, colors: ctx.colors, assim, t, fit, dim });
+  drawContinent(g, w, h, { nations, colors: ctx.colors, assim, t, fit, dim, islands: campaign.islands });
   if (sc.kind === 'gift') gift(g, w, h, st, fit, nations, t);
   if (sc.kind === 'arrival') arrival(g, w, h, st, fit, nations);
   if (sc.kind === 'talk') talk(g, w, h, st, ctx, U, t);

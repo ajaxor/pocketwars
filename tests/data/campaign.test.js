@@ -20,11 +20,11 @@ const win = { innerWidth: 390, innerHeight: 700, devicePixelRatio: 1 };
 const raw = async () => structuredClone(JSON.parse(JSON.stringify(await readData('campaign.json'))));
 
 // ---- data ---------------------------------------------------------------------------------------------------------------------------
-test('the shipped campaign has five nations: one free home nation and four to liberate', () => {
-  assert.equal(campaign.nations.length, 5);
+test('the shipped campaign has eight nations: one free home nation and seven to liberate', () => {
+  assert.equal(campaign.nations.length, 8);
   assert.deepEqual(campaign.nations.filter((n) => n.home).map((n) => n.id), ['south']);
-  assert.equal(new Set(campaign.nations.map((n) => n.faction)).size, 5, 'each nation is its own colour');
-  assert.equal(registry.factionIds.length >= 5, true);
+  assert.equal(new Set(campaign.nations.map((n) => n.faction)).size, 8, 'each nation is its own colour');
+  assert.equal(registry.factionIds.length >= 8, true);
   for (const n of campaign.nations) assert.equal(n.leaderData.faction, n.faction);
 });
 
@@ -65,11 +65,17 @@ test('nations fall in the scripted order and stay fallen; the home nation never 
   const free = assimilation(tl, idx('peace'), 1, campaign.nations);
   assert.ok(Object.values(free).every((v) => v === 0));
   const fall = campaign.intro.scenes[idx('fall')];
-  const mid = assimilation(tl, idx('fall'), fall.duration * 0.3, campaign.nations);
-  assert.ok(mid.north > 0 && mid.west === 0, 'the first in the order starts first');
+  const mid = assimilation(tl, idx('fall'), fall.duration * 0.12, campaign.nations);
+  assert.ok(mid.centre > 0 && mid.southwest === 0, 'the first in the order starts first');
   const after = assimilation(tl, idx('holdout'), 1, campaign.nations);
-  assert.deepEqual(Object.entries(after).filter(([, v]) => v === 1).map(([k]) => k).sort(), ['centre', 'east', 'north', 'west']);
+  assert.deepEqual(Object.entries(after).filter(([, v]) => v === 1).map(([k]) => k).sort(), ['centre', 'east', 'north', 'northeast', 'northwest', 'southwest', 'west']);
   assert.equal(after.south, 0);
+});
+
+test('the nations are one continent: each capital is only in its own land, and there are islands', () => {
+  for (const a of campaign.nations) for (const b of campaign.nations) assert.equal(inPolygon(a.capital, b.outline), a === b, `${a.id}'s capital vs ${b.id}`);
+  assert.ok(campaign.nations.every((n) => n.outline.length >= 20), 'a continent, not boxes');
+  assert.ok(campaign.islands.length > 0);
 });
 
 test('a tap finds the nation under it, and nothing in the sea', () => {
@@ -115,11 +121,11 @@ test('the world map shows five nations, your homeland first, and the mission but
   assert.equal(m.name.textContent, 'Vantor Reach');
   assert.match(m.status.textContent, /Assimilated/);
   assert.match(m.theme.textContent, /Defeat them to free them/);
-  assert.match(m.gift.textContent, /Cloaking fields/);
+  assert.match(m.gift.textContent, /Accepted the Gift/);
   assert.match(m.bio.textContent, /spymaster/);
   m.select('atlantis'); assert.equal(m.selected, 'north', 'an unknown nation is ignored');
   m.back.click(); m.replay.click(); assert.deepEqual(log, ['back', 'replay']);
-  assert.deepEqual(Object.values(m.assim).sort(), [0, 1, 1, 1, 1]);
+  assert.deepEqual(Object.values(m.assim).sort(), [0, 1, 1, 1, 1, 1, 1, 1]);
 });
 
 // ---- title and launcher -------------------------------------------------------------------------------------------------------------

@@ -23,5 +23,20 @@
     "name": "Tidehaven",
     "color": "#2f86d6",
     "dark": "#1a4a8a"
+  },
+  "skyreach": {
+    "name": "Skyreach",
+    "color": "#e0508a",
+    "dark": "#99285b"
+  },
+  "deepmere": {
+    "name": "Deepmere",
+    "color": "#d6453d",
+    "dark": "#8f221d"
+  },
+  "highspire": {
+    "name": "Highspire",
+    "color": "#cfd6df",
+    "dark": "#7b8794"
   }
 }

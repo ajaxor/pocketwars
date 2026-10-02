@@ -5,7 +5,7 @@ import { STYLES, EXPRESSIONS, drawPortrait, drawCutout, setFactions } from '../s
 const DATA = await (await fetch(new URL('data.json', import.meta.url))).json();
 const CAMPAIGN = await (await fetch(new URL('../data/campaign.json', import.meta.url))).json();
 setFactions([...DATA.factions, { id: 'chorus', ...CAMPAIGN.chorus }]);
-const LEADERS = CAMPAIGN.leaders.filter((l) => l.id !== 'envoy');   // the five faction leaders
+const LEADERS = CAMPAIGN.leaders.filter((l) => l.id !== 'envoy');   // every faction leader
 
 const fac = (L) => DATA.factions.find((f) => f.id === L.faction);
 const $ = (s) => document.querySelector(s);

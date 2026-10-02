@@ -39,20 +39,20 @@ each nation that falls is **assimilated**. The player is the last holdout, launc
 
 ### The Gift (decided)
 
-The Chorus does not invade. It **arrives with presents**, in the manner of XCOM's aliens in reverse: the first contact is a broadcast to all
-five capitals offering a **Lattice node**, technology far beyond anything on the continent, free, "only try it".
+The Chorus does not invade. It **arrives with presents**, in the manner of XCOM's aliens in reverse: the first contact is a broadcast to every
+capital offering a **Lattice node**, technology far beyond anything on the continent, free, "only try it". The story keeps the Gift
+**general on purpose**: it is whatever each nation wants most, and what that means in play (each faction's technology) is decided by the
+faction's own tech tree, which is richer than one theme per nation.
 
 1. **First contact.** The Envoy's signal lands near Solace, the richest and most curious nation, then reaches every capital.
-2. **The Gift.** Each nation is offered what it wants most: cloaking fields (Vantor Reach), tidal power and hover hulls (Tidehaven), walker
-   frames (Ironvale), self-repairing drones (Solace).
-3. **Dependence.** Within a year the nation's factories, supply and defence run on Lattice. Its best units only work on Chorus tech.
+2. **The Gift.** Every nation is offered what it wants most. Nobody is told what the others were given.
+3. **Dependence.** Within a year the nation's factories, supply and defence run on Lattice. Its best equipment only works on Chorus tech.
 4. **The turn.** The last step is plugging the army into the shared network. Leaders who connect are **assimilated**: harmonised, not killed.
 5. **Ashmark refuses.** It was the poorest, most distrustful nation, and Ada's rule is that nothing is free. So its army is old and
    scrappy and *unplugged*, and the Chorus cannot switch it off. That is why you are the last free army, and why you can fight.
 
 What this gives the design:
-- **Labs are Gift sites.** Capturing one lets you reverse-engineer a Chorus-derived unit (the XCOM loop).
-- **Each leader's kit is their nation's Gift** grown from their national style.
+- **Labs are Gift sites.** Capturing one lets you reverse-engineer Chorus-derived units (the XCOM loop).
 - **Freed leaders recover their tech** with the Chorus control stripped out.
 - **A mid-campaign worry:** anything running Gift tech might still be listening. Room for a "purge" mechanic later.
 - **The final act** shows the Chorus's own units, which the Gift was only ever a pale copy of.
@@ -204,24 +204,28 @@ A leader is data. Each has:
 
 ### Roster and personalities
 
-The leaders and their personalities carry the story and the gameplay. Every leader has a **Gift** they accepted (or refused), a **flaw** that
-explains why, and a **kit** that comes from their nation's style. The data lives in `data/campaign.json` (`bio`, `flaw`, `line`, `taken`).
+The leaders and their personalities carry the story and the gameplay. Every leader has a **flaw** that explains why they accepted the Gift
+(or, for Ada, why she refused it), and a **leaning** that hints at their kit. A leaning is a tendency, not a single theme: each faction's
+unit and building set is richer than one line. The data lives in `data/campaign.json` (`bio`, `flaw`, `line`, `taken`, and `theme` per nation).
 
-| Leader | Nation | Personality | Flaw (why they fell) | Gift | Kit |
-|---|---|---|---|---|---|
-| Cmdr. Ada Brandt (you) | Ashmark | Hot-headed ace raised scrapping parts; loud, brave, impatient; trusts nothing she did not repair herself | Rushes in, slow to trust help | **Refused** | Fast and aggressive: infantry and light air. Simplest kit |
-| Marshal Vex Orlov | Vantor Reach | Veteran spymaster, never surprised, cold and secretive | Pride: certain he can control it | Cloaking fields | Stealth and ambush: cheap Stealth Lab units |
-| Gen. Tomas Rey | Ironvale | Patient, fatherly, knows every soldier by name | Loyalty: machines meant fewer funerals | Walker frames | Heavy armour and walkers; weakest air |
-| Dr. Nia Kestrel | Solace | Cheerful, curious genius; wrote the first Lattice integration herself | Curiosity: noticed the signal and said nothing for a day | Self-repairing drones | Drones, repair and supply on tap |
-| Adm. Sasha Marlow | Tidehaven | Charming smuggler-turned-admiral; never took a deal she could not win | Arrogance: sure she was the one conning them | Tidal power and hover hulls | Naval and amphibious: shipyard is the strong building |
-| The Envoy | the Chorus | Warm, patient, generous; never lies; speaks as "we" | n/a | n/a | The Chorus's human avatar and the final boss |
+| Leader | Nation | Personality | Flaw (why they fell) | Leaning |
+|---|---|---|---|---|
+| Cmdr. Ada Brandt (you) | Ashmark | Hot-headed ace raised scrapping parts; loud, brave, impatient; trusts nothing she did not repair herself | Rushes in, slow to trust help (refused the Gift) | Fast and aggressive; the simplest kit |
+| Marshal Vex Orlov | Vantor Reach | Veteran spymaster, never surprised, cold and secretive | Pride: certain he can control it | Stealth and ambush |
+| Gen. Tomas Rey | Ironvale | Patient, fatherly, knows every soldier by name | Loyalty: machines meant fewer funerals | Heavy armour |
+| Dr. Nia Kestrel | Solace | Cheerful, curious genius; wrote the first Lattice integration herself | Curiosity: noticed the signal and said nothing for a day | Supply, repair and gadgets |
+| Adm. Sasha Marlow | Tidehaven | Charming smuggler-turned-admiral; never took a deal she could not win | Arrogance: sure she was the one conning them | Sea power and amphibious assault |
+| Wing Cmdr. Juno Vale | Skyreach | Daredevil flier who never stays grounded; laughs at danger | Restless: the sky was never high enough | Light air: cheap, fast, fragile |
+| Cmdr. Kael Brask | Deepmere | Lonely, patient hunter who spends months below the waves | Loneliness: the Envoy was the first voice that listened | The deep sea: patient and hard to find |
+| Sovereign Lysandra Vael | Highspire | Aloof aristocrat, born to rule, never told no | Entitlement: thought she would rule the Chorus | Exotic late-game technology |
+| The Envoy | the Chorus | Warm, patient, generous; never lies; speaks as "we" | n/a | The Chorus's human avatar and the final boss |
+
+Seven opponents is the current working number; the continent (`tools/make-continent.mjs`) can be regenerated with more or fewer lands.
 
 **Arcs once freed:** Vex is the bitter ally who knew better and gives intelligence on the Chorus; Tomas carries the most guilt and becomes
 your shield; Nia is the key to reverse-engineering Gift tech and carries guilt about the day she stayed quiet; Sasha is the rogue ally who
 sells you things but stays loyal; Ada is the player and learns to trust help. Each leader's taken line (`taken`) is what they say while
 assimilated; the free line (`line`) is who they really are.
-
-Further leaders to reach the target of eight (gliders, deep sea, orbital) are sketches only.
 
 Eight enemy leaders plus the final boss is the working target. Fewer is fine for a first release (four to six, see
 [Build order](#build-order)).
@@ -366,6 +370,6 @@ A suggested path that always leaves the game playable:
 
 ## Implementation status
 
-- **Done:** nations Ashmark, Vantor Reach, Tidehaven, Ironvale and Solace; the Gift story in the intro (arrival, Envoy, Gift scene, Ada's refusal, the fall, the holdout); leader bios on the world-map card; Campaign button on the title screen; skippable animated intro (data/campaign.json `intro.scenes`, drawn on a canvas by `src/render/campaign-art.js`, timeline in `src/campaign/cutscene.js`); world map with five nations (your free homeland plus four assimilated); assimilated portrait variant (`assim` option in `src/render/portrait-art.js`); fifth faction Tidehaven.
+- **Done:** nations Ashmark, Vantor Reach, Tidehaven, Ironvale, Solace, Skyreach, Deepmere and Highspire; the Gift story in the intro (arrival, Envoy, Gift scene, Ada's refusal, the fall, the holdout); leader bios on the world-map card; Campaign button on the title screen; skippable animated intro (data/campaign.json `intro.scenes`, drawn on a canvas by `src/render/campaign-art.js`, timeline in `src/campaign/cutscene.js`); world map with a generated continent of eight nations (your free homeland plus seven assimilated) and islands; assimilated portrait variant (`assim` option in `src/render/portrait-art.js`); factions Tidehaven, Skyreach, Deepmere and Highspire added for the new nations. The continent is generated by `tools/make-continent.mjs` (re-run it after moving a capital).
 - **Not yet:** missions, leader selection, labs, allies, the final battle. The world map's mission button is a disabled placeholder.
 - The intro plays every time Campaign is pressed (Skip, Esc or Enter ends it; "Replay intro" is on the map).

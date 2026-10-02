@@ -51,7 +51,7 @@ export class WorldMapScreen {
     this.status.textContent = free ? 'Free - your homeland' : 'Assimilated by the Chorus';
     this.leader.textContent = `${L.name} - ${L.tag}`;
     this.bio.textContent = L.bio;
-    this.gift.textContent = free ? 'Refused the Chorus\' Gift.' : `Accepted the Gift: ${n.gift}. ${L.taken ? '"' + L.taken + '"' : ''}`;
+    this.gift.textContent = free ? 'Refused the Chorus\' Gift.' : `Accepted the Gift. ${L.taken ? '"' + L.taken + '"' : ''}`;
     this.theme.textContent = free ? n.theme : `${n.theme} Defeat them to free them.`;
     this.drawPortrait();
   }
@@ -75,7 +75,7 @@ export class WorldMapScreen {
     if (!this.g || !this.canvas.width) return;
     const { width: w, height: h } = this.canvas;
     drawSea(this.g, w, h, this.time, 0.3);
-    drawContinent(this.g, w, h, { nations: this.campaign.nations, colors: this.colors, assim: this.assim, t: this.time, fit: mapFit(w, h, { pad: 0.07 }), selected: this.selected });
+    drawContinent(this.g, w, h, { nations: this.campaign.nations, colors: this.colors, assim: this.assim, t: this.time, fit: mapFit(w, h, { pad: 0.07 }), selected: this.selected, islands: this.campaign.islands, labels: true });
   }
 
   /** Which nation is under a click at (x, y) in CSS pixels of the canvas, or null. */
