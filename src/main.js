@@ -15,6 +15,8 @@ import { loadCampaign } from './data/campaign.js';
 import { parseMap } from './data/map-format.js';
 import { Game } from './engine/game.js';
 import { Session } from './ui/session.js';
+import { Talker } from './campaign/speech.js';
+import { setFactions } from './render/portrait-art.js';
 
 export async function boot({ onQuit } = {}) {
   const readJson = fetchReader(new URL('../data/', import.meta.url));
@@ -34,6 +36,14 @@ export async function boot({ onQuit } = {}) {
   let campaign = null;          // the campaign is optional: if its data is broken the rest of the game still runs
   try { campaign = await loadCampaign(readJson, registry); } catch (e) { console.error('Campaign data not loaded:', e); }
 
+  // the leaders of the teams speak in battle (opening lines, commentary in the computer's turns), in the voice of their speech file
+  let voices = null;
+  if (campaign) {
+    setFactions([...Object.values(registry.factions), { id: 'chorus', ...campaign.chorus }]);   // portraits are drawn in faction colours
+    const talker = new Talker(campaign.speech || {});
+    voices = { leader: (id) => campaign.leaderById[id] ?? null, say: (id, situation) => talker.say(id, situation) };
+  }
+
   const canvas = document.getElementById('c');
   let session = null;
   let current = map;            // the map being played: restart replays it, quitting goes back to the default mission
@@ -42,7 +52,7 @@ export async function boot({ onQuit } = {}) {
   const leaderName = (id) => campaign?.leaderById[id]?.name ?? null;   // for the line that says who leads whom
   const launch = () => {
     if (session) session.dispose();
-    session = new Session(new Game(registry, current), { canvas, doc: document, restart: launch, quit, leaderName });
+    session = new Session(new Game(registry, current), { canvas, doc: document, restart: launch, quit, leaderName, voices });
     session.start();
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());

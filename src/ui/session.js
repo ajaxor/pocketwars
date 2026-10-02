@@ -13,21 +13,28 @@ import { Gestures } from './gestures.js';
 import { Hud } from './hud.js';
 import { describeEvents } from './messages.js';
 import { Presenter } from './presenter.js';
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+import { Commentator } from '../campaign/commentary.js';
+import { CPS, CommentaryBanner } from './commentary-banner.js';
+import { Pacer } from './pacing.js';
 
 export class Session {
   /**
    * @param {import('../engine/game.js').Game} game
-   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void, quit?:()=>void, leaderName?:(id:string)=>string|null}} host
-   *   leaderName gives a leader's display name, for the line at the start of a battle that says who leads whom
+   * @param {{canvas:HTMLCanvasElement, doc:Document, restart:()=>void, quit?:()=>void, leaderName?:(id:string)=>string|null,
+   *   voices?:{leader:(id:string)=>object|null, say:(id:string, situation:string)=>string}, pacer?:Pacer}} host
+   *   leaderName gives a leader's display name, for the line at the start of a battle that says who leads whom.
+   *   voices lets the leaders of the teams speak: opening lines before the battle and commentary in the computer's turns
+   *   (leader gives a leader's portrait traits, say a line for a situation, see src/campaign/speech.js).
    */
-  constructor(game, { canvas, doc, restart, quit = restart, leaderName = () => null }) {
+  constructor(game, { canvas, doc, restart, quit = restart, leaderName = () => null, voices = null, pacer = new Pacer() }) {
     this.game = game;
     this.canvas = canvas;
     this.restart = restart;
     this.quit = quit;
     this.leaderName = leaderName;
+    this.voices = voices;
+    this.pacer = pacer;      // the game clock, which runs fast while the player holds the screen during the computer's turn
+    this.doc = doc;
     this.busy = false;
     this.disposed = false;
     this.endArmed = false;   // End turn was pressed with units still to move: the next press really ends it
@@ -36,11 +43,13 @@ export class Session {
     this.renderer = null;
     this.effects = new Effects(game.registry, (owner) => this.renderer.colorsOf(owner));
     this.renderer = new Renderer(canvas, game, this.effects, this.animator);
-    this.hud = new Hud(doc, { registry: game.registry });
+    this.hud = new Hud(doc, { registry: game.registry, clock: () => this.pacer.now() });
+    this.commentator = voices ? new Commentator(game, voices) : null;
+    this.banner = voices ? new CommentaryBanner(doc) : null;
     this.presenter = new Presenter({ effects: this.effects, animator: this.animator });
     this.controller = new Controller({
       game, hud: this.hud, presenter: this.presenter, animator: this.animator,
-      colorsOf: (owner) => this.renderer.colorsOf(owner), onEvents: (events) => this.#handleEvents(events),
+      colorsOf: (owner) => this.renderer.colorsOf(owner), onEvents: (events) => this.#handleEvents(events), clock: () => this.pacer.now(),
     });
 
     // Touch, mouse and trackpad on the map: a tap selects, a drag scrolls, a pinch (or ctrl + wheel) zooms. Scrolling and zooming
@@ -54,7 +63,9 @@ export class Session {
       },
       onPan: (dx, dy) => this.renderer.pan(dx, dy),
       onZoom: (factor, x, y) => this.renderer.zoom(factor, x, y),
+      onHold: (on) => this.#onHold(on),
     });
+    this.onContextMenu = (e) => e.preventDefault();   // a long press must not open the browser's menu
     this.onPointerDown = (e) => { e.preventDefault(); this.canvas.setPointerCapture?.(e.pointerId); this.gestures.down(e); };
     this.onPointerMove = (e) => this.gestures.move(e);
     this.onPointerUp = (e) => this.gestures.up(e);
@@ -90,7 +101,7 @@ export class Session {
     this.hud.setSide(r.top + r.size / 2 < this.renderer.layout.H / 2 ? 'bottom' : 'top');
   }
 
-  #now() { return performance.now(); }
+  #now() { return this.pacer.now(); }
   #humanTurn() { return this.game.controllerOf(this.game.currentPlayer) === 'human'; }
   #inputAllowed() { return this.#humanTurn() && !this.game.isOver && !this.busy && !this.effects.isLocked(this.#now()); }
 
@@ -103,12 +114,14 @@ export class Session {
     this.canvas.addEventListener('pointerup', this.onPointerUp);
     this.canvas.addEventListener('pointercancel', this.onPointerCancel);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
+    this.canvas.addEventListener('contextmenu', this.onContextMenu);
     addEventListener('resize', this.onResize);
     globalThis.document?.addEventListener?.('touchmove', this.onTouchMove, { passive: false });
     hud.onEnd(() => this.#onEndTurn());
     hud.onUndo(() => this.#onUndo());
     hud.onMenu(() => this.#openMenu());
     hud.message(this.#introText());
+    if (this.banner) { this.doc.body.append(...this.banner.elements); void this.#opening(); }
     requestAnimationFrame(() => this.#frame());
     void game;
   }
@@ -120,6 +133,10 @@ export class Session {
     this.canvas.removeEventListener('pointerup', this.onPointerUp);
     this.canvas.removeEventListener('pointercancel', this.onPointerCancel);
     this.canvas.removeEventListener('wheel', this.onWheel);
+    this.canvas.removeEventListener('contextmenu', this.onContextMenu);
+    this.pacer.setFast(false);
+    this.banner?.hide();
+    for (const el of this.banner?.elements ?? []) el.remove();
     removeEventListener('resize', this.onResize);
     globalThis.document?.removeEventListener?.('touchmove', this.onTouchMove);
     this.hud.onEnd(null);
@@ -147,6 +164,46 @@ export class Session {
     return `${this.#matchup()}Tap a unit to move it. Tap a ${list} you own to build units. Capture the enemy HQ!`;
   }
 
+  // ---- pacing and fast-forward ------------------------------------------------------------------------------------------------------
+  /** A pause in the computer's turn. While the player holds the screen it is skipped, but a unit still finishes its move first. */
+  async #pause(ms) {
+    await this.pacer.wait(ms);
+    if (!this.pacer.fast) return;
+    while ((this.animator.active || this.effects.isLocked(this.#now())) && !this.disposed) await new Promise((resolve) => setTimeout(resolve, 16));
+  }
+
+  /** Pressing and holding the screen during the computer's turn fast-forwards it; returns whether the hold was used. */
+  #onHold(on) {
+    if (on && (this.#humanTurn() || !this.busy || this.game.isOver)) return false;
+    this.pacer.setFast(on);
+    this.banner?.setFast(on);
+    return true;
+  }
+
+  // ---- what the leaders say ----------------------------------------------------------------------------------------------------------
+  #line(c) {
+    const { game } = this;
+    return { leader: this.voices.leader(c.leader) || { id: c.leader }, name: this.leaderName(c.leader) || '', color: factionOf(game, c.owner).color, text: c.line };
+  }
+
+  #comment(c) { if (c && this.banner) this.banner.say(this.#line(c)); }
+
+  /** Before the first move, every leader says an opening line. Tap a card to read on; they also move on by themselves. */
+  async #opening() {
+    const cards = this.commentator.opening();
+    if (!cards.length) return;
+    this.busy = true;
+    for (const c of cards) {
+      if (this.disposed) return;
+      const line = this.#line(c);
+      const reading = (line.text.length / CPS) * 1000 + 1800 + line.text.length * 25;
+      await Promise.race([this.banner.ask(line), this.pacer.wait(reading)]);
+    }
+    if (this.disposed) return;
+    this.banner.hide();
+    this.busy = false;
+  }
+
   /** "Col. Gus Harlan vs Adm. Sasha Marlow. " when the teams have leaders (a random pick is only known now), else nothing. */
   #matchup() {
     const names = this.game.map.players.map((p) => (p.leader ? this.leaderName(p.leader) : null)).filter(Boolean);
@@ -168,6 +225,7 @@ export class Session {
     this.lastFrame = now;
     hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
     this.animator.update(now);
+    this.banner?.tick(now, this.pacer.fast);
     const viewer = this.#viewer();
     this.renderer.viewer = viewer;
     const faction = factionOf(game, game.currentPlayer);
@@ -241,12 +299,14 @@ export class Session {
       if (game.isOver || this.disposed) return;
       if (!this.#humanTurn()) {
         hud.message(`${factionOf(game, game.currentPlayer).name} is moving...`, { sticky: true });
+        this.#comment(this.commentator?.turnStart(game.currentPlayer, this.#now()));
         await this.#playAiTurn();
         if (game.isOver || this.disposed) return;
-        await sleep(500 + Math.max(0, this.effects.lockUntil - this.#now()));
+        await this.#pause(500 + Math.max(0, this.effects.lockUntil - this.#now()));
         this.animator.arrow = null;
       }
     } while (!this.#humanTurn());
+    this.banner?.hide();
   }
 
   /**
@@ -302,7 +362,7 @@ export class Session {
       const target = order.action.targetId ? unitById(game, order.action.targetId) : null;
       if (visible) {
         this.renderer.reveal([[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])]);
-        if (this.renderer.camera.glide) await sleep(350);
+        if (this.renderer.camera.glide) await this.#pause(350);
       }
       if (game.isOver || this.disposed) return;
       const res = game.act(order);
@@ -310,13 +370,14 @@ export class Session {
       const events = this.#visibleTo(viewer, res.events, visible);
       shown = shown || visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);
       presenter.present(events, { now: this.#now() });
+      this.#comment(this.commentator?.react(unit.owner, events, this.#now()));
       const text = describeEvents(game, events);
       if (text) hud.message(text);
       this.#handleEvents(res.events);
       if (!res.interrupted) break;
-      await sleep(Math.max(animator.active ? animator.current.d + 500 : 400, effects.lockUntil - this.#now() + 250));
+      await this.#pause(Math.max(animator.active ? animator.current.d + 500 : 400, effects.lockUntil - this.#now() + 250));
     }
     // no waiting around for a unit the human could not see do anything (a pause would also give it away)
-    await sleep(!shown ? 0 : Math.max(animator.active ? animator.current.d + 450 : 250, effects.lockUntil - this.#now() + 250));
+    await this.#pause(!shown ? 0 : Math.max(animator.active ? animator.current.d + 450 : 250, effects.lockUntil - this.#now() + 250));
   }
 }

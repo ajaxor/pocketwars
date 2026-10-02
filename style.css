@@ -333,3 +333,16 @@ canvas.unit-icon { display: block; flex: none; }
 .wm-card.is-free .wm-gift { color: #ffb066; }
 .wm-quote { font: italic 500 15px/1.3 var(--font); padding: 6px 10px; border-left: 3px solid var(--accent); background: rgba(255, 255, 255, .06); border-radius: 0 6px 6px 0; }
 .wm-card.is-taken .wm-quote { border-left-color: #7ef0ff; color: #bff6ff; }
+
+/* the commentary banner: a leader's portrait and words at the bottom of the battle screen (src/ui/commentary-banner.js) */
+.cm { position: fixed; left: 8px; right: 8px; bottom: calc(var(--safe-b) + 8px); z-index: 6; display: flex; gap: 10px; align-items: center; max-width: 520px; margin: 0 auto; padding: 8px 12px 8px 8px; background: var(--panel); color: var(--ink); border: 3px solid var(--edge); border-left: 8px solid var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); pointer-events: none; }
+.cm--hidden { display: none; }
+.cm--modal { pointer-events: auto; cursor: pointer; }
+.cm-face { flex: none; width: 72px; height: 72px; border-radius: 10px; background: #1d2436; border: 2px solid var(--edge); }
+.cm-body { flex: 1; min-width: 0; }
+.cm-name { font: 700 12px/1.2 var(--font); color: var(--accent); text-transform: uppercase; letter-spacing: .04em; }
+.cm-text { min-height: 3.9em; font: 600 15px/1.3 var(--font); white-space: pre-line; }
+.cm-hint { display: none; font: 600 11px/1 var(--font); color: var(--dim); text-align: right; }
+.cm--modal .cm-hint { display: block; }
+.cm-ff { position: fixed; top: calc(var(--bar-h) + var(--safe-t) + 8px); right: 10px; z-index: 6; padding: 4px 10px; font: 700 13px/1.2 var(--font); color: var(--gold); background: rgba(14, 19, 34, .85); border: 2px solid var(--edge); border-radius: 999px; pointer-events: none; }
+.cm-ff--hidden { display: none; }

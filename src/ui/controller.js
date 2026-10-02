@@ -44,8 +44,8 @@ export class Controller {
    * @param {(owner:number)=>object} deps.colorsOf faction colours for a player
    * @param {(events:object[])=>void} deps.onEvents called with the events of each committed action
    */
-  constructor({ game, hud, presenter, animator, colorsOf, onEvents }) {
-    Object.assign(this, { game, hud, presenter, animator, colorsOf, onEvents });
+  constructor({ game, hud, presenter, animator, colorsOf, onEvents, clock = () => performance.now() }) {
+    Object.assign(this, { game, hud, presenter, animator, colorsOf, onEvents, clock });
     this.reset();
   }
 
@@ -267,7 +267,7 @@ export class Controller {
     this.dest = { x, y };
     this.attack = null;
     this.mode = 'anim';
-    this.animator.start(u.id, path, performance.now(), () => { this.#actMenu(); if (then) then(); });
+    this.animator.start(u.id, path, this.clock(), () => { this.#actMenu(); if (then) then(); });
   }
 
   #actMenu() {
@@ -316,7 +316,7 @@ export class Controller {
     const res = game.act({ unitId: sel.id, to: this.#selPos(), action });
     if (!res.ok) { this.cancelAll(); this.#msg(`That order is not allowed (${res.error}).`); return; }
     if (res.interrupted) { this.#interrupted(res); return; }
-    this.presenter.present(res.events, { now: performance.now(), animateMoves: false }); // move was already previewed
+    this.presenter.present(res.events, { now: this.clock(), animateMoves: false }); // move was already previewed
     const text = describeEvents(game, res.events);
     this.cancelAll();
     if (text) this.#msg(text);
@@ -333,7 +333,7 @@ export class Controller {
     hud.clear();
     this.mode = 'anim';
     this.presenter.present(res.events, {
-      now: performance.now(), animateMoves: true,
+      now: this.clock(), animateMoves: true,
       onMoveDone: () => this.#resume(unit, text),
     });
     if (!res.events.some((e) => e.type === 'move')) this.#resume(unit, text);   // it could not even leave its tile
@@ -393,7 +393,7 @@ export class Controller {
       const res = game.act({ unitId: sel.id, to: this.dest, action: { type: 'wait' } });
       if (!res.ok) { this.cancelAll(); this.#msg(`That order is not allowed (${res.error}).`); return; }
       if (res.interrupted) { this.#interrupted(res); return; }
-      this.presenter.present(res.events, { now: performance.now(), animateMoves: false });
+      this.presenter.present(res.events, { now: this.clock(), animateMoves: false });
       this.onEvents(res.events);
     }
     this.#deployNow(sel);
@@ -407,7 +407,7 @@ export class Controller {
     this.reset();
     this.hud.clear();
     if (!res.ok) { this.#msg(`Cannot deploy (${res.error}).`); return; }
-    this.presenter.present(res.events, { now: performance.now(), animateMoves: false });
+    this.presenter.present(res.events, { now: this.clock(), animateMoves: false });
     this.onEvents(res.events);
     const dropped = unitById(game, res.deployed.unitId);
     this.#select(dropped, `Deployed ${dropped ? game.registry.unit(dropped.type).name : 'unit'}. Move it out: it can attack. Cancel puts it back.`);

@@ -102,4 +102,10 @@ separated by `" / "`, so a dialogue box can break the line there.
 
 1. Add the leader to `data/campaign.json` (`leaders`) with portrait traits, a `bio` and a `flaw`.
 2. Add `data/speech/<id>.json` with a `voice` note and at least four lines for every situation. The test suite fails until all of them exist.
-3. Portrait traits the art supports: `hat` (cap, helmet, headset, captain, cowboy, ushanka, crown), `hairStyle` (ponytail, bun, long, short, bald, wild, topknot), `jaw`, and flags `eyepatch`, `scar`, `tallCollar`, `stubble`, `stache`, `glasses`, `aviators`, `coat`, `trench`, `freckles`, `wide`.
+3. Portrait traits the art supports: `hat` (cap, helmet, headset, captain, cowboy, ushanka, crown), `hairStyle` (ponytail, bun, long, short, bald, wild, topknot), `jaw`, and flags `eyepatch`, `scar`, `tallCollar`, `stubble`, `stache`, `glasses`, `aviators`, `coat`, `trench`, `freckles`, `wide`, and `eyeStyle` (required, and no two leaders may share one): the eyes, defined in `src/render/eye-styles.js` (weary, bright, cold, serene, manic, fierce, cocky, deadpan, regal, glow). A style sets eye shape, tilt, lids, iris and pupil size, lashes, bags, eye-shadow and glints; add a new style there for a new leader.
+
+## In battle
+
+When a battle has leaders (a skirmish with leaders picked), each leader says a `battle_start` line on a card before the first move (tap to read on; the cards also move on by themselves). During the computer's turn that leader's portrait sits in a banner at the bottom of the screen with a line: a `taunt` (or `danger` when outnumbered) as the turn begins, then now and then `attack`, `capture` or `unit_lost` as those things happen (at most four comments a turn, with a pause between them). The logic is `src/campaign/commentary.js`, the banner `src/ui/commentary-banner.js`.
+
+Pressing and holding the screen during the computer's turn fast-forwards it (four times the speed, no pauses between units); let go to return to normal (`src/ui/pacing.js`, the `onHold` gesture).

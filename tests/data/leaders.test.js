@@ -9,6 +9,7 @@ import { DataError, MAX_START_UNITS, validateData } from '../../src/data/validat
 import { loadRegistry } from '../../src/data/loader.js';
 import { MapError, parseMap, serializeMap } from '../../src/data/map-format.js';
 import { campaignProblems, loadCampaign } from '../../src/data/campaign.js';
+import { EYE_STYLES } from '../../src/render/eye-styles.js';
 import { frontOf, hqOf, placeFormation, placeStart, withLeaders } from '../../src/data/formation.js';
 
 const registry = await loadRegistry(readData);
@@ -32,6 +33,20 @@ test('campaign validation catches a leader without a loadout and a loadout witho
   const p = campaignProblems(raw, registry).join('\n');
   assert.match(p, /leader "newcomer" has no loadout/);
   assert.match(p, /loadouts.json has a loadout for "vex", who is not a leader/);
+});
+
+test('every leader has eyes of their own, and the campaign check enforces it', async () => {
+  const styles = campaign.leaders.map((l) => l.eyeStyle);
+  assert.equal(new Set(styles).size, styles.length, 'no two leaders share an eye style');
+  assert.ok(styles.every((s) => EYE_STYLES[s]));
+  const raw = JSON.parse(JSON.stringify(await readData('campaign.json')));
+  raw.leaders[1].eyeStyle = raw.leaders[0].eyeStyle;
+  raw.leaders[2].eyeStyle = 'nope';
+  delete raw.leaders[3].eyeStyle;
+  const p = campaignProblems(raw, registry).join('\n');
+  assert.match(p, /share the eyeStyle "weary"/);
+  assert.match(p, /leader "vex" needs an eyeStyle/);
+  assert.match(p, /leader "hiroshi" needs an eyeStyle/);
 });
 
 test('the standard kit lists what the building categories give (a unit added to units.json has to be added to the kit as well)', () => {

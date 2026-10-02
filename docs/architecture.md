@@ -60,7 +60,8 @@ the tokens at the top of `style.css`, so a new window looks like the rest withou
 
 - `src/render/camera.js` is pure arithmetic: tile size, the map point at the centre, clamping, zoom around a point, `reveal` and easing.
   A map that fits at 36px or more is shown whole; a bigger one scrolls. `Renderer` owns a `Camera` and only draws the visible tiles.
-- `src/ui/gestures.js` turns pointer and wheel events into `onTap`, `onPan` and `onZoom`; the session decides what they do.
+- `src/ui/gestures.js` turns pointer and wheel events into `onTap`, `onPan`, `onZoom` and (optionally) `onHold`; the session decides what they do. Holding during the computer's turn fast-forwards it: the session's clock is a `Pacer` (`src/ui/pacing.js`) that runs four times as fast while held, and every pause in the computer's turn goes through it.
+- Leaders speak in battle: `src/campaign/commentary.js` decides what is said and when, `src/ui/commentary-banner.js` shows it, and `main.js` gives the session `voices` (the campaign's speech files). Without a campaign or without leaders on the map nobody speaks.
 - `src/data/skirmish.js` holds the skirmish rules (colours, who plays, funds); `src/ui/skirmish-screen.js` shows them with map
   previews from `src/render/minimap.js`. `boot()` returns `{registry, map, maps, defaultMapId, play(map)}` and the launcher calls `play`.
 - `data/loadouts.json` gives each leader a kit (build menus and a starting formation); `src/data/formation.js` places the formation around the HQ and `menuFor` in `economy.js` applies the menus. See `docs/leaders.md`.

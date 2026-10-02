@@ -6,6 +6,8 @@
 //   STYLES, EXPRESSIONS, setFactions(list)   (leaders themselves are data: data/campaign.json)
 // Portraits are cached per (leader, style, expression, blink, mouth, size), so animating a blink or a talking mouth is cheap.
 
+import { EYE_STYLES } from './eye-styles.js';
+
 export const EXPRESSIONS = ['neutral', 'smile', 'angry', 'shock', 'worried'];
 
 export const STYLES = [
@@ -92,11 +94,35 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   // expression
   const E = { neutral: { open: 1, brow: 0, mouth: 'flat' }, smile: { open: .8, brow: -.5, mouth: 'smile' }, angry: { open: .8, brow: 3.6, mouth: 'shout' }, shock: { open: 1.25, brow: -3.4, mouth: 'o' }, worried: { open: 1, brow: -3.2, mouth: 'wave' } }[expr] || { open: 1, brow: 0, mouth: 'flat' };
   const eyeOpen = blink ? .12 : E.open;
-  const eyes = [[42, 45, -1], [58, 45, 1]];
+  const ES = EYE_STYLES[L.eyeStyle] || EYE_STYLES.plain;
+  const eyes = [[50 - ES.gap, 45, -1], [50 + ES.gap, 45, 1]];
+  const lidTone = mix(L.skin, '#5a2a1a', .3);
   for (const [ex, ey, side] of eyes) {
     if (L.eyepatch && side < 0) continue;
-    paint(ell(ex, ey, 4.4, 3.5 * eyeOpen + .3), '#ffffff');
-    if (eyeOpen > .3) { g.save(); g.beginPath(); g.ellipse(ex, ey, 4.4, 3.5 * eyeOpen + .3, 0, 0, 7); g.clip(); paint(ell(ex + .4 * side, ey, 2.6, 2.9), L.eye, false); paint(ell(ex + .4 * side, ey, 1.2, 1.4), '#10121a', false); g.fillStyle = '#fff'; g.beginPath(); g.arc(ex + 1.2, ey - 1.1, .7, 0, 7); g.fill(); g.restore(); }
+    const sc = side > 0 ? ES.size2 || 1 : 1;
+    const w = ES.w * sc, hh = (ES.h * eyeOpen + .3) * sc;
+    const inner = [ex - side * w, ey + ES.tilt * .4], outer = [ex + side * w, ey - ES.tilt * .6];
+    const topEdge = (p) => { p.moveTo(inner[0], inner[1]); p.quadraticCurveTo(ex, ey - 2 * hh * ES.top, outer[0], outer[1]); };
+    const lens = (p) => { topEdge(p); p.quadraticCurveTo(ex, ey + 2 * hh * ES.bot, inner[0], inner[1]); p.closePath(); };
+    if (ES.shadow) { g.save(); g.globalAlpha = .55; g.fillStyle = ES.shadow; g.beginPath(); g.ellipse(ex + side * .6, ey - hh * .9 - .6, w + 1.4, 2.8 + hh * .35, -side * ES.tilt * .05, 0, 7); g.fill(); g.restore(); }
+    if (ES.bags && !blink) { g.beginPath(); g.ellipse(ex, ey + hh * ES.bot + 1.2, w * .8, 1.5, 0, .12 * Math.PI, .88 * Math.PI); g.lineWidth = ES.bags * .6; g.strokeStyle = mix(L.skin, '#5a2a1a', .34); g.lineCap = 'round'; g.stroke(); }
+    paint(lens, ES.glow ? mix(L.eye, '#ffffff', .15) : '#ffffff');
+    if (eyeOpen > .3) {
+      g.save(); g.beginPath(); lens(g); g.clip();
+      const ix = ex + ES.look * side * .45 + (ES.look && side > 0 ? 0 : 0) * 0 + (ES.look > 1 ? ES.look * .7 : 0);   // a sideways glance moves both irises the same way
+      if (ES.glow) { const gr = g.createRadialGradient(ex, ey, .5, ex, ey, w); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.45, L.eye); gr.addColorStop(1, mix(L.eye, '#0b3a48', .5)); g.fillStyle = gr; g.fillRect(ex - w, ey - hh * 2, w * 2, hh * 4); }
+      else {
+        paint(ell(ix, ey, ES.ir, ES.irh), L.eye, false);
+        if (ES.ring) { g.lineWidth = .9; g.strokeStyle = 'rgba(10,12,20,.75)'; g.beginPath(); g.ellipse(ix, ey, ES.ir - .3, ES.irh - .3, 0, 0, 7); g.stroke(); }
+        paint(ell(ix, ey, ES.pr, ES.pr * 1.15), '#10121a', false);
+        if (ES.shine) { g.fillStyle = '#fff'; g.beginPath(); g.arc(ix + 1.2, ey - 1.1, .7, 0, 7); g.fill(); }
+        if (ES.shine > 1) { g.beginPath(); g.arc(ix - 1.1, ey + 1.2, .4, 0, 7); g.fill(); }
+      }
+      if (ES.lid) { const ly = ey - hh + 2 * hh * ES.lid; g.fillStyle = lidTone; g.fillRect(ex - w - 1, ey - hh * 2 - 1, w * 2 + 2, ly - (ey - hh * 2 - 1)); g.fillStyle = 'rgba(30,15,10,.55)'; g.fillRect(ex - w - 1, ly - .2, w * 2 + 2, .9); }
+      g.restore();
+    }
+    if (ES.liner) { g.beginPath(); topEdge(g); g.lineWidth = ES.liner * (outline ? 1.1 : .8); g.strokeStyle = ES.shadow ? mix(ES.shadow, '#000000', .6) : '#2a1c1c'; g.lineCap = 'round'; g.stroke(); }
+    if (ES.lashes && !blink) { line(outer[0], outer[1], outer[0] + side * 2.4, outer[1] - 1.8, 1.1, '#2a1c1c'); line(outer[0] - side * .9, outer[1] - .5, outer[0] + side * 1.2, outer[1] - 2.8, .9, '#2a1c1c'); }
   }
   for (const [ex, , side] of eyes) {                                                                  // brows: the inner end rises or falls with the mood
     if (L.eyepatch && side < 0) { continue; }
@@ -188,7 +214,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   }
   if (L.aviators) {                                                                                    // gold-rimmed, dark teardrop lenses
     for (const [ex, ey, side] of eyes) {
-      paint((p) => { p.moveTo(ex - side * 7.2, ey - 4.6); p.quadraticCurveTo(ex + side * 1, ey - 6.4, ex + side * 6.4, ey - 3); p.quadraticCurveTo(ex + side * 7.6, ey + 6.4, ex, ey + 6.6); p.quadraticCurveTo(ex - side * 8.4, ey + 5.6, ex - side * 7.2, ey - 4.6); p.closePath(); }, 'rgba(34,40,56,.86)');
+      paint((p) => { p.moveTo(ex - side * 7.2, ey - 4.6); p.quadraticCurveTo(ex + side * 1, ey - 6.4, ex + side * 6.4, ey - 3); p.quadraticCurveTo(ex + side * 7.6, ey + 6.4, ex, ey + 6.6); p.quadraticCurveTo(ex - side * 8.4, ey + 5.6, ex - side * 7.2, ey - 4.6); p.closePath(); }, 'rgba(52,44,30,.5)');
       g.lineWidth = 1.2; g.strokeStyle = '#e0b84a'; g.stroke();
       if (shade) { g.fillStyle = 'rgba(160,210,255,.4)'; g.beginPath(); g.ellipse(ex - side * 2.6, ey - 2.2, 2.4, 1.1, -.5 * side, 0, 7); g.fill(); }
     }
