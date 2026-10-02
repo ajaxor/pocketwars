@@ -3,67 +3,114 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pocket Wars: unit art</title>
+<title>Pocket Wars: gallery</title>
 <style>
-  :root { color-scheme: dark; --s: 96px; }
+  :root { color-scheme: dark; --s: 96px; --idea: #8a8f9c; --draft: #e0a43a; --solid: #4fb3d9; --balanced: #a07be0; --ready: #55c27a; }
   * { box-sizing: border-box; }
   body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
-  header, main { max-width: 980px; margin: 0 auto; padding: 0 16px; }
-  header { padding-top: 20px; }
-  h1 { font-size: 22px; margin: 0 0 4px; }
+  header, main { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 18px; }
+  h1 { font-size: 22px; margin: 0 0 2px; }
   p { margin: 4px 0 12px; color: #b9b5a8; }
-  .controls { position: sticky; top: 0; z-index: 2; background: #16181dee; backdrop-filter: blur(6px); border-bottom: 1px solid #2a2d35; }
-  .controls-inner { max-width: 980px; margin: 0 auto; padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+  a { color: #8fc2ee; }
+  [hidden] { display: none !important; }
+
+  /* sticky top: the tabs, then the sprite controls */
+  .top { position: sticky; top: 0; z-index: 3; background: #16181df2; backdrop-filter: blur(6px); border-bottom: 1px solid #2a2d35; }
+  .top-inner { max-width: 1000px; margin: 0 auto; padding: 0 16px; }
+  .tabs { display: flex; gap: 4px; overflow-x: auto; padding: 8px 0 0; scrollbar-width: none; }
+  .tabs button { flex: none; background: transparent; color: #b9b5a8; border: 0; border-bottom: 3px solid transparent; padding: 8px 14px; font: inherit; font-weight: 600; cursor: pointer; }
+  .tabs button[aria-selected="true"] { color: #fff; border-bottom-color: #e8712c; }
+  .tabs .count { margin-left: 6px; font-size: 11px; font-weight: 600; color: #8a877c; background: #232730; border-radius: 9px; padding: 1px 7px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: center; padding: 8px 0 10px; }
   .ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b9b5a8; }
   .seg { display: inline-flex; border: 1px solid #383c46; border-radius: 8px; overflow: hidden; }
-  .seg button, #pause { background: #20232b; color: #e9e6dc; border: 0; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .seg button, #pause, .btn { background: #20232b; color: #e9e6dc; border: 0; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; }
   .seg button + button { border-left: 1px solid #383c46; }
   .seg button[aria-pressed="true"], #pause[aria-pressed="true"] { background: #3c74d6; color: #fff; }
-  #pause { border: 1px solid #383c46; border-radius: 8px; }
+  #pause, .btn { border: 1px solid #383c46; border-radius: 8px; }
+  .btn:hover { background: #2a2f3a; }
   input[type=range] { width: 130px; accent-color: #e8712c; }
-  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 2 + 34px), 1fr)); gap: 12px; padding: 16px 0 48px; }
-  .card { background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 10px; }
+
+  /* the pipeline */
+  .pipeline { padding: 16px 0 4px; }
+  .bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; background: #232730; gap: 2px; }
+  .seg.st-idea, .badge.st-idea { background: var(--idea); } .seg.st-draft, .badge.st-draft { background: var(--draft); }
+  .seg.st-solid, .badge.st-solid { background: var(--solid); } .seg.st-balanced, .badge.st-balanced { background: var(--balanced); } .seg.st-ready, .badge.st-ready { background: var(--ready); }
+  .bar .seg { display: block; min-width: 6px; border: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .chip { background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 14px; padding: 4px 12px; font: inherit; font-size: 13px; cursor: pointer; }
+  .chip[aria-pressed="true"] { background: #3c74d6; border-color: #3c74d6; color: #fff; }
+  .chip.st-idea { border-left: 5px solid var(--idea); } .chip.st-draft { border-left: 5px solid var(--draft); } .chip.st-solid { border-left: 5px solid var(--solid); }
+  .chip.st-balanced { border-left: 5px solid var(--balanced); } .chip.st-ready { border-left: 5px solid var(--ready); }
+  .legend { font-size: 12px; color: #8a877c; margin: 8px 0 0; }
+
+  /* unit cards */
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 2 + 34px), 1fr)); gap: 12px; padding: 14px 0 48px; }
+  .grid:empty::after, .grid[data-empty]:not([data-empty=""])::after { content: attr(data-empty); color: #8a877c; }
+  .card { background: #1d2027; border: 1px solid #2a2d35; border-top: 3px solid var(--idea); border-radius: 12px; padding: 10px; }
+  .card.st-draft { border-top-color: var(--draft); } .card.st-solid { border-top-color: var(--solid); } .card.st-balanced { border-top-color: var(--balanced); } .card.st-ready { border-top-color: var(--ready); }
+  .card .top { position: static; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; background: none; border: 0; backdrop-filter: none; }
   .name { font-weight: 600; }
-  .note { font-size: 12px; color: #8a877c; margin-bottom: 8px; }
+  .badge { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #101216; border-radius: 6px; padding: 1px 7px; flex: none; }
+  .meta { font-size: 12px; color: #8a877c; margin-bottom: 8px; }
   .row { display: flex; gap: 8px; }
   canvas { display: block; border-radius: 8px; flex: none; }
-  .hint { font-size: 13px; color: #8a877c; }
-  .exp { border-top: 1px solid #2a2d35; padding: 24px 0 48px; }
-  .exp h2 { font-size: 20px; margin: 0 0 4px; }
-  .exp .tag { display: inline-block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #1b1405; background: #e8b34a; border-radius: 6px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
-  .fac { margin: 28px 0 0; }
-  .fac h3 { font-size: 17px; margin: 0; }
-  .fac p { margin: 2px 0 8px; font-size: 13px; }
-  .fac .also { font-size: 12px; color: #8a877c; margin: 0 0 8px; }
-  .cgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(calc(var(--s) * 2 + 34px), 1fr)); gap: 12px; }
-  .ccard .mech { font-size: 13px; color: #cfcabb; margin: 8px 0 0; }
-  .ccard .meta { font-size: 12px; color: #8a877c; }
-  .ccard .ov { font-size: 12px; color: #8fc2ee; margin-top: 6px; }
-  a { color: #8fc2ee; }
+  .mech { font-size: 13px; color: #cfcabb; margin: 8px 0 0; }
+  .ov { font-size: 12px; color: #8fc2ee; margin-top: 6px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 6px; }
+  .tag { font-size: 11px; color: #b9b5a8; background: #262a33; border-radius: 5px; padding: 0 6px; }
+
+  /* characters */
+  .intro { font-size: 14px; padding-top: 16px; }
+  .chars { display: grid; gap: 18px; padding: 4px 0 48px; }
+  .char { background: #1d2027; border: 1px solid #2a2d35; border-left: 6px solid var(--team); border-radius: 12px; padding: 16px; }
+  .char .head { display: flex; gap: 16px; align-items: flex-start; }
+  .char .portrait { border-radius: 10px; background: #0f1115; }
+  .char h2 { margin: 0; font-size: 20px; } .char .sub { color: var(--team); font-weight: 600; filter: brightness(1.25); font-size: 13px; }
+  .char .bio, .char .flaw, .char .voice { margin: 6px 0 0; font-size: 13px; }
+  .char .flaw { color: #e0a43a; } .char .voice { color: #8fc2ee; }
+  .char h3 { margin: 16px 0 6px; font-size: 14px; letter-spacing: .06em; text-transform: uppercase; color: #8a877c; }
+  .char h4 { margin: 8px 0 4px; font-size: 12px; color: #b9b5a8; text-transform: capitalize; }
+  .kit { border-top: 1px solid #2a2d35; }
+  .kgroup { margin-bottom: 6px; }
+  .krow { display: flex; gap: 10px; align-items: center; margin: 4px 0; }
+  .klabel { width: 92px; flex: none; font-size: 12px; color: #8a877c; }
+  .kunits { display: flex; flex-wrap: wrap; gap: 6px; }
+  .kunit { position: relative; display: flex; flex-direction: column; align-items: center; width: 64px; font-size: 10px; color: #b9b5a8; text-align: center; }
+  .kunit .icon { border-radius: 8px; }
+  .kunit .kn { position: absolute; top: 2px; right: 2px; background: #101216cc; color: #fff; border-radius: 6px; padding: 0 5px; font-size: 11px; font-weight: 700; }
+  .talk { border-top: 1px solid #2a2d35; }
+  .tbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .tbar select { background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; text-transform: capitalize; }
+  .tdesc { display: block; font-size: 12px; color: #8a877c; margin: 6px 0; }
+  .bubble { min-height: 76px; background: #0f1115; border: 1px solid #2a2d35; border-left: 4px solid var(--team); border-radius: 10px; padding: 12px 14px; font-size: 16px; line-height: 1.4; }
+  .bubble[data-empty="1"] { color: #6b6a63; font-size: 14px; }
+  .tinfo { font-size: 12px; color: #8a877c; margin: 4px 2px 0; min-height: 18px; text-transform: capitalize; }
+  .lines { margin-top: 8px; font-size: 13px; } .lines summary { cursor: pointer; color: #8fc2ee; }
+  .lgroup ul { margin: 0 0 6px; padding-left: 18px; color: #cfcabb; }
+  @media (max-width: 560px) { .char .head { flex-direction: column; } .klabel { width: 100%; } .krow { flex-direction: column; align-items: flex-start; } }
 </style>
 </head>
 <body>
 <header>
-  <h1>Unit art</h1>
-  <p>The real sprite code, drawn live with the animations running. Ashmark on the left, Vantor Reach on the right. <a href="#concepts">Jump to the experimental concept units ↓</a> · <a href="portraits.html">Leader portraits and dialogue designs</a></p>
+  <h1>Pocket Wars gallery</h1>
+  <p>Live unit art with the real sprite code, and every leader with their kit and voice. Each unit has a pipeline stage: <b>idea</b> (not in the game), <b>draft</b> (in the game, needs icon or interface work), <b>solid</b> (the icon is good), <b>balanced</b>, <b>ready</b>. Stages live in <code>gallery/status.json</code>. <a href="portraits.html">Portrait design lab</a> · <a href="../">Back to the game</a></p>
 </header>
-<div class="controls"><div class="controls-inner">
-  <div class="ctl">State <span class="seg" id="mode"><button data-v="idle" aria-pressed="true">Idle</button><button data-v="moving" aria-pressed="false">Moving</button><button data-v="done" aria-pressed="false">Done</button></span></div>
-  <div class="ctl">Ground <span class="seg" id="bg"><button data-v="plain" aria-pressed="true">Grass</button><button data-v="road" aria-pressed="false">Road</button><button data-v="sea" aria-pressed="false">Sea</button></span></div>
-  <div class="ctl">Outline <span class="seg" id="outline"><button data-v="off" aria-pressed="false">Off</button><button data-v="thin" aria-pressed="true">Thin</button><button data-v="medium" aria-pressed="false">Medium</button><button data-v="thick" aria-pressed="false">Thick</button></span></div>
-  <div class="ctl">Line <span class="seg" id="outlineColor"><button data-v="navy" aria-pressed="false">Navy</button><button data-v="black" aria-pressed="false">Black</button><button data-v="faction" aria-pressed="true">Team dark</button></span></div>
-  <div class="ctl">Size <input id="size" type="range" min="40" max="160" step="4" value="96" aria-label="Tile size"><output id="sizeOut">96 px</output></div>
-  <button id="pause" aria-pressed="false">Pause</button>
+<div class="top"><div class="top-inner">
+  <div class="tabs" id="tabs" role="tablist"></div>
+  <div class="controls" id="unit-controls">
+    <div class="ctl">State <span class="seg" id="mode"><button data-v="idle" aria-pressed="true">Idle</button><button data-v="moving" aria-pressed="false">Moving</button><button data-v="done" aria-pressed="false">Done</button></span></div>
+    <div class="ctl">Ground <span class="seg" id="bg"><button data-v="plain" aria-pressed="true">Grass</button><button data-v="road" aria-pressed="false">Road</button><button data-v="sea" aria-pressed="false">Sea</button></span></div>
+    <div class="ctl">Outline <span class="seg" id="outline"><button data-v="off" aria-pressed="false">Off</button><button data-v="thin" aria-pressed="true">Thin</button><button data-v="medium" aria-pressed="false">Medium</button><button data-v="thick" aria-pressed="false">Thick</button></span></div>
+    <div class="ctl">Line <span class="seg" id="outlineColor"><button data-v="navy" aria-pressed="false">Navy</button><button data-v="black" aria-pressed="false">Black</button><button data-v="faction" aria-pressed="true">Team dark</button></span></div>
+    <div class="ctl">Size <input id="size" type="range" min="40" max="160" step="4" value="96" aria-label="Tile size"><output id="sizeOut">96 px</output></div>
+    <button id="pause" aria-pressed="false">Pause</button>
+  </div>
 </div></div>
 <main>
-  <div id="grid"></div>
-  <p class="hint">Idle is what a ready unit does, Moving is the same at double speed, and Done is the dark-grey still pose of a unit that has acted. 40 px is a phone tile at 1x. Generated by <code>node tools/sprite-lab/lab.mjs gallery</code>.</p>
-  <section class="exp" id="concepts">
-    <h2>Experimental: concept units<span class="tag">not in the game</span></h2>
-    <p>Twenty ideas for units that would come out of new kinds of production facilities, several with overlapping jobs. Only the icons exist: none of this is in the game data yet. The controls above apply here too.</p>
-    <div id="cfacs"></div>
-  </section>
-  <p class="hint"><a href="../">Back to the game</a></p>
+  <section id="view-units"></section>
+  <section id="view-chars" hidden></section>
 </main>
 <script type="module">
 // Same cache-busting as the game: find the current build via version.json (fetched fresh), then load that build's copy of

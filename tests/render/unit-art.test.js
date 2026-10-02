@@ -10,7 +10,7 @@ import { paintTile, STATES } from '../../gallery/preview.js';
 
 const readJson = (rel) => JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8'));
 // game units plus the planned ones that are drawn but not yet in the game
-const units = { ...readJson('../../data/units.json'), ...readJson('../../tools/sprite-lab/planned-units.json') };
+const units = { ...readJson('../../data/units.json'), ...readJson('../../gallery/planned-units.json') };
 const factions = Object.values(JSON.parse(readFileSync(new URL('../../data/factions.json', import.meta.url), 'utf8')));
 
 function recorder() {

@@ -17,7 +17,7 @@ export const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const REPO = path.resolve(HERE, '../..');
 const readJson = (p) => JSON.parse(readFileSync(path.join(REPO, p), 'utf8'));
 // Units drawn but not yet in the game live in planned-units.json (kept out of data/ so the game never loads them).
-const planned = JSON.parse(readFileSync(path.join(HERE, 'planned-units.json'), 'utf8'));
+const planned = JSON.parse(readFileSync(path.join(REPO, 'gallery', 'planned-units.json'), 'utf8'));
 export const units = { ...readJson('data/units.json'), ...planned };
 export const weapons = readJson('data/weapons.json');
 export const factions = readJson('data/factions.json');

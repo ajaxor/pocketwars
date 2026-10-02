@@ -20,7 +20,7 @@ node lab.mjs units flat,mystyle sniper,flak        before/after: chosen units, s
 node lab.mjs zoom flat flak                        one unit large + phone size + 1x, on every terrain
 node lab.mjs anim flat flak                        animation filmstrip (gun recoil, running gear...)
 node lab.mjs check flat                            numbers: size, tile overflow, shadow fit
-node lab.mjs gallery                               rebuild the live gallery page (gallery/index.html)
+node lab.mjs gallery                               rebuild gallery/data.json (portrait lab data)
 ```
 
 Flags: `--moving` (walk cycle; idle soldiers stand still), `--bg plain|forest|mountain|road|sea|#rrggbb`, `--t <seconds into the animation>`, `--size <tile px>`, `--out <file.png>`.
@@ -55,15 +55,21 @@ briefly used, for comparison (`lab.mjs compare flat,detailed`).
 `gallery/index.html` is a live page: it runs the game's `unit-art.js` on canvas with the game's animation states (Idle, Moving at
 double speed, and the dark-grey still Done pose), with controls for tile size and ground colour. It is published to
 GitHub Pages at `/gallery/`, and locally at `http://localhost:8080/gallery/` (`npm start`).
-`node lab.mjs gallery` regenerates the page shell; `gallery/preview.js` is hand-written.
+`gallery/index.html` and `preview.js` are hand-written; `node lab.mjs gallery` only rewrites `gallery/data.json` (used by the portrait lab).
+The page has tabs: Infantry, Vehicles, Air, Naval, Defences and Characters (`#characters` in the URL). `gallery/catalog.js` merges the game
+registry, `concepts.json` and `planned-units.json` into one list of units; `units-view.js` draws the unit tabs and `characters-view.js` the
+leaders (portrait, kit icons for what they build and start with, and a dialogue tester that types out each situation's lines).
+
+**Pipeline stages** live in `gallery/status.json`: idea (not in the game), draft (in the game, icon/interface unfinished), solid (icon is good),
+balanced, ready. Edit that file to promote a unit; a test checks that game units are at least draft and concepts stay idea.
 Like the game, it is cache-busted: `/gallery/index.html` is a tiny loader that reads `version.json` (fetched fresh) and imports
 `v/<hash>/gallery/preview.js`; the workflow publishes the gallery code, data and sprite modules under that folder, so a
 deploy shows up immediately instead of after the browser's cache expires.
 
 ## Planned units
 
-`planned-units.json` holds units that are drawn but not in the game yet (currently `stealth_bomber`, the flying-wing
-sprite that used to be the bomber). It lives here, not in `data/`, so the game never loads it. The lab and the gallery
+`gallery/planned-units.json` holds units that are drawn but not in the game yet (currently `stealth_bomber`, the flying-wing
+sprite that used to be the bomber). It lives in `gallery/`, not in `data/`, so the game never loads it. The lab and the gallery
 include these units (marked PLANNED); the plain `bomber` is now a four-engine transport-style jet. To ship one, move its
 entry into `data/units.json`, fill in its balance numbers and add its damage rows.
 

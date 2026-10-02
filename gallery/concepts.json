@@ -84,7 +84,8 @@
    "move": 5,
    "role": "Support",
    "overlaps": "Resupply at an airfield",
-   "mechanic": "Refills the ammo of every friendly unit next to it when it waits, at the usual price per round. Lets copters work far from an airfield. Unarmed."
+   "mechanic": "Refills the ammo of every friendly unit next to it when it waits, at the usual price per round. Lets copters work far from an airfield. Unarmed.",
+   "group": "vehicle"
   },
   {
    "id": "hover_scout",
@@ -96,7 +97,8 @@
    "move": 8,
    "role": "Recon",
    "overlaps": "Recon, marine",
-   "mechanic": "The fastest ground-level unit. Crosses land, shoals and sea at the same cost, sees 2 tiles further than other ground units, but any hit hurts."
+   "mechanic": "The fastest ground-level unit. Crosses land, shoals and sea at the same cost, sees 2 tiles further than other ground units, but any hit hurts.",
+   "group": "vehicle"
   },
   {
    "id": "hover_tank",
@@ -108,7 +110,8 @@
    "move": 5,
    "role": "Assault",
    "overlaps": "Tank, marine",
-   "mechanic": "A light tank that skims water. Cannot be hit by sea mines and cannot capture. Loses its cover bonus on every tile, since it floats above it."
+   "mechanic": "A light tank that skims water. Cannot be hit by sea mines and cannot capture. Loses its cover bonus on every tile, since it floats above it.",
+   "group": "vehicle"
   },
   {
    "id": "hover_carrier",
@@ -120,7 +123,8 @@
    "move": 6,
    "role": "Transport",
    "overlaps": "Transport copter",
-   "mechanic": "Carries one foot unit across water and land. The passenger unloads from the bow ramp after the carrier moves, like a Deploy that does not use ammo."
+   "mechanic": "Carries one foot unit across water and land. The passenger unloads from the bow ramp after the carrier moves, like a Deploy that does not use ammo.",
+   "group": "vehicle"
   },
   {
    "id": "strider",
@@ -132,7 +136,8 @@
    "move": 4,
    "role": "Assault",
    "overlaps": "Tank",
-   "mechanic": "A bipedal walker with a cannon. Treats mountains and forest like plain ground (move cost 1) but is weaker against tank rounds than a tread."
+   "mechanic": "A bipedal walker with a cannon. Treats mountains and forest like plain ground (move cost 1) but is weaker against tank rounds than a tread.",
+   "group": "vehicle"
   },
   {
    "id": "titan",
@@ -144,7 +149,8 @@
    "move": 3,
    "role": "Heavy assault",
    "overlaps": "Heavy tank, battleship",
-   "mechanic": "Twin heavy cannons and the most hit points in the game. Walks over woods and mountains and flattens forest it crosses into plain ground."
+   "mechanic": "Twin heavy cannons and the most hit points in the game. Walks over woods and mountains and flattens forest it crosses into plain ground.",
+   "group": "vehicle"
   },
   {
    "id": "phantom_tank",
@@ -156,7 +162,8 @@
    "move": 5,
    "role": "Ambush",
    "overlaps": "Tank, recon",
-   "mechanic": "Cloaked: invisible to the enemy unless one of their units is adjacent. Fires only after it has been revealed, and is revealed for the turn when it attacks."
+   "mechanic": "Cloaked: invisible to the enemy unless one of their units is adjacent. Fires only after it has been revealed, and is revealed for the turn when it attacks.",
+   "group": "vehicle"
   },
   {
    "id": "stealth_copter",
@@ -168,7 +175,8 @@
    "move": 6,
    "role": "Strike air",
    "overlaps": "Copter",
-   "mechanic": "A silent attack copter, hidden from anything that is not adjacent or on flak range. Only half the armour of a normal copter."
+   "mechanic": "A silent attack copter, hidden from anything that is not adjacent or on flak range. Only half the armour of a normal copter.",
+   "group": "air"
   },
   {
    "id": "spy",
@@ -180,7 +188,8 @@
    "move": 3,
    "role": "Saboteur",
    "overlaps": "Soldier",
-   "mechanic": "Cloaked infantry: invisible to the enemy unless one of their units is adjacent. Stealth, but weak: only a feeble pistol (range 1, a third of a soldier's damage), few hit points' worth of toughness and no capture. Instead of capturing, it sabotages an enemy property: halves its income and stops it building for a turn."
+   "mechanic": "Cloaked infantry: invisible to the enemy unless one of their units is adjacent. Stealth, but weak: only a feeble pistol (range 1, a third of a soldier's damage), few hit points' worth of toughness and no capture. Instead of capturing, it sabotages an enemy property: halves its income and stops it building for a turn.",
+   "group": "infantry"
   },
   {
    "id": "troop_glider",
@@ -192,7 +201,8 @@
    "move": 7,
    "role": "Transport",
    "overlaps": "Transport copter",
-   "mechanic": "Carries one soldier. Costs very little, but after unloading it is consumed. No ammo and no fuel, and it can only land on open ground."
+   "mechanic": "Carries one soldier. Costs very little, but after unloading it is consumed. No ammo and no fuel, and it can only land on open ground.",
+   "group": "air"
   },
   {
    "id": "scout_glider",
@@ -204,7 +214,8 @@
    "move": 6,
    "role": "Recon",
    "overlaps": "Hover Scout, fighter",
-   "mechanic": "A hang glider with a pilot. Almost free, sees 4 tiles, unarmed. Falls out of the sky if anything at all hits it."
+   "mechanic": "A hang glider with a pilot. Almost free, sees 4 tiles, unarmed. Falls out of the sky if anything at all hits it.",
+   "group": "air"
   },
   {
    "id": "drop_pod",
@@ -216,7 +227,8 @@
    "move": 0,
    "role": "Orbital insertion",
    "overlaps": "Transport copter",
-   "mechanic": "Launched, not driven: lands on any visible tile within 8 tiles of a friendly property, arrives with a Mech aboard, then the pod stays as a bunker (1 hit point more defence)."
+   "mechanic": "Launched, not driven: lands on any visible tile within 8 tiles of a friendly property, arrives with a Mech aboard, then the pod stays as a bunker (1 hit point more defence).",
+   "group": "vehicle"
   },
   {
    "id": "shuttle",
@@ -228,7 +240,8 @@
    "move": 12,
    "role": "Fast transport",
    "overlaps": "Transport copter, bomber",
-   "mechanic": "Moves 12 and carries two foot units. Flies above fighters' reach: only flak can hit it, at half damage."
+   "mechanic": "Moves 12 and carries two foot units. Flies above fighters' reach: only flak can hit it, at half damage.",
+   "group": "air"
   },
   {
    "id": "satellite",
@@ -240,7 +253,8 @@
    "move": 1,
    "role": "Strategic",
    "overlaps": "Artillery, bomber",
-   "mechanic": "Placed on the board edge. Every third turn its laser can hit any tile in view of your units, for heavy damage. Cannot be attacked except by another satellite."
+   "mechanic": "Placed on the board edge. Every third turn its laser can hit any tile in view of your units, for heavy damage. Cannot be attacked except by another satellite.",
+   "group": "air"
   },
   {
    "id": "abyss_sub",
@@ -253,7 +267,8 @@
    "role": "Deep diver",
    "overlaps": "Submarine",
    "mechanic": "Dives to a deeper layer than a submarine: sonar sees it only when adjacent. Slower, but its heavy torpedo outranges destroyers.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "mine_layer",
@@ -266,7 +281,8 @@
    "role": "Area denial",
    "overlaps": "Destroyer",
    "mechanic": "Drops a hidden mine on the tile it leaves. A ship that enters a mined tile takes 40% damage and the mine is spent. Mines are visible to units next to them.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "torpedo_drone",
@@ -279,7 +295,8 @@
    "role": "Expendable strike",
    "overlaps": "Cruiser, submarine",
    "mechanic": "Cheap and fast; one attack, then it is destroyed. Cannot be built unless you already own a Mine Layer or Abyss Sub.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "swarm_drones",
@@ -291,7 +308,8 @@
    "move": 7,
    "role": "Harass",
    "overlaps": "Copter, fighter",
-   "mechanic": "A pack of small drones: hits hard against infantry, little against armour. Weakens as its strength drops, since each drone lost is a quarter of the unit."
+   "mechanic": "A pack of small drones: hits hard against infantry, little against armour. Weakens as its strength drops, since each drone lost is a quarter of the unit.",
+   "group": "air"
   },
   {
    "id": "repair_drone",
@@ -303,7 +321,8 @@
    "move": 5,
    "role": "Support",
    "overlaps": "Supply Truck",
-   "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Unarmed."
+   "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Unarmed.",
+   "group": "air"
   },
   {
    "id": "commando",
@@ -315,7 +334,8 @@
    "move": 3,
    "role": "Elite infantry",
    "overlaps": "Soldier",
-   "mechanic": "Gets double the usual terrain defence bonus, so a commando in a forest or on a mountain is very hard to dislodge. If it does not move in a turn it heals 1 hit point of itself at the start of the next. Rifle attack, same range as a soldier."
+   "mechanic": "Gets double the usual terrain defence bonus, so a commando in a forest or on a mountain is very hard to dislodge. If it does not move in a turn it heals 1 hit point of itself at the start of the next. Rifle attack, same range as a soldier.",
+   "group": "infantry"
   },
   {
    "id": "rpg_trooper",
@@ -327,7 +347,8 @@
    "move": 3,
    "role": "Anti-armour infantry",
    "overlaps": "Mech",
-   "mechanic": "Carries a single rocket (ammo 1). Fires at range 2-3 but cannot move and fire in the same turn. Hits vehicles hard and infantry lightly; with its rocket spent it is a defenceless rifleman until resupplied."
+   "mechanic": "Carries a single rocket (ammo 1). Fires at range 2-3 but cannot move and fire in the same turn. Hits vehicles hard and infantry lightly; with its rocket spent it is a defenceless rifleman until resupplied.",
+   "group": "infantry"
   },
   {
    "id": "mechanic",
@@ -339,7 +360,8 @@
    "move": 3,
    "role": "Support engineer",
    "overlaps": "Repair at a base",
-   "mechanic": "At the start of your turn each friendly vehicle next to it regains hit points. Can clear a mine by moving onto or next to a mine tile, which removes it. Unarmed."
+   "mechanic": "At the start of your turn each friendly vehicle next to it regains hit points. Can clear a mine by moving onto or next to a mine tile, which removes it. Unarmed.",
+   "group": "infantry"
   },
   {
    "id": "medic",
@@ -351,7 +373,8 @@
    "move": 3,
    "role": "Support healer",
    "overlaps": "Repair at a base",
-   "mechanic": "At the start of your turn each friendly infantry unit next to it regains hit points. Does not heal vehicles, aircraft or ships. Unarmed, so keep it behind the line."
+   "mechanic": "At the start of your turn each friendly infantry unit next to it regains hit points. Does not heal vehicles, aircraft or ships. Unarmed, so keep it behind the line.",
+   "group": "infantry"
   },
   {
    "id": "mortar_team",
@@ -363,7 +386,8 @@
    "move": 2,
    "role": "Indirect infantry fire",
    "overlaps": "Artillery",
-   "mechanic": "Indirect attack at range 2-4 (cannot hit adjacent units), and cannot move and fire in the same turn. Carries limited shells. Light damage against vehicles but good against infantry; weak to anything that reaches it."
+   "mechanic": "Indirect attack at range 2-4 (cannot hit adjacent units), and cannot move and fire in the same turn. Carries limited shells. Light damage against vehicles but good against infantry; weak to anything that reaches it.",
+   "group": "infantry"
   },
   {
    "id": "conscript",
@@ -375,7 +399,8 @@
    "move": 3,
    "role": "Cheap infantry",
    "overlaps": "Soldier",
-   "mechanic": "A cheaper soldier with an old rifle: lower attack than a soldier and no terrain bonus advantage. Can still capture properties. Good for screening and blocking when funds are short."
+   "mechanic": "A cheaper soldier with an old rifle: lower attack than a soldier and no terrain bonus advantage. Can still capture properties. Good for screening and blocking when funds are short.",
+   "group": "infantry"
   },
   {
    "id": "diver",
@@ -388,7 +413,8 @@
    "role": "Submersible infantry",
    "overlaps": "Submarine",
    "water": true,
-   "mechanic": "Moves through water and can dive like a submarine: hidden unless an enemy is adjacent. Harpoon gun attacks adjacent targets only, strong against ships' hulls and other divers, helpless against anything that can shoot it when spotted."
+   "mechanic": "Moves through water and can dive like a submarine: hidden unless an enemy is adjacent. Harpoon gun attacks adjacent targets only, strong against ships' hulls and other divers, helpless against anything that can shoot it when spotted.",
+   "group": "infantry"
   },
   {
    "id": "gun_turret",
@@ -400,7 +426,8 @@
    "move": 0,
    "role": "Static, anti-infantry",
    "overlaps": "Soldier, Mech",
-   "mechanic": "A light machine-gun pillbox with range 1-2 that fires at anything on the ground, best against infantry and weak against vehicles (low damage to tanks). It cannot move and has modest armour."
+   "mechanic": "A light machine-gun pillbox with range 1-2 that fires at anything on the ground, best against infantry and weak against vehicles (low damage to tanks). It cannot move and has modest armour.",
+   "group": "static"
   },
   {
    "id": "cannon_turret",
@@ -412,7 +439,8 @@
    "move": 0,
    "role": "Static, anti-vehicle",
    "overlaps": "Tank, Heavy Tank",
-   "mechanic": "A heavily armoured cannon with range 1-3 that hits ground vehicles hard and infantry only lightly. It has high armour, takes little damage from small arms, and cannot move or hit aircraft."
+   "mechanic": "A heavily armoured cannon with range 1-3 that hits ground vehicles hard and infantry only lightly. It has high armour, takes little damage from small arms, and cannot move or hit aircraft.",
+   "group": "static"
   },
   {
    "id": "sam_site",
@@ -424,7 +452,8 @@
    "move": 0,
    "role": "Static, anti-air",
    "overlaps": "Flak",
-   "mechanic": "Shoots only aircraft, with range 1-4 and heavy damage to fighters, bombers and copters. It cannot attack ground or naval units and is fragile against them."
+   "mechanic": "Shoots only aircraft, with range 1-4 and heavy damage to fighters, bombers and copters. It cannot attack ground or naval units and is fragile against them.",
+   "group": "static"
   },
   {
    "id": "artillery_emplacement",
@@ -436,7 +465,8 @@
    "move": 0,
    "role": "Static, indirect fire",
    "overlaps": "Artillery",
-   "mechanic": "A fixed howitzer in a sandbagged pit that fires indirectly at range 3-6 with a minimum range of 2, so it cannot hit adjacent enemies. It cannot move at all, even by transport, and is vulnerable to anything that gets close."
+   "mechanic": "A fixed howitzer in a sandbagged pit that fires indirectly at range 3-6 with a minimum range of 2, so it cannot hit adjacent enemies. It cannot move at all, even by transport, and is vulnerable to anything that gets close.",
+   "group": "static"
   },
   {
    "id": "wall",
@@ -448,7 +478,8 @@
    "move": 0,
    "role": "Static, barrier",
    "overlaps": "none",
-   "mechanic": "A defensive wall segment that blocks the movement of ground units. It has many hit points and can be destroyed, but it cannot attack."
+   "mechanic": "A defensive wall segment that blocks the movement of ground units. It has many hit points and can be destroyed, but it cannot attack.",
+   "group": "static"
   },
   {
    "id": "jammer",
@@ -460,7 +491,8 @@
    "move": 0,
    "role": "Static support",
    "overlaps": "Fog of war, Radar-style vision units",
-   "mechanic": "Enemy units within 3 tiles of it can only see adjacent tiles, so fog of war closes in on everything inside the radius. Unarmed and fragile (about the toughness of a recon), so it needs an escort or it will be picked off."
+   "mechanic": "Enemy units within 3 tiles of it can only see adjacent tiles, so fog of war closes in on everything inside the radius. Unarmed and fragile (about the toughness of a recon), so it needs an escort or it will be picked off.",
+   "group": "static"
   },
   {
    "id": "auto_factory",
@@ -472,7 +504,8 @@
    "move": 0,
    "role": "Static producer",
    "overlaps": "Factory, Mech Factory",
-   "mechanic": "Every other turn it spawns a free light robot (a weak walker that cannot capture) on a free adjacent tile, up to 3 alive at once. Immobile and unarmed; it has the toughness of a tank and can be destroyed, or captured by infantry like a normal building."
+   "mechanic": "Every other turn it spawns a free light robot (a weak walker that cannot capture) on a free adjacent tile, up to 3 alive at once. Immobile and unarmed; it has the toughness of a tank and can be destroyed, or captured by infantry like a normal building.",
+   "group": "static"
   },
   {
    "id": "land_mine",
@@ -484,7 +517,8 @@
    "move": 0,
    "role": "Trap",
    "overlaps": "Artillery (area denial)",
-   "mechanic": "One mine is placed per use. The first ground unit to enter the tile takes about 50% damage and the mine is spent. Invisible to the enemy unless one of their units is adjacent; engineers and mechanics can clear it safely."
+   "mechanic": "One mine is placed per use. The first ground unit to enter the tile takes about 50% damage and the mine is spent. Invisible to the enemy unless one of their units is adjacent; engineers and mechanics can clear it safely.",
+   "group": "static"
   },
   {
    "id": "sea_mine",
@@ -497,7 +531,8 @@
    "water": true,
    "role": "Naval trap",
    "overlaps": "Mine Layer, Submarine (area denial)",
-   "mechanic": "A ship that enters the tile takes about 40% damage and the mine is spent. Hidden unless an enemy unit is adjacent; mine-clearing units can remove it safely."
+   "mechanic": "A ship that enters the tile takes about 40% damage and the mine is spent. Hidden unless an enemy unit is adjacent; mine-clearing units can remove it safely.",
+   "group": "static"
   },
   {
    "id": "stealth_fighter",
@@ -509,7 +544,8 @@
    "move": 9,
    "role": "Air superiority",
    "overlaps": "Fighter, stealth bomber",
-   "mechanic": "Hidden from enemies unless one of them is adjacent. Fires air-to-air missiles at the high air layer with a fighter's punch, range 1, limited ammo. Costs far more than a fighter and has only half its armour, so anything that finds it kills it quickly."
+   "mechanic": "Hidden from enemies unless one of them is adjacent. Fires air-to-air missiles at the high air layer with a fighter's punch, range 1, limited ammo. Costs far more than a fighter and has only half its armour, so anything that finds it kills it quickly.",
+   "group": "air"
   },
   {
    "id": "torpedo_bomber",
@@ -521,7 +557,8 @@
    "move": 7,
    "role": "Anti-ship strike",
    "overlaps": "Bomber, destroyer, cruiser",
-   "mechanic": "Flies in the low air layer, so copters and flak can reach it. Its single torpedo hits ships and submarines (surfaced or shallow) very hard, but does little to ground units. 2 ammo; has to return to an airfield to reload."
+   "mechanic": "Flies in the low air layer, so copters and flak can reach it. Its single torpedo hits ships and submarines (surfaced or shallow) very hard, but does little to ground units. 2 ammo; has to return to an airfield to reload.",
+   "group": "air"
   },
   {
    "id": "radar_plane",
@@ -533,7 +570,8 @@
    "move": 5,
    "role": "Scout / sight",
    "overlaps": "Recon, copter, Drone Bay sensors",
-   "mechanic": "Unarmed. Reveals everything within 5 tiles (hidden stealth units and submarines only within 3) and adds that sight to the whole team's fog of war. Slow and fragile: keep it behind a fighter screen."
+   "mechanic": "Unarmed. Reveals everything within 5 tiles (hidden stealth units and submarines only within 3) and adds that sight to the whole team's fog of war. Slow and fragile: keep it behind a fighter screen.",
+   "group": "air"
   },
   {
    "id": "vintage_fighter",
@@ -545,7 +583,8 @@
    "move": 7,
    "role": "Cheap air cover",
    "overlaps": "Fighter",
-   "mechanic": "A propeller fighter: costs half a fighter, moves 7 instead of 9 and deals half the damage. Can still attack air units, so a screen of them is a cheap way to deny the sky. Dies quickly to a real fighter."
+   "mechanic": "A propeller fighter: costs half a fighter, moves 7 instead of 9 and deals half the damage. Can still attack air units, so a screen of them is a cheap way to deny the sky. Dies quickly to a real fighter.",
+   "group": "air"
   },
   {
    "id": "vintage_bomber",
@@ -557,7 +596,8 @@
    "move": 6,
    "role": "Cheap bombing",
    "overlaps": "Bomber",
-   "mechanic": "A propeller bomber: about half the price of a bomber, with lower move and half the damage, and it flies lower, so flak, copters and fighters all hit it hard. Good for flooding a front with cheap bombs."
+   "mechanic": "A propeller bomber: about half the price of a bomber, with lower move and half the damage, and it flies lower, so flak, copters and fighters all hit it hard. Good for flooding a front with cheap bombs.",
+   "group": "air"
   },
   {
    "id": "aircraft_carrier",
@@ -570,7 +610,8 @@
    "role": "Air base",
    "overlaps": "Airfield, Transport Copter",
    "mechanic": "Carries 2 aircraft: planes can land on it, and each carried plane is refuelled and rearmed at the start of your turn. Only weak guns (a little damage, short range), so it needs an escort.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "gun_boat",
@@ -583,7 +624,8 @@
    "role": "Patrol",
    "overlaps": "Destroyer, Recon",
    "mechanic": "A cheap, very fast patrol boat with a light cannon (ships and ground targets from 1 tile) and a machine gun that hurts infantry. Weak armour: it dies quickly to any proper warship.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "dreadnought",
@@ -596,7 +638,8 @@
    "role": "Heavy artillery ship",
    "overlaps": "Battleship",
    "mechanic": "Four heavy guns with range 2-5 and far more punch than the battleship; it cannot fire after moving. Very thick armour, but slow and costly, and vulnerable to submarines and bombers.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "amphibious_tank",
@@ -608,7 +651,8 @@
    "move": 4,
    "role": "Land-and-sea assault vehicle: brings tank firepower ashore from the water.",
    "overlaps": "Tank (land fighting), Dinghy (water crossing)",
-   "mechanic": "Moves over sea and shoals as well as land: move cost 2 on sea and shoals, 1 everywhere else. Armoured more lightly than a tank (takes noticeably more damage), cannot capture, and fires its gun at 1 range like a tank."
+   "mechanic": "Moves over sea and shoals as well as land: move cost 2 on sea and shoals, 1 everywhere else. Armoured more lightly than a tank (takes noticeably more damage), cannot capture, and fires its gun at 1 range like a tank.",
+   "group": "vehicle"
   },
   {
    "id": "sam_launcher",
@@ -620,7 +664,8 @@
    "move": 3,
    "role": "Tracked anti-air battery that threatens every aircraft in a wide ring.",
    "overlaps": "Flak (anti-air), Fighter (air denial)",
-   "mechanic": "Anti-air only: range 1-4, hits both low and high air, and cannot attack ground or sea units. It can fire after moving but then has only 2 missiles; it must sit out a turn to reload to its full 4 missiles. Fragile against ground attack."
+   "mechanic": "Anti-air only: range 1-4, hits both low and high air, and cannot attack ground or sea units. It can fire after moving but then has only 2 missiles; it must sit out a turn to reload to its full 4 missiles. Fragile against ground attack.",
+   "group": "vehicle"
   },
   {
    "id": "rocket_buggy",
@@ -632,7 +677,8 @@
    "move": 7,
    "role": "Very fast open-frame raider that strikes light vehicles and infantry.",
    "overlaps": "Recon (speed), Rocket Launcher (rockets)",
-   "mechanic": "Direct-fire unguided rockets, range 1-2, strong against infantry and light vehicles, weak against tanks. Very fragile: any real hit cripples it, and it cannot capture."
+   "mechanic": "Direct-fire unguided rockets, range 1-2, strong against infantry and light vehicles, weak against tanks. Very fragile: any real hit cripples it, and it cannot capture.",
+   "group": "vehicle"
   },
   {
    "id": "motorcycle",
@@ -644,7 +690,8 @@
    "move": 5,
    "role": "Fast capturing infantry for grabbing distant property.",
    "overlaps": "Soldier (capture), Recon (speed)",
-   "mechanic": "Infantry that can capture buildings, with move 5, but it cannot enter mountains. Its rifle does half damage when it has moved that turn, full damage when it stays put."
+   "mechanic": "Infantry that can capture buildings, with move 5, but it cannot enter mountains. Its rifle does half damage when it has moved that turn, full damage when it stays put.",
+   "group": "infantry"
   },
   {
    "id": "tank_transport",
@@ -657,7 +704,8 @@
    "role": "Landing ship",
    "overlaps": "Transport Copter, Lander",
    "mechanic": "Carries one tank in a single cargo slot, like the transport copter. After moving it can unload the tank onto an adjacent land tile, and the empty ship is then just a hull. Unarmed and thin-skinned, so it needs an escort.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "missile_sub",
@@ -670,7 +718,8 @@
    "role": "Strategic launcher",
    "overlaps": "Artillery, Missile Truck, Submarine",
    "mechanic": "When surfaced it can fire long-range missiles (range 3-6, indirect, artillery-like damage, ground units and ships) but cannot move and fire in the same turn. While submerged it is hidden and cannot fire, so it is only exposed on the turn it launches. Few missiles per sortie; weak against anything that reaches it.",
-   "water": true
+   "water": true,
+   "group": "naval"
   },
   {
    "id": "hunter_sub",
@@ -683,7 +732,8 @@
    "role": "Hunter-killer",
    "overlaps": "Submarine, Destroyer",
    "mechanic": "Fast attack sub with strong torpedoes against ships and submarines (range 1), and a sonar that reveals submerged enemy subs within 3 tiles. Weak against air units and cannot hit land.",
-   "water": true
+   "water": true,
+   "group": "naval"
   }
  ]
 }

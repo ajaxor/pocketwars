@@ -1,0 +1,50 @@
+{
+ "stages": [
+  {
+   "id": "idea",
+   "label": "Idea",
+   "note": "not in the game"
+  },
+  {
+   "id": "draft",
+   "label": "Draft",
+   "note": "in the game, still needs icon and interface work"
+  },
+  {
+   "id": "solid",
+   "label": "Solid",
+   "note": "the icon is good"
+  },
+  {
+   "id": "balanced",
+   "label": "Balanced",
+   "note": "stats and damage are tuned"
+  },
+  {
+   "id": "ready",
+   "label": "Ready",
+   "note": "art, interface and balance are all done"
+  }
+ ],
+ "units": {
+  "soldier": "solid",
+  "mech": "solid",
+  "sniper": "solid",
+  "marine": "solid",
+  "recon": "solid",
+  "tank": "solid",
+  "heavy_tank": "solid",
+  "artillery": "solid",
+  "rocket_launcher": "draft",
+  "flak": "solid",
+  "transport_copter": "solid",
+  "copter": "solid",
+  "fighter": "solid",
+  "bomber": "solid",
+  "destroyer": "solid",
+  "submarine": "solid",
+  "cruiser": "solid",
+  "battleship": "solid",
+  "stealth_bomber": "idea"
+ }
+}
