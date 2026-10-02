@@ -1,4 +1,4 @@
-// The campaign world map: the continent with its five nations. Your homeland is free; the other four are assimilated by the
+// The campaign world map: the continent with its eight nations and your island hideout. The hideout is free; all eight nations are assimilated by the
 // Chorus. Tap a nation to see its leader and what it will offer. There are no missions yet, so the mission button is a
 // disabled "coming soon" placeholder; the campaign design (docs/campaign-design.md) says what it becomes.
 //
@@ -48,10 +48,10 @@ export class WorldMapScreen {
     const free = !!n.home, L = n.leaderData;
     this.card.className = 'wm-card' + (free ? ' is-free' : ' is-taken');
     this.name.textContent = n.name;
-    this.status.textContent = free ? 'Free - your homeland' : 'Assimilated by the Chorus';
+    this.status.textContent = free ? 'Free - your hideout' : 'Assimilated by the Chorus';
     this.leader.textContent = `${L.name} - ${L.tag}`;
     this.bio.textContent = L.bio;
-    this.gift.textContent = free ? 'Refused the Chorus\' Gift.' : `Accepted the Gift. ${L.taken ? '"' + L.taken + '"' : ''}`;
+    this.gift.textContent = free ? 'Never took the Gift.' : `Accepted the Gift. ${L.taken ? '"' + L.taken + '"' : ''}`;
     this.theme.textContent = free ? n.theme : `${n.theme} Defeat them to free them.`;
     this.drawPortrait();
   }

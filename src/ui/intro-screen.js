@@ -53,7 +53,7 @@ export class IntroScreen {
   advance(dt) {
     if (this.finished) return;
     this.time += dt;
-    this.draw();
+    try { this.draw(); } catch (e) { if (!this.drawFailed) console.error('Intro frame failed:', e); this.drawFailed = true; }   // never let a drawing bug trap the player in the cutscene
     if (this.time >= this.tl.total) this.skip();
   }
 

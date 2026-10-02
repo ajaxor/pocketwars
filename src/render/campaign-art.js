@@ -173,17 +173,9 @@ function arrival(g, w, h, st, fit, nations) {
   }
 }
 
-/** The Gift: a cyan node blooms at each capital in turn with the gift's name; the home nation is last, and refuses. */
-function gift(g, w, h, st, fit, nations, t) {
+/** The Gift: a cyan node blooms at each capital in turn. The Chorus' offer is kept vague on purpose, so there are no labels. */
+function gift(g, st, fit, nations) {
   const sc = st.scene, order = sc.order || [], U = fit.s, slot = (sc.duration - 2.4) / (order.length + 1);
-  const label = (n, text, color, k, q) => {   // (only the home nation gets a label: what the Gift is stays vague)
-    const x0 = fit.ox + n.capital[0] * U, y0 = fit.oy + n.capital[1] * U, up = k % 2 === 0;
-    g.save(); g.globalAlpha = Math.min(1, q * 2.5); g.font = `700 ${Math.round(12 * U / 3.2 * 1.1)}px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
-    const lines = wrap(g, text.toUpperCase(), w * 0.34), lh = 15 * Math.max(0.8, U / 3.2), tw = Math.max(...lines.map((l) => g.measureText(l).width));
-    const x = Math.min(w - tw / 2 - 10, Math.max(tw / 2 + 10, x0)), y = y0 + (up ? -(7 + lines.length * 0.5) * U - lines.length * lh / 2 : (7 * U + lines.length * lh / 2));
-    lines.forEach((l, i) => { const yy = y + (i - (lines.length - 1) / 2) * lh; g.lineWidth = 4; g.strokeStyle = '#04141a'; g.strokeText(l, x, yy); g.fillStyle = color; g.fillText(l, x, yy); });
-    g.restore();
-  };
   order.forEach((id, k) => {
     const n = nations.find((q) => q.id === id), q = st.local - (0.5 + k * slot); if (!n || q <= 0) return;
     const x = fit.ox + n.capital[0] * U, y = fit.oy + n.capital[1] * U;
@@ -191,8 +183,6 @@ function gift(g, w, h, st, fit, nations, t) {
     const glow = g.createRadialGradient(x, y, 0, x, y, U * 7); glow.addColorStop(0, 'rgba(126,240,255,.9)'); glow.addColorStop(1, 'rgba(126,240,255,0)');
     g.fillStyle = glow; g.beginPath(); g.arc(x, y, U * 7, 0, 7); g.fill();
   });
-  const home = nations.find((n) => n.home), q = st.local - (0.5 + order.length * slot);
-  if (home && q > 0) { label(home, 'No thank you', '#ffb066', order.length, q); void t; }
 }
 
 function talk(g, w, h, st, ctx, U, t) {
@@ -226,10 +216,21 @@ export function renderFrame(g, w, h, st, ctx, t) {
   const taken = Object.values(assim).reduce((a, b) => a + b, 0) / Math.max(1, nations.length - 1);
   drawSea(g, w, h, t, taken);
   const zoom = 1 + 0.05 * st.p, fit0 = mapFit(w, h, { pad: 0.08, bottom: sc.kind === 'talk' ? h * 0.22 : h * 0.14 });
-  const fit = { s: fit0.s * zoom, ox: fit0.ox - (MAP_W * fit0.s * (zoom - 1)) / 2, oy: fit0.oy - (MAP_H * fit0.s * (zoom - 1)) / 2 };
+  let fit = { s: fit0.s * zoom, ox: fit0.ox - (MAP_W * fit0.s * (zoom - 1)) / 2, oy: fit0.oy - (MAP_H * fit0.s * (zoom - 1)) / 2 };
+  const focus = sc.focus && nations.find((n) => n.id === sc.focus);
+  if (focus) {                                                   // glide in on one place: it ends up large and in the middle of the picture
+    const k = ease(st.p), s2 = fit0.s * (1 + 1.6 * k), [cx, cy] = focus.capital;
+    const px = fit0.ox + cx * fit0.s, py = fit0.oy + cy * fit0.s, tx = px + (w / 2 - px) * k, ty = py + (h * 0.42 - py) * k;
+    fit = { s: s2, ox: tx - cx * s2, oy: ty - cy * s2 };
+  }
   const dim = sc.kind === 'talk' ? 0.55 : sc.kind === 'gift' ? 0.2 : sc.kind === 'title' ? 0.35 : sc.kind === 'arrival' ? 0.45 : 0;
   drawContinent(g, w, h, { nations, colors: ctx.colors, assim, t, fit, dim, islands: campaign.islands });
-  if (sc.kind === 'gift') gift(g, w, h, st, fit, nations, t);
+  if (focus) {                                                   // a small light that the Chorus' signal never put out
+    const x = fit.ox + focus.capital[0] * fit.s, y = fit.oy + focus.capital[1] * fit.s, c = ctx.colors(focus.faction).color, pulse = 0.5 + 0.5 * Math.sin(t * 3);
+    const glow = g.createRadialGradient(x, y, 0, x, y, fit.s * (9 + 2 * pulse)); glow.addColorStop(0, c + 'cc'); glow.addColorStop(1, c + '00');
+    g.fillStyle = glow; g.beginPath(); g.arc(x, y, fit.s * 11, 0, 7); g.fill();
+  }
+  if (sc.kind === 'gift') gift(g, st, fit, nations);
   if (sc.kind === 'arrival') arrival(g, w, h, st, fit, nations);
   if (sc.kind === 'talk') talk(g, w, h, st, ctx, U, t);
   if (sc.kind === 'fall') {                                       // a pop-up as each nation goes

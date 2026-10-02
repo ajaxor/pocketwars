@@ -46,7 +46,7 @@ export function campaignProblems(raw, registry) {
       if (!Array.isArray(n.outline) || n.outline.length < 3 || !n.outline.every((q) => Array.isArray(q) && q.length === 2 && q.every(isNum))) p.push(`campaign: nation "${n.id}" needs an outline of at least three [x, y] points`);
       if (n.home) homes++;
     }
-    if (homes !== 1) p.push('campaign: exactly one nation must be the home nation');
+    if (homes !== 1) p.push('campaign: exactly one place must be the home (the player hideout)');
     if (raw.home && !raw.nations.some((n) => n.faction === raw.home && n.home)) p.push('campaign: home must be the faction of the home nation');
   }
 
@@ -63,6 +63,7 @@ export function campaignProblems(raw, registry) {
       if (!Array.isArray(s.lines) || !s.lines.length) p.push(`${at} needs lines`);
       else for (const l of s.lines) if (![s.left, s.right].includes(l.who) || !isStr(l.text)) p.push(`${at}: every line needs text and a speaker who is on screen`);
     }
+    if (s.focus !== undefined && !nations.has(s.focus)) p.push(`${at}: unknown focus nation "${s.focus}"`);
     if (s.kind === 'fall' || s.kind === 'gift') for (const id of s.order || []) if (!nations.has(id)) p.push(`${at}: unknown nation "${id}" in order`);
   }
   return p;

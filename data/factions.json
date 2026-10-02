@@ -38,5 +38,10 @@
     "name": "Highspire",
     "color": "#cfd6df",
     "dark": "#7b8794"
+  },
+  "lastholm": {
+    "name": "Lastholm",
+    "color": "#8f9a4a",
+    "dark": "#566024"
   }
 }

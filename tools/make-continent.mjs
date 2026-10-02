@@ -5,7 +5,7 @@
 //   node tools/make-continent.mjs          regenerate (deterministic: the same input always gives the same continent)
 //   node tools/make-continent.mjs --svg    also write a preview to continent.svg in the current directory
 //
-// Edit SEEDS to move a capital (the id must match a nation in the data). Map space is 100 wide by 120 tall.
+// Edit SEEDS to move a capital (the id must match a nation in the data); HOME is the player's island. Map space is 100 wide by 120 tall.
 
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -15,7 +15,8 @@ const SEEDS = {
   west: [17, 64], centre: [50, 54], east: [82, 62],
   southwest: [28, 91], south: [60, 94],
 };
-const ISLANDS = [[[8, 106], 4.2, 1.1], [[91, 100], 3.6, 2.3], [[6, 14], 3.0, 0.4], [[95, 12], 2.4, 1.9]];   // [centre, radius, phase]
+const HOME = { id: 'island', centre: [88, 105], radius: 7 };   // the player's hideout: a nation on its own island, not part of the split
+const ISLANDS = [[[8, 108], 4.2, 1.1], [[6, 14], 3.0, 0.4], [[95, 12], 2.4, 1.9]];   // [centre, radius, phase]
 
 // the field that bends every point; low frequencies only, so it cannot tear a border or fold the coast over itself
 const warp = ([x, y]) => [
@@ -64,7 +65,13 @@ function subdivide(poly, step = 1.6) {
 const round = (v) => Math.round(v * 10) / 10;
 const land = coast();
 const data = JSON.parse(readFileSync(FILE, 'utf8'));
+const blob = (c, r, ph, n = 22) => Array.from({ length: n }, (_, i) => { const a = (i / n) * Math.PI * 2, k = 1 + 0.26 * Math.sin(3 * a + ph) + 0.14 * Math.sin(5 * a + 1); return [c[0] + r * k * Math.cos(a), c[1] + r * k * 0.8 * Math.sin(a)]; });
 for (const n of data.nations) {
+  if (n.id === HOME.id) {
+    n.outline = blob(HOME.centre, HOME.radius, 0.7, 30).map(([x, y]) => [round(x), round(y)]);   // small, so it is not warped
+    n.capital = HOME.centre;
+    continue;
+  }
   const seed = SEEDS[n.id]; if (!seed) throw new Error(`no seed for nation "${n.id}"`);
   let poly = land;
   for (const [id, other] of Object.entries(SEEDS)) if (id !== n.id) poly = clip(poly, seed, other);

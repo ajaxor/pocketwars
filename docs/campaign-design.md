@@ -24,7 +24,7 @@ leader and you face the final boss, with one or two of your allies fighting besi
 ## Story
 
 Status: **decided direction: the Chorus seduces with technology ("the Gift"). Nation names are decided; leader names are still working names.** The idea: a villain is taking over a continent that is divided into nations, and
-each nation that falls is **assimilated**. The player is the last holdout, launching a counter attack.
+**every** nation is assimilated. The player is one grizzled old veteran on an island the signal never reached, who decides to fight back.
 
 ### Premise
 
@@ -32,8 +32,9 @@ each nation that falls is **assimilated**. The player is the last holdout, launc
 - A new power, placeholder name **the Chorus** (an alien collective that presents as a human conqueror, see below), arrives and takes the nations one at a time. A conquered nation is **assimilated**: its
   leader is taken over (a visor, cold eyes, a new uniform in the Chorus colours), its army is re-equipped with Chorus tech, and its
   people march as one.
-- The player's nation is the last one still free. The intro shows the continent going dark nation by nation, ending on the player's
-  borders, and a retreat that turns into a counter attack.
+- **All eight nations fall, with no exceptions.** The player is not a nation's leader: they are **Col. Gus Harlan**, a retired veteran who lives alone on
+  **Lastholm**, a small island off the coast. The intro shows the continent going dark nation by nation until only his island's light is
+  left, and a grumbling decision to take it all back.
 - Every stage on the continent map is a nation to **liberate**. This is why the stages can be fought in any order: the Chorus holds all
   of them, and the player picks where to strike first.
 
@@ -48,8 +49,10 @@ faction's own tech tree, which is richer than one theme per nation.
 2. **The Gift.** Every nation is offered what it wants most. Nobody is told what the others were given.
 3. **Dependence.** Within a year the nation's factories, supply and defence run on Lattice. Its best equipment only works on Chorus tech.
 4. **The turn.** The last step is plugging the army into the shared network. Leaders who connect are **assimilated**: harmonised, not killed.
-5. **Ashmark refuses.** It was the poorest, most distrustful nation, and Ada's rule is that nothing is free. So its army is old and
-   scrappy and *unplugged*, and the Chorus cannot switch it off. That is why you are the last free army, and why you can fight.
+5. **Every nation says yes**, Ashmark included. Ada Brandt, tired of a lifetime of making do, grabbed it with both hands.
+6. **The one that was never plugged in.** Col. Gus Harlan, retired, lives alone on Lastholm with a radio, a workshop and a long memory. The
+   signal never reached his rock, and he would not have taken it anyway: he has heard "it's free" before. He is the only person with a
+   free army, and the army is a handful of volunteers and a lot of scrap, which is exactly why the Chorus cannot switch it off.
 
 What this gives the design:
 - **Labs are Gift sites.** Capturing one lets you reverse-engineer Chorus-derived units (the XCOM loop).
@@ -87,7 +90,7 @@ against an assimilated leader reads on the map at a glance. Units regain their c
 ### Structure (three acts)
 
 1. **The fall (intro).** A short sequence on the continent map: nations fall one by one, each shown as a portrait switching to its
-   assimilated version. The player's leader is the last one free and is pushed to the coast. Ends on "counter attack".
+   assimilated version. Only Lastholm's light stays on. Ends on Harlan's decision to fight back.
 2. **The liberation (the stage select).** Free order, with hints that the Envoy's gifts are not what they seem. Each stage opens with a short exchange between the player's chosen commander
    and the assimilated leader. After the win, a liberation scene plays: the portrait reverts, the leader joins you and may comment on
    whoever else is still held. As the roster of free leaders grows, the continent map recovers its colours.
@@ -205,12 +208,13 @@ A leader is data. Each has:
 ### Roster and personalities
 
 The leaders and their personalities carry the story and the gameplay. Every leader has a **flaw** that explains why they accepted the Gift
-(or, for Ada, why she refused it), and a **leaning** that hints at their kit. A leaning is a tendency, not a single theme: each faction's
+(or, for Harlan, why he never did), and a **leaning** that hints at their kit. A leaning is a tendency, not a single theme: each faction's
 unit and building set is richer than one line. The data lives in `data/campaign.json` (`bio`, `flaw`, `line`, `taken`, and `theme` per nation).
 
 | Leader | Nation | Personality | Flaw (why they fell) | Leaning |
 |---|---|---|---|---|
-| Cmdr. Ada Brandt (you) | Ashmark | Hot-headed ace raised scrapping parts; loud, brave, impatient; trusts nothing she did not repair herself | Rushes in, slow to trust help (refused the Gift) | Fast and aggressive; the simplest kit |
+| Col. Gus Harlan (you) | Lastholm | Grizzled retired colonel who lives alone on an island; sarcastic, stubborn, tired of wars, remembers every betrayal | Stubborn: never learned when to quit (never took the Gift) | The scrappy underdog: volunteers, salvage, old machines |
+| Cmdr. Ada Brandt | Ashmark | Hot-headed ace raised scrapping parts; loud, brave, impatient | Hunger: tired of making do | Fast and aggressive infantry and light air |
 | Marshal Vex Orlov | Vantor Reach | Veteran spymaster, never surprised, cold and secretive | Pride: certain he can control it | Stealth and ambush |
 | Gen. Tomas Rey | Ironvale | Patient, fatherly, knows every soldier by name | Loyalty: machines meant fewer funerals | Heavy armour |
 | Dr. Nia Kestrel | Solace | Cheerful, curious genius; wrote the first Lattice integration herself | Curiosity: noticed the signal and said nothing for a day | Supply, repair and gadgets |
@@ -224,7 +228,7 @@ Seven opponents is the current working number; the continent (`tools/make-contin
 
 **Arcs once freed:** Vex is the bitter ally who knew better and gives intelligence on the Chorus; Tomas carries the most guilt and becomes
 your shield; Nia is the key to reverse-engineering Gift tech and carries guilt about the day she stayed quiet; Sasha is the rogue ally who
-sells you things but stays loyal; Ada is the player and learns to trust help. Each leader's taken line (`taken`) is what they say while
+sells you things but stays loyal; Ada, the hot-headed ace, is ashamed and furious at herself, and is the first to say "I'll follow you" to the old man. Each leader's taken line (`taken`) is what they say while
 assimilated; the free line (`line`) is who they really are.
 
 Eight enemy leaders plus the final boss is the working target. Fewer is fine for a first release (four to six, see
@@ -370,6 +374,6 @@ A suggested path that always leaves the game playable:
 
 ## Implementation status
 
-- **Done:** nations Ashmark, Vantor Reach, Tidehaven, Ironvale, Solace, Skyreach, Deepmere and Highspire; the Gift story in the intro (arrival, Envoy, Gift scene, Ada's refusal, the fall, the holdout); leader bios on the world-map card; Campaign button on the title screen; skippable animated intro (data/campaign.json `intro.scenes`, drawn on a canvas by `src/render/campaign-art.js`, timeline in `src/campaign/cutscene.js`); world map with a generated continent of eight nations (your free homeland plus seven assimilated) and islands; assimilated portrait variant (`assim` option in `src/render/portrait-art.js`); factions Tidehaven, Skyreach, Deepmere and Highspire added for the new nations. The continent is generated by `tools/make-continent.mjs` (re-run it after moving a capital).
+- **Done:** nations Ashmark, Vantor Reach, Tidehaven, Ironvale, Solace, Skyreach, Deepmere and Highspire; the Gift story in the intro (arrival, Envoy, Gift scene, the fall of all eight nations, the glide in on Lastholm, Harlan's decision); leader bios on the world-map card; Campaign button on the title screen; skippable animated intro (data/campaign.json `intro.scenes`, drawn on a canvas by `src/render/campaign-art.js`, timeline in `src/campaign/cutscene.js`); world map with a generated continent of eight assimilated nations, your free island hideout Lastholm, and a few decorative islands; assimilated portrait variant (`assim` option in `src/render/portrait-art.js`); factions Tidehaven, Skyreach, Deepmere, Highspire and Lastholm added. The continent is generated by `tools/make-continent.mjs` (re-run it after moving a capital).
 - **Not yet:** missions, leader selection, labs, allies, the final battle. The world map's mission button is a disabled placeholder.
 - The intro plays every time Campaign is pressed (Skip, Esc or Enter ends it; "Replay intro" is on the map).

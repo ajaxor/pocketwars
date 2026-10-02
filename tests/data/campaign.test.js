@@ -20,20 +20,20 @@ const win = { innerWidth: 390, innerHeight: 700, devicePixelRatio: 1 };
 const raw = async () => structuredClone(JSON.parse(JSON.stringify(await readData('campaign.json'))));
 
 // ---- data ---------------------------------------------------------------------------------------------------------------------------
-test('the shipped campaign has eight nations: one free home nation and seven to liberate', () => {
-  assert.equal(campaign.nations.length, 8);
-  assert.deepEqual(campaign.nations.filter((n) => n.home).map((n) => n.id), ['south']);
-  assert.equal(new Set(campaign.nations.map((n) => n.faction)).size, 8, 'each nation is its own colour');
-  assert.equal(registry.factionIds.length >= 8, true);
+test('the shipped campaign has eight assimilated nations and one free island hideout', () => {
+  assert.equal(campaign.nations.length, 9);
+  assert.deepEqual(campaign.nations.filter((n) => n.home).map((n) => n.id), ['island']);
+  assert.equal(new Set(campaign.nations.map((n) => n.faction)).size, 9, 'each nation is its own colour');
+  assert.equal(registry.factionIds.length >= 9, true);
   for (const n of campaign.nations) assert.equal(n.leaderData.faction, n.faction);
 });
 
 test('validation catches unknown leaders, factions, nations and bad scenes', async () => {
   const bad = await raw();
-  bad.nations[0].leader = 'nobody'; bad.nations[1].faction = 'nope'; bad.nations[2].home = true;
+  bad.nations[0].leader = 'nobody'; bad.nations[1].faction = 'nope'; bad.nations[2].home = true; bad.intro.scenes[5].focus = 'atlantis';
   bad.intro.scenes[2].lines[0].who = 'ada'; bad.intro.scenes[3].order = ['atlantis']; bad.intro.scenes[0].duration = 0;
   const p = campaignProblems(bad, registry).join('\n');
-  for (const re of [/unknown leader "nobody"/, /unknown faction "nope"/, /exactly one nation must be the home/, /speaker who is on screen/, /unknown nation "atlantis"/, /positive duration/]) assert.match(p, re);
+  for (const re of [/unknown leader "nobody"/, /unknown faction "nope"/, /exactly one place must be the home/, /speaker who is on screen/, /unknown nation "atlantis"/, /unknown focus nation/, /positive duration/]) assert.match(p, re);
   assert.throws(() => parseCampaign(bad, registry), /Invalid game data/);
 });
 
@@ -68,8 +68,8 @@ test('nations fall in the scripted order and stay fallen; the home nation never 
   const mid = assimilation(tl, idx('fall'), fall.duration * 0.12, campaign.nations);
   assert.ok(mid.centre > 0 && mid.southwest === 0, 'the first in the order starts first');
   const after = assimilation(tl, idx('holdout'), 1, campaign.nations);
-  assert.deepEqual(Object.entries(after).filter(([, v]) => v === 1).map(([k]) => k).sort(), ['centre', 'east', 'north', 'northeast', 'northwest', 'southwest', 'west']);
-  assert.equal(after.south, 0);
+  assert.deepEqual(Object.entries(after).filter(([, v]) => v === 1).map(([k]) => k).sort(), ['centre', 'east', 'north', 'northeast', 'northwest', 'south', 'southwest', 'west']);
+  assert.equal(after.island, 0, 'the hideout never falls');
 });
 
 test('the nations are one continent: each capital is only in its own land, and there are islands', () => {
@@ -79,8 +79,8 @@ test('the nations are one continent: each capital is only in its own land, and t
 });
 
 test('a tap finds the nation under it, and nothing in the sea', () => {
-  const south = campaign.nations.find((n) => n.id === 'south');
-  assert.equal(nationAt(campaign.nations, south.capital).id, 'south');
+  const home = campaign.nations.find((n) => n.home);
+  assert.equal(nationAt(campaign.nations, home.capital).id, 'island');
   for (const n of campaign.nations) assert.equal(nationAt(campaign.nations, n.capital).id, n.id, `${n.id}'s capital is inside its own land`);
   assert.equal(nationAt(campaign.nations, [1, 1]), null);
   assert.equal(inPolygon([2, 8], [[0, 0], [10, 0], [10, 10]]), false);
@@ -111,10 +111,10 @@ test('tapping the intro during a conversation jumps to the next line', () => {
   const before = s.time; s.tap(); assert.equal(s.time, before, 'last line: tapping does nothing');
 });
 
-test('the world map shows five nations, your homeland first, and the mission button is a disabled placeholder', () => {
+test('the world map shows nine places, your hideout first, and the mission button is a disabled placeholder', () => {
   const doc = new FakeDoc(); const log = [];
   const m = new WorldMapScreen(doc, { campaign, colors, onBack: () => log.push('back'), onReplay: () => log.push('replay'), raf: () => 1, caf() {}, win });
-  assert.equal(m.selected, 'south');
+  assert.equal(m.selected, 'island');
   assert.match(m.status.textContent, /Free/);
   assert.equal(m.mission.disabled, true);
   m.select('north');
@@ -125,7 +125,7 @@ test('the world map shows five nations, your homeland first, and the mission but
   assert.match(m.bio.textContent, /spymaster/);
   m.select('atlantis'); assert.equal(m.selected, 'north', 'an unknown nation is ignored');
   m.back.click(); m.replay.click(); assert.deepEqual(log, ['back', 'replay']);
-  assert.deepEqual(Object.values(m.assim).sort(), [0, 1, 1, 1, 1, 1, 1, 1]);
+  assert.deepEqual(Object.values(m.assim).sort(), [0, 1, 1, 1, 1, 1, 1, 1, 1]);
 });
 
 // ---- title and launcher -------------------------------------------------------------------------------------------------------------

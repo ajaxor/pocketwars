@@ -101,7 +101,7 @@ buildSheet();
 }
 
 // ---- section 3: dialogue mock-ups -----------------------------------------------------------------------------------------------
-const A = LEADERS[0], B = LEADERS[1];
+const A = LEADERS.find((l) => l.id === 'ada'), B = LEADERS.find((l) => l.id === 'vex');
 const BANTER = [
   { who: 0, text: 'Reinforcements are rolling in! Let\'s take that bridge before dusk!', expr: ['smile', 'neutral'] },
   { who: 1, text: 'Predictable. Your flank was mine three turns ago.', expr: ['shock', 'neutral'] },
