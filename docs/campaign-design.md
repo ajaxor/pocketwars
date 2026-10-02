@@ -5,8 +5,8 @@ Status: **design draft, nothing here is built yet.** This captures the campaign 
 
 ## The pitch
 
-A continent of rival leaders. You choose which one to fight next, in any order, like a Mega Man stage select. Beat a leader and they
-**join your side**: from then on you can bring them to a mission as your commander. Every leader brings their own **production
+A continent of nations, each held by a leader the Chorus has assimilated (see [Story](#story)). You choose which one to fight next, in
+any order, like a Mega Man stage select. Beat a leader and they are freed and **join your side**: from then on you can bring them to a mission as your commander. Every leader brings their own **production
 buildings**, their own **starting units** and their own **power**, so choosing who to field is the main strategic decision of a mission.
 The map also holds neutral or enemy **labs**: capturable buildings that build a different cross-section of unusual units. Defeat every
 leader and you face the final boss, with one or two of your allies fighting beside you.
@@ -20,6 +20,84 @@ leader and you face the final boss, with one or two of your allies fighting besi
 4. **Overlap, not hierarchy.** Several buildings and units do similar jobs in different ways (a hover carrier, a troop glider and a
    shuttle all carry soldiers), so choices are sideways, not "bigger is better".
 5. **Phone first.** Short missions (10 to 20 minutes), clear one-screen choices, portraits that read at small sizes.
+
+## Story
+
+Status: **proposed direction, names are placeholders.** The idea: a villain is taking over a continent that is divided into nations, and
+each nation that falls is **assimilated**. The player is the last holdout, launching a counter attack.
+
+### Premise
+
+- The continent is a patchwork of nations, each led by one of the leaders (the same leaders the player can later field).
+- A new power, placeholder name **the Chorus**, arrives and takes the nations one at a time. A conquered nation is **assimilated**: its
+  leader is taken over (a visor, cold eyes, a new uniform in the Chorus colours), its army is re-equipped with Chorus tech, and its
+  people march as one.
+- The player's nation is the last one still free. The intro shows the continent going dark nation by nation, ending on the player's
+  borders, and a retreat that turns into a counter attack.
+- Every stage on the continent map is a nation to **liberate**. This is why the stages can be fought in any order: the Chorus holds all
+  of them, and the player picks where to strike first.
+
+### Why this fits the design
+
+- **"Defeated leaders join you" becomes liberation.** Beating an assimilated leader breaks the hold: the portrait changes back to
+  the leader's real face, they say what it was like, and they join your side. The recruit scene has an emotional beat for free.
+- **A reason for the leader roster to be different from you.** Each leader's kit is their nation's identity (coast, mountains, desert
+  and so on), and the Chorus has bent that kit with its own tech while it held them.
+- **A reason for labs.** Labs are either neutral research sites a free nation built, or Chorus facilities that make assimilated units.
+  Capturing one is liberating it.
+- **A reason for allies in the finale.** The boss is the Chorus's core; the allies you bring are the nations that have most to
+  settle with it.
+
+### Portraits: two looks per leader
+
+Each leader has a **free** portrait and an **assimilated** one. The portrait art is already one parametric bust driven by traits
+(`gallery/portrait-art.js`), so the assimilated look is an overlay on the same face, not a second drawing:
+
+| Part | Free | Assimilated |
+|---|---|---|
+| Palette | army colours | desaturated, with the Chorus accent colour |
+| Eyes | normal | glowing, no highlights |
+| Head | normal hat or hair | a visor or a circuit-lined cap over it |
+| Expression | the leader's own | locked flat; they never smile |
+| Uniform | the leader's own | the same cut in grey with the Chorus emblem |
+
+The unit art for an assimilated army gets the same treatment: the army's sprites with a Chorus tint and a small emblem, so a mission
+against an assimilated leader reads on the map at a glance. Units regain their colours when the nation is freed.
+
+### Structure (three acts)
+
+1. **The fall (intro).** A short sequence on the continent map: nations fall one by one, each shown as a portrait switching to its
+   assimilated version. The player's leader is the last one free and is pushed to the coast. Ends on "counter attack".
+2. **The liberation (the stage select).** Free order. Each stage opens with a short exchange between the player's chosen commander
+   and the assimilated leader. After the win, a liberation scene plays: the portrait reverts, the leader joins you and may comment on
+   whoever else is still held. As the roster of free leaders grows, the continent map recovers its colours.
+3. **The core (the final boss).** The Chorus's core, its capital, with units and labs from every nation it has taken. The player picks
+   one or two allies; scenes vary with who is chosen.
+
+### Tone
+
+Bright, readable and PG: assimilation is mind control, nobody dies on screen, and the freed leaders are shaken but recover. The sci-fi
+horror is in the portraits and the continent map, not in the dialogue. Think of the Chorus as an unsettling, polite, unified voice:
+its units and leaders say the same line together.
+
+### Who is the villain? (open)
+
+| Option | The Chorus is... | Notes |
+|---|---|---|
+| A | An AI that took over the orbital network (the satellite concept) | Easy to tie to the Space Port and the orbital units. Risk: a faceless boss, so give it a recorded human voice |
+| B | An outside power that arrived from orbit | Clean "invaders" story; the leaders are all victims |
+| C | One of the old leaders' former mentor, brought back by the labs' research | Personal: the allies each have a history with the boss. Closer to the earlier "rival heirs" idea |
+
+Leaning: **A with the voice of C**: the Chorus is the orbital network, and it speaks with the voice of someone the leaders remember.
+
+### Open story questions
+
+- Is the player a named leader (for example Brandt, the simple starter) or a custom commander? A named one gives sharper dialogue; a
+  custom one lets the player pick a face.
+- Does a freed leader keep a trace of assimilation (a faint visor line) as a visual reminder of the campaign's progress?
+- Does the final boss try to re-assimilate the allies mid-battle? It would be a strong boss mechanic (units or a leader's power
+  turning against you), but it is real engine work, so it is a stretch goal.
+- How much of the intro is animated, and how much is a still image with text? The draft assumes stills and the visual-novel layout.
 
 ## The campaign loop
 
@@ -178,7 +256,7 @@ Scenes to write per leader:
 
 - Mission intro (a short exchange between your commander and the enemy leader)
 - Mid-mission triggers (first capture, losing the HQ, low health on the commander): short lines, probably the "chatter chip"
-- Defeat and recruitment (the enemy leader joins you)
+- Liberation (the enemy leader's portrait reverts to their real face and they join you)
 - Final battle (a scene for each possible ally)
 
 Dialogue lines are data (speaker, expression, text), kept next to the leader.
