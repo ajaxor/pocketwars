@@ -3,9 +3,10 @@
 //
 //   campaignProblems(raw, registry)   a list of human-readable problems (empty = valid)
 //   parseCampaign(raw, registry)      the same data, or throws DataError; nations gain `leaderData`
-//   loadCampaign(readJson, registry)  read data/campaign.json and parse it
+//   loadCampaign(readJson, registry)  read data/campaign.json and every leader's speech file, and parse them
 
 import { DataError } from './validate.js';
+import { speechProblems } from '../campaign/speech.js';
 
 const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
 const isStr = (v) => typeof v === 'string' && v.length > 0;
@@ -76,4 +77,11 @@ export function parseCampaign(raw, registry) {
   return { ...raw, leaderById: leaders, nations: raw.nations.map((n) => ({ ...n, leaderData: leaders[n.leader] })) };
 }
 
-export async function loadCampaign(readJson, registry) { return parseCampaign(await readJson('campaign.json'), registry); }
+/** Read data/campaign.json and one speech file per leader (data/speech/<id>.json); the result carries `speech` keyed by leader id. */
+export async function loadCampaign(readJson, registry) {
+  const campaign = parseCampaign(await readJson('campaign.json'), registry);
+  const entries = await Promise.all(campaign.leaders.map(async (l) => [l.id, await readJson(`speech/${l.id}.json`)]));
+  const problems = entries.flatMap(([id, s]) => speechProblems(s, id));
+  if (problems.length) throw new DataError(problems);
+  return { ...campaign, speech: Object.fromEntries(entries) };
+}

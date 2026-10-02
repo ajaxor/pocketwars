@@ -27,7 +27,7 @@ const canvasOf = (w, h = w) => { const c = document.createElement('canvas'); c.w
 // ---- the parametric bust, drawn in a 100 x 100 space ----------------------------------------------------------------------------
 function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outline = false, shade = true, px = 100, assim = false }) {
   if (assim) {                                                                                         // taken over: washed-out, flat, never blinking
-    L = { ...L, skin: mix(L.skin, '#aab6bf', .5), hair: mix(L.hair, '#59636d', .45), eye: '#7ef0ff', medals: 0, glasses: false, eyepatch: false };
+    L = { ...L, skin: mix(L.skin, '#aab6bf', .5), hair: mix(L.hair, '#59636d', .45), eye: '#7ef0ff', medals: 0, glasses: false, aviators: false, freckles: false, eyepatch: false };
     expr = 'neutral'; blink = false; talk = 0;
   }
   const lw = outline ? Math.max(1.1, 220 / px * 1.1 + 0.6) : 0;
@@ -45,15 +45,22 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   if (L.hairStyle === 'ponytail') paint(ell(74, 52, 6.5, 14), L.hair);
   if (L.hairStyle === 'bun') paint(ell(50, 17, 9, 8.5), L.hair);
   if (L.hairStyle === 'long') { paint(ell(29.5, 54, 6.5, 17), L.hair); paint(ell(70.5, 54, 6.5, 17), L.hair); }
+  if (L.hairStyle === 'wild') {                                                                        // a mad-scientist cloud of hair
+    paint(ell(50, 25, 27, 20), L.hair);
+    for (const [x, y, r] of [[26, 38, 8], [74, 38, 8], [30, 20, 8], [70, 20, 8], [40, 8, 7], [60, 8, 7], [50, 5, 6], [21, 28, 6], [79, 28, 6]]) paint(ell(x, y, r, r * 0.9), L.hair);
+  }
 
   // body
   const bw = L.wide || 1, X = (x) => 50 + (x - 50) * bw;
-  const bodyCol = L.coat ? '#eef0f5' : c;
+  const trench = !!L.trench, uniform = !L.coat && !trench, TR = '#b59a66';
+  const bodyCol = L.coat ? '#eef0f5' : trench ? TR : c;
   paint((p) => { p.moveTo(X(6), 101); p.bezierCurveTo(X(6), 82, X(24), 74, 50, 72); p.bezierCurveTo(X(76), 74, X(94), 82, X(94), 101); p.closePath(); }, bodyCol);
-  paint(poly([[43, 71], [50, 88], [57, 71]]), L.coat ? c : '#e9e9ef');                                  // shirt (or the colour under a lab coat)
-  paint(poly([[X(33), 74], [43, 71], [50, 88], [38, 90]]), L.coat ? '#dfe3ec' : mix(c, dk, .45));      // collar flaps
-  paint(poly([[X(67), 74], [57, 71], [50, 88], [62, 90]]), L.coat ? '#dfe3ec' : mix(c, dk, .45));
-  if (!L.coat) {
+  paint(poly([[43, 71], [50, 88], [57, 71]]), L.coat ? c : '#e9e9ef');
+  if (trench) paint(poly([[48.6, 74], [51.4, 74], [52.4, 92], [50, 95], [47.6, 92]]), '#2a2f3c', false);   // a dark tie                                  // shirt (or the colour under a lab coat)
+  paint(poly([[X(33), 74], [43, 71], [50, 88], [38, 90]]), L.coat ? '#dfe3ec' : trench ? '#cdb887' : mix(c, dk, .45));      // collar flaps
+  paint(poly([[X(67), 74], [57, 71], [50, 88], [62, 90]]), L.coat ? '#dfe3ec' : trench ? '#cdb887' : mix(c, dk, .45));
+  if (trench) { paint((p) => p.rect(6, 94.5, 88, 4.5), '#7d6640', false); paint((p) => p.roundRect(45, 93.8, 10, 6, 1), '#c9a74a'); }   // belt and buckle
+  if (uniform) {
     for (const sx of [-1, 1]) paint((p) => p.roundRect(sx > 0 ? X(70) : X(14), 77, 17 * bw, 6.5, 3), dk);   // epaulets
     for (const sx of [-1, 1]) line(sx > 0 ? X(72) : X(16), 80.2, sx > 0 ? X(85) : X(29), 80.2, 1.4, '#e8c050');
     for (let i = 0; i < L.medals; i++) paint(ell(60 + (i % 3) * 4.6, 90 + Math.floor(i / 3) * 4.6, 1.8, 1.8), i % 2 ? '#d94b3a' : '#e8c050', false);
@@ -64,9 +71,10 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   paint((p) => p.roundRect(43, 58, 14, 17, 3), L.skin, false);
   paint(poly([[43, 63], [57, 63], [57, 70], [50, 74], [43, 70]]), skinShade, false);
   if (L.tallCollar) {
-    paint(poly([[36, 76], [38, 57], [46, 62], [46, 77]]), mix(c, dk, .55));
-    paint(poly([[64, 76], [62, 57], [54, 62], [54, 77]]), mix(c, dk, .55));
-    line(38, 59, 46, 63, 1, '#e8c050'); line(62, 59, 54, 63, 1, '#e8c050');
+    const cc = trench ? '#a48b58' : mix(c, dk, .55);
+    paint(poly([[36, 76], [38, 57], [46, 62], [46, 77]]), cc);
+    paint(poly([[64, 76], [62, 57], [54, 62], [54, 77]]), cc);
+    if (!trench) { line(38, 59, 46, 63, 1, '#e8c050'); line(62, 59, 54, 63, 1, '#e8c050'); }
   }
 
   // ears and head
@@ -100,6 +108,7 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     paint(ell(42, 45.5, 6.6, 5.6), '#17181d');
     line(38, 42.8, 46, 48.2, .7, '#3a3d4a');
   }
+  if (L.freckles) for (const sx of [-1, 1]) for (const [dx, dy] of [[7, 5.5], [10.5, 7], [5, 8], [9, 9.5], [12.5, 5.5]]) { g.fillStyle = mix(L.skin, '#a0522d', .5); g.beginPath(); g.arc(50 + sx * dx, 46 + dy, .8, 0, 7); g.fill(); }
   line(50, 46, 48.4, 52.6, 1.1, skinShade); line(48.4, 52.6, 50.6, 53.1, 1.1, skinShade);          // nose
   if (L.scar) { line(34.5, 35, 45, 55, 1.5, '#b5605f'); for (const t of [.3, .55, .8]) line(34.5 + 10.5 * t - 1.6, 35 + 20 * t + .2, 34.5 + 10.5 * t + 1.6, 35 + 20 * t - .2, 1, '#b5605f'); }
 
@@ -118,6 +127,14 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
   if (L.hairStyle === 'ponytail') paint((p) => { p.moveTo(29.5, 44); p.bezierCurveTo(28, 22, 72, 22, 70.5, 44); p.bezierCurveTo(68, 33, 56, 30, 50, 29.5); p.bezierCurveTo(44, 30, 32, 33, 29.5, 44); p.closePath(); }, L.hair);
   if (L.hairStyle === 'short') paint((p) => { p.moveTo(31.5, 40); p.bezierCurveTo(29, 14, 71, 14, 68.5, 40); p.lineTo(66, 32); p.bezierCurveTo(55, 25, 45, 25, 34, 32); p.closePath(); }, L.hair);
   if (L.hairStyle === 'bun') paint((p) => { p.moveTo(30, 44); p.bezierCurveTo(28, 14, 72, 14, 70, 44); p.bezierCurveTo(68, 33, 58, 28, 50, 28); p.bezierCurveTo(42, 28, 32, 33, 30, 44); p.closePath(); }, L.hair);
+  if (L.hairStyle === 'wild') {                                                                        // the fringe, sticking up
+    paint(poly([[31, 38], [30, 26], [36, 31], [38, 19], [43, 28], [47, 16], [51, 27], [56, 17], [59, 28], [64, 21], [64, 31], [70, 27], [69, 38], [66, 32], [58, 28], [42, 28], [34, 32]]), L.hair);
+  }
+  if (L.hairStyle === 'topknot') {                                                                     // an old warrior: hair at the sides, a tied knot on a bare crown
+    paint(ell(31.6, 42, 3.4, 9.5), L.hair); paint(ell(68.4, 42, 3.4, 9.5), L.hair);
+    paint(poly([[32, 33], [37, 28], [50, 25.5], [63, 28], [68, 33], [64, 30.5], [50, 28.5], [36, 30.5]]), L.hair);
+    paint(ell(50, 17.5, 5.2, 6.4), L.hair); line(45.4, 24, 54.6, 24, 1.6, '#c03a30');
+  }
   if (L.hairStyle === 'bald' && shade) { g.fillStyle = 'rgba(255,255,255,.22)'; g.beginPath(); g.ellipse(44, 29, 7, 3.4, -.4, 0, 7); g.fill(); }
   if (L.hat === 'cap') {
     paint((p) => { p.moveTo(29.5, 35); p.bezierCurveTo(28, 9, 72, 9, 70.5, 35); p.quadraticCurveTo(50, 31, 29.5, 35); p.closePath(); }, c);
@@ -125,6 +142,28 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     paint(poly([[50, 14], [51.8, 18.4], [56.5, 18.6], [52.8, 21.4], [54.2, 26], [50, 23.2], [45.8, 26], [47.2, 21.4], [43.5, 18.6], [48.2, 18.4]]), '#f6d35a', false);
     paint(ell(40, 21, 4.4, 4.4), '#bfe4f0'); paint(ell(60, 21, 4.4, 4.4), '#bfe4f0');                    // goggles pushed up on the cap
     line(35.6, 21, 64.4, 21, 1, '#5a4a3a', 'butt');
+  }
+  if (L.hat === 'cowboy') {
+    const hc = '#c79552', hd = '#8a5a2a';
+    paint((p) => { p.moveTo(10, 29); p.quadraticCurveTo(28, 43, 50, 41); p.quadraticCurveTo(72, 43, 90, 29); p.quadraticCurveTo(72, 33, 50, 31.5); p.quadraticCurveTo(28, 33, 10, 29); p.closePath(); }, hc);   // the wide, curled brim
+    paint((p) => { p.moveTo(32, 36); p.lineTo(34, 15); p.quadraticCurveTo(42, 10, 50, 15); p.quadraticCurveTo(58, 10, 66, 15); p.lineTo(68, 36); p.quadraticCurveTo(50, 42, 32, 36); p.closePath(); }, hc);   // the dented crown
+    paint((p) => { p.moveTo(32.3, 30.5); p.quadraticCurveTo(50, 36.5, 67.7, 30.5); p.lineTo(68, 35); p.quadraticCurveTo(50, 41, 32, 35); p.closePath(); }, hd);   // hat band
+    paint(ell(50, 34.4, 2.6, 2.2), '#e8c050', false);
+    if (shade) { g.fillStyle = 'rgba(255,255,255,.18)'; g.beginPath(); g.ellipse(41, 21, 5, 3, -.4, 0, 7); g.fill(); }
+  }
+  if (L.hat === 'ushanka') {
+    const f1 = '#8c7b66', f2 = '#a9987f';
+    paint((p) => p.roundRect(24.5, 32, 10, 27, 5), f1); paint((p) => p.roundRect(65.5, 32, 10, 27, 5), f1);   // ear flaps
+    paint((p) => { p.moveTo(27, 37); p.bezierCurveTo(24, 6, 76, 6, 73, 37); p.quadraticCurveTo(50, 31, 27, 37); p.closePath(); }, f1);
+    paint((p) => p.roundRect(26, 29.5, 48, 10, 5), f2);
+    paint(poly([[50, 14], [51.8, 18.4], [56.5, 18.6], [52.8, 21.4], [54.2, 26], [50, 23.2], [45.8, 26], [47.2, 21.4], [43.5, 18.6], [48.2, 18.4]]), '#cf2430', false);   // red star badge
+    if (shade) { g.fillStyle = 'rgba(255,255,255,.14)'; g.beginPath(); g.ellipse(41, 18, 8, 3.4, -.4, 0, 7); g.fill(); }
+  }
+  if (L.hat === 'crown') {
+    paint(poly([[34, 33], [33, 15], [41, 23], [50, 10], [59, 23], [67, 15], [66, 33]]), '#e8c050');
+    paint((p) => p.rect(34, 28.5, 32, 4.5), '#c99a2a', false);
+    for (const [x, y, col] of [[33, 14.5, '#d94b3a'], [50, 9.5, '#4a8fe0'], [67, 14.5, '#d94b3a']]) paint(ell(x, y, 2.1, 2.1), col, false);
+    for (const x of [41, 50, 59]) paint(ell(x, 30.8, 1.3, 1.3), '#f4f6fa', false);
   }
   if (L.hat === 'helmet') {
     const hc = mix(c, '#4b5238', .55);
@@ -146,6 +185,14 @@ function bust(g, L, { c, dk }, { expr = 'neutral', blink = false, talk = 0, outl
     g.beginPath(); g.arc(50, 41, 21.5, Math.PI * 1.08, Math.PI * 1.92); g.lineWidth = 2.6; g.strokeStyle = '#3a3d4a'; g.stroke();
     paint((p) => p.roundRect(66.2, 41, 6.2, 11, 2.5), '#3a3d4a'); paint((p) => p.roundRect(27.6, 41, 6.2, 11, 2.5), '#3a3d4a');
     g.beginPath(); g.moveTo(69, 52); g.quadraticCurveTo(68, 62, 58, 62.5); g.lineWidth = 1.3; g.strokeStyle = '#3a3d4a'; g.stroke(); paint(ell(57, 62.5, 2.2, 1.7), '#3a3d4a');
+  }
+  if (L.aviators) {                                                                                    // gold-rimmed, dark teardrop lenses
+    for (const [ex, ey, side] of eyes) {
+      paint((p) => { p.moveTo(ex - side * 7.2, ey - 4.6); p.quadraticCurveTo(ex + side * 1, ey - 6.4, ex + side * 6.4, ey - 3); p.quadraticCurveTo(ex + side * 7.6, ey + 6.4, ex, ey + 6.6); p.quadraticCurveTo(ex - side * 8.4, ey + 5.6, ex - side * 7.2, ey - 4.6); p.closePath(); }, 'rgba(34,40,56,.86)');
+      g.lineWidth = 1.2; g.strokeStyle = '#e0b84a'; g.stroke();
+      if (shade) { g.fillStyle = 'rgba(160,210,255,.4)'; g.beginPath(); g.ellipse(ex - side * 2.6, ey - 2.2, 2.4, 1.1, -.5 * side, 0, 7); g.fill(); }
+    }
+    line(48.6, 42.6, 51.4, 42.6, 1.1, '#e0b84a'); line(35.2, 42, 31, 41.4, 1.1, '#e0b84a'); line(64.8, 42, 69, 41.4, 1.1, '#e0b84a');
   }
   if (L.glasses) {
     g.lineWidth = 1.4; g.strokeStyle = '#2a2018';

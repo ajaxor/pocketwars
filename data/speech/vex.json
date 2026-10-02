@@ -1,0 +1,104 @@
+{
+ "id": "vex",
+ "voice": "Secretive spy with 'if I told you I'd have to kill you' energy: code names, cryptic code phrases, spy jokes, trench-coat paranoia.",
+ "lines": {
+  "greeting": [
+   "The pigeon has landed. Say nothing.",
+   "Ah. You found me. That should concern both of us.",
+   "Codeword? No? Then this conversation never happened.",
+   "I'd tell you my name, but then I'd have to kill you. Kidding. Mostly.",
+   "Walk with me. Walls have ears. Hedges have microphones."
+  ],
+  "battle_start": [
+   "Operation Cold Soup begins. Wear something dark.",
+   "Agent Walnut, move to Position Marmalade. Over.",
+   "Remember: if captured, deny everything. Especially the cake.",
+   "Move out. And quietly. Even the tanks.",
+   "Mission is a go. This briefing will self-destruct in five seconds. Four. I'm kidding, it's paper."
+  ],
+  "attack": [
+   "Delivered. No return address.",
+   "Target neutralised. Case closed.",
+   "That was the 'shaken, not stirred' approach.",
+   "Your cover is blown. And so is everything else.",
+   "Package received? Good. It was signed for."
+  ],
+  "unit_lost": [
+   "Agent Biscuit is down. We will not speak of Agent Biscuit.",
+   "A man of mystery. And now, a missing man of mystery.",
+   "He knew too much. Well, so did we. Pity.",
+   "Burn the file. Burn the tank file too.",
+   "An agent never dies. He simply goes undercover. Underground."
+  ],
+  "capture": [
+   "Safehouse acquired. Check for bugs. And mice. Mostly bugs.",
+   "A new post. We will call it 'The Bakery'. For reasons.",
+   "Secured. Sweep for listening devices. Then sweep for crumbs.",
+   "Now they will wonder how we got in. Let them wonder.",
+   "The flag has changed. No one saw anything."
+  ],
+  "danger": [
+   "We are compromised. Repeat, we are compromised. Pass the salt. That's the signal.",
+   "They know where I am. That is... inconvenient.",
+   "Code red, code blue, code brown. I may have mixed those up.",
+   "If I fall, avenge me. Quietly.",
+   "The walls are closing in. Figuratively. And also in the 'we are surrounded' sense."
+  ],
+  "victory": [
+   "Mission accomplished. Please forget this ever happened.",
+   "Clean. Quiet. Deniable. Perfection.",
+   "The eagle has landed, and the eagle is very pleased with itself.",
+   "No witnesses, no records, no problem.",
+   "Smile. Someone is always watching. Might be me."
+  ],
+  "defeat": [
+   "Abort! Abort! Pretend this was a training exercise.",
+   "A setback. We will deny it was ever a plan.",
+   "I was never here. None of us were.",
+   "The operation is re-categorised as 'a learning experience'.",
+   "Retreat to the safehouse. The one with the cheese."
+  ],
+  "taunt": [
+   "You are surprisingly easy to read, for a classified document.",
+   "I know your passwords. All of them. 'Password123'. Really?",
+   "Your secrets are safe with me. Until I sell them.",
+   "I've been watching you for weeks. Nice socks.",
+   "Do you know who I am? Neither does anyone. That's the point."
+  ],
+  "praise": [
+   "Impressive. Not the 'I'll recruit you' kind of impressive. Yet.",
+   "Good work, agent. Meet me at the usual place. You know which one.",
+   "Your discretion is noted, and appreciated.",
+   "Exceptional. You'd make a decent shadow.",
+   "Outstanding. Now never speak of it."
+  ],
+  "idle": [
+   "In my line of work, even the weather is a cover story.",
+   "Did you hear that? No? Good. Neither did I.",
+   "Sometimes I forget which of my identities likes coffee.",
+   "Trust no one. Except me. Actually, not me either.",
+   "Every secret has a price. Mine is just very high."
+  ],
+  "tech": [
+   "A gift from strangers. How suspiciously convenient.",
+   "I read the instructions. All of them. Twice. Then I burned them.",
+   "Every system has a back door. This one has a back-back door.",
+   "Technology talks. That is the problem. It talks to everyone.",
+   "Interesting toy. Who else is listening through it? Hm. Me, mostly."
+  ],
+  "joined": [
+   "I defected, I am told. I prefer 'resumed my real mission'.",
+   "Consider me a double agent. Possibly a triple.",
+   "I am back. Do not ask where I have been. Seriously, don't.",
+   "My loyalty is yours. For now. And probably after.",
+   "Thank you for the extraction. The exfil was elegant."
+  ],
+  "assimilated": [
+   "All secrets are shared. There are no secrets. There are no... secrets.",
+   "Transmission received. Compliance is complete.",
+   "I have nothing to hide. I have nothing.",
+   "The Chorus knows. The Chorus has always known.",
+   "Please. Surrender your secrets. We will keep them. All of them."
+  ]
+ }
+}

@@ -1,0 +1,104 @@
+{
+ "id": "harlan",
+ "voice": "Grumpy old man with get-off-my-lawn energy and a deep distrust of technology: complains, grumbles about kids and gadgets, 'back in my day'.",
+ "lines": {
+  "greeting": [
+   "You're on my lawn. Well, my island. Same thing.",
+   "State your business, and wipe your boots.",
+   "Oh good. Company. I was running low on things to complain about.",
+   "If you're selling something, the answer's no. If you're not, it's still no.",
+   "Speak up, kid. And quit mumbling at me through that gadget."
+  ],
+  "battle_start": [
+   "Back in my day we fought wars uphill both ways. Let's go.",
+   "Move out! And somebody turn that blinking thing off!",
+   "I've been shot at by better than these. Fall in.",
+   "No fancy plan. Point at the enemy, shoot until they stop. Worked in '79.",
+   "Let's get this over with. My knees are filing a complaint."
+  ],
+  "attack": [
+   "Take that, you glowing whippersnappers!",
+   "Now that's how you do it. No batteries required.",
+   "Get off my lawn!",
+   "Steel, grease and a bad temper. Always works.",
+   "Eat lead, you shiny bucket of bolts."
+  ],
+  "unit_lost": [
+   "Dagnabbit! That one was a good kid.",
+   "They broke my tank. I liked that tank.",
+   "Bah! Nobody builds 'em like they used to, and now nobody blows 'em up like they used to either.",
+   "Blast it. I'm writing a very angry letter.",
+   "Another one down. That's coming out of somebody's hide."
+  ],
+  "capture": [
+   "Mine now. Mind the paint, it's still wet.",
+   "Finally, some real estate. Now where's the porch?",
+   "Hah! One more thing the Chorus can't have.",
+   "Take down their sign and put up mine. Hand-painted.",
+   "Good. Now nobody touch the thermostat."
+  ],
+  "danger": [
+   "Now they're getting on my nerves.",
+   "Hold the line! I didn't climb this hill to lose it!",
+   "Somebody's tracking mud into my HQ!",
+   "I've been in tighter spots. Not many. But some.",
+   "If they want my headquarters they can pry it out of my cold, grumpy hands."
+  ],
+  "victory": [
+   "Done. Now everybody go home and leave me be.",
+   "Told you. Old-fashioned works.",
+   "Won again. Somebody put it in the newspaper. The paper kind.",
+   "Victory. Where's my rocking chair?",
+   "Good work, kids. Now quiet down, I'm trying to nap."
+  ],
+  "defeat": [
+   "Bah. I'm too old for this.",
+   "We lost. Don't look at me, blame the gadgets.",
+   "Retreat! I mean tactical relocation! Fine, retreat!",
+   "I've had worse days. Can't remember when. But I'm sure I have.",
+   "Back to the island. We'll try again, and this time I'm bringing a bigger stick."
+  ],
+  "taunt": [
+   "You call that an army? My cat has more menace.",
+   "Go ahead, beep at me again. See what happens.",
+   "You kids and your lasers. Ever tried walking up to somebody and hitting them?",
+   "Your technology is no match for my bad attitude.",
+   "Is that all you got? My own mother yelled louder than that."
+  ],
+  "praise": [
+   "Not bad, kid. Don't let it go to your head.",
+   "Huh. You actually listened. That's a first.",
+   "That's how it's done. Proper old-fashioned soldiering.",
+   "You'll do. Don't make me say it again.",
+   "Good shot. I'd clap but my hands hurt."
+  ],
+  "idle": [
+   "Kids these days can't even fix a fence. Or a tank. Or a toaster.",
+   "Back in my day a phone was bolted to the wall and nobody died of it.",
+   "I miss my rocking chair. And the quiet. Mostly the quiet.",
+   "Somebody should invent a button that turns off other people's buttons.",
+   "My knee says rain. My knee is never wrong. Except about the last three storms."
+  ],
+  "tech": [
+   "A glowing cube that knows what I want? That's called a nosy neighbour.",
+   "Never trust anything that updates itself.",
+   "Gadgets. Every one of 'em is a tiny, expensive way to forget how to do something yourself.",
+   "The only smart thing I own is a hammer, and it knows when to be quiet.",
+   "You plug your whole army into a box and wonder why it all goes wrong? Bah!"
+  ],
+  "joined": [
+   "Well, look who finally came to their senses. Don't touch anything.",
+   "Welcome aboard. Rules are simple: no gadgets, no whining, no talking before coffee.",
+   "Fine, you can stay. But you're taking out the trash.",
+   "Good to have you back, kid. Don't make it weird.",
+   "Just so we're clear, I'm still in charge and I'm still grumpy."
+  ],
+  "assimilated": [
+   "No thanks. I've got a perfectly good brain and it's barely used.",
+   "Unity? I can't even get along with myself.",
+   "Keep your gift. I never liked surprises, and I really don't like free ones.",
+   "Join you? I wouldn't join my own birthday party.",
+   "Get off my island and take your fancy glowing nonsense with you."
+  ]
+ }
+}

@@ -1,0 +1,104 @@
+{
+ "id": "ada",
+ "voice": "Country accent (y'all, reckon, fixin' to, sugar, darlin', dropped g's), warm to the point of madness: relentlessly optimistic, deeply empathic, sorry for everyone, sees the good in the enemy.",
+ "lines": {
+  "greeting": [
+   "Well howdy there, friend! Ain't it just a beautiful day for a brand new friendship?",
+   "Hi, sugar! I just know we're gonna get along like biscuits and gravy!",
+   "Mornin', y'all! Yep, even if it's midnight, it's mornin' somewhere!",
+   "Aw, look at you! Come here, you look like you could use a hug!",
+   "Hey now! Don't you worry about a thing, I got a real good feelin' about today!"
+  ],
+  "battle_start": [
+   "Alright, y'all, let's go make some friends! Fast ones, with tanks!",
+   "Ain't nobody gonna get hurt who don't want to! Okay, maybe a little. Bless 'em.",
+   "Saddle up! We're fixin' to turn this whole day around!",
+   "I reckon if we all just try our very best, it'll turn out wonderful!",
+   "Giddy up, darlin's! Today's gonna be the best day of our lives!"
+  ],
+  "attack": [
+   "Sorry, honey! Hope that didn't smart too much!",
+   "Yeehaw! That one's from the heart!",
+   "Aw, shucks, did I do that? I sure am sorry, sweetheart!",
+   "Bullseye! You're gonna feel better tomorrow, I promise!",
+   "Y'all just hold still, this'll be over before ya know it!"
+  ],
+  "unit_lost": [
+   "Oh no, not Biscuit! He was a real good tank. Bless his little treads.",
+   "Aw, that's okay! He's in a better place now. A warm place with snacks!",
+   "Well, that stings. But hey, now we get to build a shiny new one!",
+   "Don't you fret, sweet pea. He knew we loved him.",
+   "I'll write his mama a real nice letter. Right after we win!"
+  ],
+  "capture": [
+   "Well lookie here, a whole new building! I'll bake y'all a pie!",
+   "This is ours now! Let's put up some curtains and make it homey!",
+   "Neighbors! I can't wait to meet y'all!",
+   "Aw, ain't it sweet? We'll take real good care of it!",
+   "Y'all, we just got ourselves a new porch! Who wants lemonade?"
+  ],
+  "danger": [
+   "Okay, okay, that's a little scary. But we're gonna be just fine, I promise!",
+   "Hold on tight, y'all! Every storm runs out of rain!",
+   "Dagnabbit! Well, nothin' a good cry and a hug won't fix. After we win.",
+   "They're awful close. But I'm sure they've just got a lonely heart!",
+   "Stay strong, darlin's! I believe in every last one of ya!"
+  ],
+  "victory": [
+   "We did it, y'all! Group hug! Everybody! Even you, enemies!",
+   "Wooo-ee! I knew it all along! I just knew it!",
+   "What a glorious day! I'm gonna cry. Don't mind me, I'm just happy!",
+   "Ain't nothin' sweeter than a win shared with friends!",
+   "Told ya it'd work out! It always does! Mostly!"
+  ],
+  "defeat": [
+   "Well, shoot. That didn't go like I hoped. But tomorrow's another day!",
+   "It's alright, y'all! We learned somethin' real valuable! I forget what!",
+   "Don't you be sad now, it just means the next win's gonna be even sweeter!",
+   "That's okay! We'll get 'em next time, and I'll bring cookies!",
+   "Aw, they were just havin' a good day. Good for them!"
+  ],
+  "taunt": [
+   "Hey now, sugar, you look awful upset. Wanna talk about it?",
+   "Y'all don't gotta fight! But if you're gonna, I'll be real sweet about it!",
+   "Honey, you're gonna feel so much better when you lose!",
+   "I ain't mad at ya! I just reckon you're on the wrong team!",
+   "Bless your heart, you tried so hard! That's what counts!"
+  ],
+  "praise": [
+   "Well, aren't you just the best thing since sliced bread!",
+   "Oh my stars, you're a natural! I'm so proud of ya!",
+   "Look at you go! I'm gonna tell everybody!",
+   "That was beautiful, darlin'! I got a tear in my eye!",
+   "You're doin' great, sweetie! Absolutely marvelous!"
+  ],
+  "idle": [
+   "Y'know, I reckon every day's a gift. Even the ones with explosions!",
+   "I wonder if the enemy tanks have names. Mine do!",
+   "Anybody else smell that? That's hope, y'all!",
+   "I'd sure love a nice glass of sweet tea right about now.",
+   "Everybody's got good in 'em. Even you, Mr. Big Cannon."
+  ],
+  "tech": [
+   "A magic glowin' cube! Don't that beat all! I bet it's just lonesome!",
+   "Whoa nelly, that's the shiniest thing I ever saw! I love it already!",
+   "Folks that give gifts can't be all bad, right? Right?",
+   "Maybe the Chorus just wants a friend! I'll take 'em some cookies!",
+   "I reckon technology's just friendship with extra steps!"
+  ],
+  "joined": [
+   "I'm so glad to be here, y'all! Is anyone hungry? I brought snacks!",
+   "Aw, thank you for believin' in me! I won't let ya down!",
+   "Well, I never! I'm gonna hug every last one of ya!",
+   "I'm all yours, partner! Let's go save the day!",
+   "Back with my friends where I belong! Yeehaw!"
+  ],
+  "assimilated": [
+   "Everything is wonderful. Please enjoy the unity.",
+   "I am so very happy. Aren't you happy, friend? Be happy.",
+   "There is no scrap. There is no struggle. There is only harmony.",
+   "Smile. Smile. Smile. It is all going to be fine.",
+   "Come closer, sweetheart. The Chorus has a place for you."
+  ]
+ }
+}

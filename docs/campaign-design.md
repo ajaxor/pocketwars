@@ -209,27 +209,28 @@ A leader is data. Each has:
 
 The leaders and their personalities carry the story and the gameplay. Every leader has a **flaw** that explains why they accepted the Gift
 (or, for Harlan, why he never did), and a **leaning** that hints at their kit. A leaning is a tendency, not a single theme: each faction's
-unit and building set is richer than one line. The data lives in `data/campaign.json` (`bio`, `flaw`, `line`, `taken`, and `theme` per nation).
+unit and building set is richer than one line. The data lives in `data/campaign.json` (`bio`, `flaw` and portrait traits per leader, `theme` per nation); speech is in `data/speech/`.
 
 | Leader | Nation | Personality | Flaw (why they fell) | Leaning |
 |---|---|---|---|---|
-| Col. Gus Harlan (you) | Lastholm | Grizzled retired colonel who lives alone on an island; sarcastic, stubborn, tired of wars, remembers every betrayal | Stubborn: never learned when to quit (never took the Gift) | The scrappy underdog: volunteers, salvage, old machines |
-| Cmdr. Ada Brandt | Ashmark | Hot-headed ace raised scrapping parts; loud, brave, impatient | Hunger: tired of making do | Fast and aggressive infantry and light air |
-| Marshal Vex Orlov | Vantor Reach | Veteran spymaster, never surprised, cold and secretive | Pride: certain he can control it | Stealth and ambush |
-| Gen. Tomas Rey | Ironvale | Patient, fatherly, knows every soldier by name | Loyalty: machines meant fewer funerals | Heavy armour |
-| Dr. Nia Kestrel | Solace | Cheerful, curious genius; wrote the first Lattice integration herself | Curiosity: noticed the signal and said nothing for a day | Supply, repair and gadgets |
-| Adm. Sasha Marlow | Tidehaven | Charming smuggler-turned-admiral; never took a deal she could not win | Arrogance: sure she was the one conning them | Sea power and amphibious assault |
-| Wing Cmdr. Juno Vale | Skyreach | Daredevil flier who never stays grounded; laughs at danger | Restless: the sky was never high enough | Light air: cheap, fast, fragile |
-| Cmdr. Kael Brask | Deepmere | Lonely, patient hunter who spends months below the waves | Loneliness: the Envoy was the first voice that listened | The deep sea: patient and hard to find |
-| Sovereign Lysandra Vael | Highspire | Aloof aristocrat, born to rule, never told no | Entitlement: thought she would rule the Chorus | Exotic late-game technology |
+| Col. Gus Harlan (you) | Lastholm | Grumpy, anti-technology old man with get-off-my-lawn energy | Stubborn: never took the Gift | The scrappy underdog: volunteers, salvage, old machines |
+| Cmdr. Ada Brandt | Ashmark | Warm, empathic, wildly optimistic farm-country ace with a cowboy hat and a country accent | Hope: sees the best in everyone, even the Chorus | Fast and aggressive infantry and light air |
+| Marshal Vex Orlov | Vantor Reach | Secretive spy in a trench coat who talks in code | Pride: certain he can keep the Gift a secret | Stealth and ambush |
+| Gen. Tomas Rey | Ironvale | Old samurai who quotes the Art of War | Duty: the wisest victory is the one with no battle | Heavy armour |
+| Dr. Ludwig Kestrel | Solace | German mad scientist with wild white hair | Curiosity: cannot leave an experiment alone | Supply, repair and gadgets |
+| Adm. Sasha Marlow | Tidehaven | Pirate admiral with an eyepatch | Greed: could not resist a treasure | Sea power and amphibious assault |
+| Wing Cmdr. Chase Vale | Skyreach | Young tech-bro flier in aviator glasses | Hype: chases whatever is newest | Light air: cheap, fast, fragile |
+| Cmdr. Kael Brask | Deepmere | Gloomy submariner in a fur hat with a Russian accent and a dark sense of humour | Loneliness: hungers for anyone who will listen | The deep sea: patient and hard to find |
+| Sovereign Lysandra Thorne | Highspire | A queen who speaks only in Shakespearean verse | Vanity: the best things are hers by right | Exotic late-game technology |
 | The Envoy | the Chorus | Warm, patient, generous; never lies; speaks as "we" | n/a | The Chorus's human avatar and the final boss |
+
+See `docs/characters.md` for how each one looks and talks, and `data/speech/` for what they say.
 
 Seven opponents is the current working number; the continent (`tools/make-continent.mjs`) can be regenerated with more or fewer lands.
 
 **Arcs once freed:** Vex is the bitter ally who knew better and gives intelligence on the Chorus; Tomas carries the most guilt and becomes
-your shield; Nia is the key to reverse-engineering Gift tech and carries guilt about the day she stayed quiet; Sasha is the rogue ally who
-sells you things but stays loyal; Ada, the hot-headed ace, is ashamed and furious at herself, and is the first to say "I'll follow you" to the old man. Each leader's taken line (`taken`) is what they say while
-assimilated; the free line (`line`) is who they really are.
+your shield; Ludwig is the key to reverse-engineering Gift tech and cannot stop apologising for how much he enjoyed it; Sasha is the rogue ally who
+sells you things but stays loyal; Ada, the hot-headed ace, is ashamed and furious at herself, and is the first to say "I'll follow you" to the old man. What each leader says, free and assimilated, is in `data/speech/`.
 
 Eight enemy leaders plus the final boss is the working target. Fewer is fine for a first release (four to six, see
 [Build order](#build-order)).

@@ -323,3 +323,5 @@ canvas.unit-icon { display: block; flex: none; }
 .wm-card { max-height: 46vh; overflow-y: auto; }
 .wm-gift { font: 600 13px/1.3 var(--font); color: #7ef0ff; }
 .wm-card.is-free .wm-gift { color: #ffb066; }
+.wm-quote { font: italic 500 15px/1.3 var(--font); padding: 6px 10px; border-left: 3px solid var(--accent); background: rgba(255, 255, 255, .06); border-radius: 0 6px 6px 0; }
+.wm-card.is-taken .wm-quote { border-left-color: #7ef0ff; color: #bff6ff; }

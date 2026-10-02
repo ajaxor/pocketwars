@@ -9,12 +9,14 @@
 
 import { drawContinent, mapFit, nationAt, drawSea } from '../render/campaign-art.js';
 import { drawPortrait } from '../render/portrait-art.js';
+import { Talker } from '../campaign/speech.js';
 import { button, h } from './kit.js';
 
 export class WorldMapScreen {
   constructor(doc, { campaign, colors, onBack = () => {}, onReplay = () => {}, raf = (f) => requestAnimationFrame(f), caf = (i) => cancelAnimationFrame(i), win = globalThis }) {
     this.doc = doc; this.campaign = campaign; this.colors = colors; this.raf = raf; this.caf = caf; this.win = win;
     this.selected = null; this.time = 0; this.handle = 0; this.running = false;
+    this.talker = new Talker(campaign.speech || {});
     this.assim = Object.fromEntries(campaign.nations.map((n) => [n.id, n.home ? 0 : 1]));
 
     const head = h(doc, 'header', 'sk-head');
@@ -29,11 +31,11 @@ export class WorldMapScreen {
     this.card = h(doc, 'div', 'wm-card');
     this.portrait = h(doc, 'canvas', 'wm-portrait');
     this.name = h(doc, 'div', 'wm-name'); this.status = h(doc, 'div', 'wm-status');
-    this.leader = h(doc, 'div', 'wm-leader'); this.bio = h(doc, 'div', 'wm-theme'); this.gift = h(doc, 'div', 'wm-gift'); this.theme = h(doc, 'div', 'wm-theme');
+    this.leader = h(doc, 'div', 'wm-leader'); this.bio = h(doc, 'div', 'wm-theme'); this.gift = h(doc, 'div', 'wm-gift'); this.quote = h(doc, 'div', 'wm-quote'); this.theme = h(doc, 'div', 'wm-theme');
     const who = h(doc, 'div', 'wm-who'); who.append(this.name, this.status, this.leader);
     this.mission = button(doc, { label: 'Missions coming soon', variant: 'primary', size: 'lg', disabled: true, cls: 'wm-go' });
     const row = h(doc, 'div', 'wm-row'); row.append(this.portrait, who);
-    this.card.append(row, this.bio, this.gift, this.theme, this.mission);
+    this.card.append(row, this.quote, this.bio, this.gift, this.theme, this.mission);
 
     this.root = h(doc, 'div', 'wm');
     this.root.append(head, this.canvas, this.card);
@@ -51,7 +53,9 @@ export class WorldMapScreen {
     this.status.textContent = free ? 'Free - your hideout' : 'Assimilated by the Chorus';
     this.leader.textContent = `${L.name} - ${L.tag}`;
     this.bio.textContent = L.bio;
-    this.gift.textContent = free ? 'Never took the Gift.' : `Accepted the Gift. ${L.taken ? '"' + L.taken + '"' : ''}`;
+    this.gift.textContent = free ? 'Never took the Gift.' : 'Accepted the Gift.';
+    const said = this.talker.say(L.id, free ? 'greeting' : 'assimilated');   // a different line each time a nation is picked
+    this.quote.textContent = said ? `"${said}"` : '';
     this.theme.textContent = free ? n.theme : `${n.theme} Defeat them to free them.`;
     this.drawPortrait();
   }

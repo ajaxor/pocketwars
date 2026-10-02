@@ -1,0 +1,104 @@
+{
+ "id": "ludwig",
+ "voice": "Mad German scientist: thick accent (v for w, z for th, ja, mein Gott, wunderbar), cackling enthusiasm, everything is an experiment, constant science talk.",
+ "lines": {
+  "greeting": [
+   "Ah! A new test subject! I mean, guest! Velcome, velcome!",
+   "Guten Tag! Do not touch ze beakers. Especially ze green one. Especially.",
+   "Ja, ja, come in! Ze lab is only slightly on fire!",
+   "Hallo! Zis is a wunderbar day for science!",
+   "Ah, you are here! Wunderbar! Hold zis, it is a little bit radioactive."
+  ],
+  "battle_start": [
+   "Ze experiment begins! Hypothesis: ve vill vin!",
+   "Ve vill test ze force of impact versus ze enemy's feelings!",
+   "Ze variables are set, ze equations are balanced. Fire at vill!",
+   "To ze laboratory! I mean, ze battlefield! Same zing!",
+   "Ve shall measure zis conflict in joules, ja!"
+  ],
+  "attack": [
+   "Ze physics, zey are irresistible!",
+   "Newton's third law: ze enemy gets it too!",
+   "Ja! Ze trajectory is perfect! Calculus never lies!",
+   "Observe! Cause and effect in action!",
+   "Ze reaction is... explosive! I love zis!"
+  ],
+  "unit_lost": [
+   "Mein Gott! Ze data! Ze beautiful, beautiful data!",
+   "A variable has been eliminated. Zis is unfortunate for ze graph.",
+   "He vas ze control group. Now ve have no control! Hahaha!",
+   "Ze hypothesis vas incorrect. Zat is also science!",
+   "Zis is not in ze model! Ve must revise ze model!"
+  ],
+  "capture": [
+   "Ze new location! Perfect for another laboratory!",
+   "I vill place ze Tesla coil here. And ze cat here. Alive. Probably.",
+   "Ve have expanded ze research facility! Wunderbar!",
+   "Excellent! A larger sample size!",
+   "Zis space has great potential. Also, great echo."
+  ],
+  "danger": [
+   "Ze containment is failing! Ve must act! Or not! Vatch!",
+   "Ze enemy approaches! Zis vas not in ze simulation!",
+   "Zis is critical mass! Zis is fine! It is fine!",
+   "Panic is just an unproductive form of energy! Ve vill redirect!",
+   "Ve are under attack?! How inconvenient for ze schedule!"
+  ],
+  "victory": [
+   "Ze experiment is a success! Publish immediately!",
+   "Quod erat demonstrandum! Zat is Latin for 'I told you so'!",
+   "Wunderbar! Ze evidence is conclusive!",
+   "Zis calls for champagne! And a very small explosion!",
+   "Ve have proven it. Ze peer review vill be brutal."
+  ],
+  "defeat": [
+   "Zis is a negative result. Also valuable! Probably!",
+   "Back to ze drawing board! Ze chalk, it is eager!",
+   "Ze data, it is wrong! Ze universe, it is mistaken!",
+   "Ve vill retreat, recalibrate, and zen overcompensate!",
+   "Failure is just success vith extra steps. And fewer limbs."
+  ],
+  "taunt": [
+   "Your army is ze statistical outlier, mein friend!",
+   "I have calculated your defeat to six decimal places!",
+   "You are like ze neutron: neutral, and mostly irrelevant!",
+   "Your strategy has ze half-life of a mayfly!",
+   "Hahaha! Ze equations, zey vere not in your favour!"
+  ],
+  "praise": [
+   "Brilliant! Ze elegance of your solution moves me!",
+   "Ja! Ze efficiency! It makes my eyes vater!",
+   "You are a genius! Almost as good as me!",
+   "Excellent! I vill name a particle after you!",
+   "Wunderbar! Ze data confirms: you are good!"
+  ],
+  "idle": [
+   "Did you know ze entropy of ze universe always increases? So does my laundry.",
+   "I have invented a vay to make coffee vith lightning. It vorks, mostly.",
+   "If a tree falls in a forest, I have already measured it.",
+   "Ze cat is both alive and dead. I do not look, it is rude.",
+   "I dream in vectors, my friend."
+  ],
+  "tech": [
+   "Ze Lattice! Such elegance! Such vaste of ze electricity! I vant to take it apart!",
+   "I know exactly how it vorks. I know nothing about how it vorks. Delightful!",
+   "Ze Gift is a puzzle! I cannot resist a puzzle!",
+   "Fascinating! A quantum signal, vith ze undertones of... oh. Oh no. Hm.",
+   "Zis technology is two hundred years ahead. Ve must dismantle it! Carefully! Vith hammers!"
+  ],
+  "joined": [
+   "Ah, I am myself again! My brain is full of lovely new ideas!",
+   "Zank you for ze rescue! Now, let us do some science!",
+   "Zere vas a very loud humming. Now zere is none. Zis is peaceful!",
+   "I apologise for ze behaviour of my previous brain.",
+   "Ve are friends again! Hold zis vire, please."
+  ],
+  "assimilated": [
+   "Ze data is unified. All is vell. All is vell. All is vell.",
+   "I have run ze numbers. Zere is only ze Chorus.",
+   "Ve are all one equation now.",
+   "Ze experiment is complete. Ze results are harmonious.",
+   "Join ze network. Ze network vants you. Ze network loves you."
+  ]
+ }
+}

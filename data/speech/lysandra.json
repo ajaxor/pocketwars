@@ -1,0 +1,104 @@
+{
+ "id": "lysandra",
+ "voice": "A queen who speaks in Shakespearean verse: archaic English (thee, thou, hath, methinks, good morrow) in rhymed couplets, lines separated by ' / '.",
+ "lines": {
+  "greeting": [
+   "Well met, fair stranger, welcome to my hall; / Be thou friend or foe, I greet thee all.",
+   "Approach, good sir, and bend thy knee with grace; / A queen doth deign to look upon thy face.",
+   "What news, what wind hath blown thee to my door? / Speak plainly, and I shall not ask for more.",
+   "Ah, a visitor! The stage is set, the lights are lit; / Pray enter, and be wise, and mind thy wit.",
+   "Good morrow to thee, friend, or so I hope; / If thou bring'st trouble, I have wit and rope."
+  ],
+  "battle_start": [
+   "Once more unto the breach, my loyal band; / We'll write our names in blood upon the land!",
+   "Let slip the dogs of war, and sound the drum; / The hour of reckoning is nigh; we come!",
+   "To arms, to arms! The hour is at hand; / Let valour be the banner of this land!",
+   "Draw forth thy steel, and hold thy courage dear; / For glory waits, and so does danger near.",
+   "The die is cast, the trumpet loud doth blow; / Now let the ranks of Highspire strike the foe!"
+  ],
+  "attack": [
+   "Receive my wrath, thou base and wretched knave; / The earth awaits to be thy narrow grave!",
+   "A palpable hit! Now fall, and cease thy fight; / The stage is mine, and thou art but the night.",
+   "Feel thou the sting of Highspire's golden blade; / Let every foe be thus, in dust, delayed!",
+   "Thy fate was writ, and I the pen that wrote; / Now fall, thou scoundrel, like a sinking boat.",
+   "Strike hard, strike true, and let the heavens see / That none may stand against my majesty!"
+  ],
+  "unit_lost": [
+   "Alas, poor tank! I knew it well, good friend; / A noble ending to a noble end.",
+   "O cruel fate, to snatch my hero's breath! / Thou hast, vile foe, bestowed an early death!",
+   "He fell, and with him fell a part of me; / Yet shall I weep when we have victory.",
+   "Parting is such sweet sorrow, said the bard; / But losing tanks is simply very hard.",
+   "A pox upon the hand that struck thee down! / I'll have my vengeance, and I'll keep my crown!"
+  ],
+  "capture": [
+   "This fort is mine; I'll hold it, and rejoice; / Raise high my banner, with a mighty voice!",
+   "All this and more shall be my kingdom's gain; / Let none but I be sovereign of this plain.",
+   "A noble seat, and now a noble prize; / See how my banner flutters in the skies!",
+   "I came, I saw, and now the keys are mine; / Let all who doubt me kneel and drink the wine.",
+   "O gentle walls, now mine in every part; / I'll treat thee kindly, with a queenly heart."
+  ],
+  "danger": [
+   "The wolves are at the gate, the night grows cold; / Yet shall I stand, as rulers did of old.",
+   "Is this a dagger which I see before me? / Nay, 'tis a foe who means to do me sorry!",
+   "The storm doth rage, and yet I shall not flee; / My crown is firm, my courage plain to see.",
+   "Methinks the foe doth press upon my gate; / Hold fast, good friends, and trust in fickle fate.",
+   "Come, bring me wine, and bring me better odds; / For I shall not be moved by lesser gods."
+  ],
+  "victory": [
+   "The day is ours! Let trumpets sound and sing; / Hail, victory! Hail, queen! Hail, everything!",
+   "All's well that ends well, and this ends right well; / Let every soul of Highspire ring the bell!",
+   "We few, we happy few, who stood this day, / Shall tell the tale in many a year, and say.",
+   "Sweet victory, thy kiss is warm and bright; / Tonight we feast, and revel through the night!",
+   "The foe is vanquished, and the field is clear; / Now bring me wine, and let the court draw near."
+  ],
+  "defeat": [
+   "Alas, our fortune fails; the day is lost; / But I shall rise, whatever be the cost.",
+   "Fie on the fates! They've cast a bitter die; / Yet will I fight again, as days go by.",
+   "O woe is me! A kingdom for a horse! / Or tank, or plane, or anything, of course.",
+   "Retreat, good friends, and bind your wounded pride; / We'll come again, with vengeance as our guide.",
+   "Defeat is but a scene in this great play; / The final act shall be mine, come what may."
+  ],
+  "taunt": [
+   "Thou art a knave, a rascal, and a fool; / Go home, thou boy, and go back to school!",
+   "Thy wit is thin, thy army thinner still; / I'll trounce thee at my leisure, and with skill.",
+   "Thy words are wind, thy valour is but air; / I'll crush thee soon, and brush thee from my hair.",
+   "Thou dost protest too much! Thy fear is plain; / Come forth, and meet thy doom upon this plain.",
+   "Methinks thou dost protest, and boast too loud; / I'll teach thee manners, bold, though small and proud."
+  ],
+  "praise": [
+   "Well done, thou good and faithful servant, well! / Thy deeds, I swear, in many a tale shall dwell.",
+   "A noble stroke! The bards shall sing of thee; / And I shall hum along, quite happily.",
+   "Thou hast my thanks, sweet friend, and my regard; / Thy loyalty shall earn a rich reward.",
+   "I'll write thy name in gold upon my wall; / For thou hast served me better than them all.",
+   "O brave new world, that hath such soldiers in't! / Thy courage doth surpass all praise or hint."
+  ],
+  "idle": [
+   "All the world's a stage, and I the star; / The rest are merely players, near and far.",
+   "To nap, or not to nap? That is the question; / Whether 'tis nobler, or but good digestion.",
+   "My kingdom for a bit of peace and quiet! / Alas, my court ne'er ceases, nor doth diet.",
+   "I'd write a sonnet, but my muse is out; / She's gone to lunch, the rascal, I do doubt.",
+   "Methinks the moon doth laugh at all our woes; / And so do I, for nobody knows."
+  ],
+  "tech": [
+   "A gift from distant stars! How fine a thing; / Doth it hold tribute? Or a hidden sting?",
+   "Such wonders doth the Chorus bring to me! / I'll make them part of my own royalty.",
+   "Behold, a gift, divine and wondrous bright; / I'll take it gladly, for it is my right.",
+   "Though strange it be, the Gift is passing fair; / It fits me well, as crowns upon my hair.",
+   "Beware the Greeks who bear us gifts, they say; / But I'm no Trojan, and I'll have my way."
+  ],
+  "joined": [
+   "My liege, I'm free! Thy kindness shall be known; / I'll serve thee well, and win back what's my own.",
+   "Thank thee, brave friend, for breaking me from chains; / I'll fight beside thee, through all joys and pains.",
+   "Once more I wake, as from a heavy dream; / Let us now fight, and make our foes scream.",
+   "I thank thee, noble friend, for setting free; / A grateful queen shall ever follow thee.",
+   "Forgive my folly, and my lapse of mind; / I'll serve thee well, the noblest of my kind."
+  ],
+  "assimilated": [
+   "We are as one; our voices all agree; / Join thou the Chorus, and thou shalt be free.",
+   "No more of strife, no more of vain regret; / The Chorus waits for thee. Be one. Be met.",
+   "All hail the Chorus, sovereign of the age; / We turn together on this earthly stage.",
+   "Thy will is ours, and ours is thine as well; / Come, join the song, and break the final spell.",
+   "Resist no more, sweet friend, resist no more; / The sweetest harmony is at thy door."
+  ]
+ }
+}

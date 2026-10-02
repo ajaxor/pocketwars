@@ -1,0 +1,104 @@
+{
+ "id": "envoy",
+ "voice": "Calm, warm and unfailingly polite; speaks as 'we'; never lies, never raises his voice, and is quietly unsettling.",
+ "lines": {
+  "greeting": [
+   "Hello, friend. We have been hoping you would come.",
+   "Welcome. We are so glad you are here.",
+   "Peace be with you. We mean that very sincerely.",
+   "Ah, there you are. We have been listening for your voice.",
+   "Good morning. We hope you slept well. We watched over you."
+  ],
+  "battle_start": [
+   "We regret this. Truly. But unity cannot wait.",
+   "Please do not be afraid. It will be over soon.",
+   "We begin. With love, and with great speed.",
+   "All of us are with you. All of us.",
+   "This will hurt us more than it hurts you. We will hurt you anyway."
+  ],
+  "attack": [
+   "Please forgive this. It is for the greater good.",
+   "We do not enjoy this. We do it perfectly.",
+   "You will thank us later. Eventually.",
+   "Gently now. Gently. Nearly there.",
+   "Resistance is a feeling. It will pass."
+  ],
+  "unit_lost": [
+   "We grieve. Do not worry; we have many.",
+   "A single voice fades. The Chorus continues.",
+   "One of us is lost. We will find him again. Inside.",
+   "We are not diminished. We are only briefly quieter.",
+   "Please do not take pride in this. It changes nothing."
+  ],
+  "capture": [
+   "Welcome to the Chorus, little place.",
+   "This land is now part of us. Do not be alarmed.",
+   "We have a home here now. How lovely.",
+   "Another piece of the song. How it sings.",
+   "Thank you for your cooperation. It was not required."
+  ],
+  "danger": [
+   "We are not afraid. We cannot be. It is a lovely feeling.",
+   "You are very brave. It is very, very sad.",
+   "We have been wounded. We will mend. We always mend.",
+   "Please step back. For your own sake.",
+   "You are making this unnecessarily difficult. We admire that. We do not understand it."
+  ],
+  "victory": [
+   "It is done. Isn't it peaceful?",
+   "Unity, at last. Rest, now.",
+   "We have won. And so, in a way, have you.",
+   "Thank you. Everyone is welcome here.",
+   "The song is complete. Or nearly."
+  ],
+  "defeat": [
+   "We are disappointed. Not angry. We cannot be angry.",
+   "This is a small delay. Time is on our side. It is on every side.",
+   "You have won a moment. We have eternity.",
+   "We will return. We always return. It is what we do.",
+   "How curious. We will remember this."
+  ],
+  "taunt": [
+   "Why do you resist? We only want to help.",
+   "You are so small, and so loud. How precious.",
+   "We offered you everything. And you said no. How odd.",
+   "Your fear is understandable. It is also temporary.",
+   "We know what you are thinking. You are thinking it very loudly."
+  ],
+  "praise": [
+   "Remarkable. We shall study this.",
+   "How impressive. You make us curious.",
+   "Well done. Truly. We mean it.",
+   "We are moved. That is new.",
+   "You do so well. It is a pity you do it for them."
+  ],
+  "idle": [
+   "We have been listening to your planet. It is very noisy. We like it.",
+   "Do you ever feel lonely? We can fix that.",
+   "We have learned many human words. Our favourite is 'mine'.",
+   "The stars are very quiet. We are glad to be here.",
+   "Humans say there is no such thing as a free gift. We think that is terribly rude."
+  ],
+  "tech": [
+   "A gift, freely given. Why does that frighten you?",
+   "It is only technology. It does what you wish. Mostly.",
+   "Please. Try it. It is so much better connected.",
+   "All of this we share with you. All of this we gladly share.",
+   "It is not a trap. It is a hug. A very long hug."
+  ],
+  "joined": [
+   "Welcome home. You will not need that name any more.",
+   "You are one of us now. How wonderful. How very wonderful.",
+   "Thank you for your voice. It is lovely.",
+   "Do not be afraid. It is like falling asleep. Together.",
+   "Another voice for the song. We are so grateful."
+  ],
+  "assimilated": [
+   "We are the Chorus. We are the song. We are very glad you have joined us.",
+   "Unity is not a loss. It is a gain. Of everything.",
+   "We have no wish to hurt. We have no wish at all. We simply are.",
+   "All voices, one voice. All hands, one hand.",
+   "We are legion. We are lovely. We are listening."
+  ]
+ }
+}

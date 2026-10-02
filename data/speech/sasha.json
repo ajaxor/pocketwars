@@ -1,0 +1,104 @@
+{
+ "id": "sasha",
+ "voice": "Pirate admiral with an eyepatch: arr, matey, ye, me hearties, plunder, rum, scallywags and Davy Jones.",
+ "lines": {
+  "greeting": [
+   "Ahoy, matey! State yer business or walk the plank!",
+   "Arr, a new face! Don't be shy, I only bite on Tuesdays.",
+   "Well shiver me timbers, look what the tide dragged in!",
+   "Welcome aboard, ye scallywag! Mind the rum.",
+   "Avast! Ye look like trouble. I like trouble."
+  ],
+  "battle_start": [
+   "Hoist the colours! We sail for plunder!",
+   "Arr, it's a fine day for a battle! Load the cannons!",
+   "Batten down the hatches, ye bilge rats! We fight!",
+   "Weigh anchor and full speed ahead! The sea calls!",
+   "Show no mercy, me hearties! There's treasure to be had!"
+  ],
+  "attack": [
+   "Broadside! Feast on that, ye barnacle-faced landlubber!",
+   "Yo ho ho and a bottle of boom!",
+   "Arr! That'll leave a mark!",
+   "Fire in the hole, ye scurvy dog!",
+   "Take that, and call it a donation to me treasure chest!"
+  ],
+  "unit_lost": [
+   "Blast me eyes, she's gone down to Davy Jones!",
+   "Another good ship swallowed by the briny deep. I'll miss her.",
+   "Arrr, that stings worse than a jellyfish!",
+   "Ye'll pay for that, ye lily-livered swabbie!",
+   "A moment of silence fer the fallen. Okay, enough. Revenge!"
+  ],
+  "capture": [
+   "Hah! This be mine now! Plunder, plunder, plunder!",
+   "Another jewel fer me crown! Raise the Jolly Roger!",
+   "Arr, shiver me timbers! What a fine port!",
+   "Finders keepers, ye landlubbers!",
+   "Open the chest! Count the coins! Aye, it's grand!"
+  ],
+  "danger": [
+   "Arr, the seas be rough! Hold tight!",
+   "We be takin' on water! All hands on deck!",
+   "A storm's brewin', and I don't mean the weather!",
+   "Stand yer ground, ye cowards! I've seen worse from a kraken!",
+   "Ye'll not take me ship, ye blackhearted dogs!"
+  ],
+  "victory": [
+   "Hah! The sea be ours! Break out the rum!",
+   "Victory, me hearties! Drinks all round!",
+   "Another one for the logbook! Sing the shanty!",
+   "Arr, I do love a good plunder!",
+   "The Jolly Roger flies high today, matey!"
+  ],
+  "defeat": [
+   "Retreat, ye scallywags! Live to plunder another day!",
+   "Arr, the tide has turned against us. We'll be back.",
+   "Ye may have won the battle, but I'll steal yer ship!",
+   "Back to port! We'll patch the sails and curse a bit!",
+   "Blast it all to the depths! We regroup!"
+  ],
+  "taunt": [
+   "Yer army looks like a sack of wet biscuits!",
+   "Come closer, ye barnacle-brained landlubber!",
+   "I've fought sea monsters tougher than ye!",
+   "Surrender yer treasure, or I'll feed ye to the fishes!",
+   "Ye fight like a drunken seagull!"
+  ],
+  "praise": [
+   "Arr, ye've got the makin's of a fine pirate!",
+   "Well plundered, me hearty!",
+   "A fine bit o' sailin', that was!",
+   "I'd share me rum with ye any day!",
+   "Ye've earned a spot on me crew, matey!"
+  ],
+  "idle": [
+   "Never trust a sober sailor. Or a seagull. Or a map.",
+   "I once saw a mermaid. Turned out to be a manatee. Still, great hair.",
+   "Ye know what the sea needs? More cannons.",
+   "Rum, then plunder, then rum again. That's the proper order.",
+   "Me parrot knows nothin'. But he's very loyal."
+  ],
+  "tech": [
+   "A magic treasure from the sky? I'll take it! And the sky!",
+   "Never look a gift kraken in the mouth. Er, the other way 'round.",
+   "Aye, the finest treasure I ever got. Free, even! Hah! What could go wrong?",
+   "Cunnin' folk, these aliens. I almost admire 'em. Almost.",
+   "Gadgets be fer landlubbers. But this one's shiny. I'll keep it."
+  ],
+  "joined": [
+   "Back at the helm, me hearties! Where's me rum?",
+   "Thank ye for the rescue! I'll repay ye in plunder!",
+   "Ye saved me from a fate worse than the plank!",
+   "Aye, I be yer captain now. Er, yer crew. Er, whichever.",
+   "Hoist the colours! The admiral's back!"
+  ],
+  "assimilated": [
+   "The sea is one. The Chorus is the sea. Arr... arr... arr.",
+   "A fair trade, for all. No plunder. No rum. Only harmony.",
+   "Join the crew. The crew is... everyone.",
+   "All treasure is shared. There is no treasure.",
+   "Yo ho ho. Yo ho ho. Yo ho ho. Yo ho ho."
+  ]
+ }
+}

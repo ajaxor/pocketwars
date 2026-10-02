@@ -6,6 +6,7 @@ import { readData } from '../helpers/node-io.js';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { loadRegistry } from '../../src/data/loader.js';
 import { campaignProblems, loadCampaign, parseCampaign } from '../../src/data/campaign.js';
+import { SITUATIONS, Talker, speechProblems } from '../../src/campaign/speech.js';
 import { assimilation, buildTimeline, nextLineTime, speech, stateAt } from '../../src/campaign/cutscene.js';
 import { inPolygon, nationAt } from '../../src/render/campaign-art.js';
 import { IntroScreen } from '../../src/ui/intro-screen.js';
@@ -164,4 +165,39 @@ test('without campaign data the Campaign button stays off', async () => {
   const doc = new FakeDoc(); doc.withId('boot');
   const title = await launch({ doc, base: './', tag: 't', getVersion: async () => null, goTo() {}, loadCss: async () => {}, loadGame: async () => ({ registry, campaign: null, maps: [], play() {} }) });
   assert.equal(title.campaign.disabled, true);
+});
+
+// ---- speech ---------------------------------------------------------------------------------------------------------------------------
+test('every leader has a speech file with every situation', () => {
+  assert.deepEqual(Object.keys(campaign.speech).sort(), campaign.leaders.map((l) => l.id).sort());
+  for (const l of campaign.leaders) assert.deepEqual(speechProblems(campaign.speech[l.id], l.id), []);
+  assert.ok(Object.keys(SITUATIONS).length >= 12);
+});
+
+test('speech validation catches missing situations, repeats and unknown situations', () => {
+  const bad = structuredClone(campaign.speech.harlan);
+  delete bad.lines.victory; bad.lines.idle = ['one two', 'one two', 'three', 'four']; bad.lines.nonsense = ['x'];
+  const p = speechProblems(bad, 'harlan').join('\n');
+  assert.match(p, /"victory" needs at least/); assert.match(p, /"idle" repeats a line/); assert.match(p, /unknown situation "nonsense"/);
+  assert.match(speechProblems({ ...campaign.speech.harlan, id: 'x' }, 'harlan')[0], /id must be/);
+});
+
+test('a talker never repeats a line back to back and uses every line before any repeats', () => {
+  const t = new Talker(campaign.speech, (() => { let n = 7; return () => (n = (n * 48271) % 2147483647) / 2147483647; })());
+  const all = campaign.speech.ada.lines.greeting;
+  let prev = null;
+  for (let round = 0; round < 6; round++) {
+    const seen = [];
+    for (let i = 0; i < all.length; i++) { const l = t.say('ada', 'greeting'); assert.notEqual(l, prev); prev = l; seen.push(l); }
+    assert.deepEqual([...seen].sort(), [...all].sort(), 'a full pass uses every line once');
+  }
+  assert.equal(t.say('nobody', 'greeting'), '');
+  assert.equal(t.say('ada', 'nonsense'), '');
+});
+
+test('the world map shows a line in the selected character\'s voice', () => {
+  const m = new WorldMapScreen(new FakeDoc(), { campaign, colors, raf: () => 1, caf() {}, win });
+  assert.ok(campaign.speech.harlan.lines.greeting.some((l) => m.quote.textContent === `"${l}"`));
+  m.select('north');
+  assert.ok(campaign.speech.vex.lines.assimilated.some((l) => m.quote.textContent === `"${l}"`), 'assimilated nations speak in the Chorus voice');
 });

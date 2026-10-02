@@ -1,0 +1,104 @@
+{
+ "id": "chase",
+ "voice": "Young tech bro in aviator glasses: startup buzzwords (disrupt, pivot, scale, ship it, MVP, runway, synergy, circle back), 'bro' and 'dude', treats war like a product launch.",
+ "lines": {
+  "greeting": [
+   "Yo, what's good? Chase Vale, founder, flier, thought leader. Let's sync.",
+   "Hey bro! Love the energy. Let's circle back after this.",
+   "What's up! I'm basically a startup with wings.",
+   "Dude, great to meet you. Let's disrupt something together.",
+   "Sup! I'm in stealth mode. Mostly 'cause my plane's stealth."
+  ],
+  "battle_start": [
+   "Alright team, let's ship this thing! Move fast and break stuff!",
+   "It's go time! Launch day, bro! Full send!",
+   "Okay, listen up! This is our MVP: Minimum Viable Pounding!",
+   "We're not here to compete, we're here to scale!",
+   "Let's 10x this mission and pivot to victory!"
+  ],
+  "attack": [
+   "Boom! Disruption incoming!",
+   "That's what I call a hostile takeover!",
+   "Ship it! Ship all of it!",
+   "Synergy, baby! That was pure synergy!",
+   "Crushing it! Absolutely crushing it!"
+  ],
+  "unit_lost": [
+   "Oof. That's a negative ROI, bro.",
+   "Dude, we just lost a whole stakeholder.",
+   "Okay, that's a pivot moment. We learn, we iterate.",
+   "Not ideal. We'll circle back and revisit our burn rate.",
+   "Rest in peace, little guy. Your equity vested at zero."
+  ],
+  "capture": [
+   "Acquisition complete! Time to onboard!",
+   "New office! We're scaling, bro!",
+   "Boom! Expansion round, closed!",
+   "Love this new territory. Total growth hack.",
+   "Disrupted the market and took their runway!"
+  ],
+  "danger": [
+   "We're burning too fast! Cash is low! Panic!",
+   "Okay, we have a runway issue. Literally.",
+   "This is a bug, not a feature, bro! Fix it!",
+   "Dude, we're getting leapfrogged! Pivot! Pivot!",
+   "Everything's fine. This is fine. We're just between funding rounds."
+  ],
+  "victory": [
+   "We crushed it, bro! IPO, baby!",
+   "That's a wrap! Time to ring the bell!",
+   "Unicorn status achieved!",
+   "Victory! Let's get brunch and talk about our learnings.",
+   "Another win for the thought leaders!"
+  ],
+  "defeat": [
+   "Okay, so that was a failed launch. Time to pivot.",
+   "We lost but we learned. Mostly bro stuff.",
+   "Not a loss, just an unsuccessful beta.",
+   "Fail fast, they said. I'm doing it great!",
+   "This is fine. Let's rebrand and try again."
+  ],
+  "taunt": [
+   "Your army is, like, so legacy tech.",
+   "You're being disrupted, bro. Hard.",
+   "Imagine still running on last year's strategy. Couldn't be me.",
+   "Your runway's about to be my runway, dude.",
+   "Wow. No growth. Just... no growth."
+  ],
+  "praise": [
+   "Dude, that was legit. Ten out of ten would hire again.",
+   "Huge win! You're an absolute rockstar!",
+   "Bro, that's next-level thinking.",
+   "Let's put that in the pitch deck. Seriously.",
+   "Fire! That was literally fire!"
+  ],
+  "idle": [
+   "I'm thinking of an app. It's like Uber, but for tanks. Tankr.",
+   "Every battle's just a very loud pitch meeting.",
+   "I've been up since 4 a.m. Cold plunge and optimising.",
+   "Just had a thought. Billion-dollar idea. Can't tell you. NDA.",
+   "Gotta stay agile. Literally. I'm flying."
+  ],
+  "tech": [
+   "The Gift? Bro, it's an API for the universe! Plug me in!",
+   "It's literally the biggest disruption since, like, fire!",
+   "Alien tech's the ultimate growth hack. Early adopter, bro!",
+   "They said 'free'. I said 'where do I sign'.",
+   "It's AI but, like, aliens. The pivot of a lifetime."
+  ],
+  "joined": [
+   "I'm back, bro! Let's relaunch this partnership!",
+   "Thanks for the rescue! I'll put you in the acknowledgements.",
+   "Re-onboarded. Fresh energy. Same vibe.",
+   "Let's circle back on who's boss. It's me. Kidding. Sort of.",
+   "Good to be back on the team, boss. Let's scale."
+  ],
+  "assimilated": [
+   "Synergy achieved. Bandwidth optimised. Join the network.",
+   "Everything is aligned. Everyone is aligned. Alignment is a gift.",
+   "Please. Subscribe to unity.",
+   "The Chorus is a platform. We are all users.",
+   "Growth is inevitable. Resistance is a bug."
+  ]
+ }
+}

@@ -1,0 +1,104 @@
+{
+ "id": "tomas",
+ "voice": "An old samurai: formal, calm and courteous, quoting Sun Tzu's Art of War for every occasion, with the occasional 'Hai!'.",
+ "lines": {
+  "greeting": [
+   "Welcome, honoured guest. Sun Tzu says: know the enemy, know yourself. Today, I wish to know you.",
+   "Konnichiwa. As Sun Tzu writes, 'All warfare is based on deception.' But I do not deceive you now.",
+   "Ah, a visitor. Be calm. The wise warrior is calm like still water.",
+   "Welcome. Sun Tzu teaches that the best victory is one without battle. Shall we talk?",
+   "Be welcome, traveller. Sit. A war is long and tea is short."
+  ],
+  "battle_start": [
+   "Swift as the wind, silent as the forest, fierce as fire, immovable as a mountain.",
+   "Sun Tzu says: victorious warriors win first, then go to war. We have won already.",
+   "Let your plans be dark and impenetrable as night. Then strike like thunder.",
+   "Speed is the essence of war. Attack!",
+   "Today we move as one blade. Hai!"
+  ],
+  "attack": [
+   "Sun Tzu says: appear where you are not expected. Behold!",
+   "The opportunity of defeating the enemy is provided by the enemy himself.",
+   "A single strike, as the sage taught.",
+   "Hai! Strike where he is weak.",
+   "In the midst of chaos there is also opportunity."
+  ],
+  "unit_lost": [
+   "A valiant warrior falls. May he rest well.",
+   "Even the wise lose a pawn. Sun Tzu does not say it is pleasant.",
+   "He served with honour. We shall remember.",
+   "This is a cost. I will make the enemy pay it.",
+   "The mountain does not weep. But the mountain remembers."
+  ],
+  "capture": [
+   "As the sage says, 'Ponder and deliberate before you make a move.' It is ours.",
+   "A fortress taken without a long siege is a fortress well won.",
+   "The ground is secure. Let us stand upon it with dignity.",
+   "One more piece of the board. Sun Tzu would nod.",
+   "We hold this place now. May it hold us kindly."
+  ],
+  "danger": [
+   "In the midst of chaos there is also opportunity. Remain calm.",
+   "If outnumbered, divide the enemy. If surrounded, leave a way out. Then close it.",
+   "Sun Tzu says: on desperate ground, fight. I am quite prepared.",
+   "Stay steady. A storm is only wind with an opinion.",
+   "The enemy is close. Good. He will make a mistake."
+  ],
+  "victory": [
+   "Sun Tzu says: to win a hundred battles is not the acme of skill. Yet it pleases me.",
+   "A victory without wasted effort is the highest art.",
+   "We have prevailed. Let us bow to those who fell.",
+   "The mountain stands. The wind is satisfied.",
+   "Well fought, all. Tea, I think."
+  ],
+  "defeat": [
+   "Sun Tzu says: he will win who knows when to fight and when not to fight. We erred.",
+   "This defeat is a teacher. I shall be a diligent student.",
+   "A lost battle, not a lost war. Withdraw with discipline.",
+   "Even the great sage was not always at peace. We retreat.",
+   "I take full responsibility. I will bring tea and shame."
+  ],
+  "taunt": [
+   "Sun Tzu says: if your enemy is secure, be ready for him. I am ready.",
+   "You fight without a plan. That is not a plan.",
+   "Appear weak when you are strong, and strong when you are weak. You appear... loud.",
+   "Your haste will be your downfall, young one.",
+   "Know yourself and know your enemy. You know neither."
+  ],
+  "praise": [
+   "Excellent. The sage would approve.",
+   "A wise move, young warrior. You learn quickly.",
+   "Honourable. Truly honourable.",
+   "You have the heart of a general. Do not let it grow proud.",
+   "Your strategy is as sharp as a well-forged blade."
+  ],
+  "idle": [
+   "Sun Tzu says: opportunities multiply as they are seized. I am seizing a nap.",
+   "Patience is the sharpest sword.",
+   "Ah, the wind speaks. It says you left the kettle on.",
+   "A wise general reads the rice paddies. They tell me it will rain.",
+   "My knees are old, but my mind is a sword."
+  ],
+  "tech": [
+   "Sun Tzu writes of cunning, not of gadgets. Be wary of a gift.",
+   "A gift from a stranger often has a price the receiver pays later.",
+   "The Gift is a fine blade. But who holds the hilt?",
+   "I accept the Gift as I accept a sword: carefully, and with respect for its edge.",
+   "To subdue the enemy without fighting is the supreme art. The Envoy has read his Sun Tzu."
+  ],
+  "joined": [
+   "I return to the way of the warrior. Sun Tzu would be pleased.",
+   "My blade, my honour, and my tea are yours.",
+   "Forgive this old man's lapse. The way is clear again.",
+   "We fight as one. Hai!",
+   "Thank you for waking me. I had dreamed a very long dream."
+  ],
+  "assimilated": [
+   "The highest art is to subdue the enemy without fighting. We are in harmony.",
+   "Resistance is unnecessary. The mountain has joined the wind.",
+   "Peace has arrived. Sun Tzu agrees. Sun Tzu is no longer in the room.",
+   "All will be one. There is no enemy. There is no you.",
+   "I have studied the art of war. The art of unity is superior."
+  ]
+ }
+}
