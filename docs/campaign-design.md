@@ -29,7 +29,7 @@ each nation that falls is **assimilated**. The player is the last holdout, launc
 ### Premise
 
 - The continent is a patchwork of nations, each led by one of the leaders (the same leaders the player can later field).
-- A new power, placeholder name **the Chorus**, arrives and takes the nations one at a time. A conquered nation is **assimilated**: its
+- A new power, placeholder name **the Chorus** (an alien collective that presents as a human conqueror, see below), arrives and takes the nations one at a time. A conquered nation is **assimilated**: its
   leader is taken over (a visor, cold eyes, a new uniform in the Chorus colours), its army is re-equipped with Chorus tech, and its
   people march as one.
 - The player's nation is the last one still free. The intro shows the continent going dark nation by nation, ending on the player's
@@ -68,11 +68,11 @@ against an assimilated leader reads on the map at a glance. Units regain their c
 
 1. **The fall (intro).** A short sequence on the continent map: nations fall one by one, each shown as a portrait switching to its
    assimilated version. The player's leader is the last one free and is pushed to the coast. Ends on "counter attack".
-2. **The liberation (the stage select).** Free order. Each stage opens with a short exchange between the player's chosen commander
+2. **The liberation (the stage select).** Free order, with hints that the Envoy's gifts are not what they seem. Each stage opens with a short exchange between the player's chosen commander
    and the assimilated leader. After the win, a liberation scene plays: the portrait reverts, the leader joins you and may comment on
    whoever else is still held. As the roster of free leaders grows, the continent map recovers its colours.
-3. **The core (the final boss).** The Chorus's core, its capital, with units and labs from every nation it has taken. The player picks
-   one or two allies; scenes vary with who is chosen.
+3. **The core (the final boss).** The Chorus's capital, in two phases: the Envoy's fortress, then the reveal and the alien army. The
+   player picks one or two allies; scenes vary with who is chosen.
 
 ### Tone
 
@@ -80,15 +80,43 @@ Bright, readable and PG: assimilation is mind control, nobody dies on screen, an
 horror is in the portraits and the continent map, not in the dialogue. Think of the Chorus as an unsettling, polite, unified voice:
 its units and leaders say the same line together.
 
-### Who is the villain? (open)
+### The villain (decided)
 
-| Option | The Chorus is... | Notes |
-|---|---|---|
-| A | An AI that took over the orbital network (the satellite concept) | Easy to tie to the Space Port and the orbital units. Risk: a faceless boss, so give it a recorded human voice |
-| B | An outside power that arrived from orbit | Clean "invaders" story; the leaders are all victims |
-| C | One of the old leaders' former mentor, brought back by the labs' research | Personal: the allies each have a history with the boss. Closer to the earlier "rival heirs" idea |
+The Chorus is an **alien collective** that arrived from orbit. It does not show its true form: it speaks and appears through a **human
+avatar**, a calm, polite figure that stands in for it in every scene (the intro, the pre-mission exchanges, the recruit scenes). The
+leaders and the player believe they are fighting a human conqueror with advanced technology.
 
-Leaning: **A with the voice of C**: the Chorus is the orbital network, and it speaks with the voice of someone the leaders remember.
+- **The avatar** is a character in its own right: a human face (placeholder name: **the Envoy**) with the same portrait system as the
+  leaders. It is calm, courteous, never raises its voice, and says what the Chorus says in the first person plural.
+- **Assimilation is alien technology** disguised as the Envoy's gift: the visors and caps that take over a leader come from the same
+  source. The player slowly learns this from the liberated leaders (a clue in each recruit scene).
+- **The reveal** comes in the final battle (below). Until then, every enemy unit is a recognisable unit with a Chorus tint.
+
+### The final battle: the true nature
+
+The last stage is the Chorus's capital, fought in two phases:
+
+1. **The Envoy's fortress.** The map the player expects: the Envoy's avatar commands an assimilated army with units and labs from every
+   nation it has taken. Taking the HQ ends this phase.
+2. **The reveal.** The avatar breaks: the human face fails and the Chorus's true form appears (a cutscene in the visual-novel layout with
+   the avatar's portrait glitching into something else). The map changes: the HQ opens, **alien units** arrive from the landing site,
+   and the real fight starts. The player's allies react to what they see.
+
+The alien units appear **only here**, so they can be much stranger than the human units and need no balance against the rest of the roster.
+They are placeholders for the sprite lab to explore:
+
+| Alien unit | Idea |
+|---|---|
+| Drone swarm carrier | A hive that releases small fliers each turn |
+| Spore mortar | Slow indirect fire that leaves a lingering damaging cloud on a tile |
+| Walker | A tall tripod that steps over everything and shoots from 2 tiles up |
+| Husk | Cheap infantry that spawns where an assimilated unit dies |
+| Phase skimmer | A fast flier that ignores terrain and line of sight |
+| Brood cruiser | A large air or ground ship that carries and deploys other alien units |
+| Warden | A heavy defender that shields adjacent units from the first hit each turn |
+| The core | The real final target: a stationary structure, not a unit (capture or destroy to win) |
+
+The win condition of phase 2 is open: capture and hold the landing site, or destroy the core (see the questions below).
 
 ### Open story questions
 
@@ -97,6 +125,10 @@ Leaning: **A with the voice of C**: the Chorus is the orbital network, and it sp
 - Does a freed leader keep a trace of assimilation (a faint visor line) as a visual reminder of the campaign's progress?
 - Does the final boss try to re-assimilate the allies mid-battle? It would be a strong boss mechanic (units or a leader's power
   turning against you), but it is real engine work, so it is a stretch goal.
+- What ends phase 2: capture the landing site, destroy the core, or survive a number of turns?
+- How are the phase changes built? Simplest is two maps back to back (the second with the surviving units carried over); the harder
+  option is one map that changes mid-battle.
+- Does the Envoy ever appear to the player directly before the end (calls, taunts), so the avatar feels like a person the player has met?
 - How much of the intro is animated, and how much is a still image with text? The draft assumes stills and the visual-novel layout.
 
 ## The campaign loop
@@ -170,9 +202,9 @@ Eight enemy leaders plus the final boss is the working target. Fewer is fine for
 
 ### Final boss
 
-One leader who is not available to the player until beaten (they join after the credits, if at all). The boss fields something from
-**every** leader's kit (a mix of building types and labs) so that no single counter-pick covers it; that is the reason the player
-brings allies.
+The Envoy (the Chorus's human avatar), then the Chorus itself (see the [final battle](#the-final-battle-the-true-nature)). In the first
+phase the boss fields something from **every** leader's kit (a mix of building types and labs) so that no single counter-pick covers it;
+that is the reason the player brings allies. In the second phase it fields alien units that exist nowhere else.
 
 ## Production buildings
 
