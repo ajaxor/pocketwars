@@ -71,6 +71,9 @@ export class CommentaryBanner {
     toggle(this.root, 'cm--modal', false);
   }
 
+  /** Which edge the banner sits on: 'bottom' (the computer's turn) or 'top' (comments during the player's own turn, where the dock is). */
+  setSide(side) { toggle(this.root, 'cm--top', side === 'top'); }
+
   setFast(on) { toggle(this.ff, 'cm-ff--hidden', !on); }
 
   tick(now, fast = false) {

@@ -36,6 +36,7 @@ export class Session {
     this.pacer = pacer;      // the game clock, which runs fast while the player holds the screen during the computer's turn
     this.doc = doc;
     this.busy = false;
+    this.bannerUntil = 0;    // when a comment made in the player's turn goes away (0: it stays)
     this.disposed = false;
     this.endArmed = false;   // End turn was pressed with units still to move: the next press really ends it
 
@@ -186,7 +187,14 @@ export class Session {
     return { leader: this.voices.leader(c.leader) || { id: c.leader }, name: this.leaderName(c.leader) || '', color: factionOf(game, c.owner).color, text: c.line };
   }
 
-  #comment(c) { if (c && this.banner) this.banner.say(this.#line(c)); }
+  /** Show a comment. During the player's own turn it sits at the top (the dock is at the bottom) and goes away by itself. */
+  #comment(c) {
+    if (!c || !this.banner) return;
+    const mine = this.#humanTurn();
+    this.banner.setSide(mine ? 'top' : 'bottom');
+    this.banner.say(this.#line(c));
+    this.bannerUntil = mine ? this.#now() + (c.line.length / CPS) * 1000 + 3000 : 0;
+  }
 
   /** Before the first move, every leader says an opening line. Tap a card to read on; they also move on by themselves. */
   async #opening() {
@@ -226,6 +234,7 @@ export class Session {
     hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
     this.animator.update(now);
     this.banner?.tick(now, this.pacer.fast);
+    if (this.bannerUntil && now >= this.bannerUntil) { this.bannerUntil = 0; this.banner.hide(); }
     const viewer = this.#viewer();
     this.renderer.viewer = viewer;
     const faction = factionOf(game, game.currentPlayer);
@@ -251,6 +260,7 @@ export class Session {
   }
 
   #handleEvents(events) {
+    if (this.commentator && this.#humanTurn() && !this.busy) this.#comment(this.commentator.react(events, this.#now(), this.game.currentPlayer));
     const over = events.find((e) => e.type === 'gameOver');
     if (over) this.#showGameOver();
   }
@@ -260,6 +270,8 @@ export class Session {
     const winner = game.state.winner;
     const faction = winner === 'draw' || winner === null ? null : factionOf(game, winner);
     hud.clear();
+    const parting = this.commentator?.ending(winner).find((c) => c.situation === 'victory');   // the winner has the last word
+    if (parting) { this.banner.setSide('top'); this.banner.say(this.#line(parting)); this.bannerUntil = 0; }
     hud.gameOver({ title: faction ? 'Victory' : 'Draw', text: faction ? `${faction.name} wins!` : 'Nobody wins.', color: faction?.color, onClick: () => this.restart() });
   }
 
@@ -299,6 +311,7 @@ export class Session {
       if (game.isOver || this.disposed) return;
       if (!this.#humanTurn()) {
         hud.message(`${factionOf(game, game.currentPlayer).name} is moving...`, { sticky: true });
+        this.bannerUntil = 0;
         this.#comment(this.commentator?.turnStart(game.currentPlayer, this.#now()));
         await this.#playAiTurn();
         if (game.isOver || this.disposed) return;
@@ -307,6 +320,7 @@ export class Session {
       }
     } while (!this.#humanTurn());
     this.banner?.hide();
+    this.#comment(this.commentator?.turnStart(game.currentPlayer, this.#now()));
   }
 
   /**
@@ -370,7 +384,7 @@ export class Session {
       const events = this.#visibleTo(viewer, res.events, visible);
       shown = shown || visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);
       presenter.present(events, { now: this.#now() });
-      this.#comment(this.commentator?.react(unit.owner, events, this.#now()));
+      this.#comment(this.commentator?.react(events, this.#now(), unit.owner));
       const text = describeEvents(game, events);
       if (text) hud.message(text);
       this.#handleEvents(res.events);

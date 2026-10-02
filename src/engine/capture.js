@@ -24,6 +24,7 @@ export function resolveCapture(game, unit) {
   const completed = unit.capture >= property.capturePoints;
   const events = [{
     type: 'capture', unit: snapshotUnit(unit), x, y, owner: unit.owner, completed,
+    previousOwner: game.state.owners[y][x], hq: hasAttribute(terrainAt(game, x, y), 'victoryOnCapture'),   // who held it (null: nobody), and is it an HQ
     from: before / property.capturePoints, to: Math.min(1, unit.capture / property.capturePoints),
     progress: unit.capture, needed: property.capturePoints,
   }];

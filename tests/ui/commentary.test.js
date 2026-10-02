@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { makeGame } from '../helpers/fixtures.js';
-import { Commentator, MAX_PER_TURN, MIN_GAP } from '../../src/campaign/commentary.js';
+import { Commentator, MIN_GAP } from '../../src/campaign/commentary.js';
 import { CPS, CommentaryBanner } from '../../src/ui/commentary-banner.js';
 import { Pacer } from '../../src/ui/pacing.js';
 import { Gestures } from '../../src/ui/gestures.js';
@@ -25,34 +25,58 @@ test('the opening has a battle_start line from every team that has a leader, in 
   assert.deepEqual(new Commentator(game('x', 'y'), { say: () => '' }).opening(), [], 'a leader with nothing to say is left out');
 });
 
-test('a turn starts with a taunt, or with worry when the leader is badly outnumbered', () => {
-  const even = new Commentator(game('x', 'y'), voices());
-  assert.equal(even.turnStart(1, 0).situation, 'taunt');
-  const outnumbered = new Commentator(game('x', 'y', [['a', 0, 0, 0], ['a', 0, 1, 0], ['a', 0, 2, 0], ['a', 1, 3, 1]]), voices());
-  assert.equal(outnumbered.turnStart(1, 0).situation, 'danger');
+const kill = (attacker, defender) => strike(attacker, defender, true);
+const capture = (taker, from, completed = true, hq = false) => ({ type: 'capture', completed, hq, previousOwner: from, unit: { owner: taker } });
+const t = (i) => i * MIN_GAP;   // moments far enough apart that nobody is still quiet
+
+test('a milestone is said once: the first kill gets a line, and later kills only at their own milestones', () => {
+  const c = new Commentator(game(null, 'y'), voices());   // only y has a leader here
+  const out = [1, 2, 3, 4, 5, 6, 7, 8].map((i) => c.react([kill(1, 0)], t(i), 1)?.situation ?? null);
+  assert.deepEqual(out.slice(0, 3), ['taunt', 'attack', 'attack'], 'the first kill, the first attack (once), the third kill');
+  assert.deepEqual(out.slice(3, 5), [null, null], 'the fourth and fifth kills are not remarked on');
+  assert.equal(out[5], 'taunt', 'the sixth kill is');
+  assert.deepEqual(out.slice(6), [null, null]);
+});
+
+test('the loser of a unit, a building and the one who took it each speak up once', () => {
+  const c = new Commentator(game('x', 'y'), voices());
+  const seq = [[[kill(0, 1)], 1], [[], 1], [[capture(0, 1)], 1], [[], 1], [[], 1], [[capture(0, 1)], 1], [[capture(0, 1)], 0], [[], 0]]
+    .map(([events, prefer], i) => { const r = c.react(events, t(i + 1), prefer); return r && `${r.owner}:${r.situation}`; });
+  assert.deepEqual(seq, ['1:unit_lost', '0:taunt', '1:danger', '0:capture', '0:attack', null, '0:capture', null],
+    'y loses a unit; x gloats; y loses a building; x took it; x\'s first attack; the second capture is not remarked on, the third is');
+});
+
+test('an enemy starting to capture the HQ is a danger once, for the one whose HQ it is', () => {
+  const c = new Commentator(game('x', 'y'), voices());
+  const threat = capture(0, 1, false, true);
+  const r = c.react([threat], t(1), 0);
+  assert.deepEqual([r.owner, r.situation], [1, 'danger'], 'y worries, though it is x\'s turn');
+  assert.equal(c.react([threat], t(2), 1), null, 'once');
+  assert.equal(c.react([capture(0, 1, false, false)], t(3), 0), null, 'a plain building under capture is no threat to the HQ');
+});
+
+test('turns bring the state milestones: a first idle remark, being outnumbered, being far ahead', () => {
+  const c = new Commentator(game('x', 'y', [['a', 0, 0, 1], ['a', 0, 1, 1], ['a', 0, 2, 1], ['a', 1, 3, 1]]), voices());
+  assert.equal(c.turnStart(1, t(1))?.situation, 'idle', 'the first turn: just a remark');
+  assert.equal(c.turnStart(1, t(2))?.situation, 'danger', 'outnumbered three to one');
+  assert.equal(c.turnStart(1, t(3)), null, 'and not again');
+  assert.equal(c.turnStart(0, t(4))?.situation, 'idle');
+  assert.equal(c.turnStart(0, t(5))?.situation, 'taunt', 'three to one ahead');
   assert.equal(new Commentator(game('x', null), voices()).turnStart(1, 0), null, 'a team without a leader is silent');
 });
 
-test('during a turn a leader comments on a loss, a capture or an attack, with a pause between comments', () => {
-  const c = new Commentator(game('x', 'y'), voices());
-  assert.equal(c.turnStart(1, 0).line, 'y:taunt');
-  assert.equal(c.react(1, [strike(1, 0)], 100), null, 'too soon after the last comment');
-  assert.equal(c.react(1, [strike(1, 0)], MIN_GAP).situation, 'attack');
-  assert.equal(c.react(1, [strike(1, 0)], MIN_GAP + 10), null);
-  assert.equal(c.react(1, [strike(0, 1, true)], 2 * MIN_GAP).situation, 'unit_lost');
-  assert.equal(c.react(1, [{ type: 'capture', completed: true, unit: { owner: 1 } }], 3 * MIN_GAP).situation, 'capture');
-  assert.equal(c.react(1, [{ type: 'capture', completed: false, unit: { owner: 1 } }], 4 * MIN_GAP), null, 'a capture only counts when it is finished');
-  assert.equal(c.react(1, [strike(0, 1)], 5 * MIN_GAP), null, 'being hit without losing the unit is not worth a word');
+test('after a comment a leader is quiet for a while, and a milestone that comes due meanwhile waits', () => {
+  const c = new Commentator(game(null, 'y'), voices());
+  assert.equal(c.react([kill(1, 0)], 0, 1)?.situation, 'taunt');
+  assert.equal(c.react([kill(1, 0)], MIN_GAP - 1, 1), null);
+  assert.equal(c.react([], MIN_GAP, 1)?.situation, 'attack', 'its turn comes when the pause is over');
 });
 
-test('the most telling event of a move wins, and a leader never talks more than MAX_PER_TURN times a turn', () => {
+test('the ending: the winner has a victory line and the others a defeat line, and a draw has none', () => {
   const c = new Commentator(game('x', 'y'), voices());
-  assert.equal(c.react(1, [strike(1, 0), strike(0, 1, true), { type: 'capture', completed: true, unit: { owner: 1 } }], 0).situation, 'unit_lost');
-  let said = 1;
-  for (let i = 1; i < 10; i++) if (c.react(1, [strike(1, 0)], i * MIN_GAP)) said++;
-  assert.equal(said, MAX_PER_TURN);
-  c.turnStart(1, 100 * MIN_GAP);
-  assert.ok(c.react(1, [strike(1, 0)], 101 * MIN_GAP), 'a new turn starts the count again');
+  assert.deepEqual(c.ending(1).map((o) => [o.owner, o.situation]), [[0, 'defeat'], [1, 'victory']]);
+  assert.deepEqual(c.ending('draw'), []);
+  assert.deepEqual(c.ending(null), []);
 });
 
 // ---- the banner ---------------------------------------------------------------------------------------------------------------------

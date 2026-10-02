@@ -336,6 +336,7 @@ canvas.unit-icon { display: block; flex: none; }
 
 /* the commentary banner: a leader's portrait and words at the bottom of the battle screen (src/ui/commentary-banner.js) */
 .cm { position: fixed; left: 8px; right: 8px; bottom: calc(var(--safe-b) + 8px); z-index: 6; display: flex; gap: 10px; align-items: center; max-width: 520px; margin: 0 auto; padding: 8px 12px 8px 8px; background: var(--panel); color: var(--ink); border: 3px solid var(--edge); border-left: 8px solid var(--accent); border-radius: var(--radius); box-shadow: var(--shadow); pointer-events: none; }
+.cm--top { bottom: auto; top: calc(var(--bar-h) + var(--safe-t) + 8px); }
 .cm--hidden { display: none; }
 .cm--modal { pointer-events: auto; cursor: pointer; }
 .cm-face { flex: none; width: 72px; height: 72px; border-radius: 10px; background: #1d2436; border: 2px solid var(--edge); }
