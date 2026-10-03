@@ -148,14 +148,15 @@ const diverSwim = (g, { s, c, dk, w, run, moving, ph, b }) => {
     if (!light) {
       for (const [dy, dir, shade] of [[.1, -1, .15], [.03, 1, 0]]) {                   // two legs, each with a team-coloured fin, kicking in turn
         g.save(); g.translate(-.15 * s, dy * s); g.rotate(kick * .2 * dir);
-        box(g, s, -.1, -.03, .13, .07, 3, mix(suit, '#000000', shade));
+        box(g, s, -.1, -.03, .13, .07, 3, mix(team, '#000000', shade));   // legs in the team colour, as when standing
         poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], mix(team, '#000000', shade));
         g.restore();
       }
       box(g, s, -.17, -.01, .34, .16, 7, suit);                                        // body
       box(g, s, -.24, -.1, .38, .12, 6, team);                                         // air tank: long, along the back
-      disc(g, s, .22, -.03, .095, suit);                                               // head
-      oval(g, s, .28, -.03, .055, .045, mix('#9fe0ff', dk, .4));                       // mask
+      disc(g, s, .22, -.03, .095, mix(SKIN, dk, .12));                                 // the face, skin-coloured as when standing
+      g.fillStyle = suit; g.beginPath(); g.arc(.22 * s, -.03 * s, .095 * s, Math.PI * .85, Math.PI * 1.95); g.fill();   // the hood over the top and back of the head
+      oval(g, s, .275, -.04, .06, .038, mix(mix(c, '#ffffff', .25), dk, .12)); oval(g, s, .285, -.04, .04, .022, mix('#9fe0ff', dk, .25));   // the mask: team rim, glass
       harpoon(g, s, .1, .08, .2, -.3);                                                 // pointing a little downward
     }
     stroke(g, s, .2, -.11, .2, -.3, 3, INK); stroke(g, s, .2, -.11, .25, -.07, 3, INK);   // the snorkel: mouthpiece at the face and a straight tube up through the surface
