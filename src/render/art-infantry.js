@@ -140,10 +140,10 @@ const diver = (g, o) => {
   harpoon(g, s, .0, .0 + bb, .3, -.5);   // the snorkel: mouthpiece at the face, a straight tube up the side
 };
 const diverSwim = (g, { s, c, dk, w, run, moving, ph, b }) => {
-  const LN = -.15, k = .9;                                                             // the waterline sits just above the diver's head; he is centred in the tile
-  const bb = b / s, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;
+  const LN = -.18, k = 1.05;                                                             // the waterline sits just above the diver's head; he is centred in the tile
+  const bb = 0, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;   // no bobbing: he glides steadily under the surface
   const diverBody = (light) => {                                                       // drawn above (light: the snorkel only) and below the waterline, bobbing together
-    const suit = mix('#2a2e36', c, .3), team = mix(c, dk, UNDER_SHADE);
+    const suit = mix('#14171c', c, .1), team = mix(c, dk, UNDER_SHADE);
     g.save(); g.translate(0, bb * s); g.scale(k, k);
     if (!light) {
       for (const [dy, dir, shade] of [[.1, -1, .15], [.03, 1, 0]]) {                   // two legs, each with a team-coloured fin, kicking in turn
