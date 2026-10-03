@@ -48,7 +48,7 @@ const commando = (g, o) => {
 const rpgTrooper = (g, o) => {
   const { s, c, dk } = o, { l, bb } = gait(s, o);
   legs(g, s, l, dk); torso(g, s, bb, c);
-  g.save(); g.translate(0, (-.185 + bb) * s); g.rotate(-.12);                       // the tube, drawn BEFORE the head so the head is in front of it
+  g.save(); g.translate(0, (-.185 + bb) * s); g.rotate(-.12); g.scale(.8, .8);          // the tube (scaled down to sit within the tile), drawn BEFORE the head so the head is in front of it
   box(g, s, -.36, -.05, .72, .1, 3, '#5d6445');
   poly(g, s, [[-.4, -.07], [-.34, -.05], [-.34, .05], [-.4, .07]], '#3c4130');      // rear flare
   box(g, s, .3, -.07, .05, .14, 1, '#3c4130'); poly(g, s, [[.35, -.09], [.47, -.045], [.52, 0], [.47, .045], [.35, .09]], RED);   // the rocket: a fat warhead bigger than the tube
@@ -100,13 +100,11 @@ const mortarTeam = (g, o) => {
   g.restore();
 };
 
-// ---- Conscript: a soldier with a fur winter hat instead of a helmet ---------------------------------------------------------------------
+// ---- Conscript: a bare-headed soldier in a patched, hand-me-down shirt, with a rifle ------------------------------------------------
 const conscript = (g, o) => {
-  const { s, bb, sw } = body(g, o, {});
-  box(g, s, -.125, -.3 + bb, .25, .11, 3, FUR);                                      // the hat
-  box(g, s, -.14, -.235 + bb, .28, .05, 2, mix(FUR, '#ffffff', .2));                 // its turned-up band
-  box(g, s, -.14, -.22 + bb, .05, .13, 2, FUR); box(g, s, .09, -.22 + bb, .05, .13, 2, FUR);   // ear flaps
-  disc(g, s, .01, -.27 + bb, .02, RED);                                              // the star
+  const { s, c, dk, bb, sw } = body(g, o, {});
+  box(g, s, -.11, -.05 + bb, .08, .07, 1, mix(c, dk, .22)); box(g, s, .035, .06 + bb, .09, .07, 1, mix(c, '#ffffff', .14));   // subtle patches on the shirt
+  box(g, s, -.13, .1 + bb, .06, .05, 1, mix(c, dk, .12));
   rifle(g, s, bb, sw);
 };
 
@@ -122,7 +120,12 @@ const spy = (g, o) => {
 
 // ---- Diver ----------------------------------------------------------------------------------------------------------------------------
 // On land: a soldier in a dark wetsuit with an air tank and a mask pushed up on the forehead. Afloat (waterSprite diver_swim): a dark body with a
-// mask, a tank and one fin.
+// mask, a tank, a harpoon gun and two fins.
+/** A simple harpoon gun: a dark stock and barrel with a steel spear tip, pointing forward from (x, y), `len` long. */
+const harpoon = (g, s, x, y, len) => {
+  stroke(g, s, x - .06, y + .02, x + len, y, Math.max(2, s * .045), INK);
+  poly(g, s, [[x + len, y - .035], [x + len + .08, y], [x + len, y + .035]], STEEL);
+};
 const diver = (g, o) => {
   const { s, c } = o, { l, bb } = gait(s, o);
   const suit = '#2a2e36';
@@ -132,22 +135,26 @@ const diver = (g, o) => {
   head(g, s, bb);
   dome(g, s, bb, .095, suit);                                                         // the hood
   oval(g, s, .05, -.225 + bb, .06, .035, mix(c, '#ffffff', .25)); oval(g, s, .06, -.225 + bb, .04, .02, '#9fe0ff');   // the mask, pushed up
-  stroke(g, s, -.09, -.19 + bb, -.09, -.35 + bb, 3, INK); stroke(g, s, -.09, -.35 + bb, -.15, -.35 + bb, 3, INK); stroke(g, s, -.09, -.19 + bb, -.03, -.17 + bb, 3, INK);   // the snorkel: mouthpiece at the face, the tube up the side, its open end bent back
+  stroke(g, s, -.09, -.19 + bb, -.09, -.35 + bb, 3, INK); stroke(g, s, -.09, -.19 + bb, -.03, -.17 + bb, 3, INK);
+  harpoon(g, s, .06, .02 + bb, .3);   // the snorkel: mouthpiece at the face, a straight tube up the side
 };
 const diverSwim = (g, { s, c, dk, w, ph, run, moving, b }) => {
   const bb = b / s, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;
   afloat(g, s, w, run, -.34, .32, (light) => {
     const suit = light ? '#2a2e36' : mix('#2a2e36', c, .3), team = light ? c : mix(c, dk, UNDER_SHADE);
     g.save(); g.translate(0, (bb - .08) * s);
-    g.save(); g.translate(-.15 * s, .1 * s); g.rotate(kick * .2);                      // legs and a team-coloured fin, kicking
-    box(g, s, -.1, -.03, .13, .07, 3, suit);
-    poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], team);
-    g.restore();
+    for (const [dy, dir, shade] of [[.13, -1, .15], [.06, 1, 0]]) {                     // two legs, each with a team-coloured fin, kicking in turn
+      g.save(); g.translate(-.15 * s, dy * s); g.rotate(kick * .2 * dir);
+      box(g, s, -.1, -.03, .13, .07, 3, mix(suit, '#000000', shade));
+      poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], mix(team, '#000000', shade));
+      g.restore();
+    }
     box(g, s, -.17, .02, .34, .16, 7, suit);                                           // body
     box(g, s, -.14, -.09, .22, .14, 5, team);                                          // air tank
     disc(g, s, .22, -.01, .095, suit);                                                 // head
     oval(g, s, .28, -.01, .055, .045, light ? '#9fe0ff' : mix('#9fe0ff', dk, .4));     // mask
-    stroke(g, s, .2, -.09, .17, -.2, 3, INK); stroke(g, s, .17, -.2, .11, -.2, 3, INK); stroke(g, s, .2, -.09, .25, -.05, 3, INK);   // the snorkel: mouthpiece at the face, tube up, open end bent back
+    stroke(g, s, .2, -.09, .2, -.22, 3, INK); stroke(g, s, .2, -.09, .25, -.05, 3, INK);   // the snorkel: mouthpiece at the face, a straight tube up
+    harpoon(g, s, .12, .1, .2);
     g.restore();
   }, -.02);
 };
