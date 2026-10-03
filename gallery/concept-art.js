@@ -2,7 +2,7 @@
 // gallery's "Experimental" section. Same conventions as src/render/unit-art.js (which supplies the drawing helpers):
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 //   SHADOWS[name](g, { s, alt, w, ph, run })
-import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, hoverEmitter, sheen, bubbles, GLOW } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, hoverTubes, sheen, bubbles, GLOW } from '../src/render/parts.js';
 import * as INFANTRY from '../src/render/art-infantry.js';
 import * as STATIC from './concept-art-static.js';
 import * as AIR from '../src/render/art-air.js';
@@ -26,15 +26,14 @@ const supplyTruck = (g, { s, c, dk, w, run, j }) => {
 };
 
 // ---- Hover Lab --------------------------------------------------------------------------------------------------------------
-// Hover craft ride on an anti-gravity field: one wide emitter pad under the hull with a glowing lens, a faint cone of light down to the
-// ground and a few motes drifting up. The craft sits a little above the ground (altitude 0 in the data: the lift is drawn here) and rocks up
-// and down slowly and shallowly, with no fast jitter.
-const hoverLift = (w, ph, run) => -.04 + (run ? Math.sin(w * 1.2 + ph) * .007 : 0);
+// Hover craft ride on tubing under the hull: a manifold pipe with nozzles that fire rings of force at the ground on a fast interval. The craft sits
+// well above the ground (altitude 0 in the data: the lift is drawn here) and rocks up and down deeply but slowly, about a third as fast as the waves.
+const hoverLift = (w, ph, run) => -.075 + (run ? Math.sin(w * .9 + ph) * .028 : 0);
 
 const hoverScout = (g, { s, c, dk, w, ph, run }) => {
   const h = hoverLift(w, ph, run);
   g.save(); g.translate(0, h * s);
-  hoverEmitter(g, s, -.22, .24, .15, w, run, { ground: .285 - h });
+  hoverTubes(g, s, -.22, .24, .21, w, run, { ground: .285 - h });
   poly(g, s, [[-.32, .17], [-.3, .02], [-.1, -.05], [.14, -.05], [.4, .07], [.36, .17]], c);   // low wedge hull
   poly(g, s, [[.14, -.05], [.4, .07], [.3, .07], [.1, -.0]], mix(c, dk, .4));
   oval(g, s, .06, -.06, .1, .055, GLASS);                                                    // bubble canopy
@@ -44,7 +43,7 @@ const hoverScout = (g, { s, c, dk, w, ph, run }) => {
 const hoverTank = (g, { s, c, dk, w, ph, run }) => {
   const h = hoverLift(w, ph, run);
   g.save(); g.translate(0, h * s);
-  hoverEmitter(g, s, -.28, .28, .15, w, run, { ground: .285 - h });
+  hoverTubes(g, s, -.28, .28, .22, w, run, { ground: .285 - h });
   box(g, s, -.36, -.02, .72, .2, 5, c);                                                      // wide hull
   poly(g, s, [[.36, .0], [.4, .1], [.36, .17]], c);                                          // sloped nose
   box(g, s, -.1, -.17, .28, .16, 4, dk);                                                     // turret
@@ -56,7 +55,7 @@ const hoverTank = (g, { s, c, dk, w, ph, run }) => {
 const hoverCarrier = (g, { s, c, dk, w, ph, run }) => {
   const h = hoverLift(w, ph, run);
   g.save(); g.translate(0, h * s);
-  hoverEmitter(g, s, -.32, .32, .16, w, run, { ground: .285 - h });
+  hoverTubes(g, s, -.32, .32, .23, w, run, { ground: .285 - h });
   box(g, s, -.4, -.14, .8, .33, 6, c);                                                       // long box hull
   poly(g, s, [[.4, -.1], [.4, .19], [.28, .19], [.28, -.1]], dk);                            // bow ramp, folded up
   box(g, s, .3, -.07, .06, .22, 1, mix(dk, '#ffffff', .2));

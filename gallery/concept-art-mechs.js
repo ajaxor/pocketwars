@@ -3,11 +3,13 @@
 // Every walker has a head, two arms (a darker far arm behind the torso, a near arm in front) and two stepping legs. To keep them from looking like
 // stacked boxes they are built from angled plates: a hunched, sloped torso, pauldrons over the shoulders, a wedge helmet with a slanted visor,
 // tapered two-segment limbs and reverse-knee legs ending in claw feet. Weapons are PORTS at the end of an arm (a wedge-shaped pod with a barrel and
-// muzzle brake) or MOUNTED ROCKETS on a shoulder, never a free-standing gun. Legs only step while the unit is moving; arms swing with them.
+// muzzle brake) or MOUNTED ROCKETS on a shoulder, never a free-standing gun. Legs stride while the unit moves and shuffle on the spot when it idles; the body never bobs and the arms swing only while walking.
 import { box, disc, poly, stroke, mix, tubes, INK, STEEL, RED } from '../src/render/parts.js';
 
 const ORANGE = '#ff9a2e', VISOR = '#ffd45a', PORT = '#2c2f36';
-const gait = (run, moving) => (run && moving ? 1 : 0);
+// gait: 1 walking, .4 idling (the legs shuffle on the spot, the body and arms hold still), 0 frozen.
+const gait = (run, moving) => (run ? (moving ? 1 : .4) : 0);
+const armSwing = (walk) => (walk >= 1 ? 1 : 0);
 const up = (pts, bb) => pts.map(([x, y]) => [x, y + bb]);
 const lighter = (col, k = .15) => mix(col, '#ffffff', k), darker = (col, k = .3) => mix(col, '#000000', k);
 
@@ -18,8 +20,9 @@ const limb = (g, s, x1, y1, x2, y2, t1, t2, col) => {
 };
 /** A reverse-knee leg (knee forward, shin sweeping back to a claw foot): hip (hx, hy), thickness t. The foot swings, lifts and plants while `walk` is 1. */
 const leg = (g, s, hx, hy, ph, w, walk, t, col, knee = .1) => {
-  const a = w * 6 + ph, fx = hx - .03 + Math.sin(a) * .07 * walk, fy = .285 - Math.max(0, Math.cos(a)) * .05 * walk;
-  const kx = hx + knee + Math.sin(a) * .02 * walk, ky = hy + (fy - hy) * .42;
+  const stride = walk >= 1, a = w * (stride ? 6 : 2.6) + ph, lift = stride ? .05 : .045;
+  const fx = hx - .03 + Math.sin(a) * (stride ? .07 : .03) * (stride ? 1 : 1), fy = .285 - Math.max(0, Math.cos(a)) * lift * (walk ? 1 : 0);
+  const kx = hx + knee + Math.sin(a) * .02 * (walk ? 1 : 0) - (stride ? 0 : Math.max(0, Math.cos(a)) * .025), ky = hy + (fy - hy) * .42;
   limb(g, s, hx, hy, kx, ky, t, t * .8, col); disc(g, s, kx, ky, t * .46, lighter(col, .12));
   limb(g, s, kx, ky, fx, fy - .04, t * .75, t * .45, col);
   poly(g, s, [[fx - .035, fy - .05], [fx + .02, fy - .055], [fx + .1, fy + .005], [fx + .1, fy + .013], [fx - .05, fy + .013]], INK);   // claw foot
@@ -49,7 +52,7 @@ const gunPod = (g, s, x, y, len, h, rec = 0) => {
 
 // Strider: the all-rounder. Hunched and sleek; a cannon pod on one arm, a clawed hand on the other.
 const strider = (g, { s, c, dk, ph, w, run, moving, b }) => {
-  const walk = gait(run, moving), bb = b / s, sw = Math.sin(w * 6 + ph) * .02 * walk, rec = Math.max(0, Math.sin(w * 1.6 + ph)) * .012 * run, hy = -.03 + bb;
+  const walk = gait(run, moving), bb = 0, sw = Math.sin(w * 6 + ph) * .02 * armSwing(walk), rec = Math.max(0, Math.sin(w * 1.6 + ph)) * .012 * run, hy = -.03 + bb;
   leg(g, s, -.1, hy, 0, w, walk, .1, dk); leg(g, s, .05, hy, Math.PI, w, walk, .1, lighter(dk));
   arm(g, s, -.02, -.22 + bb, .06, -.12 + bb - sw, .1, -.04 + bb - sw, .06, darker(dk, .1)); claw(g, s, .1, -.04 + bb - sw, 1, dk);   // far arm
   poly(g, s, up([[-.2, -.2], [-.14, -.3], [.1, -.31], [.2, -.23], [.15, -.12], [.1, -.03], [-.08, -.03], [-.18, -.08]], bb), c);       // sloped, hunched torso
@@ -63,7 +66,7 @@ const strider = (g, { s, c, dk, ph, w, run, moving, b }) => {
 
 // Titan: the heavy. Huge pauldrons with spikes, a small head sunk between them, a glowing core, and a cannon pod on both arms.
 const titan = (g, { s, c, dk, ph, w, run, moving, b }) => {
-  const walk = gait(run, moving), bb = b / s, sw = Math.sin(w * 6 + ph) * .02 * walk, rec = Math.max(0, Math.sin(w * 1.4 + ph)) * .012 * run, hy = -.03 + bb;
+  const walk = gait(run, moving), bb = 0, sw = Math.sin(w * 6 + ph) * .02 * armSwing(walk), rec = Math.max(0, Math.sin(w * 1.4 + ph)) * .012 * run, hy = -.03 + bb;
   const glow = run ? .65 + .35 * Math.sin(w * 5 + ph) : .8;
   leg(g, s, -.17, hy, 0, w, walk, .15, dk, .12); leg(g, s, .08, hy, Math.PI, w, walk, .15, lighter(dk), .12);
   arm(g, s, -.06, -.3 + bb, .04, -.18 + bb - sw, .12, -.13 + bb - sw, .1, darker(dk, .1)); gunPod(g, s, .1, -.13 + bb - sw, .19, .12, rec * .6);   // far arm cannon
@@ -80,13 +83,13 @@ const titan = (g, { s, c, dk, ph, w, run, moving, b }) => {
 
 // Rocket walker: a slim hunter with two rocket pods on its shoulder, pointing up, and a clawed pair of hands.
 const rocketWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
-  const walk = gait(run, moving), bb = b / s, sw = Math.sin(w * 6 + ph) * .02 * walk, hy = -.03 + bb;
+  const walk = gait(run, moving), bb = 0, sw = Math.sin(w * 6 + ph) * .02 * armSwing(walk), hy = -.03 + bb;
   leg(g, s, -.08, hy, 0, w, walk, .085, dk, .09); leg(g, s, .05, hy, Math.PI, w, walk, .085, lighter(dk), .09);
   arm(g, s, -.02, -.2 + bb, .05, -.11 + bb - sw, .09, -.04 + bb - sw, .05, darker(dk, .1)); claw(g, s, .09, -.04 + bb - sw, .85, dk);
-  g.save(); g.translate(-.13 * s, -.27 * s + b); g.rotate(-1.12); tubes(g, s, .1, 0, .26, .13, { n: 2, col: darker(dk, .25), tip: RED }); g.restore();   // the far pod, behind
+  g.save(); g.translate(-.13 * s, -.27 * s); g.rotate(-1.12); tubes(g, s, .1, 0, .26, .13, { n: 2, col: darker(dk, .25), tip: RED }); g.restore();   // the far pod, behind
   poly(g, s, up([[-.17, -.2], [-.12, -.29], [.08, -.3], [.15, -.22], [.1, -.1], [.06, -.03], [-.08, -.03], [-.15, -.08]], bb), c);
   poly(g, s, up([[-.0, -.27], [.08, -.28], [.13, -.22], [.09, -.15], [-.0, -.16]], bb), lighter(c, .18));
-  g.save(); g.translate(-.07 * s, -.27 * s + b); g.rotate(-.92); tubes(g, s, .1, 0, .3, .16, { n: 3, col: lighter(dk, .1), tip: RED }); g.restore();    // the near pod: mounted rockets
+  g.save(); g.translate(-.07 * s, -.27 * s); g.rotate(-.92); tubes(g, s, .1, 0, .3, .16, { n: 3, col: lighter(dk, .1), tip: RED }); g.restore();    // the near pod: mounted rockets
   poly(g, s, up([[-.14, -.3], [-.02, -.32], [.0, -.25], [-.12, -.24]], bb), darker(dk, .2));                                                 // its mount
   helm(g, s, .0, -.29 + bb, .85, dk);
   arm(g, s, .09, -.23 + bb, .15, -.14 + bb + sw * .5, .2, -.08 + bb + sw, .06, mix(c, dk, .35)); claw(g, s, .2, -.08 + bb + sw, .9, mix(c, dk, .35));
@@ -94,7 +97,7 @@ const rocketWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
 
 // Scout walker: a raptor. Very long reverse-knee legs, a forward-leaning body with a counterweight tail, a bird-like head with a big eye.
 const scoutWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
-  const walk = gait(run, moving), bb = b / s, sw = Math.sin(w * 6 + ph) * .025 * walk, rec = Math.max(0, Math.sin(w * 2.4 + ph)) * .008 * run, hy = -.04 + bb;
+  const walk = gait(run, moving), bb = 0, sw = Math.sin(w * 6 + ph) * .025 * armSwing(walk), rec = Math.max(0, Math.sin(w * 2.4 + ph)) * .008 * run, hy = -.04 + bb;
   leg(g, s, -.07, hy, 0, w, walk, .065, dk, .1); leg(g, s, .04, hy, Math.PI, w, walk, .065, lighter(dk), .1);
   limb(g, s, -.1, -.08 + bb, -.3, -.15 + bb, .06, .015, dk);                                                                                     // the tail
   arm(g, s, -.02, -.14 + bb, .04, -.06 + bb - sw, .08, -.01 + bb - sw, .04, darker(dk, .1));
@@ -107,7 +110,7 @@ const scoutWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
 
 // Flame walker: a fuel tank on its back, a flamer pod on one arm with a flickering flame, and glowing vents on a hunched chest.
 const flameWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
-  const walk = gait(run, moving), bb = b / s, sw = Math.sin(w * 6 + ph) * .02 * walk, hy = -.03 + bb;
+  const walk = gait(run, moving), bb = 0, sw = Math.sin(w * 6 + ph) * .02 * armSwing(walk), hy = -.03 + bb;
   const f = run ? .5 + .5 * Math.sin(w * 31 + ph) : .6;
   leg(g, s, -.1, hy, 0, w, walk, .11, dk); leg(g, s, .05, hy, Math.PI, w, walk, .11, lighter(dk));
   arm(g, s, -.02, -.22 + bb, .06, -.12 + bb - sw, .1, -.04 + bb - sw, .06, darker(dk, .1)); claw(g, s, .1, -.04 + bb - sw, 1, dk);
@@ -126,7 +129,7 @@ const flameWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
 
 // Bulwark: a defensive walker behind a big spiked, kite-shaped shield on its near arm and a piston fist on the other.
 const bulwark = (g, { s, c, dk, ph, w, run, moving, b }) => {
-  const walk = gait(run, moving), bb = b / s, sw = Math.sin(w * 6 + ph) * .02 * walk, hy = -.03 + bb;
+  const walk = gait(run, moving), bb = 0, sw = Math.sin(w * 6 + ph) * .02 * armSwing(walk), hy = -.03 + bb;
   leg(g, s, -.16, hy, 0, w, walk, .14, dk, .11); leg(g, s, .06, hy, Math.PI, w, walk, .14, lighter(dk), .11);
   arm(g, s, -.1, -.28 + bb, .0, -.16 + bb - sw, .06, -.09 + bb - sw, .09, darker(dk, .1)); poly(g, s, [[.02, -.14 + bb - sw], [.12, -.13 + bb - sw], [.13, -.04 + bb - sw], [.03, -.03 + bb - sw]], dk);   // far arm: a piston fist
   poly(g, s, up([[-.28, -.24], [-.2, -.36], [.1, -.37], [.2, -.28], [.18, -.1], [.12, -.02], [-.16, -.02], [-.28, -.08]], bb), c);

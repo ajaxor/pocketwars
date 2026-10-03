@@ -18,7 +18,7 @@ test('every drawing part draws, animating and frozen', () => {
   const g = ctx(), s = 100;
   const calls = {
     wheel: [g, s, 0, 0, .08, .3, 1, 10], wheels: [g, s, [-.2, .2], 0, .08, .3, 1], treads: [g, s, -.3, .3, 0, .15, .3, 1],
-    walkerLeg: [g, s, 0, 0, 0, .3, 1, 7, '#444'], antigrav: [g, s, -.2, .2, .1, .3, 1, 3], hoverEmitter: [g, s, -.3, .3, .1, .3, 1], surfacing: [g, s, .3, 1, .6, -.4, .4, .1, 0, () => {}], bubbles: [g, s, .3, 1, 0, 0],
+    walkerLeg: [g, s, 0, 0, 0, .3, 1, 7, '#444'], antigrav: [g, s, -.2, .2, .1, .3, 1, 3], hoverTubes: [g, s, -.3, .3, .1, .3, 1], surfacing: [g, s, .3, 1, .6, -.4, .4, .1, 0, () => {}], bubbles: [g, s, .3, 1, 0, 0],
     periscope: [g, s, 0, 0, -.2], tubes: [g, s, 0, 0, .4, .2, { n: 2 }], dish: [g, s, 0, 0, .1, .3, 1], propDisc: [g, s, 0, 0, .1, .3, 1],
     legs: [g, s, 2, '#444'], torso: [g, s, 0, '#c33'], head: [g, s, 0], dome: [g, s, 0, .1, '#444'],
     sheen: [g, s, .3, 1, [[0, 0], [.2, 0], [.2, .2]]], plume: [g, s, 0, 0, .3, 1, 0],
@@ -28,6 +28,6 @@ test('every drawing part draws, animating and frozen', () => {
   for (const [name, args] of Object.entries(calls)) {
     assert.equal(typeof parts[name], 'function', name);
     parts[name](...args);
-    if (['wheel', 'treads', 'walkerLeg', 'antigrav', 'hoverEmitter', 'bubbles', 'tubes', 'dish', 'propDisc', 'sheen', 'plume', 'propeller'].includes(name)) { const a = args.slice(); a[a.indexOf(1)] = 0; parts[name](...a); }
+    if (['wheel', 'treads', 'walkerLeg', 'antigrav', 'hoverTubes', 'bubbles', 'tubes', 'dish', 'propDisc', 'sheen', 'plume', 'propeller'].includes(name)) { const a = args.slice(); a[a.indexOf(1)] = 0; parts[name](...a); }
   }
 });
