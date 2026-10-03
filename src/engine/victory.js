@@ -2,6 +2,7 @@
 // player is also defeated when they have no units and cannot afford to build any. The last player left wins.
 
 import { cheapestBuildableCost } from './economy.js';
+import { clearSabotageOwnedBy } from './sabotage.js';
 
 export function isDefeated(game, player) {
   if (game.state.units.some((u) => u.owner === player)) return false;
@@ -15,6 +16,7 @@ export function isDefeated(game, player) {
 export function eliminate(game, player, reason) {
   const { state, map } = game;
   state.defeated[player] = true;
+  clearSabotageOwnedBy(game, player);
   state.units = state.units.filter((u) => u.owner !== player);
   for (const row of state.owners) row.forEach((o, x) => { if (o === player) row[x] = null; });
   const alive = map.players.map((_, p) => p).filter((p) => !state.defeated[p]);

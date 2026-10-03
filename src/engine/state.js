@@ -18,7 +18,9 @@
 //   winner: null | number | 'draw'
 //   nextUnitId: number
 //   builtThisTurn: number[] tile indexes of the properties that have already built a unit this turn (one build per property per turn)
+//   sabotaged: number[]     tile indexes of the properties a spy has sabotaged (half income, no building) until their owner's turn is over (sabotage.js)
 // }
+// A unit also carries `moved: true` once it has changed tile in its owner's turn (read, then cleared, by heal.js at the start of the next).
 
 import { initialAmmo } from './ammo.js';
 import { facingToCentre } from './queries.js';
@@ -47,6 +49,7 @@ export function createState(map, registry) {
     winner: null,
     nextUnitId,
     builtThisTurn: [],
+    sabotaged: [],
   };
 }
 
@@ -57,6 +60,7 @@ export const snapshotState = (state) => ({
   funds: [...state.funds],
   defeated: [...state.defeated],
   nextUnitId: state.nextUnitId,
+  sabotaged: [...state.sabotaged],
 });
 
 export function restoreState(state, snap) {
@@ -65,4 +69,5 @@ export function restoreState(state, snap) {
   state.funds = [...snap.funds];
   state.defeated = [...snap.defeated];
   state.nextUnitId = snap.nextUnitId;
+  state.sabotaged = [...snap.sabotaged];
 }

@@ -1,14 +1,14 @@
 // Game: the single entry point for changing game state. UI, AI and tests all go through these methods.
 //
 //   const game = new Game(registry, map);
-//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId } })
+//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'sabotage' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId } })
 //   game.build(x, y, unitType)
 //   game.deploy({ unitId, to })        a carrier (transport copter) puts a unit down, apart from its own order
 //   game.endTurn()
 //   game.undo()
 //
 // Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, dive, surface, strike,
-// capture, build, deploy, resupply, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
+// capture, sabotage, build, deploy, resupply, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
 //
 // BUILDING AND THE FREE MOVE. A unit is built on the property itself and is ready at once, but `fresh` (see state.js): its one order
@@ -29,6 +29,7 @@
 // Its reach is only its own tile; a unit that got at least one tile cannot fire indirect weapons, like any unit that has moved.
 
 import { canResupplyAt, resupply } from './ammo.js';
+import { canSabotage, clearSabotageOwnedBy, resolveSabotage } from './sabotage.js';
 import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
@@ -78,6 +79,9 @@ export class Game {
     if (action.type === 'capture') {
       return canCapture(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-capture');
     }
+    if (action.type === 'sabotage') {
+      return canSabotage(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-sabotage');
+    }
     if (action.type === 'submerge') {
       return canSubmergeAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-submerge');
     }
@@ -123,6 +127,7 @@ export class Game {
         else if (!there) last = i;
       }
       if (last > 0) {
+        unit.moved = true;   // read (and cleared) by heal.js at the start of its owner's next turn: a unit that stayed put can rest
         unit.x = path[last][0];
         unit.y = path[last][1];
         unit.capture = 0; // leaving a tile abandons capture progress
@@ -141,6 +146,7 @@ export class Game {
       }
     }
     if (action.type === 'capture') events.push(...resolveCapture(this, unit));
+    else if (action.type === 'sabotage') events.push(...resolveSabotage(this, unit));
     else if (action.type === 'attack') events.push(...resolveAttack(this, unit, target));
     else if (action.type === 'submerge') { unit.submerged = true; events.push({ type: 'dive', unit: snapshotUnit(unit) }); }
     else if (action.type === 'surface') { unit.submerged = false; events.push({ type: 'surface', unit: snapshotUnit(unit), forced: false }); }
@@ -199,6 +205,7 @@ export class Game {
     const { state, map } = this;
     this.undoSnapshot = null;
     const events = [];
+    clearSabotageOwnedBy(this, state.turn);   // the owner has had their turn with the property crippled
     for (let tries = 0; tries < map.players.length; tries++) {
       let next = state.turn;
       do {

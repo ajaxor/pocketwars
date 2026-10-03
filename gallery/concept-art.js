@@ -3,10 +3,10 @@
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 //   SHADOWS[name](g, { s, alt, w, ph, run })
 import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, sheen, bubbles, GLOW } from '../src/render/parts.js';
-import * as INFANTRY from './concept-art-infantry.js';
+import * as INFANTRY from '../src/render/art-infantry.js';
 import * as STATIC from './concept-art-static.js';
-import * as AIR from './concept-art-air.js';
-import * as SHIPS from './concept-art-ships.js';
+import * as AIR from '../src/render/art-air.js';
+import * as SHIPS from '../src/render/art-ships.js';
 import * as VEHICLES from './concept-art-vehicles.js';
 import * as FLEET from './concept-art-fleet.js';
 

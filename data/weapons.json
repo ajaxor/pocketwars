@@ -17,5 +17,13 @@
   "naval_cannon":  { "name": "Naval cannon",  "damage": 85,  "armorPiercing": 0.5, "range": [1, 3], "targets": ["surface", "indirect_ground"], "targetMultipliers": { "indirect_ground": 0.8 }, "fx": "arc" },
   "aa_battery":    { "name": "AA battery",    "damage": 85,  "armorPiercing": 0,   "range": [1, 1], "targets": ["low_air", "high_air"], "targetMultipliers": { "low_air": 1.6, "high_air": 1.4 }, "fx": "shot" },
   "main_guns":     { "name": "Main guns",     "damage": 120, "armorPiercing": 0.7, "range": [2, 5], "indirect": true, "targets": ["surface", "indirect_ground"], "targetMultipliers": { "indirect_ground": 0.75 }, "fx": "arc" },
-  "secondary_guns": { "name": "Secondary guns", "damage": 70, "armorPiercing": 0.4, "range": [1, 1], "targets": ["surface", "direct_ground", "low_air"], "fx": "shot" }
+  "secondary_guns": { "name": "Secondary guns", "damage": 70, "armorPiercing": 0.4, "range": [1, 1], "targets": ["surface", "direct_ground", "low_air"], "fx": "shot" },
+  "pistol":        { "name": "Pistol",        "damage": 15,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air"] },
+  "mortar_shells": { "name": "Mortar shells", "damage": 60,  "armorPiercing": 0.2, "range": [2, 4], "targets": ["indirect_ground"], "ammo": 1, "fx": "arc" },
+  "stealth_missiles": { "name": "Stealth missiles", "damage": 150, "armorPiercing": 0, "range": [1, 1], "targets": ["high_air"], "ammo": 1 },
+  "wing_guns":     { "name": "Wing guns",     "damage": 75,  "armorPiercing": 0,   "range": [1, 1], "targets": ["low_air", "high_air"], "targetMultipliers": { "low_air": 1.2 } },
+  "light_bombs":   { "name": "Light bombs",   "damage": 58,  "armorPiercing": 0.8, "range": [1, 1], "targets": ["indirect_ground", "surface"] },
+  "aerial_torpedo": { "name": "Aerial torpedo", "damage": 130, "armorPiercing": 0.85, "range": [1, 1], "targets": ["surface", "underwater", "indirect_ground"], "targetMultipliers": { "underwater": 0.7, "indirect_ground": 0.25 }, "ammo": 1, "fx": "torpedo" },
+  "boat_cannon":   { "name": "Boat cannon",   "damage": 50,  "armorPiercing": 0.2, "range": [1, 1], "targets": ["surface", "direct_ground"] },
+  "boat_mg":       { "name": "Boat machine gun", "damage": 60, "armorPiercing": 0, "range": [1, 1], "targets": ["direct_ground", "low_air"] }
 }

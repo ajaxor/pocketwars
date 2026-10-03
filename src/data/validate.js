@@ -137,6 +137,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     }
     if (u.toughness !== undefined && !(isNum(u.toughness) && u.toughness > 0)) problems.push(`unit "${id}": toughness must be a positive number (1 = no bonus)`);
     if (u.armor !== undefined && !(isNum(u.armor) && u.armor >= 0 && u.armor <= 1)) problems.push(`unit "${id}": armor must be a number from 0 to 1`);
+    if (u.exclusive !== undefined && typeof u.exclusive !== 'boolean') problems.push(`unit "${id}": exclusive must be true or false (true: only a leader's loadout can put it on a build menu)`);
     if (u.attributes && u.attributes.indirect && Array.isArray(u.weapons) && isObj(weapons)) {
       for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
     }
@@ -151,6 +152,11 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
         if (!isObj(supply)) problems.push(`unit "${id}": weapon "${w}" uses ammo, so the unit needs the "ammo" attribute`);
         else if (Number.isInteger(supply.max) && cost > supply.max) problems.push(`unit "${id}": weapon "${w}" costs ${cost} ammo a shot but the unit only carries ${supply.max}`);
       }
+    }
+    const heals = u.attributes && u.attributes.heal;
+    if (isObj(heals) && Array.isArray(heals.categories)) {
+      const known = new Set(Object.values(units).filter(isObj).map((x) => x.category));
+      for (const c of heals.categories) if (typeof c === 'string' && !known.has(c)) problems.push(`unit "${id}": attribute "heal" names unknown unit category "${c}"`);
     }
     const drop = u.attributes && u.attributes.deploy;
     if (isObj(drop) && isStr(drop.unit) && !units[drop.unit]) problems.push(`unit "${id}": attribute "deploy" names unknown unit "${drop.unit}"`);
@@ -188,6 +194,7 @@ export function validateAi(ai, units, problems) {
     if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push('ai: weights.blockCapture must be a number');
     if (ai.weights.crowFlies !== undefined && !isNum(ai.weights.crowFlies)) problems.push('ai: weights.crowFlies must be a number');
     if (ai.weights.deployRange !== undefined && !isNum(ai.weights.deployRange)) problems.push('ai: weights.deployRange must be a number');
+    for (const k of ['sabotageBase', 'healValue']) if (ai.weights[k] !== undefined && !isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
   }
   if (!isObj(ai.build)) return problems.push('ai: build must be an object keyed by unit category');
   for (const [category, rules] of Object.entries(ai.build)) {

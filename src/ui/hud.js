@@ -163,6 +163,7 @@ export class Hud {
     w.body.append(chips);
     const notes = [...t.notes];
     if (t.property && t.property.builds.length) notes.unshift(`Builds ${t.property.builds.join(', ').toLowerCase()}`);
+    if (t.property?.sabotaged) notes.unshift('Sabotaged: half income, cannot build until its owner\'s turn is over');
     if (notes.length) w.body.append(this.#tags(notes));
     return w.root;
   }

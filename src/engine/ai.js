@@ -8,6 +8,10 @@
 // A turn goes: every unit moves, then production, then the units just built use their free move (they are `fresh`: a move and a
 // Wait only, see game.js) so they leave the properties that built them.
 //
+// Support units. A healer (medic, mechanic: the `heal` attribute) walks toward the friendly units it can heal, the damaged ones first, and likes
+// tiles next to them (`healValue`); a radar plane stays with the army; a spy (`sabotage`) heads for enemy properties and sabotages one
+// when it stands on it (`sabotageBase`, above an attack so it is not wasted on plinking with its pistol).
+//
 // Carriers (the transport copter) fly toward properties they could have captured, drop their troops once close to one (`tryDeploy`, after
 // the carrier's own move; the dropped unit is then ordered like any other), and go back to an airfield for more when empty and the owner
 // can pay for it. Resupply is only chosen when the unit is low or empty and the money is there.
@@ -19,6 +23,7 @@ import { ammoLevel, canResupplyAt, resupplyCost } from './ammo.js';
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
+import { canSabotage, isSabotaged } from './sabotage.js';
 import { calcDamage, canAttackFrom } from './combat.js';
 import { canSee } from './detection.js';
 import { canDeploy, deployConfig, deployReach } from './deploy.js';
@@ -26,6 +31,26 @@ import { buildProblem, menuFor } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
 import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
 import { canSubmergeAt } from './submerge.js';
+
+/** The friendly units `unit` (a healer) could heal, by the categories of its `heal` attribute. */
+function healable(game, unit) {
+  const cfg = attributeConfig(unitDef(game, unit), 'heal');
+  if (!cfg) return [];
+  return game.state.units.filter((u) => u !== unit && u.owner === unit.owner && cfg.categories.includes(unitDef(game, u).category));
+}
+
+/** A healer likes a tile for the HP it would restore from there (what a unit next to it is missing, up to its heal amount, at the unit's price). */
+function healScore(game, unit, x, y, w) {
+  const cfg = attributeConfig(unitDef(game, unit), 'heal');
+  if (!cfg) return 0;
+  const max = game.registry.rules.maxHp;
+  let score = 0;
+  for (const u of healable(game, unit)) {
+    if (distance(x, y, u.x, u.y) !== 1 || u.hp >= max) continue;
+    score += Math.min(cfg.amount, max - u.hp) * unitDef(game, u).cost / w.costUnit * (w.healValue ?? 2);
+  }
+  return score;
+}
 
 /**
  * Tiles worth walking toward: capturers head for properties they don't own, everyone else for enemy units.
@@ -39,7 +64,24 @@ function goalTiles(game, unit) {
     const homes = allProperties(game).filter((p) => p.owner === unit.owner && p.terrain.attributes.resupply?.categories.includes(category)).map((p) => [p.x, p.y]);
     if (homes.length) return homes;
   }
-  if (hasAttribute(unitDef(game, unit), 'capture') || deployConfig(game, unit)) {   // a carrier takes its troops where they can capture
+  const def = unitDef(game, unit);
+  // a healer goes to its wounded (or, with none, to the units it looks after); a radar plane stays with the army
+  if (hasAttribute(def, 'heal')) {
+    const mine = healable(game, unit);
+    const hurt = mine.filter((u) => u.hp < game.registry.rules.maxHp);
+    const chosen = hurt.length ? hurt : mine;
+    if (chosen.length) return chosen.map((u) => [u.x, u.y]);
+  }
+  if (hasAttribute(def, 'radar') && !def.weapons.length) {
+    const army = state.units.filter((u) => u !== unit && u.owner === unit.owner && !hasAttribute(unitDef(game, u), 'radar'));
+    if (army.length) return army.map((u) => [u.x, u.y]);
+  }
+  // a saboteur heads for the enemy properties still earning
+  if (hasAttribute(def, 'sabotage')) {
+    const targets = allProperties(game).filter((p) => p.owner !== null && p.owner !== unit.owner && !isSabotaged(game, p.x, p.y)).map((p) => [p.x, p.y]);
+    if (targets.length) return targets;
+  }
+  if (hasAttribute(def, 'capture') || deployConfig(game, unit)) {   // a carrier takes its troops where they can capture
     const props = allProperties(game).filter((p) => p.owner !== unit.owner).map((p) => [p.x, p.y]);
     if (props.length) return props;
   }
@@ -70,9 +112,10 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
     if (unit.carriedBy && !moved) continue;   // a unit just deployed has to leave its carrier's tile
     // cover only matters to a unit that gets it (aircraft ignore it)
     const defense = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
-    let score = -(field.get(tileIndex(map, x, y)) ?? fallback(x, y)) * w.distanceToGoal + defense * w.terrainDefense;
+    let score = -(field.get(tileIndex(map, x, y)) ?? fallback(x, y)) * w.distanceToGoal + defense * w.terrainDefense + healScore(game, unit, x, y, w);
     let target = null;
     let capture = false;
+    let sabotage = false;
 
     if (mayFire(moved)) {
       for (const e of enemies) {
@@ -93,12 +136,14 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
       // a unit parked on someone else's property keeps everyone from capturing it: leave those tiles to the units that can
       score -= w.blockCapture ?? 0;
     }
-    if (!best || score > best.score) best = { x, y, score, target, capture };
+    // sabotage beats a pistol shot (and everything else but a capture that wins the game): a spy on an enemy property cripples it
+    if (mayAct && canSabotage(game, unit, x, y) && (w.sabotageBase ?? 70) > score) { score = w.sabotageBase ?? 70; sabotage = true; target = null; capture = false; }
+    if (!best || score > best.score) best = { x, y, score, target, capture, sabotage };
   }
 
   // with nothing to shoot or capture, a submarine goes under (it cannot be hunted there without sonar, and it can still strike from there)
-  const dive = mayAct && !best.target && !best.capture && canSubmergeAt(game, unit, best.x, best.y);
-  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) && ammoLevel(game, unit) !== 'ok' && resupplyCost(game, unit) <= game.state.funds[unit.owner] ? { type: 'resupply' } : { type: 'wait' };
+  const dive = mayAct && !best.target && !best.capture && !best.sabotage && canSubmergeAt(game, unit, best.x, best.y);
+  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : best.sabotage ? { type: 'sabotage' } : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) && ammoLevel(game, unit) !== 'ok' && resupplyCost(game, unit) <= game.state.funds[unit.owner] ? { type: 'resupply' } : { type: 'wait' };
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
 

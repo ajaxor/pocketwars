@@ -1,19 +1,25 @@
 // Turn income, repair, resupply and unit production, all driven by the terrain `property` attribute.
 
+import { healAtTurnStart } from './heal.js';
 import { propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, tileIndex, unitAt } from './queries.js';
+import { isSabotaged } from './sabotage.js';
 import { makeUnit } from './state.js';
 
-export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
+/** What one property pays its owner this turn: half (rounded down) while a spy's sabotage is on it. */
+const yieldOf = (game, p) => (isSabotaged(game, p.x, p.y) ? Math.floor(p.property.income / 2) : p.property.income);
+
+export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + yieldOf(game, p), 0);
 
 /**
  * Begin `player`'s turn: collect income, repair units standing on properties they own (+property.repair HP,
  * capped at maxHp), refill the ammo of units next to a property that resupplies them, and make all their units ready to act again
- * (a unit built last turn is no longer `fresh`). Every property may build again.
+ * (a unit built last turn is no longer `fresh`). Every property may build again. Medics, mechanics and units that rested then heal
+ * (heal.js); a sabotaged property pays half (sabotage.js).
  */
 export function startTurn(game, player) {
   const { state, registry } = game;
   const income = incomeFor(game, player);
-  const incomes = propertiesOwnedBy(game, player).filter((p) => p.property.income > 0).map((p) => ({ x: p.x, y: p.y, amount: p.property.income }));
+  const incomes = propertiesOwnedBy(game, player).filter((p) => p.property.income > 0).map((p) => ({ x: p.x, y: p.y, amount: yieldOf(game, p), sabotaged: isSabotaged(game, p.x, p.y) }));
   state.funds[player] += income;
   state.builtThisTurn = [];
   const repaired = [];
@@ -31,7 +37,8 @@ export function startTurn(game, player) {
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
     }
   }
-  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired }];
+  const healed = healAtTurnStart(game, player);
+  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, healed }];
 }
 
 /**
@@ -64,6 +71,7 @@ export function buildProblem(game, player, x, y, typeId) {
   if (!def) return 'unknown-unit';
   const property = propertyAt(game, x, y);
   if (!property || ownerAt(game, x, y) !== player) return 'not-your-property';
+  if (isSabotaged(game, x, y)) return 'sabotaged';
   if (!menuFor(game, player, x, y).some((u) => u.id === typeId)) return 'cannot-build-here';
   if (unitAt(game, x, y)) return 'tile-occupied';
   if (builtThisTurn(game, x, y)) return 'already-built';

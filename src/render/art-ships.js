@@ -1,7 +1,8 @@
-// Experimental concept ships (Shipyard): sprites only, NOT in the game. Same conventions as the real ships in src/render/unit-art.js:
+// Sprites for ships beyond the original four: the gun boat is in the game (unit-art.js takes it by name); the carrier and the
+// dreadnought are still concepts (gallery/concepts.json).
 // drawn twice around a fixed waterline (afloat), light colour above and the UNDER_SHADE mix below, foam at both ends, no shadow.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })   SHADOWS[name](g, { s, alt, w, ph, run })
-import { box, disc, oval, poly, stroke, mix, afloat, hullPath, deckAt, propeller, UNDER_SHADE, INK, STEEL } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, hullPath, deckAt, propeller, UNDER_SHADE, INK, STEEL } from './parts.js';
 
 const WHITE = '#f4f4f0', SMOKE = 'rgba(70,70,75,', FOAMW = 'rgba(255,255,255,';
 

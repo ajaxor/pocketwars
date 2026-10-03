@@ -77,7 +77,7 @@
     "name": "Barracks",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] }, "blocksLineOfSight": 2 },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] }, "resupply": { "range": 1, "categories": ["infantry"] }, "blocksLineOfSight": 2 },
     "render": { "building": "barracks" }
   },
   "airfield": {

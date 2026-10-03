@@ -62,7 +62,8 @@ export function createRegistry(raw) {
     terrainDef: (id) => { const t = terrain[id]; if (!t) throw new Error(`Unknown terrain "${id}"`); return t; },
     weapon: (id) => { const w = weapons[id]; if (!w) throw new Error(`Unknown weapon "${id}"`); return w; },
     faction: (id) => { const f = factions[id]; if (!f) throw new Error(`Unknown faction "${id}"`); return f; },
-    /** Unit definitions belonging to any of the given categories, in build-menu order. */
-    unitsInCategories: (categories) => unitIds.map((id) => units[id]).filter((u) => categories.includes(u.category)),
+    /** Unit definitions belonging to any of the given categories, in build-menu order. A unit marked `exclusive` is left out: it is only
+     *  built where a leader's loadout lists it (data/loadouts.json). */
+    unitsInCategories: (categories) => unitIds.map((id) => units[id]).filter((u) => categories.includes(u.category) && !u.exclusive),
   });
 }

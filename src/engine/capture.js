@@ -3,6 +3,7 @@
 
 import { hasAttribute } from './attributes.js';
 import { ownerAt, propertyAt, snapshotUnit, terrainAt, unitDef } from './queries.js';
+import { clearSabotageAt } from './sabotage.js';
 import { eliminate } from './victory.js';
 
 /** Could `unit` capture the tile at (x, y) if it stood there? */
@@ -31,6 +32,7 @@ export function resolveCapture(game, unit) {
   if (completed) {
     const previous = game.state.owners[y][x];
     game.state.owners[y][x] = unit.owner;
+    clearSabotageAt(game, x, y);
     unit.capture = 0;
     if (hasAttribute(terrainAt(game, x, y), 'victoryOnCapture') && previous !== null && previous !== unit.owner) {
       events.push(...eliminate(game, previous, 'hq'));

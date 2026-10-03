@@ -41,5 +41,5 @@ into a new file: a fix then lands in every unit, and units that carry the same k
 ## Not shared yet (candidates)
 
 Each is drawn more than once with small differences; unify when the next unit needs one: the sandbag/concrete pads under the static
-defences, ship deck mounts (`mount` in `concept-art-ships.js` versus `turret`), radar dishes drawn by hand on the jammer, SAM site, carrier and
+defences, ship deck mounts (`mount` in `art-ships.js` versus `turret`), radar dishes drawn by hand on the jammer, SAM site, carrier and
 radar plane (now that `dish` exists), the medic cross and heal plus, and the muzzle-flash glints.

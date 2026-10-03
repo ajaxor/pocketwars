@@ -1,8 +1,9 @@
-// Experimental concept units, Training Ground group: specialist infantry. NOTHING here is in the game (see concept-art.js).
+// Sprites for the Training Ground's specialist infantry: commando, mechanic, medic, mortar team and spy are in the game (unit-art.js
+// takes them by name); the rest are still concepts (gallery/concepts.json).
 // Same conventions as src/render/unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }), centred on (0, 0), +x forward.
 // The rule for this group (and the guideline in docs/unit-art-lessons.md): every specialist is the game's plain soldier (legs, torso,
 // head, helmet, the same walk cycle) plus ONE thing that tells it apart: a bandanna, a launcher, a wrench, a case, a fur hat.
-import { box, disc, oval, poly, stroke, mix, afloat, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome } from './parts.js';
 
 const RED = '#d4442e', WHITE = '#f4f4ee', WOOD = '#7a4e2a', FUR = '#8a7a66';
 

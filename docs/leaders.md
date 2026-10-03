@@ -17,3 +17,7 @@ A leader brings a **kit** to a battle: what each factory builds, and which units
 ## Placement (`src/data/formation.js`)
 Sets are placed in order: the HQ's, then buildings in reading order (`placeStart`); each set is placed by `placeFormation` around its own building.
 Forward is, from the building, toward the average enemy HQ, snapped to N/S/E/W (map centre if there is none). Units are placed in list order at their offset. A tile is invalid if it is off the map, impassable for the unit, taken, any property, or not connected to the HQ. An invalid spot takes the nearest valid tile (then same row, nearest the HQ, nearest the centre line). Units with nowhere to stand are skipped (validation fails if that happens on a shipped map).
+
+## Exclusive units
+
+Units flagged `"exclusive": true` in `data/units.json` stay off the default kit and category menus; only a leader's `build` list can offer them. The twelve drafted units (spy, commando, medic, mortar, mechanic, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth fighter/bomber) are assigned this way in `data/loadouts.json`.

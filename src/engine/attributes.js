@@ -76,6 +76,44 @@ export const UNIT_ATTRIBUTES = {
       else if (Number.isInteger(v.ammo) && Number.isInteger(e.attributes.ammo.max) && v.ammo > e.attributes.ammo.max) fail('ammo (the cost of one drop) is more than the unit can carry');
     },
   },
+  cloak: {
+    label: 'Cloaked',
+    help: 'Hidden from the enemy unless one of their units is next to it or has radar in range. A hidden unit cannot be targeted, and what it hits cannot answer unless it can see the attacker.',
+    doc: 'Always hidden (like a submerged unit, but on its own layer): other players cannot see it, target it or plan around it unless one of their units is adjacent or within `radar` range. The owner always sees it. It is found out when an enemy move runs into it (an interrupt). A cloaked unit that attacks is not answered by a counterattack unless the defender can see it (an adjacent defender can). See detection.js.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+  },
+  radar: {
+    label: (v) => `Radar ${v}`,
+    help: (v) => `Spots cloaked enemies up to ${v} tiles away.`,
+    doc: 'Detects cloaked (`cloak`) enemy units within this many tiles. Adjacent units are always noticed, as with sonar; sonar is the same for submerged units. The number is the range in tiles.',
+    check: (v, e, fail) => { if (!Number.isInteger(v) || v < 2) fail('must be a whole number of tiles, at least 2 (adjacent units are always noticed)'); },
+  },
+  heal: {
+    label: (v) => `Heals ${v.amount}`,
+    help: (v) => `At the start of your turn, each friendly ${v.categories.join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ''}. A unit is only healed by one neighbour a turn (the best).`,
+    doc: 'Support healing. Config: { amount, categories, costRate? }. At the start of its owner\'s turn every friendly unit of one of those categories on an adjacent tile regains up to `amount` HP (not above max). `costRate` is the price of one HP as a fraction of the healed unit\'s cost, paid from the owner\'s funds (0 or absent: free); with too little money it heals what it can pay for. A damaged unit next to several healers is healed once, by the strongest. See heal.js.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "amount": 2, "categories": ["infantry"], "costRate": 0.1 }');
+      if (!Number.isInteger(v.amount) || v.amount < 1) fail('amount must be a positive whole number of HP');
+      if (!Array.isArray(v.categories) || !v.categories.length || v.categories.some((c) => typeof c !== 'string' || !c)) fail('categories must be a non-empty array of unit category names');
+      if (v.costRate !== undefined && !(typeof v.costRate === 'number' && v.costRate >= 0 && v.costRate <= 1)) fail('costRate must be a number from 0 to 1');
+    },
+  },
+  rest: {
+    label: (v) => `Rests +${v.heal}`,
+    help: (v) => `If it does not move during a turn it regains ${v.heal} HP at the start of the next.`,
+    doc: 'Self-healing while still. Config: { heal }. At the start of its owner\'s turn a unit that did not change tile during its last turn regains `heal` HP (not above max). Attacking or waiting in place counts as still. See heal.js.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "heal": 1 }');
+      if (!Number.isInteger(v.heal) || v.heal < 1) fail('heal must be a positive whole number of HP');
+    },
+  },
+  sabotage: {
+    label: 'Sabotage',
+    help: 'Can sabotage the enemy property it stands on (instead of capturing): the property earns half its income and cannot build until its owner\'s next turn is over.',
+    doc: 'A `sabotage` order (after moving, like capture) on a property owned by another player: until the end of that owner\'s next turn the property pays half its income and cannot build (economy.js), and it is marked on the map. A property that is already sabotaged cannot be sabotaged again; capturing it or its owner losing it ends the sabotage. See sabotage.js.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+  },
 };
 
 /** Attributes that may appear in terrain.json -> attributes. */

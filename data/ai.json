@@ -10,24 +10,38 @@
     "costUnit": 1000,
     "blockCapture": 6,
     "crowFlies": 0.1,
-    "deployRange": 8
+    "deployRange": 8,
+    "sabotageBase": 70,
+    "healValue": 2
   },
   "build": {
     "infantry": [
       { "unit": "mech",    "max": 2 },
+      { "unit": "commando", "max": 2 },
       { "unit": "sniper",  "max": 1 },
+      { "unit": "mortar",  "max": 1 },
+      { "unit": "medic",   "max": 1 },
+      { "unit": "mechanic", "max": 1 },
+      { "unit": "spy",     "max": 1 },
       { "unit": "soldier", "max": 5 }
     ],
     "aircraft": [
+      { "unit": "stealth_bomber", "max": 1 },
       { "unit": "bomber",  "max": 1 },
+      { "unit": "stealth_fighter", "max": 1 },
       { "unit": "fighter", "max": 1 },
+      { "unit": "vintage_bomber", "max": 2 },
+      { "unit": "vintage_fighter", "max": 2 },
       { "unit": "copter",  "max": 2 },
+      { "unit": "torpedo_bomber", "max": 1, "when": "enemyHasNaval" },
+      { "unit": "radar_plane", "max": 1 },
       { "unit": "transport_copter", "max": 1 }
     ],
     "amphibious": [
       { "unit": "marine",  "max": 2 }
     ],
     "naval": [
+      { "unit": "gun_boat",   "max": 2 },
       { "unit": "cruiser",    "max": 2, "when": "enemyHasAirborne" },
       { "unit": "destroyer",  "max": 2 },
       { "unit": "submarine",  "max": 2 },

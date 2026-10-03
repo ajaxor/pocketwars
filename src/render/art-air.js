@@ -1,7 +1,8 @@
-// Experimental concept units, group "air": new aircraft for the existing Airfield. NOTHING here is in the game.
+// Sprites for the aircraft that are not in the original six: the stealth fighter, torpedo bomber, radar plane and the two vintage planes
+// (all drafted into the game, see unit-art.js) and any air concepts still waiting in gallery/concepts.json.
 // Same conventions as gallery/concept-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }) centred on (0, 0), +x forward,
 // sizes are fractions of the tile s. Drawn like the fighter and bomber: a 3/4 view, near wing toward the viewer, far wing darker.
-import { box, disc, oval, poly, stroke, mirror, mix, GLASS, INK, STEEL, propDisc, sheen } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mirror, mix, GLASS, INK, STEEL, propDisc, sheen } from './parts.js';
 
 const ORANGE = '#ff9a2e', RED = '#d4442e', BRASS = '#d9b44a';
 

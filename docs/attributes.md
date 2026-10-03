@@ -18,6 +18,11 @@ wrong kind of entity, fail validation.
 | `ignoresTerrainDefense` | Terrain defense does not reduce damage this unit takes. | `ignoresTerrainDefense.test.js` |
 | `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer }` names the layer while down; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. | `tests/engine/naval.test.js` |
 | `sonar` | Detects hidden enemies within this many tiles (integer >= 2; adjacent units are always noticed). | `tests/engine/naval.test.js` |
+| `cloak` | Hidden from other players unless one of their units is adjacent or has `radar` in range. Keeps its own layer. Sonar does not find it. | `tests/attributes/cloak.test.js` |
+| `radar` | Finds cloaked enemies within this many tiles (integer >= 2). | `tests/attributes/cloak.test.js` |
+| `heal` | At the start of its owner's turn, restores HP to adjacent friendly units of the configured categories. | `tests/attributes/heal.test.js` |
+| `rest` | Recovers HP at turn start if it did not move the previous turn. | `tests/attributes/heal.test.js` |
+| `sabotage` | Order on an enemy property the unit stands on: half income and no building until the owner's turn ends. Capturing lifts it. | `tests/attributes/sabotage.test.js` |
 | `terrainDefenseMultiplier` | Multiplies the terrain defense this unit gets (`2` doubles it; must be > 1). No effect on 0-defense terrain, and `ignoresTerrainDefense` still wins. | `terrainDefenseMultiplier.test.js` |
 | `ammo` | `{max, low, cost?}`: a limited supply, tracked as `unit.ammo`. Weapons with an `ammo` cost spend it; a bullet shows on the tile (flashing at `low` or fewer, steady red at 0). Generic: any unit can have it. | `tests/attributes/ammo.test.js` |
 | `deploy` | `{unit, ammo?}`: a separate, factory-like action (before or after the carrier's own order, once per turn): a new `unit` is placed on the carrier's tile and ordered with the normal move-and-act order (it can attack; cancelling puts it back), spending `ammo` (default 1). Not on a just-built carrier. Requires `ammo`. Transport copter. | `tests/engine/transport.test.js` |

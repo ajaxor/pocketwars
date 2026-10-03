@@ -30,14 +30,59 @@
     }
   },
   "leaders": {
-    "harlan": {},
-    "ada": {},
-    "vex": {},
-    "hiroshi": {},
-    "ludwig": {},
-    "rex": {},
-    "chase": {},
+    "harlan": {
+      "build": { "airfield": ["transport_copter", "copter", "vintage_fighter", "vintage_bomber"] }
+    },
+    "ada": {
+      "build": { "barracks": ["soldier", "commando", "mech", "sniper"] },
+      "start": { "hq": [
+        { "unit": "commando", "at": [-1, 1] },
+        { "unit": "sniper",   "at": [1, 1] },
+        { "unit": "soldier",  "at": [0, 1] }
+      ] }
+    },
+    "vex": {
+      "build": {
+        "barracks": ["soldier", "spy", "mech", "sniper"],
+        "airfield": ["transport_copter", "copter", "fighter", "stealth_fighter", "bomber"]
+      },
+      "start": { "hq": [
+        { "unit": "spy",     "at": [-1, 1] },
+        { "unit": "sniper",  "at": [1, 1] },
+        { "unit": "soldier", "at": [0, 1] }
+      ] }
+    },
+    "hiroshi": {
+      "build": { "barracks": ["soldier", "mech", "sniper", "mortar", "mechanic"] },
+      "start": { "hq": [
+        { "unit": "mech",     "at": [-1, 1] },
+        { "unit": "sniper",   "at": [1, 1] },
+        { "unit": "soldier",  "at": [0, 1] },
+        { "unit": "mortar",   "at": [0, -1] },
+        { "unit": "mechanic", "at": [1, 0] }
+      ] }
+    },
+    "ludwig": {
+      "build": { "barracks": ["soldier", "medic", "mech", "sniper"] },
+      "start": { "hq": [
+        { "unit": "mech",    "at": [-1, 1] },
+        { "unit": "sniper",  "at": [1, 1] },
+        { "unit": "soldier", "at": [0, 1] },
+        { "unit": "medic",   "at": [-1, 0] }
+      ] }
+    },
+    "rex": {
+      "build": {
+        "airfield": ["transport_copter", "copter", "fighter", "bomber", "torpedo_bomber"],
+        "shipyard": ["marine", "gun_boat", "destroyer", "submarine", "cruiser", "battleship"]
+      }
+    },
+    "chase": {
+      "build": { "airfield": ["transport_copter", "copter", "fighter", "bomber", "radar_plane"] }
+    },
     "dmitri": {},
-    "lysandra": {}
+    "lysandra": {
+      "build": { "airfield": ["transport_copter", "copter", "fighter", "bomber", "stealth_bomber"] }
+    }
   }
 }

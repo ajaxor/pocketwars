@@ -148,7 +148,7 @@ test('applying settings with leaders: their units, build menus and a random pick
   const m = applySkirmish(classic, s, registry, seq(0));
   assert.deepEqual(m.players.map((p) => p.leader), ['ada', 'harlan'], 'the computer rolled the first leader that is not ada');
   assert.ok(Object.isFrozen(m) && Object.isFrozen(m.players[1]) && Object.isFrozen(m.units));
-  for (const o of [0, 1]) assert.deepEqual(m.units.filter((u) => u.owner === o).map((u) => u.type).sort(), armyOf(classic, o, 'ada').map((x) => x.type).sort(), `team ${o + 1} has the leader's army`);
+  for (const o of [0, 1]) assert.deepEqual(m.units.filter((u) => u.owner === o).map((u) => u.type).sort(), armyOf(classic, o, m.players[o].leader).map((x) => x.type).sort(), `team ${o + 1} has the leader's army`);
   assert.notDeepEqual(m.units, classic.units, 'the map\'s own soldiers, tank and artillery are replaced');
   assert.equal(classic.units.length, 10, 'the original map is untouched');
   assert.equal(classic.players[0].leader, undefined);

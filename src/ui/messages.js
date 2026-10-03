@@ -19,6 +19,8 @@ export function describeEvents(game, events) {
       text = ev.forced ? `${name(ev.unit)} is forced to surface` : `${name(ev.unit)} surfaces`;
     } else if (ev.type === 'capture') {
       text = ev.completed ? 'Captured!' : `Capturing ${ev.progress}/${ev.needed}`;
+    } else if (ev.type === 'sabotage') {
+      text = `${name(ev.unit)} sabotages the property: half income and no building`;
     } else if (ev.type === 'build') {
       text = 'Built ' + name(ev.unit);
     } else if (ev.type === 'deploy') {
@@ -27,6 +29,8 @@ export function describeEvents(game, events) {
       text = `${name(ev.unit)} resupplied` + (ev.cost ? ` for ${ev.cost.toLocaleString('en-US')}` : '');
     } else if (ev.type === 'resupplyDenied') {
       text = 'Not enough credits';
+    } else if (ev.type === 'turnStart' && ev.healed?.length) {
+      text = `${ev.healed.length} unit${ev.healed.length === 1 ? '' : 's'} healed`;
     } else if (ev.type === 'eliminated') {
       text = `${factionOf(game, ev.player).name} is out of the game!`;
     } else if (ev.type === 'gameOver') {

@@ -2,6 +2,8 @@
 //
 // A layer marked `hidden` in rules.json (the one a submerged unit is on) is invisible to every player except its owner, with two
 // exceptions: any unit standing NEXT to it notices it, and a unit with the `sonar` attribute notices it up to that many tiles away.
+// A unit with the `cloak` attribute is hidden the same way wherever it is (it keeps its own layer, so what can shoot it does not
+// change), and is noticed by an adjacent unit or by a `radar` in range. Sonar finds submerged units, radar finds cloaked ones.
 // "Invisible" means three things, all enforced here and in the modules that call canSee:
 //   - it is not drawn, and tapping its tile shows nothing (ui/controller.js, render/renderer.js)
 //   - it cannot be picked as a target, and the AI does not plan around it (movement.js targetsFrom, game.js, ai.js)
@@ -11,21 +13,27 @@
 //
 // Sight is a property of the current state. There is no memory: a hidden unit that stops being noticed is hidden again.
 
-import { attributeConfig } from './attributes.js';
+import { attributeConfig, hasAttribute } from './attributes.js';
 import { distance, layerIdOf, unitDef } from './queries.js';
 
 /** Units this close (in tiles) to a hidden unit always notice it, sonar or not. */
 export const ADJACENT = 1;
 
-/** Is `unit` on a hidden layer right now (submerged)? Says nothing about who can see it: see canSee. */
-export const isHidden = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)].hidden === true;
+/** Is `unit` on a hidden layer right now (submerged)? */
+export const isSubmerged = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)].hidden === true;
+/** Does `unit` carry the `cloak` attribute? */
+export const isCloaked = (game, unit) => hasAttribute(unitDef(game, unit), 'cloak');
+/** Is `unit` hidden (submerged or cloaked)? Says nothing about who can see it: see canSee. */
+export const isHidden = (game, unit) => isSubmerged(game, unit) || isCloaked(game, unit);
 
-/** Does `observer` notice `unit`: next to it, or within range of a sonar? */
+/** Does `observer` notice `unit`: next to it, or within range of a sonar (a submerged unit) or a radar (a cloaked one)? */
 const notices = (game, observer, unit) => {
   const d = distance(observer.x, observer.y, unit.x, unit.y);
   if (d <= ADJACENT) return true;
-  const sonar = attributeConfig(unitDef(game, observer), 'sonar');
-  return sonar !== undefined && d <= sonar;
+  const def = unitDef(game, observer);
+  const sonar = isSubmerged(game, unit) ? attributeConfig(def, 'sonar') : undefined;
+  const radar = isCloaked(game, unit) ? attributeConfig(def, 'radar') : undefined;
+  return (sonar !== undefined && d <= sonar) || (radar !== undefined && d <= radar);
 };
 
 /** Does any unit of `player` notice `unit`: one of them next to it, or within range of a sonar? */

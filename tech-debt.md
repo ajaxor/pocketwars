@@ -16,12 +16,21 @@
 - **Eye drawing is parametric but 2D-flat:** expressions (angry, shock) only change brow and lid openness, not each style's eye shape.
 - **Reinforcements are visual only.** `Session.reinforce` animates units that already exist; there is no engine-level spawn (event or order) yet, so a campaign script must add units to `game.state.units` itself, and an undo or save would not know about the arrival. Entrances also ignore terrain and other units on the way (a straight line from the window edge), and the entry point is chosen from the window, so on a zoomed map the units drive in over whatever is between.
 - **The rocket launcher is the first unit to need resupply outside the airfield.** Factories now resupply `vehicle` units, so every vehicle with an `ammo` attribute would use it; there is no supply truck yet (a concept). The AI builds at most one launcher and has no special logic to keep it fed. Damage baseline cases do not cover the rockets.
-- **Concept units are specified only in prose** (`gallery/concepts.json` `mechanic`). Several (commando heal, medic, mechanic, mines, jammer fog, automated factory, carrier landing) need new engine attributes before they can ship; none is designed against the engine yet.
+- **Remaining concept units** (APC, divers, mines, jammer fog, automated factory, carrier landing) are still prose/art only; the twelve drafted units (spy, commando, medic, mechanic, mortar, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth fighter/bomber) now ship.
 - **Parts library is a first cut.** `src/render/parts.js` covers wheels, treads, legs, hover, hulls, propellers, turrets, tubes, dishes and effects, but the static defences' pads and sandbags, the ship deck `mount`, the hand-drawn radar dishes and the medic cross are still per-file (listed in `docs/render-parts.md`). The game sprites in `unit-art.js` still build some wheels/tracks by hand where they differ from `wheel`/`treads`.
 
 - **Gallery pipeline statuses are hand-edited** in `gallery/status.json`. The 17 original units were marked `solid` by assumption (rocket launcher `draft`); nothing checks that `balanced`/`ready` match the damage baselines or the interface.
 - **Gallery has no browser test.** It was checked once with a headless Chromium script (all tabs, dialogue tester, phone width); `tests/gallery/catalog.test.js` covers only the data. `portraits.html` is still a separate design lab, and the kit icons are static (not animated).
-- **Stealth tank has no cloak yet.** It is a draft unit in the game (stats only, factory build list and AI loadout), so it plays as a fast plain tank; the cloak/hidden-unless-adjacent mechanic needs engine attributes. The AI has no logic for it.
+- **Stealth tank still has no cloak.** The `cloak` attribute now exists (used by the stealth fighter/bomber); the stealth tank could adopt it with a data change, but it is untested for ground play.
 - **Structures are concept-only.** Walls (linking, cracked and destructible), labs, bunker, radar station, supply depot and the static defences exist only as gallery art plus prose; the engine has no wall tile, link rule, destructible terrain or capturable base types. The game's six buildings are shown there as drafts.
 - **Gallery structure art is separate from the game's** `src/render/buildings.js` (`gallery/structure-art.js` borrows its `kit` helpers); if structures ship, merge them so there is one drawing path.
-- **APC and other new concept units** (APC, divers, mortar, spy) are art only; the APC reuses the transport's carry mechanic in prose, not in data.
+- **APC and divers** are art only; the APC reuses the transport's carry mechanic in prose, not in data.
+
+- **New units are `exclusive`** (kept off default and category menus) and reachable only through leader loadouts; the default kit guard test does not cover them, so a leader dropped from `data/loadouts.json` silently strands its unit.
+- **Support-unit AI ignores danger.** Medics, mechanics, radar planes and spies path toward goals (wounded allies, the army, enemy properties) without weighing threats, and will walk into fire.
+- **Mechanic has no mines.** The concept's mine laying was not built; it is a repair/heal unit only.
+- **A cloaked attacker stays hidden after it fires** unless an enemy is adjacent or has radar; there is no "revealed by firing" rule.
+- **Radar adds no fog sight.** Radar only finds cloaked units; there is no fog-of-war vision bonus.
+- **Sabotage and heal visuals were not verified in a browser** (badge on sabotaged properties, heal/sabotage effects); only engine tests cover them.
+- **Sprites moved from `gallery/` to `src/render/art-*.js`** so the deploy build includes them; the gallery imports them back. Older gallery art files may still want the same treatment.
+- **Spy toughness stays at 1** by design, so any hit kills it; balance has no dedicated damage-baseline cases for the new units.

@@ -166,19 +166,6 @@
    "group": "air"
   },
   {
-   "id": "spy",
-   "name": "Spy",
-   "facility": "training_ground",
-   "sprite": "spy",
-   "altitude": 0,
-   "cost": 2500,
-   "move": 3,
-   "role": "Saboteur",
-   "overlaps": "Soldier",
-   "mechanic": "Cloaked infantry: invisible to the enemy unless one of their units is adjacent. Stealth, but weak: only a feeble pistol (range 1, a third of a soldier's damage), few hit points' worth of toughness and no capture. Instead of capturing, it sabotages an enemy property: halves its income and stops it building for a turn.",
-   "group": "infantry"
-  },
-  {
    "id": "troop_glider",
    "name": "Troop Glider",
    "facility": "glider_field",
@@ -312,19 +299,6 @@
    "group": "air"
   },
   {
-   "id": "commando",
-   "name": "Commando",
-   "facility": "training_ground",
-   "sprite": "commando",
-   "altitude": 0,
-   "cost": 2500,
-   "move": 3,
-   "role": "Elite infantry",
-   "overlaps": "Soldier",
-   "mechanic": "Gets double the usual terrain defence bonus, so a commando in a forest or on a mountain is very hard to dislodge. If it does not move in a turn it heals 1 hit point of itself at the start of the next. Rifle attack, same range as a soldier.",
-   "group": "infantry"
-  },
-  {
    "id": "rpg_trooper",
    "name": "RPG Trooper",
    "facility": "training_ground",
@@ -335,45 +309,6 @@
    "role": "Anti-armour infantry",
    "overlaps": "Mech",
    "mechanic": "Carries a single rocket (ammo 1). Fires at range 2-3 but cannot move and fire in the same turn. Hits vehicles hard and infantry lightly; with its rocket spent it is a defenceless rifleman until resupplied.",
-   "group": "infantry"
-  },
-  {
-   "id": "mechanic",
-   "name": "Mechanic",
-   "facility": "training_ground",
-   "sprite": "mechanic",
-   "altitude": 0,
-   "cost": 2000,
-   "move": 3,
-   "role": "Support engineer",
-   "overlaps": "Repair at a base",
-   "mechanic": "At the start of your turn each friendly vehicle next to it regains hit points. Can clear a mine by moving onto or next to a mine tile, which removes it. Unarmed.",
-   "group": "infantry"
-  },
-  {
-   "id": "medic",
-   "name": "Medic",
-   "facility": "training_ground",
-   "sprite": "medic",
-   "altitude": 0,
-   "cost": 2000,
-   "move": 3,
-   "role": "Support healer",
-   "overlaps": "Repair at a base",
-   "mechanic": "At the start of your turn each friendly infantry unit next to it regains hit points. Does not heal vehicles, aircraft or ships. Unarmed, so keep it behind the line.",
-   "group": "infantry"
-  },
-  {
-   "id": "mortar_team",
-   "name": "Mortar Team",
-   "facility": "training_ground",
-   "sprite": "mortar_team",
-   "altitude": 0,
-   "cost": 3000,
-   "move": 2,
-   "role": "Indirect infantry fire",
-   "overlaps": "Artillery",
-   "mechanic": "Indirect attack at range 2-4 (cannot hit adjacent units), and cannot move and fire in the same turn. Carries limited shells. Light damage against vehicles but good against infantry; weak to anything that reaches it.",
    "group": "infantry"
   },
   {
@@ -526,71 +461,6 @@
    "facility": "engineer_works"
   },
   {
-   "id": "stealth_fighter",
-   "name": "Stealth Fighter",
-   "facility": "airfield",
-   "sprite": "stealth_fighter",
-   "altitude": 0.16,
-   "cost": 16000,
-   "move": 9,
-   "role": "Air superiority",
-   "overlaps": "Fighter, stealth bomber",
-   "mechanic": "Hidden from enemies unless one of them is adjacent. Fires air-to-air missiles at the high air layer with a fighter's punch, range 1, limited ammo. Costs far more than a fighter and has only half its armour, so anything that finds it kills it quickly.",
-   "group": "air"
-  },
-  {
-   "id": "torpedo_bomber",
-   "name": "Torpedo Bomber",
-   "facility": "airfield",
-   "sprite": "torpedo_bomber",
-   "altitude": 0.07,
-   "cost": 9000,
-   "move": 7,
-   "role": "Anti-ship strike",
-   "overlaps": "Bomber, destroyer, cruiser",
-   "mechanic": "Flies in the low air layer, so copters and flak can reach it. Its single torpedo hits ships and submarines (surfaced or shallow) very hard, but does little to ground units. 2 ammo; has to return to an airfield to reload.",
-   "group": "air"
-  },
-  {
-   "id": "radar_plane",
-   "name": "Radar Plane",
-   "facility": "airfield",
-   "sprite": "radar_plane",
-   "altitude": 0.1,
-   "cost": 11000,
-   "move": 5,
-   "role": "Scout / sight",
-   "overlaps": "Recon, copter, Drone Bay sensors",
-   "mechanic": "Unarmed. Reveals everything within 5 tiles (hidden stealth units and submarines only within 3) and adds that sight to the whole team's fog of war. Slow and fragile: keep it behind a fighter screen.",
-   "group": "air"
-  },
-  {
-   "id": "vintage_fighter",
-   "name": "Vintage Fighter",
-   "facility": "airfield",
-   "sprite": "vintage_fighter",
-   "altitude": 0.1,
-   "cost": 5000,
-   "move": 7,
-   "role": "Cheap air cover",
-   "overlaps": "Fighter",
-   "mechanic": "A propeller fighter: costs half a fighter, moves 7 instead of 9 and deals half the damage. Can still attack air units, so a screen of them is a cheap way to deny the sky. Dies quickly to a real fighter.",
-   "group": "air"
-  },
-  {
-   "id": "vintage_bomber",
-   "name": "Vintage Bomber",
-   "facility": "airfield",
-   "sprite": "vintage_bomber",
-   "altitude": 0.1,
-   "cost": 6500,
-   "move": 6,
-   "role": "Cheap bombing",
-   "overlaps": "Bomber",
-   "mechanic": "A propeller bomber: about half the price of a bomber, with lower move and half the damage, and it flies lower, so flak, copters and fighters all hit it hard. Good for flooding a front with cheap bombs.",
-   "group": "air"
-  },
-  {
    "id": "aircraft_carrier",
    "name": "Aircraft Carrier",
    "facility": "shipyard",
@@ -601,20 +471,6 @@
    "role": "Air base",
    "overlaps": "Airfield, Transport Copter",
    "mechanic": "Carries 2 aircraft: planes can land on it, and each carried plane is refuelled and rearmed at the start of your turn. Only weak guns (a little damage, short range), so it needs an escort.",
-   "water": true,
-   "group": "naval"
-  },
-  {
-   "id": "gun_boat",
-   "name": "Gun Boat",
-   "facility": "shipyard",
-   "sprite": "gun_boat",
-   "altitude": 0,
-   "cost": 3000,
-   "move": 8,
-   "role": "Patrol",
-   "overlaps": "Destroyer, Recon",
-   "mechanic": "A cheap, very fast patrol boat with a light cannon (ships and ground targets from 1 tile) and a machine gun that hurts infantry. Weak armour: it dies quickly to any proper warship.",
    "water": true,
    "group": "naval"
   },
