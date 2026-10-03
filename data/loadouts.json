@@ -44,7 +44,7 @@
     "vex": {
       "build": {
         "barracks": ["soldier", "spy", "mech", "sniper"],
-        "airfield": ["transport_copter", "copter", "fighter", "stealth_fighter", "bomber"]
+        "airfield": ["transport_copter", "copter", "stealth_copter", "fighter", "stealth_fighter", "bomber"]
       },
       "start": { "hq": [
         { "unit": "spy",     "at": [-1, 1] },
@@ -80,7 +80,14 @@
     "chase": {
       "build": { "airfield": ["transport_copter", "copter", "fighter", "bomber", "radar_plane"] }
     },
-    "dmitri": {},
+    "dmitri": {
+      "build": { "barracks": ["soldier", "rpg_trooper", "mech", "sniper"] },
+      "start": { "hq": [
+        { "unit": "rpg_trooper", "at": [-1, 1] },
+        { "unit": "sniper",      "at": [1, 1] },
+        { "unit": "soldier",     "at": [0, 1] }
+      ] }
+    },
     "lysandra": {
       "build": { "airfield": ["transport_copter", "copter", "fighter", "bomber", "stealth_bomber"] }
     }

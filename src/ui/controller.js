@@ -13,7 +13,7 @@
 // Wait, see engine/game.js).
 // DEPLOYING works the same way: the Deploy button of a carrier (transport copter) puts the new unit on the carrier's tile and selects it;
 // it is then ordered with the normal move-and-attack interface. Cancelling (cancelAll) before it is ordered puts it back in the carrier.
-// SABOTAGE (a spy on an enemy property) is offered next to Capture and Wait: it cripples that property for a turn (engine/sabotage.js).
+// HEAL (a medic or mechanic next to damaged friends) is offered next to Wait, like Resupply (engine/heal.js).
 // RESUPPLY replaces Wait next to a property that refills the unit; it costs money and ends the turn (engine/ammo.js).
 //
 // An order can come back INTERRUPTED (the path ran into a hidden unit, see engine/game.js): the unit has already moved, so the
@@ -23,7 +23,7 @@
 // game.act(), so cancelling is free and the engine never sees half-finished moves.
 
 import { canCapture } from '../engine/capture.js';
-import { canSabotage } from '../engine/sabotage.js';
+import { canHealAt, healPlan } from '../engine/heal.js';
 import { canTarget, forecastAttack } from '../engine/combat.js';
 import { canSee } from '../engine/detection.js';
 import { canResupplyAt, resupplyCost } from '../engine/ammo.js';
@@ -206,7 +206,7 @@ export class Controller {
   #plainAction(pos) {
     const { game, sel } = this;
     if (!sel.fresh && canCapture(game, sel, pos.x, pos.y)) return { type: 'capture' };
-    if (!sel.fresh && canSabotage(game, sel, pos.x, pos.y)) return { type: 'sabotage' };
+    if (!sel.fresh && canHealAt(game, sel, pos.x, pos.y)) return { type: 'heal' };
     return canResupplyAt(game, sel, pos.x, pos.y) ? { type: 'resupply' } : { type: 'wait' };
   }
 
@@ -290,26 +290,27 @@ export class Controller {
     const pos = this.#selPos();
     const fresh = !!sel.fresh;   // a just-built unit has its free move only: Wait is its one action
     const capture = !fresh && canCapture(game, sel, pos.x, pos.y);
-    const sabotage = !fresh && canSabotage(game, sel, pos.x, pos.y);
+    const heal = !fresh && canHealAt(game, sel, pos.x, pos.y);
+    const healCost = heal ? healPlan(game, sel, pos.x, pos.y).reduce((a, p) => a + p.cost, 0) : 0;
     const pending = this.pendingTargetId !== null ? this.targets.find((e) => e.id === this.pendingTargetId) : null;
     const items = [];
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
     if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
-    if (sabotage) items.push({ label: 'Sabotage', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'sabotage' }) });
+    if (heal) items.push({ label: healCost ? `Heal ${healCost.toLocaleString('en-US')}` : 'Heal', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'heal' }) });
     if (!fresh) items.push(...this.#deployItem(sel, () => this.#deployAfterMove()));
     if (!fresh && canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
     if (!fresh && canSurface(sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
     // Wait becomes Resupply when the unit is short on ammo and stops next to a property that resupplies it
     const resup = !fresh && canResupplyAt(game, sel, pos.x, pos.y);
     const price = resup ? resupplyCost(game, sel) : 0;
-    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture || sabotage ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
-      : { label: 'Wait', variant: pending || capture || sabotage ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
+    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture || heal ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
+      : { label: 'Wait', variant: pending || capture || heal ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
     items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
     hud.actions({
       hint: pending ? `Attack ${name}? Tap it again or press Attack.`
         : capture ? 'Capture this property, or pick another action.'
-          : sabotage ? 'Sabotage this property: half its income and no building until its owner\'s turn is over.'
+          : heal ? 'Heal the damaged units next to you, or pick another action.'
           : fresh ? 'Tap your unit to confirm the move.'
           : this.targets.length ? 'Tap an enemy to target it, or tap your unit to wait.'
             : 'Tap your unit to confirm the move.',
@@ -371,7 +372,7 @@ export class Controller {
         const def = game.registry.unit(id);
         const res = game.build(x, y, id);
         if (!res.ok) {
-          this.#msg(res.error === 'not-enough-funds' ? 'Not enough funds' : res.error === 'already-built' ? 'This property already built a unit this turn.' : res.error === 'sabotaged' ? 'This property was sabotaged: it cannot build this turn.' : `Cannot build (${res.error}).`);
+          this.#msg(res.error === 'not-enough-funds' ? 'Not enough funds' : res.error === 'already-built' ? 'This property already built a unit this turn.' : `Cannot build (${res.error}).`);
           return;
         }
         this.cancelAll();

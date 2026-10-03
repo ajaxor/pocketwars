@@ -249,14 +249,14 @@
   "spy": {
     "name": "Spy",
     "category": "infantry",
-    "cost": 2500,
+    "cost": 3500,
     "move": 3,
     "moveClass": "foot",
     "layer": "ground",
     "weapons": ["pistol"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "cloak": true, "sabotage": true },
+    "attributes": { "capture": true, "cloak": true },
     "exclusive": true,
     "render": { "sprite": "spy", "facing": false, "attackFx": "shot" }
   },
@@ -281,7 +281,7 @@
     "move": 3,
     "moveClass": "foot",
     "layer": "ground",
-    "weapons": [],
+    "weapons": ["pistol"],
     "toughness": 1,
     "armor": 0,
     "attributes": { "heal": { "amount": 2, "categories": ["infantry", "amphibious"], "costRate": 0.1 } },
@@ -413,5 +413,33 @@
     "attributes": { "ignoresTerrainDefense": true, "cloak": true },
     "exclusive": true,
     "render": { "sprite": "stealth_bomber", "attackFx": "drop", "altitude": 0.13 }
+  },
+  "stealth_copter": {
+    "name": "Stealth Copter",
+    "category": "aircraft",
+    "cost": 12000,
+    "move": 6,
+    "moveClass": "air",
+    "layer": "low_air",
+    "weapons": ["rocket_pods"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "ignoresTerrainDefense": true, "cloak": true },
+    "exclusive": true,
+    "render": { "sprite": "stealth_copter", "attackFx": "shot", "altitude": 0.07 }
+  },
+  "rpg_trooper": {
+    "name": "RPG Trooper",
+    "category": "infantry",
+    "cost": 2800,
+    "move": 3,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["rpg"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true, "indirect": true, "ammo": { "max": 1, "low": 0, "cost": 300 } },
+    "exclusive": true,
+    "render": { "sprite": "rpg_trooper", "facing": false, "attackFx": "shot" }
   }
 }

@@ -105,14 +105,6 @@ export class Effects {
     });
   }
 
-  /** A spy sabotaging a property (a 'sabotage' event): sparks over the tile and a call-out. Does not lock input. */
-  sabotage(ev, t0) {
-    this.list.push(
-      { k: 'burst', x: ev.x + .5, y: ev.y + .5, t0, d: 700, big: false, c: '#ff7b6b' },
-      { k: 'txt', x: ev.x + .5, y: ev.y + .35, s: 'Sabotaged!', sz: .3, c: '#ff7b6b', t0: t0 + 200, d: 1300 },
-    );
-  }
-
   /** HP restored at the start of a turn (the `healed` list of a turnStart event): a green +HP over each unit. Does not lock input. */
   healed(ev, t0) {
     (ev.healed || []).forEach((h, i) => {

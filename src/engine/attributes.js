@@ -90,8 +90,8 @@ export const UNIT_ATTRIBUTES = {
   },
   heal: {
     label: (v) => `Heals ${v.amount}`,
-    help: (v) => `At the start of your turn, each friendly ${v.categories.join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ''}. A unit is only healed by one neighbour a turn (the best).`,
-    doc: 'Support healing. Config: { amount, categories, costRate? }. At the start of its owner\'s turn every friendly unit of one of those categories on an adjacent tile regains up to `amount` HP (not above max). `costRate` is the price of one HP as a fraction of the healed unit\'s cost, paid from the owner\'s funds (0 or absent: free); with too little money it heals what it can pay for. A damaged unit next to several healers is healed once, by the strongest. See heal.js.',
+    help: (v) => `Heal order (after moving, instead of Wait): each damaged friendly ${v.categories.join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ''}.`,
+    doc: 'Support healing. Config: { amount, categories, costRate? }. A `heal` order (after moving, like capture or resupply) restores up to `amount` HP (not above max) to every damaged friendly unit of one of those categories on a tile next to the healer. `costRate` is the price of one HP as a fraction of the healed unit\'s cost, paid from the owner\'s funds (0 or absent: free); with too little money it heals what it can pay for. The order is only offered when someone can be healed. See heal.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "amount": 2, "categories": ["infantry"], "costRate": 0.1 }');
       if (!Number.isInteger(v.amount) || v.amount < 1) fail('amount must be a positive whole number of HP');
@@ -107,12 +107,6 @@ export const UNIT_ATTRIBUTES = {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "heal": 1 }');
       if (!Number.isInteger(v.heal) || v.heal < 1) fail('heal must be a positive whole number of HP');
     },
-  },
-  sabotage: {
-    label: 'Sabotage',
-    help: 'Can sabotage the enemy property it stands on (instead of capturing): the property earns half its income and cannot build until its owner\'s next turn is over.',
-    doc: 'A `sabotage` order (after moving, like capture) on a property owned by another player: until the end of that owner\'s next turn the property pays half its income and cannot build (economy.js), and it is marked on the map. A property that is already sabotaged cannot be sabotaged again; capturing it or its owner losing it ends the sabotage. See sabotage.js.',
-    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
 };
 

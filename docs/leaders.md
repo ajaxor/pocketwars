@@ -20,4 +20,4 @@ Forward is, from the building, toward the average enemy HQ, snapped to N/S/E/W (
 
 ## Exclusive units
 
-Units flagged `"exclusive": true` in `data/units.json` stay off the default kit and category menus; only a leader's `build` list can offer them. The twelve drafted units (spy, commando, medic, mortar, mechanic, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth fighter/bomber) are assigned this way in `data/loadouts.json`.
+Units flagged `"exclusive": true` in `data/units.json` stay off the default kit and category menus; only a leader's `build` list can offer them. The fourteen drafted units (spy, commando, medic, mortar, mechanic, RPG trooper, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth copter/fighter/bomber) are assigned this way in `data/loadouts.json`.

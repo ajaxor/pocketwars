@@ -153,19 +153,6 @@
    "group": "vehicle"
   },
   {
-   "id": "stealth_copter",
-   "name": "Stealth Copter",
-   "facility": "stealth_lab",
-   "sprite": "stealth_copter",
-   "altitude": 0.07,
-   "cost": 12000,
-   "move": 6,
-   "role": "Strike air",
-   "overlaps": "Copter",
-   "mechanic": "A silent attack copter, hidden from anything that is not adjacent or on flak range. Only half the armour of a normal copter.",
-   "group": "air"
-  },
-  {
    "id": "troop_glider",
    "name": "Troop Glider",
    "facility": "glider_field",
@@ -297,19 +284,6 @@
    "overlaps": "Supply Truck",
    "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Unarmed.",
    "group": "air"
-  },
-  {
-   "id": "rpg_trooper",
-   "name": "RPG Trooper",
-   "facility": "training_ground",
-   "sprite": "rpg_trooper",
-   "altitude": 0,
-   "cost": 2800,
-   "move": 3,
-   "role": "Anti-armour infantry",
-   "overlaps": "Mech",
-   "mechanic": "Carries a single rocket (ammo 1). Fires at range 2-3 but cannot move and fire in the same turn. Hits vehicles hard and infantry lightly; with its rocket spent it is a defenceless rifleman until resupplied.",
-   "group": "infantry"
   },
   {
    "id": "conscript",

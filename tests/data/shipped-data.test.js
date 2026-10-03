@@ -37,24 +37,23 @@ test('every property terrain has a building drawing; decor names exist', () => {
 
 test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
-  assert.deepEqual(withAttr('capture'), ['marine', 'mech', 'soldier']);
+  assert.deepEqual(withAttr('capture'), ['marine', 'mech', 'rpg_trooper', 'soldier', 'spy']);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando', 'soldier']);
-  assert.deepEqual(withAttr('indirect'), ['artillery', 'mortar', 'rocket_launcher', 'sniper']);
+  assert.deepEqual(withAttr('indirect'), ['artillery', 'mortar', 'rocket_launcher', 'rpg_trooper', 'sniper']);
   assert.deepEqual(withAttr('submerge'), ['submarine']);
   assert.deepEqual(withAttr('sonar'), ['destroyer', 'radar_plane']);
   assert.deepEqual(withAttr('radar'), ['radar_plane']);
-  assert.deepEqual(withAttr('cloak'), ['spy', 'stealth_bomber', 'stealth_fighter']);
-  assert.deepEqual(withAttr('sabotage'), ['spy']);
+  assert.deepEqual(withAttr('cloak'), ['spy', 'stealth_bomber', 'stealth_copter', 'stealth_fighter']);
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
-  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'radar_plane', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(withAttr('ammo'), ['mortar', 'rocket_launcher', 'stealth_fighter', 'torpedo_bomber', 'transport_copter']);
+  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
+  assert.deepEqual(withAttr('ammo'), ['mortar', 'rocket_launcher', 'rpg_trooper', 'stealth_fighter', 'torpedo_bomber', 'transport_copter']);
   assert.deepEqual(withAttr('deploy'), ['transport_copter']);
 });
 
 test('exclusive units are on no standard menu, and every one of them is on some leader\'s menu', () => {
   const exclusive = registry.unitIds.filter((id) => registry.unit(id).exclusive).sort();
-  assert.equal(exclusive.length, 12, 'the twelve drafted units');
+  assert.equal(exclusive.length, 14, 'the fourteen drafted units');
   const standard = new Set(Object.values(registry.loadouts.default.build).flat());
   for (const id of exclusive) {
     assert.ok(!standard.has(id), `${id} is not on the standard menu`);

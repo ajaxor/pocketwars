@@ -6,7 +6,6 @@ import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } fr
 import { ammoConfig, ammoOf } from '../engine/ammo.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
 import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
-import { isSabotaged } from '../engine/sabotage.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', naval: 'Naval', amphibious: 'Amphibious' };
@@ -61,7 +60,7 @@ export function terrainInfo(game, x, y) {
     x, y, name: t.name, color: t.render.base ?? registry.groundDef(game.map.ground?.[y]?.[x])?.render.base ?? '#86b95c', defense: t.defense,
     moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),
     property: prop ? {
-      income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel), sabotaged: isSabotaged(game, x, y),
+      income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel),
       owner: owner === null ? null : { player: owner, name: factionOf(game, owner).name, color: factionOf(game, owner).color },
     } : null,
     notes,

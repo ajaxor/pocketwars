@@ -18,8 +18,8 @@ import * as ART_SHIPS from './art-ships.js';
 // Units whose art lives in a group module (art-infantry.js, art-air.js, art-ships.js): only the ones the game has are taken, so the
 // concept-only sprites in those files stay out of the game's tables. Add a name here when its unit moves into data/units.json.
 const pick = (table, names) => Object.fromEntries(names.map((n) => { if (!table[n]) throw new Error(`no art for "${n}"`); return [n, table[n]]; }));
-const INFANTRY_ART = ['commando', 'mechanic', 'medic', 'mortar_team', 'spy'];
-const AIR_ART = ['stealth_fighter', 'torpedo_bomber', 'radar_plane', 'vintage_fighter', 'vintage_bomber'];
+const INFANTRY_ART = ['commando', 'mechanic', 'medic', 'mortar_team', 'rpg_trooper', 'spy'];
+const AIR_ART = ['stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'radar_plane', 'vintage_fighter', 'vintage_bomber'];
 const SHIP_ART = ['gun_boat'];
 
 // ---- the marine's own parts, shared by the marine on land and the one riding a dinghy ----------------------------------------------

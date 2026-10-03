@@ -76,17 +76,6 @@ const titan = (g, { s, c, dk, w, run, moving, b }) => {
 
 // ---- Stealth Lab ------------------------------------------------------------------------------------------------------------
 // Cloaked units: faceted, dull, a little see-through, with a bright glint that sweeps across them (the cloak shimmering).
-const stealthCopter = (g, { s, c, dk, w, run }) => {
-  const body = [[.42, .04], [.2, -.1], [-.08, -.14], [-.3, -.04], [-.46, -.1], [-.5, -.1], [-.4, .04], [-.2, .11], [.2, .11]];
-  g.save(); g.globalAlpha = .9;
-  poly(g, s, [[-.4, -.04], [-.52, -.2], [-.47, -.2], [-.34, -.06]], dk);                      // canted tail fin
-  poly(g, s, body, mix(c, dk, .3));
-  poly(g, s, [[-.08, -.14], [.2, -.1], [.42, .04], [-.3, -.04]], mix(c, '#ffffff', .12));    // lit top plane
-  poly(g, s, [[.3, .0], [.17, -.05], [.08, -.02], [.22, .03]], GLASS);                        // slit canopy
-  const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .34 + s * .05;                     // pale rotor blur
-  stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, 'rgba(34,34,34,.6)'); g.fillStyle = INK; g.fillRect(-s * .02, -s * .2, s * .04, s * .07);
-  g.restore();
-};
 
 // ---- Glider Field -----------------------------------------------------------------------------------------------------------
 // Unpowered aircraft, drawn like the fighter and bomber (3/4 view: the near wing sweeps toward the viewer). Canvas-coloured wings.
@@ -267,7 +256,6 @@ const OWN_SPRITES = {
   supply_truck: supplyTruck,
   hover_scout: hoverScout, hover_tank: hoverTank, hover_carrier: hoverCarrier,
   strider, titan,
-  stealth_copter: (g, o) => { g.save(); g.scale(.9, .9); stealthCopter(g, o); g.restore(); },
   troop_glider: (g, o) => { g.save(); g.scale(.92, .92); troopGlider(g, o); g.restore(); }, scout_glider: scoutGlider,
   drop_pod: dropPod, shuttle: (g, o) => { g.save(); g.scale(.95, .95); shuttle(g, o); g.restore(); }, satellite,
   abyss_sub: (g, o) => { g.save(); g.scale(.95, .95); abyssSub(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); },
@@ -290,7 +278,6 @@ const OWN_SHADOWS = {
   supply_truck: ground(.35, .05, .285),
   hover_scout: ground(.34, .045, .29), hover_tank: ground(.38, .05, .29), hover_carrier: ground(.42, .05, .29),
   strider: ground(.24, .045, .295), titan: ground(.34, .055, .295),
-  stealth_copter: airShadow(mirror([[.4, .0], [.2, -.1], [-.1, -.12], [-.4, -.06], [-.45, 0]]), .9),
   troop_glider: airShadow(mirror([[.42, 0], [.1, -.08], [-.06, -.4], [-.2, -.4], [-.2, -.07], [-.4, -.12], [-.42, 0]]), .92),
   scout_glider: airShadow(mirror([[.3, 0], [-.38, -.3], [-.3, 0]])),
   drop_pod: ground(.2, .045, .29), shuttle: airShadow(mirror([[.46, 0], [.4, -.07], [.0, -.07], [-.1, -.36], [-.3, -.36], [-.3, -.05], [-.38, -.05], [-.38, 0]]), .95),

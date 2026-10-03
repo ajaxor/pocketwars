@@ -95,7 +95,21 @@ const vintageBomber = (g, { s, c, dk, w, run }) => {
   for (const [x, y] of [[.06, .19]]) { box(g, s, x - .17, y - .03, .21, .06, 3, mix(dk, '#000000', .2)); propDisc(g, s, x + .06, y, .075, w, run, x * 37); }   // near engines
 };
 
+// Cloaked copter: faceted, dull, a little see-through (the cloak shimmering).
+const stealthCopter = (g, { s, c, dk, w, run }) => {
+  const body = [[.42, .04], [.2, -.1], [-.08, -.14], [-.3, -.04], [-.46, -.1], [-.5, -.1], [-.4, .04], [-.2, .11], [.2, .11]];
+  g.save();
+  poly(g, s, [[-.4, -.04], [-.52, -.2], [-.47, -.2], [-.34, -.06]], dk);                      // canted tail fin
+  poly(g, s, body, mix(c, dk, .3));
+  poly(g, s, [[-.08, -.14], [.2, -.1], [.42, .04], [-.3, -.04]], mix(c, '#ffffff', .12));    // lit top plane
+  poly(g, s, [[.3, .0], [.17, -.05], [.08, -.02], [.22, .03]], GLASS);                        // slit canopy
+  const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .34 + s * .05;                     // pale rotor blur
+  stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, 'rgba(34,34,34,.6)'); g.fillStyle = INK; g.fillRect(-s * .02, -s * .2, s * .04, s * .07);
+  g.restore();
+};
+
 export const SPRITES = {
+  stealth_copter: (g, o) => { g.save(); g.scale(.9, .9); stealthCopter(g, o); g.restore(); },
   stealth_fighter: stealthFighter,
   torpedo_bomber: (g, o) => { g.save(); g.scale(.96, .96); torpedoBomber(g, o); g.restore(); },
   radar_plane: (g, o) => { g.save(); g.scale(.93, .93); radarPlane(g, o); g.restore(); },
@@ -110,6 +124,7 @@ const airShadow = (outline, k = 1) => (g, { s, alt = 0 }) => {
 };
 
 export const SHADOWS = {
+  stealth_copter: airShadow(mirror([[.4, .0], [.2, -.1], [-.1, -.12], [-.4, -.06], [-.45, 0]]), .9),
   stealth_fighter: airShadow(mirror([[.45, 0], [.28, -.04], [.1, -.08], [-.1, -.3], [-.2, -.3], [-.16, -.1], [-.3, -.2], [-.36, -.1], [-.36, 0]])),
   torpedo_bomber: airShadow(mirror([[.43, 0], [.3, -.08], [.05, -.08], [-.1, -.3], [-.14, -.3], [-.14, -.08], [-.3, -.08], [-.44, -.2], [-.44, 0]]), .96),
   radar_plane: airShadow(mirror([[.42, 0], [.3, -.07], [.08, -.07], [-.12, -.32], [-.15, -.32], [-.15, -.07], [-.3, -.07], [-.46, -.17], [-.46, 0]]), .93),

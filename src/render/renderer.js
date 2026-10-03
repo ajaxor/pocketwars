@@ -20,7 +20,6 @@ import { ammoLevel } from '../engine/ammo.js';
 import { canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
-import { isSabotaged } from '../engine/sabotage.js';
 import { facingAlong, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
@@ -205,21 +204,6 @@ export class Renderer {
     g.lineWidth = s * .08; g.strokeStyle = 'rgba(0,0,0,.6)'; g.stroke(); g.fillStyle = '#ffe45c'; g.fill(); g.restore();
   }
 
-  /** A red warning badge (a triangle with a bang) in the corner of every property a spy has sabotaged; it pulses slowly. */
-  drawSabotage(g, now) {
-    const { S, game } = this;
-    const { map } = game;
-    for (const k of game.state.sabotaged) {
-      const x = k % map.width, y = Math.floor(k / map.width);
-      if (!isSabotaged(game, x, y)) continue;
-      const r = S * .17, cx = (x + .84) * S, cy = (y + .2) * S, pulse = .85 + .15 * Math.sin(now / 260);
-      g.save(); g.translate(cx, cy); g.scale(pulse, pulse); g.lineJoin = 'round';
-      g.beginPath(); g.moveTo(0, -r); g.lineTo(r * 1.05, r * .8); g.lineTo(-r * 1.05, r * .8); g.closePath();
-      g.lineWidth = Math.max(2, S * .05); g.strokeStyle = '#000'; g.stroke(); g.fillStyle = '#ff3b30'; g.fill();
-      g.fillStyle = '#fff'; g.fillRect(-r * .1, -r * .35, r * .2, r * .6); g.fillRect(-r * .1, r * .4, r * .2, r * .2);
-      g.restore();
-    }
-  }
 
   draw(view, now) {
     const { g, S, game } = this;
@@ -263,7 +247,6 @@ export class Renderer {
       const m = this.motionOf(u, now);
       if (m.alpha > .01) this.drawUnitAt(g, u, view, now, { alpha: m.alpha, dive: m.dive });
     }
-    this.drawSabotage(g, now);
     this.motionAt = now;
     if (this.motion.size > state.units.length + 8) for (const id of [...this.motion.keys()]) if (!unitById(game, id)) this.motion.delete(id);
     this.drawArrow(now);

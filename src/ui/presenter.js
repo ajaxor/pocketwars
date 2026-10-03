@@ -30,11 +30,11 @@ export class Presenter {
         t = this.effects.strike(ev, t);
       } else if (ev.type === 'capture') {
         this.effects.capture(ev, t);
-      } else if (ev.type === 'sabotage') {
-        this.effects.sabotage(ev, t);
         t += 400;
       } else if (ev.type === 'resupply') {
         this.effects.resupply(ev.unit, t, ev.cost);
+      } else if (ev.type === 'heal') {
+        this.effects.healed(ev, t);
       } else if (ev.type === 'deploy') {
         this.effects.deploy(ev, t);
       } else if (ev.type === 'turnStart') {
