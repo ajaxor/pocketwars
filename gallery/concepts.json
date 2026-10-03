@@ -286,34 +286,6 @@
    "group": "air"
   },
   {
-   "id": "conscript",
-   "name": "Conscript",
-   "facility": "training_ground",
-   "sprite": "conscript",
-   "altitude": 0,
-   "cost": 600,
-   "move": 3,
-   "role": "Cheap infantry",
-   "overlaps": "Soldier",
-   "mechanic": "A cheaper soldier with an old rifle: lower attack than a soldier and no terrain bonus advantage. Can still capture properties. Good for screening and blocking when funds are short.",
-   "group": "infantry"
-  },
-  {
-   "id": "diver",
-   "name": "Diver",
-   "facility": "training_ground",
-   "sprite": "diver",
-   "altitude": 0,
-   "cost": 4500,
-   "move": 4,
-   "role": "Submersible infantry",
-   "overlaps": "Submarine",
-   "water": true,
-   "mechanic": "Moves through water and can dive like a submarine: hidden unless an enemy is adjacent. Harpoon gun attacks adjacent targets only, strong against ships' hulls and other divers, helpless against anything that can shoot it when spotted.",
-   "group": "infantry",
-   "waterSprite": "diver_swim"
-  },
-  {
    "id": "gun_turret",
    "name": "Gun Turret",
    "sprite": "gun_turret",
@@ -500,19 +472,6 @@
    "overlaps": "Recon (speed), Rocket Launcher (rockets)",
    "mechanic": "Direct-fire unguided rockets, range 1-2, strong against infantry and light vehicles, weak against tanks. Very fragile: any real hit cripples it, and it cannot capture.",
    "group": "vehicle"
-  },
-  {
-   "id": "motorcycle",
-   "name": "Motorcycle Infantry",
-   "facility": "training_ground",
-   "sprite": "motorcycle",
-   "altitude": 0,
-   "cost": 2000,
-   "move": 5,
-   "role": "Fast capturing infantry for grabbing distant property.",
-   "overlaps": "Soldier (capture), Recon (speed)",
-   "mechanic": "Infantry that can capture buildings, with move 5, but it cannot enter mountains. Its rifle does half damage when it has moved that turn, full damage when it stays put.",
-   "group": "infantry"
   },
   {
    "id": "tank_transport",

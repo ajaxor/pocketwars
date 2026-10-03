@@ -2,63 +2,63 @@
   "plain": {
     "name": "Plain",
     "defense": 0,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2 },
     "attributes": {},
     "render": { "mini": "#86b95c" }
   },
   "forest": {
     "name": "Forest",
     "defense": 2,
-    "moveCost": { "foot": 1, "wheels": null, "tread": 2, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": null, "tread": 2, "air": 1, "naval": null, "amphibious": 1, "bike": 4, "diver": 2 },
     "attributes": { "blocksLineOfSight": 1 },
     "render": { "decor": "forest", "mini": "#3d7f43" }
   },
   "mountain": {
     "name": "Mountain",
     "defense": 4,
-    "moveCost": { "foot": 2, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": 2 },
+    "moveCost": { "foot": 2, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": 2, "bike": null, "diver": null },
     "attributes": { "blocksLineOfSight": 2, "vantage": 2 },
     "render": { "decor": "mountain", "mini": "#8f877a" }
   },
   "rough": {
     "name": "Rough",
     "defense": 0,
-    "moveCost": { "foot": 2, "wheels": null, "tread": 1, "air": 1, "naval": null, "amphibious": 2 },
+    "moveCost": { "foot": 2, "wheels": null, "tread": 1, "air": 1, "naval": null, "amphibious": 2, "bike": 4, "diver": 2 },
     "attributes": {},
     "render": { "decor": "rough", "mini": "#9a8559" }
   },
   "road": {
     "name": "Road",
     "defense": 0,
-    "moveCost": { "foot": 1, "wheels": 0.5, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 0.5, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 0.5, "diver": 2 },
     "attributes": {},
     "render": { "base": "#7d838e", "decor": "road", "inlay": true, "mini": "#7d838e" }
   },
   "sea": {
     "name": "Sea",
     "defense": 0,
-    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": 1, "amphibious": 1 },
+    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": 1, "amphibious": 1, "bike": null, "diver": 1 },
     "attributes": { "submergible": true },
     "render": { "base": "#3d7ec7", "decor": "sea", "mini": "#3d7ec7", "water": true }
   },
   "shoals": {
     "name": "Shoals",
     "defense": 2,
-    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": 1, "bike": null, "diver": 1 },
     "attributes": {},
     "render": { "base": "#3d7ec7", "decor": "shoals", "mini": "#3d7ec7", "water": true }
   },
   "city": {
     "name": "City",
     "defense": 3,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] }, "blocksLineOfSight": 2 },
     "render": { "building": "city" }
   },
   "hq": {
     "name": "HQ",
     "defense": 4,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2 },
     "attributes": {
       "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
       "victoryOnCapture": true,
@@ -69,28 +69,28 @@
   "factory": {
     "name": "Factory",
     "defense": 3,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["vehicle"] }, "resupply": { "range": 1, "categories": ["vehicle"] }, "blocksLineOfSight": 2 },
     "render": { "building": "factory" }
   },
   "barracks": {
     "name": "Barracks",
     "defense": 3,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry"] }, "resupply": { "range": 1, "categories": ["infantry"] }, "blocksLineOfSight": 2 },
     "render": { "building": "barracks" }
   },
   "airfield": {
     "name": "Airfield",
     "defense": 3,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["aircraft"] }, "resupply": { "range": 1, "categories": ["aircraft"] }, "blocksLineOfSight": 2 },
     "render": { "building": "airfield" }
   },
   "shipyard": {
     "name": "Shipyard",
     "defense": 3,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": 1, "amphibious": 1 },
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": 1, "amphibious": 1, "bike": 1, "diver": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval", "amphibious"] }, "blocksLineOfSight": 1 },
     "render": { "building": "shipyard" }
   }

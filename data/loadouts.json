@@ -74,14 +74,18 @@
     "rex": {
       "build": {
         "airfield": ["transport_copter", "copter", "fighter", "bomber", "torpedo_bomber"],
-        "shipyard": ["marine", "gun_boat", "destroyer", "submarine", "cruiser", "battleship"]
+        "shipyard": ["marine", "gun_boat", "destroyer", "submarine", "cruiser", "battleship"],
+        "barracks": ["soldier", "diver", "mech", "sniper"]
       }
     },
     "chase": {
-      "build": { "airfield": ["transport_copter", "copter", "fighter", "bomber", "radar_plane"] }
+      "build": {
+        "barracks": ["soldier", "motorcycle", "mech", "sniper"],
+        "airfield": ["transport_copter", "copter", "fighter", "bomber", "radar_plane"]
+      }
     },
     "dmitri": {
-      "build": { "barracks": ["soldier", "rpg_trooper", "mech", "sniper"] },
+      "build": { "barracks": ["soldier", "conscript", "rpg_trooper", "mech", "sniper"] },
       "start": { "hq": [
         { "unit": "rpg_trooper", "at": [-1, 1] },
         { "unit": "sniper",      "at": [1, 1] },

@@ -14,11 +14,12 @@ import * as LIB from './parts.js';
 import * as ART_INFANTRY from './art-infantry.js';
 import * as ART_AIR from './art-air.js';
 import * as ART_SHIPS from './art-ships.js';
+import * as ART_CYCLE from './art-cycle.js';
 
 // Units whose art lives in a group module (art-infantry.js, art-air.js, art-ships.js): only the ones the game has are taken, so the
 // concept-only sprites in those files stay out of the game's tables. Add a name here when its unit moves into data/units.json.
 const pick = (table, names) => Object.fromEntries(names.map((n) => { if (!table[n]) throw new Error(`no art for "${n}"`); return [n, table[n]]; }));
-const INFANTRY_ART = ['commando', 'mechanic', 'medic', 'mortar_team', 'rpg_trooper', 'spy'];
+const INFANTRY_ART = ['commando', 'mechanic', 'medic', 'mortar_team', 'rpg_trooper', 'spy', 'conscript', 'diver', 'diver_swim'];
 const AIR_ART = ['stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'radar_plane', 'vintage_fighter', 'vintage_bomber'];
 const SHIP_ART = ['gun_boat'];
 
@@ -352,7 +353,7 @@ const stealth = (g, { s, c, dk }) => {
 const shrunk = (draw, k) => (g, o) => { g.save(); g.scale(k, k); draw(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); };
 
 export const SPRITES = {
-  ...pick(ART_INFANTRY.SPRITES, INFANTRY_ART), ...pick(ART_AIR.SPRITES, AIR_ART), ...pick(ART_SHIPS.SPRITES, SHIP_ART),
+  ...pick(ART_INFANTRY.SPRITES, INFANTRY_ART), ...pick(ART_AIR.SPRITES, AIR_ART), ...pick(ART_SHIPS.SPRITES, SHIP_ART), ...ART_CYCLE.SPRITES,
   soldier: trooper('soldier'), marine: trooper('marine'), dinghy: (g, o) => { g.save(); g.scale(.9, .9); dinghy(g, o); g.restore(); }, mech: trooper('mech'), sniper: trooper('sniper'),
   recon, tank: tank(false), stealth_tank: stealthTank, heavy_tank: tank(true), artillery, rocket_launcher: rocketLauncher, flak, copter, transport_copter: (g, o) => { g.save(); g.scale(.85, .85); transportCopter(g, o); g.restore(); },   // drawn long, scaled to sit inside its tile
    fighter, bomber, stealth_bomber: stealth,
@@ -368,7 +369,7 @@ const airShadow = (outline) => (g, { s, alt = 0 }) => {
 };
 
 export const SHADOWS = {
-  ...pick(ART_INFANTRY.SHADOWS, INFANTRY_ART), ...pick(ART_AIR.SHADOWS, AIR_ART), ...pick(ART_SHIPS.SHADOWS, SHIP_ART),
+  ...pick(ART_INFANTRY.SHADOWS, INFANTRY_ART), ...pick(ART_AIR.SHADOWS, AIR_ART), ...pick(ART_SHIPS.SHADOWS, SHIP_ART), ...ART_CYCLE.SHADOWS,
   soldier: ground(.17, .04, .3), marine: ground(.17, .04, .3), mech: ground(.19, .04, .3), sniper: ground(.2, .04, .3),
   recon: ground(.3, .05, .285), stealth_tank: ground(.34, .05, .285), tank: ground(.36, .05, .275), heavy_tank: ground(.36, .05, .275),
   artillery: ground(.29, .045, .285, -.01), rocket_launcher: ground(.35, .05, .285), flak: ground(.32, .05, .275),

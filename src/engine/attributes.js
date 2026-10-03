@@ -40,11 +40,12 @@ export const UNIT_ATTRIBUTES = {
   },
   submerge: {
     label: 'Submerges',
-    help: 'Can dive in deep water. A submerged unit is hidden from enemies unless one of them is next to it (or has sonar in range), and only weapons that can reach submerged targets can hit it.',
-    doc: 'Can dive as an order (after moving), and surface again. Config: { layer } names the layer the unit is on while submerged (rules.json -> layers). If that layer is `hidden`, the unit is invisible to other players unless one of their units is adjacent or within `sonar` range. Diving needs a tile with the terrain attribute `submergible`; ending a move on any other tile brings the unit back up.',
+    help: (v) => v.auto ? 'Swims below the surface of deep water, hidden from enemies unless one of them is next to it (or has sonar in range); only weapons that reach submerged targets can hit it. On land it is an ordinary unit.' : 'Can dive in deep water. A submerged unit is hidden from enemies unless one of them is next to it (or has sonar in range), and only weapons that can reach submerged targets can hit it.',
+    doc: 'Can dive as an order (after moving), and surface again. Config: { layer } names the layer the unit is on while submerged (rules.json -> layers). If that layer is `hidden`, the unit is invisible to other players unless one of their units is adjacent or within `sonar` range. Diving needs a tile with the terrain attribute `submergible`; ending a move on any other tile brings the unit back up. `auto: true` (the diver) removes the Submerge and Surface orders: the unit is down whenever it stands on submergible terrain and up everywhere else.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "layer": "underwater" }');
       if (typeof v.layer !== 'string' || !v.layer) fail('layer must name a layer from rules.json');
+      if (v.auto !== undefined && typeof v.auto !== 'boolean') fail('auto must be true or false');
     },
   },
   sonar: {
@@ -93,6 +94,15 @@ export const UNIT_ATTRIBUTES = {
     help: (v) => `Spots cloaked enemies up to ${v} tiles away.`,
     doc: 'Detects cloaked (`cloak`) enemy units within this many tiles. Adjacent units are always noticed, as with sonar; sonar is the same for submerged units. The number is the range in tiles.',
     check: (v, e, fail) => { if (!Number.isInteger(v) || v < 2) fail('must be a whole number of tiles, at least 2 (adjacent units are always noticed)'); },
+  },
+  moveFirePenalty: {
+    label: (v) => `Moving: x${v.multiplier}`,
+    help: (v) => `Its weapon does ${Math.round(v.multiplier * 100)}% damage when it moved this turn before firing; standing still it hits at full strength. Counterattacks are never reduced.`,
+    doc: 'Config: { multiplier } (0 to 1). When the unit fires after changing tile this turn (`unit.moved`, or a hypothetical firing tile that differs from where it stands) its weapon damage is multiplied by `multiplier`. A counterattack is never reduced. See combat.js.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "multiplier": 0.5 }');
+      if (typeof v.multiplier !== 'number' || !(v.multiplier > 0 && v.multiplier <= 1)) fail('multiplier must be a number above 0 and up to 1');
+    },
   },
   heal: {
     label: (v) => `Heals ${v.amount}`,

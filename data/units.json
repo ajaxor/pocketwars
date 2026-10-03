@@ -441,5 +441,47 @@
     "attributes": { "capture": true, "ammo": { "max": 1, "low": 0, "cost": 300 } },
     "exclusive": true,
     "render": { "sprite": "rpg_trooper", "facing": false, "attackFx": "shot" }
+  },
+  "conscript": {
+    "name": "Conscript",
+    "category": "infantry",
+    "cost": 600,
+    "move": 3,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["conscript_rifle"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true, "terrainDefenseMultiplier": 2 },
+    "exclusive": true,
+    "render": { "sprite": "conscript", "facing": false, "attackFx": "shot" }
+  },
+  "diver": {
+    "name": "Diver",
+    "category": "infantry",
+    "cost": 4500,
+    "move": 2,
+    "moveClass": "diver",
+    "layer": "ground",
+    "weapons": ["harpoon"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "submerge": { "layer": "underwater", "auto": true } },
+    "exclusive": true,
+    "render": { "sprite": "diver", "waterSprite": "diver_swim", "facing": false, "attackFx": "shot" }
+  },
+  "motorcycle": {
+    "name": "Motorcycle Infantry",
+    "category": "infantry",
+    "cost": 2000,
+    "move": 5,
+    "moveClass": "bike",
+    "layer": "ground",
+    "weapons": ["rifle"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true, "moveFirePenalty": { "multiplier": 0.5 } },
+    "exclusive": true,
+    "render": { "sprite": "motorcycle", "attackFx": "shot" }
   }
 }

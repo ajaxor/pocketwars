@@ -16,7 +16,7 @@ const ids = Object.keys(index.maps);
 const cost = (terrain, cls) => registry.terrainDef(terrain).moveCost[cls];
 
 test('movement classes: wheels, treads, foot and air', () => {
-  assert.deepEqual(registry.rules.moveClasses, ['foot', 'wheels', 'tread', 'air', 'naval', 'amphibious']);
+  assert.deepEqual(registry.rules.moveClasses, ['foot', 'wheels', 'tread', 'air', 'naval', 'amphibious', 'bike', 'diver']);
   assert.equal(registry.unit('recon').moveClass, 'wheels');
   for (const u of ['tank', 'heavy_tank', 'flak']) assert.equal(registry.unit(u).moveClass, 'tread', u);
   assert.equal(registry.unit('artillery').moveClass, 'wheels');

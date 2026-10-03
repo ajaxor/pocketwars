@@ -22,12 +22,17 @@
       { "unit": "medic",   "max": 1 },
       { "unit": "mechanic", "max": 1 },
       { "unit": "spy",     "max": 1 },
-      { "unit": "soldier", "max": 5 }
+      { "unit": "rpg_trooper", "max": 1 },
+      { "unit": "diver",   "max": 1, "when": "enemyHasNaval" },
+      { "unit": "motorcycle", "max": 2 },
+      { "unit": "soldier", "max": 5 },
+      { "unit": "conscript", "max": 4 }
     ],
     "aircraft": [
       { "unit": "stealth_bomber", "max": 1 },
       { "unit": "bomber",  "max": 1 },
       { "unit": "stealth_fighter", "max": 1 },
+      { "unit": "stealth_copter", "max": 1 },
       { "unit": "fighter", "max": 1 },
       { "unit": "vintage_bomber", "max": 2 },
       { "unit": "vintage_fighter", "max": 2 },

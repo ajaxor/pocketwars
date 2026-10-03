@@ -25,6 +25,8 @@ import { distance, layerIdOf, removeUnit, round1, snapshotUnit, terrainAt, unitD
 export const isIndirect = (game, unit, weapon) => !!weapon.indirect || hasAttribute(unitDef(game, unit), 'indirect');
 /** Has the unit left its tile this turn, if it were to fire from `from`? (An interrupted move counts.) */
 const hasMoved = (unit, from) => from.x !== unit.x || from.y !== unit.y || !!(unit.halted && unit.halted.moved);
+/** Did `unit` move this turn before firing from `from` (the damage penalty of `moveFirePenalty`; `unit.moved` is set by the order that moved it)? */
+const firedAfterMoving = (unit, from) => hasMoved(unit, from) || !!unit.moved;
 
 export const weaponsOf = (game, unit) => unitDef(game, unit).weapons.map((id) => game.registry.weapon(id));
 const modesOf = (game, weapon) => weapon.targets.map((m) => game.registry.rules.targetModes[m]);
@@ -53,7 +55,7 @@ export function weaponFor(game, attacker, defender, from = attacker, { moved = h
     if (!ignoreAmmo && !hasAmmoFor(game, attacker, w)) continue;
     if (d < w.range[0] || d > w.range[1]) continue;
     if (!modesOf(game, w).some((m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)))) continue;
-    const damage = rawDamage(game, w, attacker, defender);
+    const damage = rawDamage(game, w, attacker, defender, !counter && firedAfterMoving(attacker, from));
     if (damage > bestDamage) { best = w; bestDamage = damage; }
   }
   return best;
@@ -88,7 +90,7 @@ export function terrainStars(game, unit) {
  */
 export function calcDamage(game, attacker, defender, from = attacker) {
   const weapon = weaponFor(game, attacker, defender, from);
-  return weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
+  return weapon ? weaponDamage(game, weapon, attacker, defender, firedAfterMoving(attacker, from)) : 0;
 }
 
 /**
@@ -100,7 +102,7 @@ export function forecastAttack(game, attacker, defender, from = attacker) {
   const weapon = weaponFor(game, attacker, defender, from);
   if (!weapon) return { damage: 0, destroyed: false, counter: null };
   const where = { ...attacker, x: from.x, y: from.y };
-  const damage = weaponDamage(game, weapon, attacker, defender);
+  const damage = weaponDamage(game, weapon, attacker, defender, firedAfterMoving(attacker, from));
   const left = round1(defender.hp - damage);
   if (left <= 0) return { damage, destroyed: true, counter: null };
   const hurt = { ...defender, hp: left };
@@ -110,7 +112,7 @@ export function forecastAttack(game, attacker, defender, from = attacker) {
 }
 
 /** The damage formula before rounding. weapon.damage is scaled by weapon.targetMultipliers for the target mode that reaches the defender's layer. */
-function rawDamage(game, weapon, attacker, defender) {
+function rawDamage(game, weapon, attacker, defender, moved = false) {
   const d = unitDef(game, defender);
   const stars = terrainStars(game, defender);
   const toughness = (1 - d.armor * (1 - weapon.armorPiercing)) / d.toughness;
@@ -118,12 +120,13 @@ function rawDamage(game, weapon, attacker, defender) {
   const layer = layerOf(game, defender);
   const mode = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === layer);
   const vs = weapon.targetMultipliers?.[mode] ?? 1;
-  return (weapon.damage * vs * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
+  const slow = moved ? attributeConfig(unitDef(game, attacker), 'moveFirePenalty')?.multiplier ?? 1 : 1;   // e.g. the motorcycle: half damage when it moved first
+  return (weapon.damage * vs * slow * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
 }
 
 /** The damage formula alone: HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands (whole HP, or one decimal below 1). */
-export function weaponDamage(game, weapon, attacker, defender) {
-  const v = rawDamage(game, weapon, attacker, defender);
+export function weaponDamage(game, weapon, attacker, defender, moved = false) {
+  const v = rawDamage(game, weapon, attacker, defender, moved);
   return v < 1 ? round1(v) : Math.round(v);
 }
 
@@ -145,7 +148,7 @@ export function canCounter(game, defender, attacker, weapon = weaponFor(game, at
 export function resolveAttack(game, attacker, defender) {
   const events = [];
   const weapon = weaponFor(game, attacker, defender);
-  const dealt = weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
+  const dealt = weapon ? weaponDamage(game, weapon, attacker, defender, firedAfterMoving(attacker, attacker)) : 0;
   if (weapon) spendAmmo(game, attacker, weapon.ammo);
   defender.hp = round1(defender.hp - dealt);
   if (defender.hp <= 0) {

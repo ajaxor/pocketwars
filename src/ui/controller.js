@@ -299,7 +299,7 @@ export class Controller {
     if (heal) items.push({ label: healCost ? `Heal ${healCost.toLocaleString('en-US')}` : 'Heal', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'heal' }) });
     if (!fresh) items.push(...this.#deployItem(sel, () => this.#deployAfterMove()));
     if (!fresh && canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
-    if (!fresh && canSurface(sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
+    if (!fresh && canSurface(game, sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
     // Wait becomes Resupply when the unit is short on ammo and stops next to a property that resupplies it
     const resup = !fresh && canResupplyAt(game, sel, pos.x, pos.y);
     const price = resup ? resupplyCost(game, sel) : 0;

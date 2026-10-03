@@ -38,7 +38,7 @@ import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
 import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
 import { createState, restoreState, snapshotState } from './state.js';
-import { canSubmergeAt, canSurface, submergibleAt } from './submerge.js';
+import { canSubmergeAt, canSurface, divesByItself, submergibleAt } from './submerge.js';
 import { evaluateVictory } from './victory.js';
 
 const fail = (error) => ({ ok: false, error, events: [] });
@@ -83,7 +83,7 @@ export class Game {
       return canSubmergeAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-submerge');
     }
     if (action.type === 'surface') {
-      return canSurface(unit) ? { ok: true, unit, reach } : fail('cannot-surface');
+      return canSurface(this, unit) ? { ok: true, unit, reach } : fail('cannot-surface');
     }
     if (action.type === 'heal') {
       return canHealAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-heal');
@@ -137,6 +137,10 @@ export class Game {
       if (unit.submerged && !submergibleAt(this, unit.x, unit.y)) {   // a submarine that ends its move outside deep water comes up
         unit.submerged = false;
         events.push({ type: 'surface', unit: snapshotUnit(unit), forced: true });
+      }
+      if (divesByItself(this, unit) && !unit.submerged && submergibleAt(this, unit.x, unit.y)) {   // a diver goes under as soon as it is on deep water
+        unit.submerged = true;
+        events.push({ type: 'dive', unit: snapshotUnit(unit) });
       }
       if (blocker) {
         unit.halted = { moved: last > 0 };

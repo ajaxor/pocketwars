@@ -30,8 +30,10 @@ import { facingToCentre } from './queries.js';
  */
 export function makeUnit(registry, map, id, { type, owner, x, y, hp, done = false, fresh = false }) {
   const ammo = initialAmmo(registry.unit(type));
+  const dive = registry.unit(type).attributes?.submerge;   // a diver placed on deep water starts below the surface
+  const under = !!dive?.auto && !!registry.terrainDef(map.terrain[y][x]).attributes?.submergible;
   return {
-    id, type, owner, x, y, hp: hp ?? registry.rules.maxHp, done, capture: 0, submerged: false, halted: null, facing: facingToCentre(map, x),
+    id, type, owner, x, y, hp: hp ?? registry.rules.maxHp, done, capture: 0, submerged: under, halted: null, facing: facingToCentre(map, x),
     ...(fresh && { fresh: true }), ...(ammo !== undefined && { ammo }),
   };
 }

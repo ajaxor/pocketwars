@@ -1,7 +1,9 @@
-// Experimental concept units, group "vehicles": an amphibious tank, a wheeled SAM truck, a rocket buggy and a motorcycle trooper.
+// Experimental concept units, group "vehicles": an amphibious tank, a wheeled SAM truck, and a rocket buggy (the motorcycle trooper is a real unit now: src/render/art-cycle.js).
 // Sprites only; described in parts/vehicles.json. Same conventions as concept-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
 // centred on (0, 0), +x forward, sizes are tile fractions; the ground is at about y = .29.
 import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, propeller, turret, tubes, dish, INK, STEEL, SKIN } from '../src/render/parts.js';
+
+import * as CYCLE from '../src/render/art-cycle.js';
 
 const RED = '#d4442e', ORANGE = '#ff9a2e';
 
@@ -72,26 +74,6 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
   }
 };
 
-// ---- Motorcycle infantry ----------------------------------------------------------------------------------------------------
-// A racing bike: low, with a nose fairing and a tail hump, and the rider lying almost flat along the tank, helmet down by the handlebars.
-const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
-  const bob = (run ? Math.sin(w * (moving ? 12 : 4) + ph) * (moving ? .008 : .004) : 0) + b / s;
-  const wy = .19, bike = mix(c, dk, .4);
-  wheel(g, s, -.24, wy, .1, w, run, 14); wheel(g, s, .24, wy, .1, w, run, 14);
-  g.save(); g.translate(0, bob * s);
-  stroke(g, s, .24, wy, .15, .02, 3.5, STEEL);                                                // front fork
-  poly(g, s, [[-.3, .06], [-.22, -.01], [-.1, -.01], [-.08, .1], [-.24, .15]], bike);         // tail hump
-  poly(g, s, [[-.12, .03], [.06, -.01], [.18, .01], [.27, .09], [.17, .15], [-.1, .15]], bike);   // body and nose fairing
-  // the rider, all in the bike's team colour: crouched forward, one hand on the bar, the other holding a short gun
-  stroke(g, s, -.14, .0, -.02, .09, 6, c); stroke(g, s, -.02, .09, -.06, .17, 5, c);          // thigh and shin
-  stroke(g, s, -.13, -.01, .05, -.11, 12, c);                                                 // torso, leaning well forward
-  stroke(g, s, .03, -.09, .16, -.03, 4.5, c);                                                 // arm to the bar
-  stroke(g, s, .05, -.08, .15, -.07, 4.5, c);                                                 // the gun arm
-  box(g, s, .13, -.09, .2, .035, 1, INK); box(g, s, .16, -.065, .04, .06, 1, INK);             // the gun: barrel and grip, held low
-  disc(g, s, .1, -.15, .06, c);                                                               // helmet
-  box(g, s, .12, -.17, .05, .04, 1, INK);                                                     // visor
-  g.restore();
-};
 
 
 // ---- APC ----------------------------------------------------------------------------------------------------------------------------
@@ -106,9 +88,9 @@ const apc = (g, { s, c, dk, w, run, j }) => {
   box(g, s, .06, -.17 + jj, .1, .07, 2, dk); box(g, s, .14, -.15 + jj, .17, .028, 1, INK);   // the roof gun
 };
 
-export const SPRITES = { apc, amphibious_tank: amphibiousTank, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, motorcycle };
+export const SPRITES = { apc, amphibious_tank: amphibiousTank, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, ...CYCLE.SPRITES };
 
 const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
-  apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), motorcycle: ground(.3, .04, .295),
+  apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), ...CYCLE.SHADOWS,
 };
