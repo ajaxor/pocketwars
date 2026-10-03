@@ -86,8 +86,8 @@ const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
   stroke(g, s, -.14, .0, -.02, .09, 6, c); stroke(g, s, -.02, .09, -.06, .17, 5, c);          // thigh and shin
   stroke(g, s, -.13, -.01, .05, -.11, 12, c);                                                 // torso, leaning well forward
   stroke(g, s, .03, -.09, .16, -.03, 4.5, c);                                                 // arm to the bar
-  stroke(g, s, .05, -.08, .15, -.12, 4.5, c);                                                 // the gun arm
-  box(g, s, .13, -.14, .2, .035, 1, INK); box(g, s, .16, -.115, .04, .06, 1, INK);            // the gun: barrel and grip
+  stroke(g, s, .05, -.08, .15, -.07, 4.5, c);                                                 // the gun arm
+  box(g, s, .13, -.09, .2, .035, 1, INK); box(g, s, .16, -.065, .04, .06, 1, INK);             // the gun: barrel and grip, held low
   disc(g, s, .1, -.15, .06, c);                                                               // helmet
   box(g, s, .12, -.17, .05, .04, 1, INK);                                                     // visor
   g.restore();
