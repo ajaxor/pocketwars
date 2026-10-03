@@ -43,7 +43,7 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('submerge'), ['submarine']);
   assert.deepEqual(withAttr('sonar'), ['destroyer', 'radar_plane']);
   assert.deepEqual(withAttr('radar'), ['radar_plane']);
-  assert.deepEqual(withAttr('cloak'), ['spy', 'stealth_bomber', 'stealth_copter', 'stealth_fighter']);
+  assert.deepEqual(withAttr('cloak'), ['sniper', 'spy', 'stealth_bomber', 'stealth_copter', 'stealth_fighter']);
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);

@@ -33,7 +33,7 @@ import { canHealAt, resolveHeal } from './heal.js';
 import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
-import { canSee, hiddenFrom } from './detection.js';
+import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
 import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
@@ -147,7 +147,10 @@ export class Game {
     }
     if (action.type === 'capture') events.push(...resolveCapture(this, unit));
     else if (action.type === 'heal') events.push(...resolveHeal(this, unit));
-    else if (action.type === 'attack') events.push(...resolveAttack(this, unit, target));
+    else if (action.type === 'attack') {
+      events.push(...resolveAttack(this, unit, target));
+      if (revealsWhenFiring(this, unit)) unit.revealed = true;   // muzzle flash: visible until its owner's next turn starts
+    }
     else if (action.type === 'submerge') { unit.submerged = true; events.push({ type: 'dive', unit: snapshotUnit(unit) }); }
     else if (action.type === 'surface') { unit.submerged = false; events.push({ type: 'surface', unit: snapshotUnit(unit), forced: false }); }
     unit.done = true;

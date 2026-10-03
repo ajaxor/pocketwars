@@ -2,7 +2,7 @@
 //
 // A layer marked `hidden` in rules.json (the one a submerged unit is on) is invisible to every player except its owner, with two
 // exceptions: any unit standing NEXT to it notices it, and a unit with the `sonar` attribute notices it up to that many tiles away.
-// A unit with the `cloak` attribute is hidden the same way wherever it is (it keeps its own layer, so what can shoot it does not
+// A unit with the `cloak: true` attribute is hidden the same way wherever it is (`cloak: { terrain }`: only on that terrain; a unit that fired is revealed for a turn) (it keeps its own layer, so what can shoot it does not
 // change), and is noticed by an adjacent unit or by a `radar` in range. Sonar finds submerged units, radar finds cloaked ones.
 // "Invisible" means three things, all enforced here and in the modules that call canSee:
 //   - it is not drawn, and tapping its tile shows nothing (ui/controller.js, render/renderer.js)
@@ -16,13 +16,23 @@
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { distance, layerIdOf, unitDef } from './queries.js';
 
+/** Does a unit lift its cloak when it fires (`cloak: { revealedByFiring }`)? */
+export const revealsWhenFiring = (game, unit) => attributeConfig(unitDef(game, unit), 'cloak')?.revealedByFiring === true;
+
 /** Units this close (in tiles) to a hidden unit always notice it, sonar or not. */
 export const ADJACENT = 1;
 
 /** Is `unit` on a hidden layer right now (submerged)? */
 export const isSubmerged = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)].hidden === true;
-/** Does `unit` carry the `cloak` attribute? */
-export const isCloaked = (game, unit) => hasAttribute(unitDef(game, unit), 'cloak');
+/**
+ * Is `unit` cloaked right now? `cloak: true` always; `cloak: { terrain }` only on those terrains; a unit that fired and has
+ * `revealedByFiring` is not (`unit.revealed`, cleared when its owner's next turn starts).
+ */
+export function isCloaked(game, unit) {
+  const cfg = attributeConfig(unitDef(game, unit), 'cloak');
+  if (!cfg || unit.revealed) return false;
+  return cfg === true || cfg.terrain.includes(game.map.terrain[unit.y][unit.x]);
+}
 /** Is `unit` hidden (submerged or cloaked)? Says nothing about who can see it: see canSee. */
 export const isHidden = (game, unit) => isSubmerged(game, unit) || isCloaked(game, unit);
 

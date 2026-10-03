@@ -33,6 +33,7 @@ export function startTurn(game, player) {
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
     }
   }
+  for (const u of state.units) if (u.owner === player) delete u.revealed;
   const healed = healAtTurnStart(game, player);
   return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, healed }];
 }

@@ -18,7 +18,7 @@ wrong kind of entity, fail validation.
 | `ignoresTerrainDefense` | Terrain defense does not reduce damage this unit takes. | `ignoresTerrainDefense.test.js` |
 | `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer }` names the layer while down; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. | `tests/engine/naval.test.js` |
 | `sonar` | Detects hidden enemies within this many tiles (integer >= 2; adjacent units are always noticed). | `tests/engine/naval.test.js` |
-| `cloak` | Hidden from other players unless one of their units is adjacent or has `radar` in range. Keeps its own layer. Sonar does not find it. | `tests/attributes/cloak.test.js` |
+| `cloak` | Hidden from other players unless one of their units is adjacent or has `radar` in range. Config `true`: everywhere. Config `{ terrain: [ids], revealedByFiring? }`: only on those terrains (the sniper in forest, rough and mountain); with `revealedByFiring` an attack reveals the unit until its owner's next turn starts. Keeps its own layer. Sonar does not find it. | `tests/attributes/cloak.test.js` |
 | `radar` | Finds cloaked enemies within this many tiles (integer >= 2). | `tests/attributes/cloak.test.js` |
 | `heal` | A Heal order (after moving, instead of Wait): every damaged friendly unit of the configured categories next to the unit regains HP, optionally for a share of its price. | `tests/attributes/heal.test.js` |
 | `rest` | Recovers HP at turn start if it did not move the previous turn. | `tests/attributes/heal.test.js` |

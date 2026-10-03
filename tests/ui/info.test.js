@@ -50,7 +50,7 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures', 'Cover x2']);
   assert.match(unitStats(game, registry.unit('soldier')).tags[1].help, /2 times the defense/);
   const sniper = unitStats(game, registry.unit('sniper'));
-  assert.deepEqual(sniper.tags.map((t) => t.label), ['Indirect fire']);
+  assert.deepEqual(sniper.tags.map((t) => t.label), ['Indirect fire', 'Cloaked']);
   assert.deepEqual([sniper.weapons[0].min, sniper.weapons[0].max], [2, 3]);
   assert.deepEqual(unitStats(game, registry.unit('artillery')).weapons[0].hits, ['Ground']);
   assert.deepEqual(unitStats(game, registry.unit('fighter')).weapons[0].hits, ['Low air', 'High air']);

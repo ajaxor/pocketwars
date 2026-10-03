@@ -29,7 +29,9 @@
 - **New units are `exclusive`** (kept off default and category menus) and reachable only through leader loadouts; the default kit guard test does not cover them, so a leader dropped from `data/loadouts.json` silently strands its unit.
 - **Support-unit AI ignores danger.** Medics, mechanics, radar planes and spies path toward goals (wounded allies, the army, enemy properties) without weighing threats, and will walk into fire.
 - **Mechanic has no mines.** The concept's mine laying was not built; it is a repair/heal unit only.
-- **A cloaked attacker stays hidden after it fires** unless an enemy is adjacent or has radar; there is no "revealed by firing" rule.
+- **Only the sniper is revealed by firing.** The always-cloaked units (spy, stealth fighter/bomber/copter) stay hidden after they shoot unless an enemy is adjacent or has radar; `cloak.revealedByFiring` exists if that should change.
+- **The AI does not use the sniper's forest cloak:** it picks tiles by cover and distance, not by whether the tile hides it.
+- **A carried unit that was halted by a hidden enemy** used to crash the AI (no tile to choose); fixed with a size check, but `carriedBy` handling in `chooseOrder` is fragile.
 - **Radar adds no fog sight.** Radar only finds cloaked units; there is no fog-of-war vision bonus.
 - **Heal visuals were not verified in a browser** (the Heal button label and the +HP call-outs); only engine tests cover them.
 - **Sprites moved from `gallery/` to `src/render/art-*.js`** so the deploy build includes them; the gallery imports them back. Older gallery art files may still want the same treatment.

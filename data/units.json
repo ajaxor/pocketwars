@@ -35,7 +35,7 @@
     "weapons": ["sniper_rifle"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "indirect": true },
+    "attributes": { "indirect": true, "cloak": { "terrain": ["forest", "rough", "mountain"], "revealedByFiring": true } },
     "render": { "sprite": "sniper", "facing": false, "attackFx": "shot" }
   },
   "marine": {

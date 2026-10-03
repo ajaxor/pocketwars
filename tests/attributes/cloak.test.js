@@ -82,3 +82,48 @@ test('cloak and radar: the config must be right', () => {
   assert.match(problems({ cloak: 'yes' }), /attribute "cloak" must be true/);
   assert.match(problems({ radar: 1 }), /attribute "radar" must be a whole number of tiles, at least 2/);
 });
+
+// ---- terrain-bound cloak (the sniper) ----------------------------------------------------------------------------------------
+const woods = { cloak: { terrain: ['forest'], revealedByFiring: true } };
+const wunits = { ...units, sniper: { attributes: { ...woods, indirect: true }, range: [2, 3] }, watcher2: { attributes: {} } };
+const wgame = (rows, unitsOnMap) => makeGame({ units: wunits, rows, unitsOnMap });
+
+test('cloak with terrain: hidden in the listed terrain, in plain sight elsewhere', () => {
+  const g = wgame(['.F....'], [['sniper', 0, 1, 0], ['sniper', 0, 0, 0], ['plain', 1, 5, 0]]);
+  const [inWoods, onPlain] = g.state.units;
+  assert.equal(canSee(g, 1, inWoods), false);
+  assert.equal(canSee(g, 1, onPlain), true);
+  assert.equal(canSee(g, 0, inWoods), true, 'its owner always sees it');
+});
+
+test('cloak with terrain: an adjacent enemy still notices it', () => {
+  const g = wgame(['.F....'], [['sniper', 0, 1, 0], ['plain', 1, 2, 0]]);
+  assert.equal(canSee(g, 1, g.state.units[0]), true);
+});
+
+test('cloak revealedByFiring: firing reveals it through the enemy turn, and it is hidden again once its owner\'s next turn starts', () => {
+  const g = wgame(['.F...h'], [['sniper', 0, 1, 0], ['plain', 1, 4, 0]]);
+  const sniper = g.state.units[0], foe = g.state.units[1];
+  assert.equal(canSee(g, 1, sniper), false);
+  const res = g.act({ unitId: sniper.id, to: { x: 1, y: 0 }, action: { type: 'attack', targetId: foe.id } });
+  assert.equal(res.ok, true, res.error);
+  assert.equal(canSee(g, 1, sniper), true, 'revealed after firing');
+  g.endTurn();
+  assert.equal(canSee(g, 1, sniper), true, 'still revealed during the enemy turn');
+  g.endTurn();
+  assert.equal(canSee(g, 1, sniper), false, 'hidden again at the start of its owner\'s next turn');
+});
+
+test('cloak without revealedByFiring: firing does not reveal it', () => {
+  const g = makeGame({ units: { ...units, shooter: { attributes: { cloak: true, indirect: true }, range: [2, 3] } }, rows: ['.....h'], unitsOnMap: [['shooter', 0, 0, 0], ['plain', 1, 3, 0]] });
+  g.act({ unitId: g.state.units[0].id, to: { x: 0, y: 0 }, action: { type: 'attack', targetId: g.state.units[1].id } });
+  assert.equal(canSee(g, 1, g.state.units[0]), false);
+});
+
+test('cloak config: true, or terrain ids with an optional revealedByFiring flag', () => {
+  const problems = (cloak) => validateData(makeData({ units: { x: { attributes: { cloak } } } })).join('\n');
+  assert.equal(problems({ terrain: ['forest'], revealedByFiring: true }), '');
+  assert.match(problems({ terrain: [] }), /terrain must be a non-empty array/);
+  assert.match(problems({ terrain: ['forest'], revealedByFiring: 1 }), /revealedByFiring must be true or false/);
+  assert.match(problems(5), /cloak/);
+});

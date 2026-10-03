@@ -78,9 +78,15 @@ export const UNIT_ATTRIBUTES = {
   },
   cloak: {
     label: 'Cloaked',
-    help: 'Hidden from the enemy unless one of their units is next to it or has radar in range. A hidden unit cannot be targeted, and what it hits cannot answer unless it can see the attacker.',
-    doc: 'Always hidden (like a submerged unit, but on its own layer): other players cannot see it, target it or plan around it unless one of their units is adjacent or within `radar` range. The owner always sees it. It is found out when an enemy move runs into it (an interrupt). A cloaked unit that attacks is not answered by a counterattack unless the defender can see it (an adjacent defender can). See detection.js.',
-    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+    help: (v) => (v === true ? 'Hidden from the enemy unless one of their units is next to it or has radar in range. A hidden unit cannot be targeted, and what it hits cannot answer unless it can see the attacker.'
+      : `Hidden from the enemy while on ${v.terrain.join(' or ')}${v.revealedByFiring ? ', until it fires (it stays visible through the enemy\'s next turn)' : ''}, unless an enemy unit is next to it or has radar in range.`),
+    doc: 'Always hidden (like a submerged unit, but on its own layer): other players cannot see it, target it or plan around it unless one of their units is adjacent or within `radar` range. The owner always sees it. It is found out when an enemy move runs into it (an interrupt). A cloaked unit that attacks is not answered by a counterattack unless the defender can see it (an adjacent defender can). Config `true`: cloaked everywhere. Config `{ terrain: [ids], revealedByFiring? }`: cloaked only while standing on one of those terrains (a sniper in the woods); with `revealedByFiring` an attack lifts the cloak (`unit.revealed`) until the start of its owner\'s next turn. See detection.js.',
+    check: (v, e, fail) => {
+      if (isFlag(v)) return;
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be true or an object like { "terrain": ["forest"], "revealedByFiring": true }');
+      if (!Array.isArray(v.terrain) || !v.terrain.length || v.terrain.some((t) => typeof t !== 'string' || !t)) fail('terrain must be a non-empty array of terrain ids');
+      if (v.revealedByFiring !== undefined && typeof v.revealedByFiring !== 'boolean') fail('revealedByFiring must be true or false');
+    },
   },
   radar: {
     label: (v) => `Radar ${v}`,

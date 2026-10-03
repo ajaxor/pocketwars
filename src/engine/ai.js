@@ -103,7 +103,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   let best = null;
   for (const { x, y } of reach.tiles()) {
     const moved = x !== unit.x || y !== unit.y;
-    if (unit.carriedBy && !moved) continue;   // a unit just deployed has to leave its carrier's tile
+    if (unit.carriedBy && !moved && reach.size > 1) continue;   // a unit just deployed has to leave its carrier's tile
     // cover only matters to a unit that gets it (aircraft ignore it)
     const defense = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
     let score = -(field.get(tileIndex(map, x, y)) ?? fallback(x, y)) * w.distanceToGoal + defense * w.terrainDefense + healScore(game, unit, x, y, w);
