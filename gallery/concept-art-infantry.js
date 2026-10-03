@@ -50,10 +50,9 @@ const rpgTrooper = (g, o) => {
   g.save(); g.translate(0, (-.185 + bb) * s); g.rotate(-.12);                       // the tube, drawn BEFORE the head so the head is in front of it
   box(g, s, -.36, -.05, .72, .1, 3, '#5d6445');
   poly(g, s, [[-.4, -.07], [-.34, -.05], [-.34, .05], [-.4, .07]], '#3c4130');      // rear flare
-  poly(g, s, [[.34, -.035], [.46, 0], [.34, .035]], RED);                           // the warhead
+  box(g, s, .3, -.07, .05, .14, 1, '#3c4130'); poly(g, s, [[.35, -.09], [.47, -.045], [.52, 0], [.47, .045], [.35, .09]], RED);   // the rocket: a fat warhead bigger than the tube
   g.restore();
   head(g, s, bb); helmet(g, s, bb, dk);
-  stroke(g, s, .1, .08 + bb, .17, -.16 + bb, 3.2, SKIN);                            // a hand on the tube
 };
 
 // ---- Mechanic: a soldier holding a wrench across his chest like a rifle, bobbing it up and down --------------------------------------
@@ -132,7 +131,7 @@ const diver = (g, o) => {
   head(g, s, bb);
   dome(g, s, bb, .095, suit);                                                         // the hood
   oval(g, s, .05, -.225 + bb, .06, .035, mix(c, '#ffffff', .25)); oval(g, s, .06, -.225 + bb, .04, .02, '#9fe0ff');   // the mask, pushed up
-  stroke(g, s, -.09, -.2 + bb, -.09, -.34 + bb, 3, INK); stroke(g, s, -.09, -.34 + bb, -.03, -.34 + bb, 3, INK);       // the snorkel, up the side of the head
+  stroke(g, s, -.09, -.19 + bb, -.09, -.35 + bb, 3, INK); stroke(g, s, -.09, -.35 + bb, -.15, -.35 + bb, 3, INK); stroke(g, s, -.09, -.19 + bb, -.03, -.17 + bb, 3, INK);   // the snorkel: mouthpiece at the face, the tube up the side, its open end bent back
 };
 const diverSwim = (g, { s, c, dk, w, ph, run, moving, b }) => {
   const bb = b / s, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;
@@ -147,7 +146,7 @@ const diverSwim = (g, { s, c, dk, w, ph, run, moving, b }) => {
     box(g, s, -.14, -.09, .22, .14, 5, team);                                          // air tank
     disc(g, s, .22, -.01, .095, suit);                                                 // head
     oval(g, s, .28, -.01, .055, .045, light ? '#9fe0ff' : mix('#9fe0ff', dk, .4));     // mask
-    stroke(g, s, .2, -.09, .17, -.2, 3, INK); stroke(g, s, .17, -.2, .22, -.2, 3, INK);   // the snorkel, standing up out of the water
+    stroke(g, s, .2, -.09, .17, -.2, 3, INK); stroke(g, s, .17, -.2, .11, -.2, 3, INK); stroke(g, s, .2, -.09, .25, -.05, 3, INK);   // the snorkel: mouthpiece at the face, tube up, open end bent back
     g.restore();
   }, -.02);
 };

@@ -76,18 +76,20 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
 // A racing bike: low, with a nose fairing and a tail hump, and the rider lying almost flat along the tank, helmet down by the handlebars.
 const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
   const bob = (run ? Math.sin(w * (moving ? 12 : 4) + ph) * (moving ? .008 : .004) : 0) + b / s;
-  const wy = .19;
+  const wy = .19, bike = mix(c, dk, .4);
   wheel(g, s, -.24, wy, .1, w, run, 14); wheel(g, s, .24, wy, .1, w, run, 14);
   g.save(); g.translate(0, bob * s);
   stroke(g, s, .24, wy, .15, .02, 3.5, STEEL);                                                // front fork
-  poly(g, s, [[-.3, .05], [-.22, -.03], [-.1, -.02], [-.08, .1], [-.24, .15]], mix(c, dk, .35));   // tail hump
-  poly(g, s, [[-.12, .02], [.06, -.02], [.18, .0], [.27, .08], [.17, .15], [-.1, .15]], c);   // body and nose fairing
-  // rider: lying forward along the tank
-  stroke(g, s, -.17, -.02, .07, -.09, 11, dk);                                                // back
-  stroke(g, s, -.14, .0, -.02, .09, 5, dk);                                                  // thigh, tucked in
-  stroke(g, s, .03, -.08, .17, -.02, 4, dk);                                                  // arm to the grip
-  disc(g, s, .13, -.1, .062, c);                                                              // helmet
-  box(g, s, .14, -.125, .05, .04, 1, INK);                                                    // visor
+  poly(g, s, [[-.3, .06], [-.22, -.01], [-.1, -.01], [-.08, .1], [-.24, .15]], bike);         // tail hump
+  poly(g, s, [[-.12, .03], [.06, -.01], [.18, .01], [.27, .09], [.17, .15], [-.1, .15]], bike);   // body and nose fairing
+  // the rider, all in the bike's team colour: crouched forward, one hand on the bar, the other holding a short gun
+  stroke(g, s, -.14, .0, -.02, .09, 6, c); stroke(g, s, -.02, .09, -.06, .17, 5, c);          // thigh and shin
+  stroke(g, s, -.13, -.01, .05, -.11, 12, c);                                                 // torso, leaning well forward
+  stroke(g, s, .03, -.09, .16, -.03, 4.5, c);                                                 // arm to the bar
+  stroke(g, s, .05, -.08, .15, -.12, 4.5, c);                                                 // the gun arm
+  box(g, s, .13, -.14, .2, .035, 1, INK); box(g, s, .16, -.115, .04, .06, 1, INK);            // the gun: barrel and grip
+  disc(g, s, .1, -.15, .06, c);                                                               // helmet
+  box(g, s, .12, -.17, .05, .04, 1, INK);                                                     // visor
   g.restore();
 };
 

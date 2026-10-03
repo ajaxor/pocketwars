@@ -6,45 +6,31 @@ import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, perisco
 // Landing craft: a D-Day style Higgins boat. A flat-bottomed, boxy hull with a blunt bow whose drop ramp is raised, high plain sides round an open
 // well with a row of helmeted troops, and a little helmsman's shelter at the stern. (It can still carry a tank; none is drawn.)
 const tankTransport = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s + .02, D = .06, x0 = -.4, x1 = .34;
+  const bb = b / s + .02, D = -.02, x0 = -.4, x1 = .34;
   afloat(g, s, w, run, x0, x1, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, x0 - .02, .24, w, run, dk);
-    g.beginPath(); g.moveTo(x0 * s, D * s); g.lineTo(x1 * s, D * s); g.lineTo((x1 + .02) * s, .2 * s); g.lineTo((x1 - .06) * s, .29 * s);
-    g.lineTo((x0 + .05) * s, .29 * s); g.lineTo(x0 * s, .23 * s); g.closePath(); g.fillStyle = light ? c : dk; g.fill();
+    if (!light) propeller(g, s, x0 - .02, .26, w, run, dk);
+    g.beginPath(); g.moveTo(x0 * s, D * s); g.lineTo(x1 * s, D * s); g.lineTo((x1 + .02) * s, .2 * s); g.lineTo((x1 - .06) * s, .32 * s);
+    g.lineTo((x0 + .05) * s, .32 * s); g.lineTo(x0 * s, .25 * s); g.closePath(); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      for (const x of [-.12, -.01, .1, .21]) { disc(g, s, x, D - .075, .045, SKIN); g.fillStyle = mix(c, '#000000', .4); g.beginPath(); g.arc(x * s, (D - .08) * s, .05 * s, Math.PI, 0); g.fill(); }   // helmets in the well
-      box(g, s, -.3, D - .05, .64, .06, 1, mix(c, dk, .2));                                // the near side wall, hiding the troops' bodies
-      poly(g, s, [[x1 - .02, D - .06], [x1 + .03, D - .06], [x1 + .05, .24], [x1 + .0, .24]], mix(c, dk, .35));   // the bow ramp, raised: a plate across the blunt bow
-      box(g, s, -.4, D - .18, .12, .18, 3, c);                                             // the helmsman's shelter, stern
+      box(g, s, -.3, D - .02, .64, .07, 1, mix(c, dk, .25));                               // the rim of the open well, running along the side
+      poly(g, s, [[x1 - .02, D - .08], [x1 + .03, D - .08], [x1 + .05, .26], [x1 + .0, .26]], mix(c, dk, .35));   // the bow ramp, raised: a plate across the blunt bow
+      box(g, s, -.4, D - .18, .13, .18, 3, c);                                             // the helmsman's shelter, stern
     }
     g.restore();
   });
 };
 
 // Missile sub: a big fat boomer. Long round hull, a sail, and a long raised casing behind the sail with rows of hatches, one open with a missile tip.
-const missileSub = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s * .6, col = mix(c, dk, .4), hi = mix(col, '#ffffff', .18), deep = mix(col, '#000000', .3);
+const missileSub = (g, { s, c, dk, w, run, b }) => {
+  const bb = b / s * .6, col = mix(c, dk, .4), deep = mix(col, '#000000', .3);
   g.save(); g.translate(0, bb * s);
   propeller(g, s, -.5, .06, w, run, deep, false);
-  poly(g, s, [[-.4, .02], [-.5, -.1], [-.45, -.1], [-.33, .02]], deep);                      // upper rudder
-  poly(g, s, [[-.4, .12], [-.5, .24], [-.45, .24], [-.33, .12]], deep);                      // lower rudder
+  poly(g, s, [[-.4, .02], [-.5, -.1], [-.45, -.1], [-.33, .02]], deep);                      // one rudder
   box(g, s, -.46, -.1, .92, .32, s * .15, col);                                              // big round hull
   box(g, s, -.4, -.17, .4, .09, 3, mix(col, '#ffffff', .1));                                 // the raised missile casing behind the sail
-  for (let i = 0; i < 4; i++) {                                                              // hatch row: four silo covers
-    const x = -.37 + i * .095;
-    if (i === 1) {                                                                           // this one is open
-      box(g, s, x, -.145, .075, .05, 1, '#15181d');
-      const lift = run ? .035 + .015 * Math.sin(w * 2 + ph) : .025;                           // a warhead rising out of it
-      box(g, s, x + .015, -.2 - lift, .045, .06 + lift, 2, '#d0d4da');
-      poly(g, s, [[x + .015, -.2 - lift], [x + .06, -.2 - lift], [x + .0375, -.27 - lift]], RED);
-      const p = run ? .5 + .5 * Math.sin(w * 6 + ph) : .4; disc(g, s, x + .0375, -.17 - lift, .012, `rgba(255,150,70,${(.5 + .4 * p).toFixed(2)})`);
-    } else box(g, s, x, -.155, .075, .035, 2, deep);
-  }
+  for (let i = 0; i < 4; i++) box(g, s, -.36 + i * .095, -.155, .05, .035, 2, deep);          // four slim silo covers
   box(g, s, .06, -.3, .14, .22, 4, col);                                                     // sail, ahead of the casing
-  box(g, s, .045, -.2, .025, .06, 1, deep);                                                   // sail plane
-  periscope(g, s, .1, -.3, -.38, INK);
-  poly(g, s, [[.36, .12], [.43, .02], [.43, .12]], deep);                                    // bow plane
   g.restore();
   bubbles(g, s, w, run, -.3, -.2);
 };
