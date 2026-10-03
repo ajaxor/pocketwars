@@ -37,8 +37,8 @@ test('every property terrain has a building drawing; decor names exist', () => {
 
 test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
-  assert.deepEqual(withAttr('capture'), ['marine', 'mech', 'rpg_trooper', 'soldier', 'spy']);
-  assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando', 'soldier']);
+  assert.deepEqual(withAttr('capture'), ['marine', 'mech', 'rpg_trooper', 'sniper', 'soldier', 'spy']);
+  assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando']);
   assert.deepEqual(withAttr('indirect'), ['artillery', 'mortar', 'rocket_launcher', 'sniper']);
   assert.deepEqual(withAttr('submerge'), ['submarine']);
   assert.deepEqual(withAttr('sonar'), ['destroyer', 'radar_plane']);
@@ -78,11 +78,11 @@ test('characterisation of the original stats', () => {
   assert.equal(registry.rules.maxHp, 10);
 });
 
-test('the soldier is the softest unit and doubles the terrain defense it gets', () => {
+test('the soldier is the softest unit and gets no extra cover', () => {
   const soldier = registry.unit('soldier');
   assert.equal(soldier.toughness, 1, 'toughness 1 is the baseline');
   assert.equal(soldier.armor, 0);
-  assert.equal(soldier.attributes.terrainDefenseMultiplier, 2);
+  assert.equal(soldier.attributes.terrainDefenseMultiplier, undefined);
   for (const id of registry.unitIds.filter((u) => u !== 'soldier')) {
     const u = registry.unit(id);
     assert.ok(u.toughness >= soldier.toughness && u.armor >= soldier.armor, `${id} is at least as tough as a soldier`);

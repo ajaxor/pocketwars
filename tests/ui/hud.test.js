@@ -208,13 +208,14 @@ test('clear() removes the boxes, the orders and the build menu but leaves the to
 test('tapping an attribute tag shows what it does; tapping it again, or the next tag, changes or hides that', () => {
   const { hud, game, byClass } = make();
   const u = game.state.units.find((q) => q.owner === 0 && q.type === 'soldier');
+  u.type = 'commando';   // a unit with two tags: captures is gone, so use cover + rest
   hud.info({ unit: unitInfo(game, u) });
-  const [captures, cover] = byClass('tag--help');
+  const [cover, captures] = byClass('tag--help');
   const help = byClass('tag-help')[0];
   assert.equal(help.hidden, true);
   captures.click();
   assert.equal(help.hidden, false);
-  assert.match(help.textContent, /capture the property/);
+  assert.match(help.textContent, /regains 1 HP|1 HP/);
   assert.ok(captures.classList.contains('is-open'));
   cover.click();
   assert.match(help.textContent, /2 times the defense/);

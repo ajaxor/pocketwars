@@ -42,3 +42,17 @@ test('the stealth copter is a cloaked copter with a copter\'s weapon and less to
   assert.equal(sc.layer, copter.layer);
   assert.ok(sc.toughness < copter.toughness);
 });
+
+test('infantry attack ladder: soldier < marine < commando; the commando moves 2 and has 2x cover; the soldier has none', () => {
+  const dmg = (id) => weaponsOf(id)[0].damage;
+  assert.ok(dmg('soldier') < dmg('marine') && dmg('marine') < dmg('commando'));
+  assert.equal(unit('commando').move, 2);
+  assert.equal(unit('commando').attributes.terrainDefenseMultiplier, 2);
+  assert.ok(!hasAttribute(unit('soldier'), 'terrainDefenseMultiplier'));
+});
+
+test('AT infantry cannot shoot aircraft; the sniper can capture', () => {
+  assert.equal(unit('mech').name, 'AT Infantry');
+  assert.deepEqual(weaponsOf('mech')[0].targets, ['direct_ground']);
+  assert.ok(hasAttribute(unit('sniper'), 'capture'));
+});

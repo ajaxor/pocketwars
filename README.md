@@ -8,7 +8,7 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 
 - Tap any tile to see what is on it (unit and terrain info cards). Tap one of your units to select it, tap a highlighted tile to move, then choose Capture or Wait, or tap an enemy and press Attack (tapping it again also confirms).
 - Tap a factory, barracks, airfield or shipyard you own to open its build menu: tap a unit to select it, then tap it again (or press Build) to build. A new unit appears on the property and gets a free move to drive off it (it cannot attack that turn); each property builds one unit per turn.
-- Units with the `capture` attribute (Soldier, Mech) capture properties: 20 points, each turn adds the unit's HP.
+- Units with the `capture` attribute (Soldier, AT Infantry, Sniper, ...) capture properties: 20 points, each turn adds the unit's HP.
 - Units on owned properties heal each turn, and each property earns funds.
 - Win by capturing the enemy HQ or by destroying all enemy units when they cannot rebuild.
 - Undo reverts your last order; it is cleared when you build, end your turn, or when an order runs into or reveals a hidden unit.

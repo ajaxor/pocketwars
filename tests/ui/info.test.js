@@ -47,10 +47,10 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air'] }]);
   assert.deepEqual(tank.tags, []);
 
-  assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures', 'Cover x2']);
-  assert.match(unitStats(game, registry.unit('soldier')).tags[1].help, /2 times the defense/);
+  assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures']);
+  assert.match(unitStats(game, registry.unit('commando')).tags.find((t) => t.label === 'Cover x2').help, /2 times the defense/);
   const sniper = unitStats(game, registry.unit('sniper'));
-  assert.deepEqual(sniper.tags.map((t) => t.label), ['Indirect fire', 'Cloaked']);
+  assert.deepEqual(sniper.tags.map((t) => t.label), ['Captures', 'Indirect fire', 'Cloaked']);
   assert.deepEqual([sniper.weapons[0].min, sniper.weapons[0].max], [2, 3]);
   assert.deepEqual(unitStats(game, registry.unit('artillery')).weapons[0].hits, ['Ground']);
   assert.deepEqual(unitStats(game, registry.unit('fighter')).weapons[0].hits, ['Low air', 'High air']);
@@ -82,9 +82,9 @@ test('unit info: HP rounded up, owner, and whether it has acted this turn', () =
 
 test('cover follows the tile the unit is going to, and the forecast is the damage it would take', () => {
   const game = fresh();
-  const soldier = game.state.units.find((u) => u.owner === 0 && u.type === 'soldier');
+  const soldier = { ...game.state.units.find((u) => u.owner === 0 && u.type === 'soldier'), type: 'commando' };
   const mountain = tileOf(game, 'mountain');
-  assert.equal(unitInfo(game, soldier, { at: mountain }).cover, 8, 'soldiers double the mountain\'s 4 stars');
+  assert.equal(unitInfo(game, soldier, { at: mountain }).cover, 8, 'commandos double the mountain\'s 4 stars');
   const tank = { ...game.state.units.find((u) => u.owner === 1), type: 'tank' };
   const target = { ...soldier, x: tank.x, y: tank.y + 1 };
   const u = unitInfo(game, target, { attacker: { ...tank, hp: 10 } });

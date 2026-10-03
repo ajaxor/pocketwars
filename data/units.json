@@ -9,11 +9,11 @@
     "weapons": ["rifle"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "capture": true, "terrainDefenseMultiplier": 2 },
+    "attributes": { "capture": true },
     "render": { "sprite": "soldier", "facing": false, "attackFx": "lunge" }
   },
   "mech": {
-    "name": "Mech",
+    "name": "AT Infantry",
     "category": "infantry",
     "cost": 3000,
     "move": 2,
@@ -35,7 +35,7 @@
     "weapons": ["sniper_rifle"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "indirect": true, "cloak": { "terrain": ["forest", "rough", "mountain"], "revealedByFiring": true } },
+    "attributes": { "capture": true, "indirect": true, "cloak": { "terrain": ["forest", "rough", "mountain"], "revealedByFiring": true } },
     "render": { "sprite": "sniper", "facing": false, "attackFx": "shot" }
   },
   "marine": {
@@ -45,7 +45,7 @@
     "move": 2,
     "moveClass": "amphibious",
     "layer": "ground",
-    "weapons": ["rifle"],
+    "weapons": ["marine_rifle"],
     "toughness": 1,
     "armor": 0,
     "attributes": { "capture": true },
@@ -264,13 +264,13 @@
     "name": "Commando",
     "category": "infantry",
     "cost": 2500,
-    "move": 3,
+    "move": 2,
     "moveClass": "foot",
     "layer": "ground",
-    "weapons": ["rifle"],
+    "weapons": ["commando_rifle"],
     "toughness": 1.1,
     "armor": 0,
-    "attributes": { "terrainDefenseMultiplier": 3, "rest": { "heal": 1 } },
+    "attributes": { "terrainDefenseMultiplier": 2, "rest": { "heal": 1 } },
     "exclusive": true,
     "render": { "sprite": "commando", "facing": false, "attackFx": "shot" }
   },
