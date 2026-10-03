@@ -510,7 +510,7 @@
    "move": 3,
    "role": "Tracked anti-air battery that threatens every aircraft in a wide ring.",
    "overlaps": "Flak (anti-air), Fighter (air denial)",
-   "mechanic": "Anti-air only: range 1-4, hits both low and high air, and cannot attack ground or sea units. It can fire after moving but then has only 2 missiles; it must sit out a turn to reload to its full 4 missiles. Fragile against ground attack.",
+   "mechanic": "Anti-air only: range 1-4, hits both low and high air, and cannot attack ground or sea units. It can fire after moving but then has only 1 missile; it must sit out a turn to reload to its full 3 missiles. Fragile against ground attack.",
    "group": "vehicle"
   },
   {
