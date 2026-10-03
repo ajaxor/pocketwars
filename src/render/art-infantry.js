@@ -3,7 +3,7 @@
 // Same conventions as src/render/unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }), centred on (0, 0), +x forward.
 // The rule for this group (and the guideline in docs/unit-art-lessons.md): every specialist is the game's plain soldier (legs, torso,
 // head, helmet, the same walk cycle) plus ONE thing that tells it apart: a bandanna, a launcher, a wrench, a case, a fur hat.
-import { box, disc, oval, poly, stroke, mix, afloat, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome } from './parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, skyClip, seaClip, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome } from './parts.js';
 
 const RED = '#d4442e', WHITE = '#f4f4ee', WOOD = '#7a4e2a', FUR = '#8a7a66';
 
@@ -137,33 +137,36 @@ const diver = (g, o) => {
   dome(g, s, bb, .095, suit);                                                         // the hood
   oval(g, s, .05, -.225 + bb, .06, .035, mix(c, '#ffffff', .25)); oval(g, s, .06, -.225 + bb, .04, .02, '#9fe0ff');   // the mask, pushed up
   stroke(g, s, -.09, -.19 + bb, -.09, -.35 + bb, 3, INK); stroke(g, s, -.09, -.19 + bb, -.03, -.17 + bb, 3, INK);
-  harpoon(g, s, .02, .08 + bb, .3, .55);   // the snorkel: mouthpiece at the face, a straight tube up the side
+  harpoon(g, s, .0, .0 + bb, .3, -.5);   // the snorkel: mouthpiece at the face, a straight tube up the side
 };
-const SURFACE = .08;   // the waterline in the diver's tile
-const diverSwim = (g, { s, c, dk, w, ph, run, moving, b }) => {
+const diverSwim = (g, { s, c, dk, w, run, moving, ph, b }) => {
+  const LN = -.15, k = .9;                                                             // the waterline sits just above the diver's head; he is centred in the tile
   const bb = b / s, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;
-  const k = .9, drop = .27 + bb, hx = .22 * k, hy = -.01 * k + drop;                     // the whole body rides under the surface; only the snorkel breaks it
-  afloat(g, s, w, run, -.3, .3, (light) => {
+  const diverBody = (light) => {                                                       // drawn above (light: the snorkel only) and below the waterline, bobbing together
     const suit = mix('#2a2e36', c, .3), team = mix(c, dk, UNDER_SHADE);
+    g.save(); g.translate(0, bb * s); g.scale(k, k);
     if (!light) {
-      g.save(); g.translate(0, drop * s); g.scale(k, k);
-      for (const [dy, dir, shade] of [[.13, -1, .15], [.06, 1, 0]]) {                   // two legs, each with a team-coloured fin, kicking in turn
+      for (const [dy, dir, shade] of [[.1, -1, .15], [.03, 1, 0]]) {                   // two legs, each with a team-coloured fin, kicking in turn
         g.save(); g.translate(-.15 * s, dy * s); g.rotate(kick * .2 * dir);
         box(g, s, -.1, -.03, .13, .07, 3, mix(suit, '#000000', shade));
         poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], mix(team, '#000000', shade));
         g.restore();
       }
-      box(g, s, -.17, .02, .34, .16, 7, suit);                                         // body
-      box(g, s, -.24, -.08, .38, .12, 6, team);                                        // air tank: long, along the back
-      disc(g, s, .22, -.01, .095, suit);                                               // head
-      oval(g, s, .28, -.01, .055, .045, mix('#9fe0ff', dk, .4));                       // mask
-      harpoon(g, s, .1, .1, .2, .25);
-      g.restore();
+      box(g, s, -.17, -.01, .34, .16, 7, suit);                                        // body
+      box(g, s, -.24, -.1, .38, .12, 6, team);                                         // air tank: long, along the back
+      disc(g, s, .22, -.03, .095, suit);                                               // head
+      oval(g, s, .28, -.03, .055, .045, mix('#9fe0ff', dk, .4));                       // mask
+      harpoon(g, s, .1, .08, .2, -.3);                                                 // pointing a little downward
     }
-    stroke(g, s, hx, hy - .08, hx, SURFACE - .13, 3, INK);                                // the snorkel: a straight tube up through the surface
-    stroke(g, s, hx, hy - .08, hx + .05 * k, hy - .04, 3, INK);                        // and its mouthpiece
-  }, SURFACE);
-  oval(g, s, hx, SURFACE + .01, .05, .015, 'rgba(255,255,255,.55)');                      // a small ripple where the tube breaks the surface
+    stroke(g, s, .2, -.11, .2, -.3, 3, INK); stroke(g, s, .2, -.11, .25, -.07, 3, INK);   // the snorkel: mouthpiece at the face and a straight tube up through the surface
+    g.restore();
+  };
+  g.save(); skyClip(g, s, LN); diverBody(true); g.restore();
+  g.save(); seaClip(g, s, LN); diverBody(false); g.restore();
+  const hx = .2 * k, p = .8 + .2 * Math.sin(w * 4) * run;                              // only a faint disturbance round the tube, like a dived submarine's periscope
+  oval(g, s, hx, LN, .07 * p, .02, 'rgba(255,255,255,.35)');
+  oval(g, s, hx, LN, .035 * p, .009, 'rgba(255,255,255,.55)');
+  poly(g, s, [[hx, LN - .004], [hx - .1 - .03 * p, LN + .008], [hx - .1 - .03 * p, LN - .008]], 'rgba(255,255,255,.25)');
 };
 
 export const SPRITES = { commando, rpg_trooper: rpgTrooper, mechanic, medic, mortar_team: mortarTeam, conscript, spy, diver, diver_swim: diverSwim };
