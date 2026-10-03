@@ -23,7 +23,7 @@ export const STATES = { idle: { run: 1, speed: 1, alpha: 1 }, moving: { run: 1, 
 export const OUTLINES = { off: 0, thin: OUTLINE_THIN, medium: .024, thick: .038 };   // radius as a fraction of the tile
 export const OUTLINE_COLORS = { navy: '#161a26', black: '#000000', faction: null };            // null: the faction's dark colour
 
-export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', make }) {
+export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'outlined', make }) {
   const st = STATES[state] || STATES.idle;
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
@@ -37,7 +37,7 @@ export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline
   const mod = unit.concept ? CONCEPT_MOD : MOD;
   const o = { s: size, c: faction.color, dk: faction.dark, alt: unit.altitude || 0, w: t * st.speed, ph: phase, run: st.run, moving: state === 'moving', make };
   const k = OUTLINES[outline] || 0;
-  if (k) drawOutlined(g, mod, unit.sprite, o, { r: Math.max(1, size * k), color: OUTLINE_COLORS[outlineColor] || faction.dark, tint: st.tint || null, make });
+  if (k) drawOutlined(g, mod, unit.sprite, o, { r: Math.max(1, size * k), color: OUTLINE_COLORS[outlineColor] || faction.dark, tint: st.tint || null, skipBlack: blackLines === 'plain', make });
   else drawFrameAlpha(g, mod, unit.sprite, o, st.alpha, st.tint || null);
   g.restore();
 }
@@ -55,7 +55,7 @@ async function boot() {
   const factions = Object.values(registry.factions).map((f) => ({ id: f.id, name: f.name, color: f.color, dark: f.dark }));
   const terrain = Object.fromEntries(['plain', 'road', 'sea'].map((id) => [id, registry.terrain[id].render.base || registry.terrain[id].render.mini]));
 
-  const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
+  const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', blackLines: 'outlined', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
   let clock = 0, last = performance.now();
   const tiles = [];   // { canvas, g, unit, faction, phase, visible }: everything animated on the page; only the ones on screen are redrawn
   const io = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((e) => { const t = tiles.find((x) => x.canvas === e.target); if (t) t.visible = e.isIntersecting; })) : null;
@@ -72,7 +72,7 @@ async function boot() {
       cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', def.name);
       return cv;
     },
-    paint(t) { paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg: terrain[t.unit.water && state.bg === 'plain' ? 'sea' : state.bg], outline: state.outline, outlineColor: state.outlineColor }); },
+    paint(t) { paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg: terrain[t.unit.water && state.bg === 'plain' ? 'sea' : state.bg], outline: state.outline, outlineColor: state.outlineColor, blackLines: state.blackLines }); },
   };
   ctx.terrain = terrain; ctx.drawWall = drawWall; ctx.buildings = { game: BUILDINGS, concept: BASES };
   const units = createUnitsView(ctx, $('#view-units'));
@@ -112,7 +112,7 @@ async function boot() {
   const group = (sel, key) => document.querySelectorAll(`${sel} button`).forEach((b) => b.addEventListener('click', () => {
     state[key] = b.dataset.v; document.querySelectorAll(`${sel} button`).forEach((x) => x.setAttribute('aria-pressed', String(x === b))); draw();
   }));
-  group('#mode', 'mode'); group('#bg', 'bg'); group('#outline', 'outline'); group('#outlineColor', 'outlineColor');
+  group('#mode', 'mode'); group('#bg', 'bg'); group('#outline', 'outline'); group('#outlineColor', 'outlineColor'); group('#blackLines', 'blackLines');
   $('#size').addEventListener('input', (e) => { state.size = Number(e.target.value); $('#sizeOut').textContent = state.size + ' px'; resize(); });
   const pauseBtn = $('#pause');
   const syncPause = () => { pauseBtn.textContent = state.paused ? 'Play' : 'Pause'; pauseBtn.setAttribute('aria-pressed', String(state.paused)); };

@@ -25,3 +25,19 @@ test('drawOutlined falls back to the plain drawing when no scratch canvas can be
   drawOutlined(g, mod, 'x', { s: 40 }, { make: () => null });
   assert.equal(drew, 1);
 });
+
+test('drawOutlined with skipBlack stamps the outline from a mask whose near-black pixels are transparent', () => {
+  const stamps = [], puts = [];
+  const make = (w, h) => {
+    const r = recorder(stamps); r.g.width = w; r.g.height = h; r.g.getContext = () => r.g;
+    r.g.getImageData = () => ({ data: new Uint8ClampedArray([10, 12, 14, 255, 200, 60, 50, 255, 30, 30, 30, 120]) });
+    r.g.putImageData = (im) => { puts.push(Array.from(im.data)); };
+    return r.g;
+  };
+  const mod = { SPRITES: { x: () => {} }, SHADOWS: { x: () => {} } };
+  const { g } = recorder();
+  drawOutlined(g, mod, 'x', { s: 40 }, { r: 2, color: '#123456', skipBlack: true, make });
+  assert.equal(puts.length, 1, 'the mask is written back once');
+  assert.deepEqual(puts[0], [10, 12, 14, 0, 200, 60, 50, 255, 30, 30, 30, 0], 'black pixels lose their alpha, coloured ones keep it');
+  assert.ok(stamps.filter((c) => c[0] === 'drawImage').length >= 24, `the silhouette is still stamped round the rings (${stamps.filter((c) => c[0] === 'drawImage').length})`);
+});
