@@ -69,4 +69,6 @@
 - **Mech idle is only the visor light now.** Legs and arms are frozen unless the walker moves; shading was cut to two tones (body and dark), but the shield face, rocket pod tubes and fuel tank still use ad hoc lighter/darker mixes in `concept-art-mechs.js`.
 - **Missile overlap is tuned by eye again.** The SAM and buggy now stack their rockets with a small perspective offset (`DX`, `DY`) so the back ones peek over the front one; the buggy's rack is a flat polygon behind them. Still no shared launcher part.
 - **The missile sub and the regular sub are now near-twins but separate code** (`box` hull plus tower plus periscope in both); the bulge under the forward section exists only on the missile sub. A parametric sub hull part would fold the three subs together.
+- **Mech visors use a module-level draw queue.** `helm` pushes its visor into a shared `visors` list that the `sprite` wrapper flushes after the walker is drawn, so the visor sits above the arms and pauldrons. It works, but it is hidden global state; a proper draw-layer (or splitting each walker into back/body/front passes) would be cleaner.
+- **Carrier deck is lowered with a blanket translate** over the whole light pass (deck, slab and island), rather than by editing the hull's deck line; the hull and deck no longer share one height constant.
 

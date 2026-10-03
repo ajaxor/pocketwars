@@ -36,13 +36,11 @@ const missileSub = (g, { s, c, dk, w, ph, run, b, submerged }) => {
   surfacing(g, s, w, run, submerged, -.46, .46, .22, bb, (light) => {
     const col = light ? c : dk, deep = mix(col, '#000000', .3), hi = mix(col, '#ffffff', .12);
     propeller(g, s, -.51, .08, w, run, col, !light);
-    poly(g, s, [[-.4, .02], [-.5, -.1], [-.45, -.1], [-.33, .02]], deep);                         // rudder
     box(g, s, -.46, -.08, .92, .3, s * .15, col);                                                // the long round hull
-    box(g, s, -.02, .08, .46, .26, s * .12, col);                                                // the bulge under the forward section
-    for (let i = 0; i < 3; i++) { const hx = -.31 + i * .11; oval(g, s, hx, -.085, .055, .028, hi); oval(g, s, hx, -.08, .045, .02, deep); }   // sunken hatches
-    if (light) disc(g, s, -.2, -.078, .015, RED);                                                  // a missile nose showing in the middle one
+    disc(g, s, .17, .1, .2, col);                                                                // the round bulge under the forward section
+    for (let i = 0; i < 3; i++) { const hx = -.2 + i * .11; oval(g, s, hx, -.085, .055, .028, hi); oval(g, s, hx, -.08, .045, .02, deep); }   // sunken hatches
     box(g, s, .1, -.24, .17, .17, 3, col);                                                       // conning tower, forward of the hatches
-    if (light) { box(g, s, .2, -.2, .05, .03, 1, GLASS); periscope(g, s, .24, -.24, -.38, INK); }
+    if (light) periscope(g, s, .24, -.24, -.38, INK);
   }, .3);
   if (d >= .5) bubbles(g, s, w, run, -.3, -.2 + .3 * d);                                        // bubbles only while it is down
 };
@@ -59,17 +57,16 @@ const hunterSub = (g, { s, c, dk, w, ph, run, moving, b }) => {
   g.lineTo(-.36 * s, .06 * s); g.quadraticCurveTo(-.1 * s, .16 * s, .12 * s, .14 * s); g.quadraticCurveTo(.34 * s, .12 * s, .46 * s, .04 * s); g.fill();   // torpedo body
   g.fillStyle = belly; g.beginPath(); g.moveTo(.46 * s, .04 * s); g.quadraticCurveTo(.34 * s, .12 * s, .12 * s, .14 * s); g.quadraticCurveTo(-.1 * s, .16 * s, -.36 * s, .06 * s);
   g.lineTo(-.36 * s, .035 * s); g.quadraticCurveTo(-.05 * s, .075 * s, .2 * s, .055 * s); g.quadraticCurveTo(.36 * s, .047 * s, .46 * s, .04 * s); g.fill();   // pale belly
-  box(g, s, .4, .01, .06, .055, 2, '#15161c'); box(g, s, .405, .0, .05, .012, 0, deep);          // the forward torpedo port, with its cover edge
   box(g, s, -.04, -.22, .17, .14, 3, col);                                                       // conning tower, like the regular sub's
   periscope(g, s, .09, -.22, -.34, INK);
-  poly(g, s, [[.13, .11], [.1, .17], [.01, .2], [.04, .13]], deep);                               // a small bow plane
+  box(g, s, .03, .12, .1, .09, 1, deep);                                                         // a small, squarish bow plane
   g.restore();
   bubbles(g, s, w, run, -.46, -.05, moving ? 5 : 3);
 };
 
 const under = (f, k = 1) => (g, o) => { g.save(); g.scale(k, k); f(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); };
 export const SPRITES = {
-  tank_transport: under(tankTransport, 1.02),
+  tank_transport: under((g, o) => { g.save(); g.translate(.03 * o.s, 0); tankTransport(g, o); g.restore(); }, 1.02),
   missile_sub: under(missileSub, .92),
   hunter_sub: under(hunterSub, .9),
 };

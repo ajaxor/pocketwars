@@ -63,7 +63,7 @@ const amphibiousTankSwim = (g, { s, c, dk, w, ph, run, b }) => {
 // bounces on its suspension while the wheels stay planted.
 const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s * .45;                                                                    // body bounce; the wheels do not take it
-  wheels(g, s, [-.24, -.04, .2], .205, .085, w, run, 12);                                    // a wheeled truck: three wheels
+  wheels(g, s, [-.24, -.04, .2], .205, .085, w * .4, run, 12);                                    // a wheeled truck: three wheels
   box(g, s, -.3, -.01 + bb, .6, .14, 4, c);                                                  // hull
   box(g, s, .14, -.12 + bb, .17, .13, 3, dk);                                                // cab
   poly(g, s, [[.19, -.1 + bb], [.27, -.1 + bb], [.29, -.04 + bb], [.19, -.04 + bb]], GLASS);   // cab window
@@ -75,7 +75,7 @@ const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   stroke(g, s, -r * .1, 0, r * .5, 0, 1.4, INK); disc(g, s, r * .5, 0, .012, RED);           // the feed horn on its arm
   g.restore();
   // the launcher: a bed hinged at the rear of the hull, raised on a strut, with three missiles arrayed front to back
-  const ang = -.9, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.3, Fy = -.03 + bb, L = .34, DX = .0, DY = -.045;
+  const ang = -.9, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.22, Fy = -.03 + bb, L = .34, DX = .0, DY = -.045;
   const rec = Math.max(0, Math.sin(w * 1.5 + ph)) * .014 * run;
   stroke(g, s, -.06, -.01 + bb, Fx + ux * .24 + DX, Fy + uy * .24 + DY, 5, '#4a4f58'); stroke(g, s, -.075, -.03 + bb, Fx + ux * .22 + DX, Fy + uy * .22 + DY + .02, 2.4, STEEL);   // the support strut and its piston
   box(g, s, -.1, -.03 + bb, .09, .03, 1, INK);                                               // its foot on the hull
@@ -95,10 +95,9 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s, bounce = run ? Math.sin(w * 9 + ph) * .006 : 0, y0 = jj + bounce;
   g.save(); g.translate(0, y0 * s);
   // rocket rack: held up on a post above the hoop, two rockets side by side front to back
-  const ang = -.28, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.2, Fy = -.26, L = .36, DX = .0, DY = -.045;
-  stroke(g, s, -.28, .0, Fx, Fy, 3.5, INK); stroke(g, s, -.2, .0, Fx + DX, Fy + DY * .5, 3.5, INK);          // the posts up from the body
-  poly(g, s, [[Fx, Fy], [Fx + ux * L, Fy + uy * L], [Fx + ux * L + DX * 2.4, Fy + uy * L + DY * 2.4], [Fx + DX * 2.4, Fy + DY * 2.4]], dk);
-  stroke(g, s, Fx, Fy, Fx + ux * L, Fy + uy * L, 3, darkInterior(dk));   // the rack, in perspective
+  const ang = -.2, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.19, Fy = -.225, L = .36, DX = .0, DY = -.045;
+  stroke(g, s, -.1, -.2, Fx + .06, Fy + .02, 3.5, c); stroke(g, s, .09, -.2, Fx + .27, Fy + .02, 3.5, c);                     // short posts from the roof hoop: the rockets sit on the roof
+  poly(g, s, [[Fx, Fy + .02], [Fx + ux * L, Fy + .02 + uy * L], [Fx + ux * L + DX * 2.4, Fy + .02 + uy * L + DY * 2.4], [Fx + DX * 2.4, Fy + .02 + DY * 2.4]], dk);
   for (const i of [1, 0]) missile(g, s, Fx + DX * (i + .7) + .01, Fy + DY * (i + .7), ang, .36, .06, i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .2));
   // driver: only the head and shoulders clear the cockpit rim
   box(g, s, -.075, -.075, .13, .09, 3, dk);                                                   // shoulders
@@ -106,7 +105,7 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
   // wedge body with a deep cockpit
   poly(g, s, [[-.34, -.02], [-.2, -.05], [-.13, .02], [.08, .02], [.15, -.03], [.3, .03], [.41, .08], [.39, .15], [-.34, .15]], c);
   box(g, s, -.34, .1, .73, .05, 2, dk);                                                       // skid plate
-  stroke(g, s, -.1, .01, -.09, -.2, Math.max(2.5, s * .03), INK); stroke(g, s, -.09, -.2, .1, -.2, Math.max(2.5, s * .03), INK); stroke(g, s, .1, -.2, .13, .0, Math.max(2.5, s * .03), INK);   // roll hoop
+  stroke(g, s, -.1, .01, -.09, -.2, Math.max(2.5, s * .03), c); stroke(g, s, -.09, -.2, .1, -.2, Math.max(2.5, s * .03), c); stroke(g, s, .1, -.2, .13, .0, Math.max(2.5, s * .03), c);   // roll hoop
   stroke(g, s, .03, -.05, .1, -.02, 3, c);                                                    // arm to the wheel
   g.restore();
   for (const x of [-.25, .25]) wheel(g, s, x, .185 + jj, .11, w, run, 12);                    // big wheels with a hub

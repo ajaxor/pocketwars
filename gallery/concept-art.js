@@ -35,9 +35,10 @@ const hoverScout = (g, { s, c, dk, w, ph, run }) => {
   g.save(); g.translate(0, h * s);
   hoverTubes(g, s, -.22, .24, .21, w, run, { ground: .285 - h });
   poly(g, s, [[-.32, .17], [-.3, .02], [-.1, -.05], [.14, -.05], [.4, .07], [.36, .17]], c);   // low wedge hull
-  oval(g, s, .06, -.06, .1, .055, GLASS);                                                    // bubble canopy
+  poly(g, s, [[-.05, -.05], [.0, -.11], [.11, -.12], [.19, -.05]], GLASS);                    // angular canopy
+  stroke(g, s, .06, -.115, .06, -.05, 1.4, mix(c, dk, .5));                                   // its frame
   const rec = Math.max(0, Math.sin(w * 2.4 + ph)) * .01 * run;                               // a light chin gun that kicks back
-  box(g, s, .24, .08, .07, .07, 1, dk); box(g, s, .3 - rec, .095, .18, .026, 0, INK); box(g, s, .47 - rec, .09, .02, .036, 0, STEEL);
+  box(g, s, .1, .07, .07, .07, 1, dk); box(g, s, .16 - rec, .085, .2, .026, 0, INK); box(g, s, .35 - rec, .08, .02, .036, 0, STEEL);
   g.restore();
 };
 
@@ -182,7 +183,7 @@ const mineLayer = (g, { s, c, dk, w, run, b }) => {
       box(g, s, .09, D - .21, .07, .05, 1, c);                                       // crane pedestal on the wheelhouse roof
       const sway = run ? Math.sin(w * 2 + 1) * .006 : 0;                                         // a small crane: a boom reaching aft over the mine rack, a cable and a hook
       stroke(g, s, .125, D - .2, -.04, D - .33, 4, c); stroke(g, s, -.04, D - .33, -.04 + sway, D - .24, 1, STEEL); disc(g, s, -.04 + sway, D - .235, .02, INK);
-      for (let i = 0; i < 3; i++) mine(g, s, -.3 + i * .12, D - .1, .045, INK);               // the mines, in a rack
+      mine(g, s, -.2, D - .11, .06, INK);                                                       // a single mine, on the deck aft
     }
     g.restore();
   });

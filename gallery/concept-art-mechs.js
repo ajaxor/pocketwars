@@ -19,7 +19,7 @@ const limb = (g, s, x1, y1, x2, y2, t1, t2, col) => {
 /** A reverse-knee leg (knee forward, shin sweeping back to a claw foot): hip (hx, hy), thickness t. The foot swings, lifts and plants while `walk` is 1. */
 const leg = (g, s, hx, hy, ph, w, walk, t, col, knee = .1) => {
   const a = w * 6 + ph, fx = hx - .03 + Math.sin(a) * .07 * walk, fy = .285 - Math.max(0, Math.cos(a)) * .05 * walk;
-  const kx = hx + knee + Math.sin(a) * .02 * walk, ky = hy + (fy - hy) * .42;
+  const kx = hx + knee * .45 + Math.sin(a) * .02 * walk, ky = hy + (fy - hy) * .42;
   limb(g, s, hx, hy, kx, ky, t, t * .8, col); disc(g, s, kx, ky, t * .46, col);
   limb(g, s, kx, ky, fx, fy - .04, t * .75, t * .45, col);
   poly(g, s, [[fx - .035, fy - .05], [fx + .02, fy - .055], [fx + .1, fy + .005], [fx + .1, fy + .013], [fx - .05, fy + .013]], INK);   // claw foot
@@ -33,16 +33,26 @@ const claw = (g, s, x, y, k, col) => {
   disc(g, s, x, y, .028 * k, col);
   for (const a of [.1, .65, 1.2]) stroke(g, s, x, y, x + Math.cos(a) * .065 * k, y + Math.sin(a) * .065 * k, Math.max(2, s * .02 * k), INK);
 };
-/** A wedge helmet whose back-bottom is at (x, y): a swept crest, and a dark visor with a red line across it. A red light sweeps back and forth along the
- *  line like a Cylon's eye (centred and still when frozen). `fx` is { w, ph, run }. */
+/** Visors wait here until the sprite has been drawn, so each one lands on top of the arms and shoulder plates. */
+let visors = [];
+/** A wedge helmet whose back-bottom is at (x, y): a swept crest. Its dark visor with a red line across it is drawn last (see `sprite`); a red light sweeps
+ *  back and forth along the line like a Cylon's eye (centred and still when frozen). `fx` is { w, ph, run }. */
 const helm = (g, s, x, y, k, col, visor = null, fx = { w: 0, ph: 0, run: 0 }) => {
   poly(g, s, [[x, y], [x + .01 * k, y - .07 * k], [x + .09 * k, y - .11 * k], [x + .18 * k, y - .06 * k], [x + .21 * k, y - .02 * k], [x + .14 * k, y]], col);
   poly(g, s, [[x + .01 * k, y - .07 * k], [x - .06 * k, y - .13 * k], [x + .08 * k, y - .1 * k]], col);
-  poly(g, s, [[x + .06 * k, y - .1 * k], [x + .215 * k, y - .065 * k], [x + .215 * k, y - .005 * k], [x + .075 * k, y - .035 * k]], '#15161c');   // the visor
-  const ax = x + .09 * k, ay = y - .0675 * k, bx = x + .2 * k, by = y - .0375 * k;
-  stroke(g, s, ax, ay, bx, by, Math.max(2, s * .016), '#8a1f16');                                                                           // the red line
-  const u = fx.run ? .5 + .5 * Math.sin(fx.w * 3 + fx.ph) : .5, px = ax + (bx - ax) * u, py = ay + (by - ay) * u;
-  disc(g, s, px, py, .026 * k, 'rgba(255,60,40,.45)'); disc(g, s, px, py, .013 * k, '#ff5a40');                                               // the scanning light
+  visors.push(() => {
+    poly(g, s, [[x + .04 * k, y - .12 * k], [x + .225 * k, y - .08 * k], [x + .225 * k, y + .005 * k], [x + .06 * k, y - .03 * k]], '#15161c');   // the visor
+    const ax = x + .075 * k, ay = y - .08 * k, bx = x + .21 * k, by = y - .035 * k;
+    stroke(g, s, ax, ay, bx, by, Math.max(2.4, s * .02), '#8a1f16');                                                                       // the red line
+    const u = fx.run ? .5 + .5 * Math.sin(fx.w * 3 + fx.ph) : .5, px = ax + (bx - ax) * u, py = ay + (by - ay) * u;
+    disc(g, s, px, py, .032 * k, 'rgba(255,60,40,.45)'); disc(g, s, px, py, .016 * k, '#ff5a40');                                           // the scanning light
+  });
+};
+/** Wrap a walker: draw it (shrunk by k about the ground line, so its feet stay put), then its visor on top of everything. */
+const sprite = (f, k = 1) => (g, o) => {
+  visors = []; g.save(); g.translate(0, .29 * o.s * (1 - k)); g.scale(k, k); f(g, o);
+  for (const v of visors) v(g);
+  g.restore();
 };
 /** A weapon port at the end of an arm: a wedge-shaped pod, a barrel and a muzzle brake. `rec` pulls the barrel back when it fires. */
 const gunPod = (g, s, x, y, len, h, rec = 0) => {
@@ -140,9 +150,7 @@ const bulwark = (g, { s, c, dk, ph, w, run, moving, b }) => {
   poly(g, s, [[.24, -.39 + sy], [.28, -.48 + sy], [.32, -.35 + sy]], dk);
 };
 
-/** Shrink a sprite by k about the ground line (y = .29), so its feet stay where they were and its crest or spike stays inside the tile. */
-const fit = (f, k) => (g, o) => { g.save(); g.translate(0, .29 * o.s * (1 - k)); g.scale(k, k); f(g, o); g.restore(); };
-export const SPRITES = { strider, titan: fit(titan, .88), rocket_walker: fit(rocketWalker, .9), scout_walker: scoutWalker, flame_walker: flameWalker, bulwark: fit(bulwark, .93) };
+export const SPRITES = { strider: sprite(strider), titan: sprite(titan, .88), rocket_walker: sprite(rocketWalker, .9), scout_walker: sprite(scoutWalker), flame_walker: sprite(flameWalker), bulwark: sprite(bulwark, .93) };
 
 const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
