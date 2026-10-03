@@ -2,77 +2,70 @@
 // gallery's "Experimental" section. Same conventions as src/render/unit-art.js (which supplies the drawing helpers):
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 //   SHADOWS[name](g, { s, alt, w, ph, run })
-import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, sheen, bubbles, GLOW } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, hoverEmitter, sheen, bubbles, GLOW } from '../src/render/parts.js';
 import * as INFANTRY from '../src/render/art-infantry.js';
 import * as STATIC from './concept-art-static.js';
 import * as AIR from '../src/render/art-air.js';
 import * as SHIPS from '../src/render/art-ships.js';
 import * as VEHICLES from './concept-art-vehicles.js';
 import * as FLEET from './concept-art-fleet.js';
+import * as MECHS from './concept-art-mechs.js';
 
 const BRASS = '#d9b44a', RED = '#d4442e', GREEN = '#46b86a', ORANGE = '#ff9a2e', PANEL = '#2f5fa8';
 
 // ---- War Factory ----------------------------------------------------------------------------------------------------------
-// Supply truck: a box body with a stack of shells painted on the side, a cab, three wheels.
+// Supply truck: a dark box body for the cargo, a faction-coloured cab and chassis with a window, three wheels.
 const supplyTruck = (g, { s, c, dk, w, run, j }) => {
   const jj = j / s;
-  box(g, s, -.36, .02 + jj, .72, .15, 3, dk);                                                // chassis
-  box(g, s, -.36, -.2 + jj, .5, .24, 3, c);                                                  // cargo box
-  for (let i = 0; i < 3; i++) {                                                              // shells stencilled on the box
-    const x = -.28 + i * .12;
-    box(g, s, x, -.14 + jj, .07, .13, 2, BRASS); poly(g, s, [[x, -.14 + jj], [x + .035, -.2 + jj], [x + .07, -.14 + jj]], RED);
-  }
-  box(g, s, .16, -.1 + jj, .2, .19, 3, dk);                                                  // cab
+  box(g, s, -.36, .02 + jj, .72, .15, 3, c);                                                 // chassis
+  box(g, s, -.36, -.2 + jj, .5, .24, 3, dk);                                                 // cargo box
+  box(g, s, -.36, -.2 + jj, .5, .04, 2, mix(dk, '#ffffff', .18));                            // roof edge of the box
+  box(g, s, .16, -.1 + jj, .2, .19, 3, c);                                                   // cab
+  poly(g, s, [[.2, -.07 + jj], [.3, -.07 + jj], [.33, -.01 + jj], [.2, -.01 + jj]], GLASS);  // cab window
   wheel(g, s, -.25, .2, .085, w, run, 10); wheel(g, s, -.04, .2, .085, w, run, 10); wheel(g, s, .26, .2, .085, w, run, 10);
 };
 
 // ---- Hover Lab --------------------------------------------------------------------------------------------------------------
-// Hover craft ride on an anti-gravity field, not a fan or a skirt: a row of dark emitter pods under the hull, each with a glowing
-// lens that pulses, a faint cone of light down to the ground, and a few motes of light drifting up through the field.
-const hoverScout = (g, { s, c, dk, w, run, j }) => {
-  const jj = j / s;
-  antigrav(g, s, -.22, .24, .15 + jj, w, run, 2);
-  poly(g, s, [[-.32, .17 + jj], [-.3, .02 + jj], [-.1, -.05 + jj], [.14, -.05 + jj], [.4, .07 + jj], [.36, .17 + jj]], c);   // low wedge hull
-  poly(g, s, [[.14, -.05 + jj], [.4, .07 + jj], [.3, .07 + jj], [.1, -.0 + jj]], mix(c, dk, .4));
-  oval(g, s, .06, -.06 + jj, .1, .055, GLASS);                                               // bubble canopy
+// Hover craft ride on an anti-gravity field: one wide emitter pad under the hull with a glowing lens, a faint cone of light down to the
+// ground and a few motes drifting up. The craft sits a little above the ground (altitude 0 in the data: the lift is drawn here) and rocks up
+// and down slowly and shallowly, with no fast jitter.
+const hoverLift = (w, ph, run) => -.04 + (run ? Math.sin(w * 1.2 + ph) * .007 : 0);
+
+const hoverScout = (g, { s, c, dk, w, ph, run }) => {
+  const h = hoverLift(w, ph, run);
+  g.save(); g.translate(0, h * s);
+  hoverEmitter(g, s, -.22, .24, .15, w, run, { ground: .285 - h });
+  poly(g, s, [[-.32, .17], [-.3, .02], [-.1, -.05], [.14, -.05], [.4, .07], [.36, .17]], c);   // low wedge hull
+  poly(g, s, [[.14, -.05], [.4, .07], [.3, .07], [.1, -.0]], mix(c, dk, .4));
+  oval(g, s, .06, -.06, .1, .055, GLASS);                                                    // bubble canopy
+  g.restore();
 };
 
-const hoverTank = (g, { s, c, dk, w, ph, run, j }) => {
-  const jj = j / s;
-  antigrav(g, s, -.26, .26, .15 + jj, w, run, 3);
-  box(g, s, -.36, -.02 + jj, .72, .2, 5, c);                                                 // wide hull
-  poly(g, s, [[.36, .0 + jj], [.4, .1 + jj], [.36, .17 + jj]], c);                           // sloped nose
-  box(g, s, -.1, -.17 + jj, .28, .16, 4, dk);                                                // turret
+const hoverTank = (g, { s, c, dk, w, ph, run }) => {
+  const h = hoverLift(w, ph, run);
+  g.save(); g.translate(0, h * s);
+  hoverEmitter(g, s, -.28, .28, .15, w, run, { ground: .285 - h });
+  box(g, s, -.36, -.02, .72, .2, 5, c);                                                      // wide hull
+  poly(g, s, [[.36, .0], [.4, .1], [.36, .17]], c);                                          // sloped nose
+  box(g, s, -.1, -.17, .28, .16, 4, dk);                                                     // turret
   const rec = Math.max(0, Math.sin(w * 1.6 + ph)) * .012 * run;
-  g.fillStyle = INK; g.fillRect((.16 - rec) * s, (-.12 + jj) * s, s * .28, s * .04);         // gun
+  g.fillStyle = INK; g.fillRect((.16 - rec) * s, -.12 * s, s * .28, s * .04);                // gun
+  g.restore();
 };
 
-const hoverCarrier = (g, { s, c, dk, w, run, j }) => {
-  const jj = j / s;
-  antigrav(g, s, -.3, .3, .16 + jj, w, run, 4);
-  box(g, s, -.4, -.14 + jj, .8, .33, 6, c);                                                  // long box hull
-  poly(g, s, [[.4, -.1 + jj], [.4, .19 + jj], [.28, .19 + jj], [.28, -.1 + jj]], dk);       // bow ramp, folded up
-  box(g, s, .3, -.07 + jj, .06, .22, 1, mix(dk, '#ffffff', .2));
-  box(g, s, .05, -.2 + jj, .13, .07, 2, dk);                                                 // cockpit bump
+const hoverCarrier = (g, { s, c, dk, w, ph, run }) => {
+  const h = hoverLift(w, ph, run);
+  g.save(); g.translate(0, h * s);
+  hoverEmitter(g, s, -.32, .32, .16, w, run, { ground: .285 - h });
+  box(g, s, -.4, -.14, .8, .33, 6, c);                                                       // long box hull
+  poly(g, s, [[.4, -.1], [.4, .19], [.28, .19], [.28, -.1]], dk);                            // bow ramp, folded up
+  box(g, s, .3, -.07, .06, .22, 1, mix(dk, '#ffffff', .2));
+  box(g, s, .05, -.2, .13, .07, 2, dk);                                                      // cockpit bump
+  g.restore();
 };
 
 // ---- Mech Factory -----------------------------------------------------------------------------------------------------------
-// Legged walkers. A leg swings from the hip to a foot that lifts and plants; they only step while the unit is moving.
-const strider = (g, { s, c, dk, w, run, moving, b }) => {
-  const walk = run && moving ? 1 : 0, bb = b / s;
-  pillarLeg(g, s, -.09, .02 + bb, 0, w, walk, .1, dk); pillarLeg(g, s, .07, .02 + bb, Math.PI, w, walk, .1, mix(dk, '#ffffff', .15));
-  box(g, s, -.24, -.2 + bb, .46, .24, 5, c);                                                 // torso
-  box(g, s, .08, -.16 + bb, .14, .05, 1, INK);                                               // visor slit
-  box(g, s, .14, -.07 + bb, .32, .07, 2, INK);                                               // the cannon
-};
-
-const titan = (g, { s, c, dk, w, run, moving, b }) => {
-  const walk = run && moving ? 1 : 0, bb = b / s;
-  pillarLeg(g, s, -.15, .04 + bb, 0, w, walk, .16, dk); pillarLeg(g, s, .11, .04 + bb, Math.PI, w, walk, .16, mix(dk, '#ffffff', .15));
-  box(g, s, -.3, -.28 + bb, .6, .34, 6, c);                                                  // huge torso
-  box(g, s, -.04, -.4 + bb, .17, .13, 4, dk);                                                // head
-  box(g, s, .08, -.24 + bb, .4, .075, 2, INK); box(g, s, .08, -.14 + bb, .4, .075, 2, INK);  // twin cannons
-};
+// The walkers live in concept-art-mechs.js.
 
 // ---- Stealth Lab ------------------------------------------------------------------------------------------------------------
 // Cloaked units: faceted, dull, a little see-through, with a bright glint that sweeps across them (the cloak shimmering).
@@ -255,7 +248,6 @@ const repairDrone = (g, { s, c, dk, w, run }) => {
 const OWN_SPRITES = {
   supply_truck: supplyTruck,
   hover_scout: hoverScout, hover_tank: hoverTank, hover_carrier: hoverCarrier,
-  strider, titan,
   troop_glider: (g, o) => { g.save(); g.scale(.92, .92); troopGlider(g, o); g.restore(); }, scout_glider: scoutGlider,
   drop_pod: dropPod, shuttle: (g, o) => { g.save(); g.scale(.95, .95); shuttle(g, o); g.restore(); }, satellite,
   abyss_sub: (g, o) => { g.save(); g.scale(.95, .95); abyssSub(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); },
@@ -276,16 +268,15 @@ const bar = (hw) => mirror([[hw, 0], [hw * .8, -.07], [-hw * .8, -.07], [-hw, 0]
 
 const OWN_SHADOWS = {
   supply_truck: ground(.35, .05, .285),
-  hover_scout: ground(.34, .045, .29), hover_tank: ground(.38, .05, .29), hover_carrier: ground(.42, .05, .29),
-  strider: ground(.24, .045, .295), titan: ground(.34, .055, .295),
+  hover_scout: ground(.34, .045, .295), hover_tank: ground(.38, .05, .295), hover_carrier: ground(.42, .05, .295),
   troop_glider: airShadow(mirror([[.42, 0], [.1, -.08], [-.06, -.4], [-.2, -.4], [-.2, -.07], [-.4, -.12], [-.42, 0]]), .92),
   scout_glider: airShadow(mirror([[.3, 0], [-.38, -.3], [-.3, 0]])),
-  drop_pod: ground(.2, .045, .29), shuttle: airShadow(mirror([[.46, 0], [.4, -.07], [.0, -.07], [-.1, -.36], [-.3, -.36], [-.3, -.05], [-.38, -.05], [-.38, 0]]), .95),
+  drop_pod: airShadow(mirror([[.17, 0], [.15, -.14], [.07, -.26], [-.07, -.26], [-.15, -.14], [-.17, 0]])), shuttle: airShadow(mirror([[.46, 0], [.4, -.07], [.0, -.07], [-.1, -.36], [-.3, -.36], [-.3, -.05], [-.38, -.05], [-.38, 0]]), .95),
   satellite: airShadow(bar(.46)),
   abyss_sub: none, mine_layer: none, torpedo_drone: none,
   swarm_drones: airShadow(mirror([[.3, 0], [.15, -.08], [-.2, -.08], [-.3, 0]])), repair_drone: airShadow(bar(.3)),
 };
 
-// the new concept groups live in their own files (infantry, static defences, gadgets, aircraft, ships, vehicles, fleet)
-export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES, ...VEHICLES.SPRITES, ...FLEET.SPRITES };
-export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS, ...VEHICLES.SHADOWS, ...FLEET.SHADOWS };
+// the new concept groups live in their own files (infantry, static defences, gadgets, aircraft, ships, vehicles, fleet, mechs)
+export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES, ...VEHICLES.SPRITES, ...FLEET.SPRITES, ...MECHS.SPRITES };
+export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS, ...VEHICLES.SHADOWS, ...FLEET.SHADOWS, ...MECHS.SHADOWS };

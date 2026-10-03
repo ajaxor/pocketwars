@@ -92,7 +92,7 @@
    "name": "Hover Scout",
    "facility": "hover_lab",
    "sprite": "hover_scout",
-   "altitude": 0.04,
+   "altitude": 0,
    "cost": 5000,
    "move": 8,
    "role": "Recon",
@@ -105,7 +105,7 @@
    "name": "Hover Tank",
    "facility": "hover_lab",
    "sprite": "hover_tank",
-   "altitude": 0.04,
+   "altitude": 0,
    "cost": 8000,
    "move": 5,
    "role": "Assault",
@@ -118,7 +118,7 @@
    "name": "Hover Carrier",
    "facility": "hover_lab",
    "sprite": "hover_carrier",
-   "altitude": 0.04,
+   "altitude": 0,
    "cost": 7000,
    "move": 6,
    "role": "Transport",
@@ -136,7 +136,7 @@
    "move": 4,
    "role": "Assault",
    "overlaps": "Tank",
-   "mechanic": "A bipedal walker with a cannon. Treats mountains and forest like plain ground (move cost 1) but is weaker against tank rounds than a tread.",
+   "mechanic": "A bipedal walker with a cannon port on one arm. Treats mountains and forest like plain ground (move cost 1) but is weaker against tank rounds than a tread.",
    "group": "vehicle"
   },
   {
@@ -149,7 +149,59 @@
    "move": 3,
    "role": "Heavy assault",
    "overlaps": "Heavy tank, battleship",
-   "mechanic": "Twin heavy cannons and the most hit points in the game. Walks over woods and mountains and flattens forest it crosses into plain ground.",
+   "mechanic": "Cannon ports on both arms and the most hit points in the game. Walks over woods and mountains and flattens forest it crosses into plain ground.",
+   "group": "vehicle"
+  },
+  {
+   "id": "rocket_walker",
+   "name": "Rocket Walker",
+   "facility": "mech_factory",
+   "sprite": "rocket_walker",
+   "altitude": 0,
+   "cost": 9000,
+   "move": 3,
+   "role": "Artillery",
+   "overlaps": "Artillery, Rocket Launcher",
+   "mechanic": "A slim walker with a rocket pod mounted on its shoulder. Fires over a short ring (range 2-3) but not after moving, and climbs terrain like the other walkers. Lightly armoured.",
+   "group": "vehicle"
+  },
+  {
+   "id": "scout_walker",
+   "name": "Scout Walker",
+   "facility": "mech_factory",
+   "sprite": "scout_walker",
+   "altitude": 0,
+   "cost": 3500,
+   "move": 6,
+   "role": "Recon",
+   "overlaps": "Recon, Hover Scout",
+   "mechanic": "A small, quick walker on thin legs. Sees one tile further than other ground units and crosses mountains and forest at plain cost. Carries one light gun port (range 1) and any real hit hurts.",
+   "group": "vehicle"
+  },
+  {
+   "id": "flame_walker",
+   "name": "Flame Walker",
+   "facility": "mech_factory",
+   "sprite": "flame_walker",
+   "altitude": 0,
+   "cost": 5500,
+   "move": 4,
+   "role": "Anti-infantry",
+   "overlaps": "Soldier, Mech, Flak",
+   "mechanic": "A flamer port on one arm and a fuel tank on its back. Range 1 only, devastating against infantry and units in cover, weak against tanks. Its fuel tank makes it volatile: when destroyed it explodes, hurting adjacent units.",
+   "group": "vehicle"
+  },
+  {
+   "id": "bulwark",
+   "name": "Bulwark",
+   "facility": "mech_factory",
+   "sprite": "bulwark",
+   "altitude": 0,
+   "cost": 8500,
+   "move": 3,
+   "role": "Defender",
+   "overlaps": "Heavy tank, Wall",
+   "mechanic": "A walker behind a shield plate. Takes much less damage from ranged attacks and strikes at range 1 with a piston fist. Slow, and the shield does nothing against bombs from above.",
    "group": "vehicle"
   },
   {
@@ -183,13 +235,13 @@
    "name": "Drop Pod",
    "facility": "space_port",
    "sprite": "drop_pod",
-   "altitude": 0,
+   "altitude": 0.08,
    "cost": 3500,
    "move": 0,
    "role": "Orbital insertion",
    "overlaps": "Transport copter",
    "mechanic": "Launched, not driven: lands on any visible tile within 8 tiles of a friendly property, arrives with a Mech aboard, then the pod stays as a bunker (1 hit point more defence).",
-   "group": "vehicle"
+   "group": "air"
   },
   {
    "id": "shuttle",
@@ -445,7 +497,8 @@
    "role": "Land-and-sea assault vehicle: brings tank firepower ashore from the water.",
    "overlaps": "Tank (land fighting), Dinghy (water crossing)",
    "mechanic": "Moves over sea and shoals as well as land: move cost 2 on sea and shoals, 1 everywhere else. Armoured more lightly than a tank (takes noticeably more damage), cannot capture, and fires its gun at 1 range like a tank.",
-   "group": "vehicle"
+   "group": "vehicle",
+   "waterSprite": "amphibious_tank_swim"
   },
   {
    "id": "sam_launcher",

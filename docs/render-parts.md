@@ -15,7 +15,8 @@ into a new file: a fix then lands in every unit, and units that carry the same k
 | Running gear | `wheel`, `wheels` | spoked wheel(s), turning with the clock |
 | | `treads` | a pill-shaped track with moving cleats |
 | | `walkerLeg` | a leg with hip, knee and a foot that lifts and plants (only while `walk` is 1) |
-| | `antigrav` | anti-gravity emitter pods with pulsing lenses, a light cone and rising motes (hover units) |
+| | `antigrav` | a row of anti-gravity emitter pods with pulsing lenses, a light cone and rising motes (older hover look, no longer used by the concept hover units) |
+| | `hoverEmitter` | one wide anti-gravity emitter pad with a slow-pulsing lens band, a light cone to the ground and rising motes (the hover units) |
 | Water | `afloat` | draws a ship twice, clipped above and below the waterline, and lays foam at both ends |
 | | `hullPath`, `deckAt` | hull outline with a swept-up bow, and the deck's height and slope at x |
 | | `skyClip`, `seaClip`, `LINE` | the two clip regions and the waterline height |

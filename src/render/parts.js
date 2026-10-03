@@ -123,6 +123,22 @@ export const antigrav = (g, s, x0, x1, y, w, run, n = 3) => {
   }
 };
 
+/** A single wide anti-gravity emitter under a hull: a flat housing from x0 to x1 with its underside at y, a glowing lens band that pulses slowly,
+ *  a soft cone of light down to the ground (`ground`, tile fraction) and a few motes drifting up through it. Calm on purpose: the hull above it
+ *  does the bobbing, and it is slow and shallow. */
+export const hoverEmitter = (g, s, x0, x1, y, w, run, { ground = .285 } = {}) => {
+  const cx = (x0 + x1) / 2, hw = (x1 - x0) / 2, pulse = run ? .75 + .25 * Math.sin(w * 2.2) : .8;
+  poly(g, s, [[x0 + hw * .1, y + .035], [x1 - hw * .1, y + .035], [x1 + hw * .12, ground], [x0 - hw * .12, ground]], `rgba(127,232,255,${(.16 * pulse).toFixed(2)})`);   // the cone of light
+  box(g, s, x0, y - .01, x1 - x0, .05, .02 * s, '#2b2f36');                                     // emitter housing
+  oval(g, s, cx, y + .04, hw * .86, .017, `rgba(127,232,255,${pulse.toFixed(2)})`);             // glowing lens band
+  oval(g, s, cx, y + .04, hw * .5, .008, `rgba(255,255,255,${(.9 * pulse).toFixed(2)})`);
+  if (!run) return;
+  for (let i = 0; i < 3; i++) {                                                                 // motes rise slowly from the ground
+    const f = (w * .5 + i / 3) % 1;
+    disc(g, s, cx + (i - 1) * hw * .6 + Math.sin(f * 5 + i) * .02, ground - f * (ground - y - .06), .007, `rgba(200,250,255,${(.8 * (1 - f)).toFixed(2)})`);
+  }
+};
+
 // ---- water, continued -----------------------------------------------------------------------------------------------------
 /** A few bubbles rising from (x, y) (nothing when the unit is not animating). */
 export const bubbles = (g, s, w, run, x, y, n = 3) => {
