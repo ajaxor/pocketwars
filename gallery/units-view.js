@@ -35,6 +35,7 @@ export function createUnitsView(ctx, root) {
       const canvas = el('canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `${u.name} on water`);
       row.append(canvas); ctx.addTile(canvas, { ...unit, sprite: u.waterSprite, water: true }, factions[0], order * 1.3 + 1.4);
     }
+    if (u.waterSprite) card.classList.add('wide');                                               // three tiles: span two grid columns on a wide screen
     card.append(top, el('div', 'meta', meta), row);
     if (u.weapons?.length) card.append(el('p', 'mech', u.weapons.map((w) => `${w.name} ${w.range[0] === w.range[1] ? w.range[0] : w.range[0] + '–' + w.range[1]}`).join(' · ')));
     if (u.tags?.length) { const t = el('div', 'tags'); u.tags.forEach((k) => t.append(el('span', 'tag', k))); card.append(t); }

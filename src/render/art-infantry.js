@@ -48,12 +48,12 @@ const commando = (g, o) => {
 const rpgTrooper = (g, o) => {
   const { s, c, dk } = o, { l, bb } = gait(s, o);
   legs(g, s, l, dk); torso(g, s, bb, c);
-  g.save(); g.translate(0, (-.185 + bb) * s); g.rotate(-.12); g.scale(.8, .8);          // the tube (scaled down to sit within the tile), drawn BEFORE the head so the head is in front of it
-  box(g, s, -.36, -.05, .72, .1, 3, '#5d6445');
-  poly(g, s, [[-.4, -.07], [-.34, -.05], [-.34, .05], [-.4, .07]], '#3c4130');      // rear flare
-  box(g, s, .3, -.07, .05, .14, 1, '#3c4130'); poly(g, s, [[.35, -.09], [.47, -.045], [.52, 0], [.47, .045], [.35, .09]], RED);   // the rocket: a fat warhead bigger than the tube
-  g.restore();
   head(g, s, bb); helmet(g, s, bb, dk);
+  g.save(); g.translate(-.14 * s, (.07 + bb) * s); g.rotate(-.5);                        // held diagonally in front of the body, like the AT infantry's bazooka
+  box(g, s, -.03, -.045, .5, .09, 3, '#5d6445');
+  poly(g, s, [[-.08, -.065], [-.02, -.045], [-.02, .045], [-.08, .065]], '#3c4130');      // rear flare
+  box(g, s, .44, -.06, .045, .12, 1, '#3c4130'); poly(g, s, [[.485, -.075], [.58, -.04], [.63, 0], [.58, .04], [.485, .075]], RED);   // the rocket's warhead in the muzzle
+  g.restore();
 };
 
 // ---- Mechanic: a soldier holding a wrench across his chest like a rifle, bobbing it up and down --------------------------------------

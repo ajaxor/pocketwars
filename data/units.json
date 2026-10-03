@@ -295,7 +295,7 @@
     "move": 3,
     "moveClass": "foot",
     "layer": "ground",
-    "weapons": [],
+    "weapons": ["wrench"],
     "toughness": 1,
     "armor": 0,
     "attributes": { "heal": { "amount": 2, "categories": ["vehicle"], "costRate": 0.1 } },

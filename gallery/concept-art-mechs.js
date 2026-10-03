@@ -36,11 +36,16 @@ const claw = (g, s, x, y, k, col) => {
   disc(g, s, x, y, .028 * k, col);
   for (const a of [.1, .65, 1.2]) stroke(g, s, x, y, x + Math.cos(a) * .065 * k, y + Math.sin(a) * .065 * k, Math.max(2, s * .02 * k), INK);
 };
-/** A wedge helmet whose back-bottom is at (x, y): a swept crest, and a slanted glowing visor slit. */
-const helm = (g, s, x, y, k, col, visor = VISOR) => {
+/** A wedge helmet whose back-bottom is at (x, y): a swept crest, and a dark visor with a red line across it. A red light sweeps back and forth along the
+ *  line like a Cylon's eye (centred and still when frozen). `fx` is { w, ph, run }. */
+const helm = (g, s, x, y, k, col, visor = null, fx = { w: 0, ph: 0, run: 0 }) => {
   poly(g, s, [[x, y], [x + .01 * k, y - .07 * k], [x + .09 * k, y - .11 * k], [x + .18 * k, y - .06 * k], [x + .21 * k, y - .02 * k], [x + .14 * k, y]], col);
   poly(g, s, [[x + .01 * k, y - .07 * k], [x - .06 * k, y - .13 * k], [x + .08 * k, y - .1 * k]], darker(col, .25));
-  poly(g, s, [[x + .09 * k, y - .07 * k], [x + .2 * k, y - .045 * k], [x + .2 * k, y - .026 * k], [x + .1 * k, y - .05 * k]], visor);
+  poly(g, s, [[x + .085 * k, y - .085 * k], [x + .205 * k, y - .056 * k], [x + .205 * k, y - .016 * k], [x + .095 * k, y - .042 * k]], '#15161c');   // the visor
+  const ax = x + .1 * k, ay = y - .0615 * k, bx = x + .2 * k, by = y - .0355 * k;
+  stroke(g, s, ax, ay, bx, by, Math.max(1.4, s * .01), '#7a1c14');                                                                           // the red line
+  const u = fx.run ? .5 + .5 * Math.sin(fx.w * 3 + fx.ph) : .5, px = ax + (bx - ax) * u, py = ay + (by - ay) * u;
+  disc(g, s, px, py, .016 * k, 'rgba(255,60,40,.4)'); disc(g, s, px, py, .008 * k, '#ff4a35');                                               // the scanning light
 };
 /** A weapon port at the end of an arm: a wedge-shaped pod, a barrel and a muzzle brake. `rec` pulls the barrel back when it fires. */
 const gunPod = (g, s, x, y, len, h, rec = 0) => {
@@ -58,7 +63,7 @@ const strider = (g, { s, c, dk, ph, w, run, moving, b }) => {
   poly(g, s, up([[-.2, -.2], [-.14, -.3], [.1, -.31], [.2, -.23], [.15, -.12], [.1, -.03], [-.08, -.03], [-.18, -.08]], bb), c);       // sloped, hunched torso
   poly(g, s, up([[-.02, -.28], [.1, -.29], [.17, -.22], [.12, -.14], [-.02, -.16]], bb), lighter(c, .18));                                // chest plate
   poly(g, s, up([[-.1, -.08], [.1, -.08], [.1, -.03], [-.08, -.03]], bb), dk);                                                           // waist guard
-  helm(g, s, .0, -.3 + bb, 1, dk);
+  helm(g, s, .0, -.3 + bb, 1, dk, null, { w, run, ph });
   arm(g, s, .1, -.24 + bb, .18, -.14 + bb + sw * .5, .25, -.1 + bb + sw, .08, mix(c, dk, .35));                                          // near arm
   pauldron(g, s, .1, -.26 + bb, 1, lighter(dk, .1));
   gunPod(g, s, .24, -.11 + bb + sw, .2, .1, rec);
@@ -75,7 +80,7 @@ const titan = (g, { s, c, dk, ph, w, run, moving, b }) => {
   disc(g, s, .12, -.25 + bb, .05, `rgba(255,90,60,${(.35 * glow).toFixed(2)})`); disc(g, s, .12, -.25 + bb, .028, '#ff5a3c');              // the glowing core
   poly(g, s, up([[-.14, -.08], [.14, -.08], [.12, -.02], [-.12, -.02]], bb), dk);
   pauldron(g, s, -.13, -.38 + bb, 1.5, lighter(dk, .1));
-  helm(g, s, -.02, -.4 + bb, 1.05, dk);
+  helm(g, s, -.02, -.4 + bb, 1.05, dk, null, { w, run, ph });
   arm(g, s, .16, -.32 + bb, .25, -.2 + bb, .3, -.11 + bb + sw, .11, mix(c, dk, .35));                                                     // near arm
   pauldron(g, s, .17, -.37 + bb, 1.6, lighter(dk, .1)); poly(g, s, [[.2, -.45 + bb], [.24, -.54 + bb], [.28, -.44 + bb]], darker(dk, .2));   // near pauldron with a spike
   gunPod(g, s, .26, -.1 + bb + sw, .21, .14, rec);
@@ -91,7 +96,7 @@ const rocketWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
   poly(g, s, up([[-.0, -.27], [.08, -.28], [.13, -.22], [.09, -.15], [-.0, -.16]], bb), lighter(c, .18));
   g.save(); g.translate(-.07 * s, -.27 * s); g.rotate(-.92); tubes(g, s, .1, 0, .3, .16, { n: 3, col: lighter(dk, .1), tip: RED }); g.restore();    // the near pod: mounted rockets
   poly(g, s, up([[-.14, -.3], [-.02, -.32], [.0, -.25], [-.12, -.24]], bb), darker(dk, .2));                                                 // its mount
-  helm(g, s, .0, -.29 + bb, .85, dk);
+  helm(g, s, .0, -.29 + bb, .85, dk, null, { w, run, ph });
   arm(g, s, .09, -.23 + bb, .15, -.14 + bb + sw * .5, .2, -.08 + bb + sw, .06, mix(c, dk, .35)); claw(g, s, .2, -.08 + bb + sw, .9, mix(c, dk, .35));
 };
 
@@ -103,7 +108,7 @@ const scoutWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
   arm(g, s, -.02, -.14 + bb, .04, -.06 + bb - sw, .08, -.01 + bb - sw, .04, darker(dk, .1));
   poly(g, s, up([[-.14, -.1], [-.08, -.2], [.08, -.2], [.15, -.12], [.08, -.04], [-.09, -.04]], bb), c);
   poly(g, s, up([[.0, -.18], [.08, -.18], [.12, -.12], [.05, -.08], [-.01, -.1]], bb), lighter(c, .18));
-  helm(g, s, .05, -.19 + bb, .8, dk); disc(g, s, .16, -.25 + bb, .026, '#15161c'); disc(g, s, .165, -.253 + bb, .014, VISOR);                         // a big, bright eye
+  helm(g, s, .05, -.19 + bb, .8, dk, null, { w, run, ph }); disc(g, s, .16, -.25 + bb, .026, '#15161c'); disc(g, s, .165, -.253 + bb, .014, VISOR);                         // a big, bright eye
   stroke(g, s, -.01, -.3 + bb, -.07, -.42 + bb, 1.6, INK); disc(g, s, -.07, -.43 + bb, .016, run && Math.sin(w * 6 + ph) > 0 ? RED : '#7a2a22');   // blinking antenna
   arm(g, s, .09, -.15 + bb, .15, -.08 + bb + sw * .5, .18, -.06 + bb + sw, .045, mix(c, dk, .35)); gunPod(g, s, .16, -.06 + bb + sw, .12, .06, rec);
 };
@@ -118,7 +123,7 @@ const flameWalker = (g, { s, c, dk, ph, w, run, moving, b }) => {
   poly(g, s, up([[-.21, -.2], [-.15, -.3], [.08, -.31], [.18, -.23], [.14, -.12], [.1, -.03], [-.08, -.03], [-.19, -.08]], bb), c);
   poly(g, s, up([[-.02, -.28], [.08, -.29], [.15, -.22], [.11, -.14], [-.02, -.16]], bb), lighter(c, .18));
   for (let i = 0; i < 3; i++) box(g, s, .02 + i * .035, -.24 + bb + i * .018, .022, .05, 1, `rgba(255,140,40,${(.5 + .4 * f).toFixed(2)})`);   // glowing vents
-  helm(g, s, -.01, -.3 + bb, 1, dk, ORANGE);
+  helm(g, s, -.01, -.3 + bb, 1, dk, null, { w, run, ph });
   const ny = -.1 + bb + sw;
   arm(g, s, .1, -.24 + bb, .17, -.15 + bb + sw * .5, .24, ny, .08, mix(c, dk, .35)); pauldron(g, s, .1, -.26 + bb, 1, lighter(dk, .1));
   poly(g, s, [[.23, ny - .05], [.31, ny - .04], [.33, ny - .06], [.33, ny + .06], [.31, ny + .04], [.23, ny + .055]], PORT);       // the flamer nozzle, flared
@@ -135,7 +140,7 @@ const bulwark = (g, { s, c, dk, ph, w, run, moving, b }) => {
   poly(g, s, up([[-.28, -.24], [-.2, -.36], [.1, -.37], [.2, -.28], [.18, -.1], [.12, -.02], [-.16, -.02], [-.28, -.08]], bb), c);
   poly(g, s, up([[-.08, -.34], [.1, -.35], [.17, -.28], [.14, -.14], [-.08, -.16]], bb), lighter(c, .16));
   poly(g, s, up([[-.16, -.08], [.12, -.08], [.12, -.02], [-.14, -.02]], bb), dk);
-  helm(g, s, -.04, -.36 + bb, 1, dk);
+  helm(g, s, -.04, -.36 + bb, 1, dk, null, { w, run, ph });
   pauldron(g, s, .1, -.33 + bb, 1.3, lighter(dk, .1));
   arm(g, s, .12, -.28 + bb, .2, -.18 + bb, .24, -.1 + bb + sw, .09, mix(c, dk, .35));
   const sy = sw * .5 + bb;                                                                                                                 // the shield: a kite with a rim, a ridge and a spike

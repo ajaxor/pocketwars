@@ -142,25 +142,20 @@ export const surfacing = (g, s, w, run, submerged, x0, x1, scopeX, lift, draw, d
   poly(g, s, [[scopeX, SUB_LINE - .005], [scopeX - .17 - .03 * p, SUB_LINE + .012], [scopeX - .17 - .03 * p, SUB_LINE - .012]], 'rgba(255,255,255,.45)');
 };
 
-/** Hover tubing: a manifold pipe under a hull (centred on y, from x0 to x1) with `n` nozzles pointing at the ground (`ground`, tile fraction). A
- *  ring of force leaves each nozzle on a fast interval, widening and fading as it falls to the ground. The hull above should rock up and down
- *  more deeply but more slowly than these waves (about a third of their rate). Frozen (run 0), the rings hang still. */
-export const hoverTubes = (g, s, x0, x1, y, w, run, { ground = .285, n = 3 } = {}) => {
-  const ny = y + .03, fall = Math.max(.02, ground - ny - .01), hw = (x1 - x0) / (n * 2.6);
-  for (let i = 0; i < n; i++) {
-    const x = x0 + (x1 - x0) * (n === 1 ? .5 : .1 + .8 * i / (n - 1));
-    for (let k = 0; k < 3; k++) {                                                                    // three rings in flight at a time
-      const f = run ? (w * 2.6 + k / 3 + i * .17) % 1 : (k + .6) / 3.4;
-      g.strokeStyle = `rgba(127,232,255,${(.85 * (1 - f)).toFixed(2)})`; g.lineWidth = Math.max(1.2, s * .02 * (1 - f * .5));
-      g.beginPath(); g.ellipse(x * s, (ny + f * fall) * s, (.03 + f * hw * 2.6) * s, (.01 + f * .03) * s, 0, .15, Math.PI - .15); g.stroke();
-    }
-    poly(g, s, [[x - .028, y + .005], [x + .028, y + .005], [x + .04, ny + .005], [x - .04, ny + .005]], '#20242b');   // the nozzle
-    oval(g, s, x, ny + .006, .04, .01, `rgba(127,232,255,${(run ? .7 + .3 * Math.sin(w * 7 + i) : .8).toFixed(2)})`);   // its glowing lip
+/** Hover tubing: a short pipe under a hull (centred on y, from x0 to x1) with ONE nozzle at its middle pointing at the ground (`ground`, tile
+ *  fraction). Two big rings of force leave it in turn, widening and fading as they fall. Kept simple and large so it reads at small sizes. The hull
+ *  above should rock up and down more deeply but more slowly than the rings. Frozen (run 0), the rings hang still. */
+export const hoverTubes = (g, s, x0, x1, y, w, run, { ground = .285 } = {}) => {
+  const x = (x0 + x1) / 2, ny = y + .035, fall = Math.max(.03, ground - ny), reach = (x1 - x0) * .62;
+  for (let k = 0; k < 2; k++) {
+    const f = run ? (w * 1.5 + k / 2) % 1 : (k + .5) / 2.4;
+    g.strokeStyle = `rgba(127,232,255,${(.95 * (1 - f)).toFixed(2)})`; g.lineWidth = Math.max(2, s * .035 * (1 - f * .5));
+    g.beginPath(); g.ellipse(x * s, (ny + f * fall) * s, (.05 + f * reach) * s, (.015 + f * .045) * s, 0, .1, Math.PI - .1); g.stroke();
   }
+  poly(g, s, [[x - .05, y], [x + .05, y], [x + .075, ny + .01], [x - .075, ny + .01]], '#20242b');     // the nozzle
+  oval(g, s, x, ny + .012, .075, .014, `rgba(127,232,255,${(run ? .75 + .25 * Math.sin(w * 5) : .85).toFixed(2)})`);   // its glowing lip
+  box(g, s, x0, y - .022, x1 - x0, .04, .02 * s, '#2b2f36');                                         // the pipe
   for (const fx of [.12, .88]) box(g, s, x0 + (x1 - x0) * fx - .015, y - .06, .03, .05, 1, '#20242b');   // struts up into the hull
-  box(g, s, x0, y - .022, x1 - x0, .04, .02 * s, '#2b2f36');                                         // the manifold pipe
-  box(g, s, x0 + .02, y - .014, x1 - x0 - .04, .008, 1, 'rgba(255,255,255,.22)');                    // its highlight
-  for (let i = 0; i < 3; i++) box(g, s, x0 + (x1 - x0) * (.2 + .3 * i) - .006, y - .024, .012, .044, 1, '#171a1f');   // clamps
 };
 
 // ---- water, continued -----------------------------------------------------------------------------------------------------

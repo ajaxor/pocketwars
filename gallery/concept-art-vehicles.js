@@ -49,7 +49,8 @@ const amphibiousTankSwim = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s * .6 + .03, wc = mix(c, dk, UNDER_SHADE);
   afloat(g, s, w, run, -.41, .41, (light) => {
     g.save(); g.translate(0, bb * s);
-    poly(g, s, HULL(0), light ? c : wc);                                                     // no treads in the water: just the sealed hull
+    treads(g, s, -.33, .33, .14, .15, w, 0);                                                 // the treads are back, but parked: not animated in the water
+    poly(g, s, HULL(0), light ? c : wc);
     if (light) { box(g, s, -.34, .07, .66, .1, .05 * s, mix(c, '#ffffff', .55)); amphibTop(g, s, c, dk, w, ph, run, 0); }
     else { stroke(g, s, -.28, .17, -.28, .27, 3, wc); propeller(g, s, -.28, .275, w, run, wc, true); }   // the propeller hangs below the hull, under the surface
     g.restore();

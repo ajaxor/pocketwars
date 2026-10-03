@@ -32,7 +32,7 @@ const carrier = (g, { s, c, dk, w, ph, run, b }) => {
       poly(g, s, [[-.47, -.06], [.42, -.06], [.42, .04], [-.43, .04], [-.47, .0]], side);          // the slab's front face, overhanging the hull
       poly(g, s, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], deck);                                       // the flight deck in perspective
       stroke(g, s, ...P(0, 0), ...P(1, 0), 2, rim); stroke(g, s, ...P(0, 1), ...P(1, 1), 1.4, rim); // lit edges, near and far
-      const rw = (k) => [.07 + .6 * k, .12 + .68 * k], half = (k) => .065 * (1 - .45 * k);          // the angled runway: a strip that narrows with distance
+      const rw = (k) => [.32 + .2 * k, .03 + .64 * k], half = (k) => .17 * (1 - .78 * k);              // the angled runway: a trapezoid, wide at the near edge facing the camera and narrow far away, set low on the deck
       const L = (k) => { const [t, v] = rw(k); return P(t - half(k), v); }, R = (k) => { const [t, v] = rw(k); return P(t + half(k), v); }, C = (k) => P(...rw(k));
       poly(g, s, [L(0), R(0), R(1), L(1)], mix(deck, '#ffffff', .3));
       stroke(g, s, ...L(0), ...L(1), 1.4, 'rgba(255,255,255,.8)'); stroke(g, s, ...R(0), ...R(1), 1.4, 'rgba(255,255,255,.8)');
@@ -80,12 +80,12 @@ const dreadnought = (g, { s, c, dk, w, ph, run, b }) => {
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       const stack = (dir) => {                                                                       // big turret below, smaller one on its roof
-        mount(g, s, 0, -.005, .2, .15, { dk, n: 2, elev: .22, dir, bar: .038 });
-        mount(g, s, 0, -.005 - .1, .14, .12, { dk, n: 2, elev: .3, dir, bar: .03 });
+        mount(g, s, 0, -.005, .28, .19, { dk, n: 2, elev: .22, dir, bar: .045 });
+        mount(g, s, 0, -.005 - .14, .19, .15, { dk, n: 2, elev: .3, dir, bar: .036 });
       };
       const f = deckAt(H, .32); g.save(); g.translate(.32 * s, f.y * s); g.rotate(f.ang); stack(1); g.restore();   // forward stack sits on the swept-up bow
       g.save(); g.translate(-.32 * s, D * s); stack(-1); g.restore();                                // aft stack
-      poly(g, s, [[-.045, D - .44], [.045, D - .44], [.08, D], [-.08, D]], c);                       // the mast: stout, thicker toward the deck
+      poly(g, s, [[-.045, D - .44], [.045, D - .44], [.13, D], [-.13, D]], c);                       // the mast: stout, flaring wide at its base
       box(g, s, -.14, D - .12, .28, .05, 2, c); box(g, s, -.1, D - .25, .2, .05, 2, c); box(g, s, -.07, D - .37, .14, .05, 2, c);   // three tiers of wings, centred on it
     }
     g.restore();

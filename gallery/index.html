@@ -58,7 +58,8 @@
   .name { font-weight: 600; }
   .badge { font-size: 10px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700; color: #101216; border-radius: 6px; padding: 1px 7px; flex: none; }
   .meta { font-size: 12px; color: #8a877c; margin-bottom: 8px; }
-  .row { display: flex; gap: 8px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  @media (min-width: 700px) { .card.wide { grid-column: span 2; } }
   canvas { display: block; border-radius: 8px; flex: none; }
   .mech { font-size: 13px; color: #cfcabb; margin: 8px 0 0; }
   .ov { font-size: 12px; color: #8fc2ee; margin-top: 6px; }

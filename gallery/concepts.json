@@ -334,7 +334,7 @@
    "move": 5,
    "role": "Support",
    "overlaps": "Supply Truck",
-   "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Unarmed.",
+   "mechanic": "Repairs 2 hit points on every friendly unit next to it at the start of your turn, for 10% of the unit's price per point. Fights back with a weak wrench (range 1) that ignores armor completely.",
    "group": "air"
   },
   {

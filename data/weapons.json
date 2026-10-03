@@ -28,6 +28,7 @@
   "aerial_torpedo": { "name": "Aerial torpedo", "damage": 130, "armorPiercing": 0.85, "range": [1, 1], "targets": ["surface", "underwater", "indirect_ground"], "targetMultipliers": { "underwater": 0.7, "indirect_ground": 0.25 }, "ammo": 1, "fx": "torpedo" },
   "boat_cannon":   { "name": "Boat cannon",   "damage": 50,  "armorPiercing": 0.2, "range": [1, 1], "targets": ["surface", "direct_ground"] },
   "boat_mg":       { "name": "Boat machine gun", "damage": 60, "armorPiercing": 0, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
+  "wrench":        { "name": "Wrench", "damage": 12, "armorPiercing": 1, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "rpg":           { "name": "RPG", "damage": 80, "armorPiercing": 1, "range": [2, 3], "targets": ["direct_ground", "low_air"], "ammo": 1 },
   "conscript_rifle": { "name": "Old rifle", "damage": 35, "armorPiercing": 0, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "harpoon":       { "name": "Harpoon gun", "damage": 55, "armorPiercing": 0.9, "range": [1, 1], "targets": ["direct_ground", "surface", "underwater"], "targetMultipliers": { "surface": 1.5, "underwater": 1.5 } }

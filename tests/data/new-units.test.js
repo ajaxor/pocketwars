@@ -18,9 +18,11 @@ test('the spy is stealth infantry that captures: expensive, fragile, with a weak
   assert.ok(weaponsOf('spy')[0].damage < registry.weapons.rifle.damage, 'weaker than a rifle');
 });
 
-test('the medic has a weak attack, the mechanic is unarmed, and both heal by order', () => {
+test('the medic has a weak attack, the mechanic has a weak but fully armor-piercing wrench, and both heal by order', () => {
   assert.ok(hasAttribute(unit('medic'), 'heal') && hasAttribute(unit('mechanic'), 'heal'));
-  assert.equal(unit('mechanic').weapons.length, 0);
+  assert.equal(weaponsOf('mechanic').length, 1);
+  assert.equal(weaponsOf('mechanic')[0].armorPiercing, 1);
+  assert.ok(weaponsOf('mechanic')[0].damage <= registry.weapons.pistol.damage, 'a weak attack');
   assert.equal(weaponsOf('medic').length, 1);
   assert.ok(weaponsOf('medic')[0].damage <= registry.weapons.pistol.damage);
 });
