@@ -18,6 +18,7 @@ into a new file: a fix then lands in every unit, and units that carry the same k
 | | `antigrav` | a row of anti-gravity emitter pods with pulsing lenses, a light cone and rising motes (older hover look, no longer used by the concept hover units) |
 | | `hoverEmitter` | one wide anti-gravity emitter pad with a slow-pulsing lens band, a light cone to the ground and rising motes (the hover units) |
 | Water | `afloat` | draws a ship twice, clipped above and below the waterline, and lays foam at both ends |
+| | `surfacing`, `SUB_LINE` | a diving boat drawn like the regular submarine: above and below a fixed waterline, sinking as `submerged` goes 0 to 1, foam at both ends or round the periscope when dived |
 | | `hullPath`, `deckAt` | hull outline with a swept-up bow, and the deck's height and slope at x |
 | | `skyClip`, `seaClip`, `LINE` | the two clip regions and the waterline height |
 | | `propeller`, `bubbles` | a ship's propeller with a bubble wake; bubbles rising from a point |

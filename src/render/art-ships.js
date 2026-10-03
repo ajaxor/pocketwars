@@ -17,7 +17,9 @@ const mount = (g, s, x, y, w, len, { dk, n = 1, elev = 0, dir = 1, bar = .035, r
 };
 
 // ---- Shipyard ---------------------------------------------------------------------------------------------------------------
-// Aircraft carrier: the longest, flattest hull. One thin flight deck overhangs the whole ship (just the runway line), with a single mast.
+// Aircraft carrier: the longest, flattest hull, seen from above and a little in front of its near side. The flight deck is a wide slab drawn in
+// perspective (the near edge longer than the far one) with an angled runway running across it toward the camera's far side, parked planes at
+// the back, and a tall island standing on the near edge.
 const carrier = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s + .04, H = { x0: -.47, x1: .47, deck: .02, keel: .36, rise: .1, sweep: .55 };
   afloat(g, s, w, run, -.47, .47, (light) => {
@@ -25,14 +27,20 @@ const carrier = (g, { s, c, dk, w, ph, run, b }) => {
     if (!light) propeller(g, s, -.47 - .02, .33, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      const deck = mix(c, '#26282e', .5), side = mix(c, dk, .6);
-      poly(g, s, [[-.47, -.07], [.4, -.07], [.4, .035], [-.43, .035], [-.47, .0]], side);          // the deck slab's front face, overhanging the hull
-      poly(g, s, [[-.47, -.07], [.4, -.07], [.5, -.19], [-.37, -.19]], deck);                      // the flight deck seen from above: depth runs up and to the right
-      const p = (t, u) => [-.4 + t * .8 + u * .1, -.085 - u * .1];                                  // a point on the deck: t along it, u across (0 near edge, 1 far)
-      poly(g, s, [p(0, .15), p(1, .6), p(1, .78), p(0, .33)].map(([x, y]) => [x, y]), mix(deck, '#ffffff', .12));   // the angled runway, a diagonal strip
-      for (let i = 0; i < 6; i++) { const t = .06 + i * .17, [x, y] = p(t, .24 + t * .45); box(g, s, x - .03, y - .006, .06, .012, 0, WHITE); }   // its centreline dashes
-      poly(g, s, [[.12, -.15], [.32, -.15], [.28, -.36], [.18, -.36]], c);                           // the bridge island: a wide tapered block
-      box(g, s, .2, -.43, .02, .08, 0, INK);                                                         // a short mast
+      const deck = mix(c, '#26282e', .62), side = mix(c, dk, .6), rim = mix(deck, '#ffffff', .3);
+      const P = (t, v) => { const xn = -.47 + .89 * t, xf = -.38 + .74 * t; return [xn + (xf - xn) * v, -.06 - .16 * v]; };   // t along the deck, v from the near edge (0) to the far edge (1)
+      poly(g, s, [[-.47, -.06], [.42, -.06], [.42, .04], [-.43, .04], [-.47, .0]], side);          // the slab's front face, overhanging the hull
+      poly(g, s, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], deck);                                       // the flight deck in perspective
+      stroke(g, s, ...P(0, 0), ...P(1, 0), 2, rim); stroke(g, s, ...P(0, 1), ...P(1, 1), 1.4, rim); // lit edges, near and far
+      const rw = (k) => [.07 + .6 * k, .12 + .68 * k], half = (k) => .065 * (1 - .45 * k);          // the angled runway: a strip that narrows with distance
+      const L = (k) => { const [t, v] = rw(k); return P(t - half(k), v); }, R = (k) => { const [t, v] = rw(k); return P(t + half(k), v); }, C = (k) => P(...rw(k));
+      poly(g, s, [L(0), R(0), R(1), L(1)], mix(deck, '#ffffff', .3));
+      stroke(g, s, ...L(0), ...L(1), 1.4, 'rgba(255,255,255,.8)'); stroke(g, s, ...R(0), ...R(1), 1.4, 'rgba(255,255,255,.8)');
+      for (let i = 0; i < 5; i++) { const k = .1 + i * .19; stroke(g, s, ...C(k), ...C(k + .08), 2.2 * (1 - .4 * k), WHITE); }   // centreline dashes, shorter far away
+      for (const t of [.1, .2, .31]) { const [x, y] = P(t, .8); box(g, s, x - .028, y - .007, .056, .014, 2, '#d8dbe0'); box(g, s, x - .004, y - .026, .014, .052, 1, '#c4c8cf'); box(g, s, x - .03, y - .018, .012, .014, 0, '#c4c8cf'); }   // parked planes
+      poly(g, s, [[.2, -.06], [.37, -.06], [.34, -.28], [.25, -.28]], c);                           // the island: a tall tapered block on the near edge
+      box(g, s, .255, -.25, .075, .022, 1, '#cfe6f5');                                               // bridge windows
+      box(g, s, .27, -.33, .03, .05, 0, mix(c, dk, .4)); stroke(g, s, .285, -.33, .285, -.42, 3, INK); oval(g, s, .3, -.385, .035, .014, STEEL);   // mast and radar
     }
     g.restore();
   });
@@ -62,8 +70,8 @@ const gunBoat = (g, { s, c, dk, w, ph, run, moving, b }) => {
   }
 };
 
-// Dreadnought: the biggest battleship. Four twin turrets in superfiring pairs (the inner turret of each pair sits on a raised
-// barbette), two funnels, and a tall mast with THREE tiers of wings (the battleship's has two).
+// Dreadnought: the biggest battleship. Two stacks of twin turrets, one forward and one aft, each a big turret on the deck with a smaller one
+// riding on top of it, and a tall, stout mast with THREE tiers of wings (the battleship's has two).
 const dreadnought = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s + .05, D = .02, H = { x0: -.48, x1: .48, deck: D, keel: .31, rise: .16, sweep: .55 };
   afloat(g, s, w, run, -.48, .48, (light) => {
@@ -71,13 +79,14 @@ const dreadnought = (g, { s, c, dk, w, ph, run, b }) => {
     if (!light) propeller(g, s, -.48 - .02, .29, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      const slope = (x, fn) => { const f = deckAt(H, x); g.save(); g.translate(x * s, f.y * s); g.rotate(f.ang); fn(); g.restore(); };   // sits on the swept-up bow
-      slope(.37, () => mount(g, s, 0, -.005, .15, .115, { dk, n: 2, elev: .25, bar: .03 }));
-      slope(.2, () => mount(g, s, 0, -.005, .14, .115, { dk, n: 2, elev: .3, bar: .03 }));
-      mount(g, s, -.37, D - .005, .15, .115, { dk, n: 2, elev: .25, dir: -1, bar: .03 });
-      mount(g, s, -.235, D - .005, .14, .115, { dk, n: 2, elev: .3, dir: -1, bar: .03 });
-      poly(g, s, [[-.03, D - .44], [.03, D - .44], [.055, D], [-.055, D]], c);                      // the mast, centred between the turret pairs, thicker toward the deck
-      box(g, s, -.13, D - .12, .26, .05, 2, c); box(g, s, -.09, D - .25, .18, .05, 2, c); box(g, s, -.06, D - .37, .12, .05, 2, c);   // three tiers of wings, centred on it
+      const stack = (dir) => {                                                                       // big turret below, smaller one on its roof
+        mount(g, s, 0, -.005, .2, .15, { dk, n: 2, elev: .22, dir, bar: .038 });
+        mount(g, s, 0, -.005 - .1, .14, .12, { dk, n: 2, elev: .3, dir, bar: .03 });
+      };
+      const f = deckAt(H, .32); g.save(); g.translate(.32 * s, f.y * s); g.rotate(f.ang); stack(1); g.restore();   // forward stack sits on the swept-up bow
+      g.save(); g.translate(-.32 * s, D * s); stack(-1); g.restore();                                // aft stack
+      poly(g, s, [[-.045, D - .44], [.045, D - .44], [.08, D], [-.08, D]], c);                       // the mast: stout, thicker toward the deck
+      box(g, s, -.14, D - .12, .28, .05, 2, c); box(g, s, -.1, D - .25, .2, .05, 2, c); box(g, s, -.07, D - .37, .14, .05, 2, c);   // three tiers of wings, centred on it
     }
     g.restore();
   });

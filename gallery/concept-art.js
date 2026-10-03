@@ -181,9 +181,10 @@ const mineLayer = (g, { s, c, dk, w, run, b }) => {
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, .08, D - .17, .22, .17, 3, c);                                                  // wheelhouse, forward
-      stroke(g, s, .2, D - .17, .2, D - .26, 1.6, INK);                                       // mast
+      box(g, s, .09, D - .21, .07, .05, 1, mix(c, dk, .4));                                       // crane pedestal on the wheelhouse roof
+      const sway = run ? Math.sin(w * 2 + 1) * .006 : 0;                                         // a small crane: a boom reaching aft over the mine rack, a cable and a hook
+      stroke(g, s, .125, D - .2, -.04, D - .33, 4, INK); stroke(g, s, -.04, D - .33, -.04 + sway, D - .24, 1, STEEL); disc(g, s, -.04 + sway, D - .235, .02, INK);
       for (let i = 0; i < 3; i++) mine(g, s, -.3 + i * .12, D - .1, .045, INK);               // the mines, in a rack
-      mine(g, s, -.44, D + .1, .05, '#2d3138');                                               // one just dropped astern
     }
     g.restore();
   });

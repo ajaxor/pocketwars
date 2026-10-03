@@ -123,6 +123,25 @@ export const antigrav = (g, s, x0, x1, y, w, run, n = 3) => {
   }
 };
 
+/** A boat that can dive, drawn like the regular submarine: `draw(light)` runs once above the waterline (light = true) and once below it, lowered by
+ *  `dive * submerged` (submerged 0 surfaced .. 1 dived) and lifted by `lift`. Surfaced it gets foam curling at both ends (x0, x1); dived, the foam
+ *  gathers round the periscope at scopeX instead. The waterline is fixed at SUB_LINE. */
+export const SUB_LINE = .1;
+export const surfacing = (g, s, w, run, submerged, x0, x1, scopeX, lift, draw, dive = .22) => {
+  const d = Math.max(0, Math.min(1, Number(submerged) || 0)), p = .8 + .2 * Math.sin(w * 4) * run;
+  const pass = (light) => { g.save(); g.translate(0, (dive * d + lift) * s); draw(light); g.restore(); };
+  g.save(); skyClip(g, s, SUB_LINE); pass(true); g.restore();
+  g.save(); seaClip(g, s, SUB_LINE); pass(false); g.restore();
+  if (d < .5) {
+    g.fillStyle = 'rgba(255,255,255,.4)'; g.fillRect(x0 * s, (SUB_LINE - .012) * s, (x1 - x0) * s, .026 * s);
+    oval(g, s, x1, SUB_LINE + .005, .06 * p, .026, FOAM); oval(g, s, x0, SUB_LINE + .005, .06 * p, .026, FOAM);
+    return;
+  }
+  oval(g, s, scopeX, SUB_LINE, .1 * p, .03, FOAM);
+  oval(g, s, scopeX, SUB_LINE, .05 * p, .014, 'rgba(255,255,255,.8)');
+  poly(g, s, [[scopeX, SUB_LINE - .005], [scopeX - .17 - .03 * p, SUB_LINE + .012], [scopeX - .17 - .03 * p, SUB_LINE - .012]], 'rgba(255,255,255,.45)');
+};
+
 /** A single wide anti-gravity emitter under a hull: a flat housing from x0 to x1 with its underside at y, a glowing lens band that pulses slowly,
  *  a soft cone of light down to the ground (`ground`, tile fraction) and a few motes drifting up through it. Calm on purpose: the hull above it
  *  does the bobbing, and it is slow and shallow. */
