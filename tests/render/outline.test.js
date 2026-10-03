@@ -26,18 +26,22 @@ test('drawOutlined falls back to the plain drawing when no scratch canvas can be
   assert.equal(drew, 1);
 });
 
-test('drawOutlined with skipBlack stamps the outline from a mask whose near-black pixels are transparent', () => {
-  const stamps = [], puts = [];
+test('drawOutlined with skipBlack redraws the body into a mask that ignores near-black fills and strokes, and stamps from it', () => {
+  const stamps = [], filled = [];
   const make = (w, h) => {
     const r = recorder(stamps); r.g.width = w; r.g.height = h; r.g.getContext = () => r.g;
-    r.g.getImageData = () => ({ data: new Uint8ClampedArray([10, 12, 14, 255, 200, 60, 50, 255, 30, 30, 30, 120]) });
-    r.g.putImageData = (im) => { puts.push(Array.from(im.data)); };
+    r.g.fill = () => { filled.push(r.g.fillStyle); }; r.g.fillRect = () => { filled.push('rect ' + r.g.fillStyle); };
     return r.g;
   };
-  const mod = { SPRITES: { x: () => {} }, SHADOWS: { x: () => {} } };
+  const sprite = (g) => {
+    g.fillStyle = '#e8742a'; g.fill(); g.fillStyle = '#15161c'; g.fillRect(0, 0, 1, 1); g.fillStyle = 'rgba(20, 22, 30, 1)'; g.fill(); g.fillStyle = 'rgba(200, 60, 50, 0.5)'; g.fill();
+  };
+  const mod = { SPRITES: { x: sprite }, SHADOWS: { x: () => {} } };
   const { g } = recorder();
   drawOutlined(g, mod, 'x', { s: 40 }, { r: 2, color: '#123456', skipBlack: true, make });
-  assert.equal(puts.length, 1, 'the mask is written back once');
-  assert.deepEqual(puts[0], [10, 12, 14, 0, 200, 60, 50, 255, 30, 30, 30, 0], 'black pixels lose their alpha, coloured ones keep it');
-  assert.ok(stamps.filter((c) => c[0] === 'drawImage').length >= 24, `the silhouette is still stamped round the rings (${stamps.filter((c) => c[0] === 'drawImage').length})`);
+  // the body canvas and the mask canvas are different recorders sharing `filled` through their own fill hooks: count by colour
+  assert.equal(filled.filter((c) => c === '#e8742a').length, 2, 'the coloured fill is drawn in the body and in the mask');
+  assert.equal(filled.filter((c) => c === 'rect #15161c' || c === '#15161c').length, 1, 'the black fill is drawn in the body but skipped in the mask');
+  assert.equal(filled.filter((c) => c === 'rgba(200, 60, 50, 0.5)').length, 2, 'a see-through red is not black');
+  assert.ok(stamps.filter((c) => c[0] === 'drawImage').length >= 24, 'the silhouette is stamped round the rings');
 });

@@ -4,8 +4,8 @@
 // is stamped at a ring of offsets `r` px away, filled with `color`, and drawn under the body. So every sprite is outlined
 // without its drawing code knowing, and foam, fins and barrels get the line as well. `o` is drawFrame's options; `tint` as in layer.js;
 // `alpha` fades shadow, line and body together as one image. `skipBlack` leaves the near-black parts (gun barrels, ink lines) out of the silhouette
-// that gets outlined, so they do not grow a line of their own: the body is copied to a mask, its near-black pixels made transparent, and the line
-// is stamped from the mask instead (one pixel pass per tile, so it is only done when asked for).
+// that gets outlined, so they do not grow a line of their own: the sprite is drawn a second time into a mask through a wrapper that skips every
+// fill and stroke whose colour is near-black (no pixel read-back, which is what made the first version slow), and the line is stamped from the mask.
 // Like layer.js it needs a scratch canvas: `make` (Node), OffscreenCanvas or a <canvas> in the browser.
 
 import { drawFrame } from './unit-frame.js';
@@ -14,7 +14,34 @@ import { drawFrame } from './unit-frame.js';
 export const OUTLINE_THIN = .014;
 const REACH = 1.7;                                   // the same room around the tile centre that drawFrameAlpha allows
 const cache = { body: null, edge: null, mix: null, mask: null, owners: {} };      // owners: which `make` built each scratch canvas
-const BLACK = 52;                                     // a pixel whose red, green and blue are all at or below this counts as black
+const BLACK = 52;                                     // a colour whose red, green and blue are all at or below this counts as black
+const isBlack = (css) => {                            // is this canvas colour string near-black (and not see-through)?
+  if (typeof css !== 'string') return false;
+  let m = /^#([0-9a-f]{3,8})$/i.exec(css), r, g, b, a = 1;
+  if (m) { let h = m[1]; if (h.length <= 4) h = [...h].map((c) => c + c).join(''); r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16); if (h.length === 8) a = parseInt(h.slice(6, 8), 16) / 255; }
+  else if ((m = /^rgba?\(([^)]+)\)$/i.exec(css))) { [r, g, b, a = 1] = m[1].split(',').map(Number); }
+  else return css.toLowerCase() === 'black';
+  return a > 0 && r <= BLACK && g <= BLACK && b <= BLACK;
+};
+const FILLS = new Set(['fill', 'fillRect', 'fillText']), STROKES = new Set(['stroke', 'strokeRect', 'strokeText']);
+/** A drawing context that quietly ignores fills and strokes made in near-black, and passes everything else to `ctx`. */
+const skipBlackCtx = (ctx) => {
+  const bound = new Map();
+  return new Proxy(ctx, {
+    get(target, p) {
+      const v = target[p];
+      if (typeof v !== 'function') return v;
+      let f = bound.get(p);
+      if (!f) {
+        const style = FILLS.has(p) ? 'fillStyle' : STROKES.has(p) ? 'strokeStyle' : null;
+        f = style ? (...a) => (isBlack(target[style]) ? undefined : v.apply(target, a)) : v.bind(target);
+        bound.set(p, f);
+      }
+      return f;
+    },
+    set(target, p, v) { target[p] = v; return true; },
+  });
+};
 
 function canvas(slot, w, h, make) {
   const have = cache[slot];
@@ -41,14 +68,13 @@ export function drawOutlined(g, mod, id, o, { r = 2, color = '#14161d', tint = n
   drawFrame(bc, mod, id, { ...o, only: 'body' });
   bc.setTransform(1, 0, 0, 1, 0, 0);
   if (tint) { bc.save(); bc.globalCompositeOperation = 'source-atop'; bc.globalAlpha = tint.amount; bc.fillStyle = tint.color; bc.fillRect(0, 0, px, px); bc.restore(); }
-  let src = body;                                            // what the outline is stamped from: the body, or (skipBlack) the body without its black pixels
+  let src = body;                                            // what the outline is stamped from: the body, or (skipBlack) the body without its black parts
   if (skipBlack) {
-    const mk = canvas('mask', px, px, make), mc = mk && (mk.getContext?.('2d', { willReadFrequently: true }) || null);
-    if (mc?.getImageData) {
-      mc.setTransform(1, 0, 0, 1, 0, 0); mc.clearRect(0, 0, px, px); mc.drawImage(body, 0, 0);
-      const im = mc.getImageData(0, 0, px, px), d = im.data;
-      for (let i = 0; i < d.length; i += 4) if (d[i + 3] && d[i] <= BLACK && d[i + 1] <= BLACK && d[i + 2] <= BLACK) d[i + 3] = 0;
-      mc.putImageData(im, 0, 0); src = mk;
+    const mk = canvas('mask', px, px, make), mc = mk && mk.getContext?.('2d');
+    if (mc) {
+      mc.setTransform(1, 0, 0, 1, 0, 0); mc.clearRect(0, 0, px, px); mc.setTransform(k, 0, 0, k, px / 2, px / 2);
+      drawFrame(skipBlackCtx(mc), mod, id, { ...o, only: 'body' });
+      mc.setTransform(1, 0, 0, 1, 0, 0); src = mk;
     }
   }
   // the silhouette, grown by r: the body stamped round a ring (two rings, so a thick line has no gaps), then flooded with the colour
