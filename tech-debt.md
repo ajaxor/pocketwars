@@ -34,5 +34,5 @@
 - **Heal visuals were not verified in a browser** (the Heal button label and the +HP call-outs); only engine tests cover them.
 - **Sprites moved from `gallery/` to `src/render/art-*.js`** so the deploy build includes them; the gallery imports them back. Older gallery art files may still want the same treatment.
 - **No damage-baseline cases for the new units** (spy, medic pistol, RPG trooper, stealth copter); the baseline tool covers only the original units.
-- **RPG trooper uses `indirect`** to get 'cannot move and fire' and a 2-3 range; it targets `indirect_ground` like artillery, so it cannot shoot aircraft or ships, and nothing makes it weak against infantry (armor-piercing 1 means full damage on everything).
+- **RPG trooper has no weakness against infantry:** its armor piercing gives it full damage on everything; only its single round limits it.
 - **Heal order is all-or-nothing on adjacency:** it heals every eligible neighbour, with no way to choose one, and the AI scores tiles by total HP restored but ignores the funds cost.

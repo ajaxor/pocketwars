@@ -438,7 +438,7 @@
     "weapons": ["rpg"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "capture": true, "indirect": true, "ammo": { "max": 1, "low": 0, "cost": 300 } },
+    "attributes": { "capture": true, "ammo": { "max": 1, "low": 0, "cost": 300 } },
     "exclusive": true,
     "render": { "sprite": "rpg_trooper", "facing": false, "attackFx": "shot" }
   }

@@ -25,12 +25,14 @@ test('the medic has a weak attack, the mechanic is unarmed, and both heal by ord
   assert.ok(weaponsOf('medic')[0].damage <= registry.weapons.pistol.damage);
 });
 
-test('the RPG trooper is anti-vehicle infantry: one rocket, range 2-3, cannot move and fire, captures', () => {
+test('the RPG trooper is anti-vehicle infantry: one rocket, range 2-3, can move and fire, hits low aircraft, captures', () => {
   const rpg = unit('rpg_trooper');
   assert.equal(rpg.attributes.ammo.max, 1);
   assert.deepEqual(weaponsOf('rpg_trooper')[0].range, [2, 3]);
   assert.equal(weaponsOf('rpg_trooper')[0].armorPiercing, 1);
-  assert.ok(hasAttribute(rpg, 'indirect') && hasAttribute(rpg, 'capture'));
+  assert.ok(hasAttribute(rpg, 'capture') && !hasAttribute(rpg, 'indirect'));
+  assert.ok(canFireAfterMoving({ registry }, { type: 'rpg_trooper' }), 'a single rocket is no reason to stand still');
+  assert.ok(weaponsOf('rpg_trooper')[0].targets.includes('low_air'));
 });
 
 test('the stealth copter is a cloaked copter with a copter\'s weapon and less toughness', () => {
