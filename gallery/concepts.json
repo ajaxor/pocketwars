@@ -686,7 +686,7 @@
   },
   {
    "id": "tank_transport",
-   "name": "Tank Transport",
+   "name": "Landing Craft",
    "facility": "shipyard",
    "sprite": "tank_transport",
    "altitude": 0,
@@ -694,7 +694,7 @@
    "move": 5,
    "role": "Landing ship",
    "overlaps": "Transport Copter, Lander",
-   "mechanic": "Carries one tank in a single cargo slot, like the transport copter. After moving it can unload the tank onto an adjacent land tile, and the empty ship is then just a hull. Unarmed and thin-skinned, so it needs an escort.",
+   "mechanic": "A D-Day style landing boat. Carries one ground unit (infantry or a tank) in a single cargo slot, like the transport copter. After moving it can unload onto an adjacent land tile, and the empty boat is then just a hull. Unarmed and thin-skinned, so it needs an escort.",
    "water": true,
    "group": "naval"
   },

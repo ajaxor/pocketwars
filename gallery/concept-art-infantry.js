@@ -77,19 +77,19 @@ const mechanic = (g, o) => {
 const medic = (g, o) => {
   const { s, bb, sw } = body(g, o, {});
   helmet(g, s, bb, WHITE);
-  box(g, s, -.34, .02 + bb, .22, .16, 3, WHITE);                                     // the case, behind
-  box(g, s, -.27, -.025 + bb, .08, .045, 1, mix(WHITE, '#000000', .35));             // its handle
-  box(g, s, -.265, .075 + bb, .1, .035, 0, RED); box(g, s, -.235, .045 + bb, .035, .095, 0, RED);   // the cross
+  box(g, s, -.29, .02 + bb, .22, .16, 3, WHITE);                                     // the case, behind
+  box(g, s, -.22, -.025 + bb, .08, .045, 1, mix(WHITE, '#000000', .35));             // its handle
+  box(g, s, -.215, .075 + bb, .1, .035, 0, RED); box(g, s, -.185, .045 + bb, .035, .095, 0, RED);   // the cross
   box(g, s, .1, -.03 + bb + sw * .3, .15, .045, 1, INK); box(g, s, .1, -.0 + bb + sw * .3, .045, .08, 1, INK);   // pistol: slide and grip
 };
 
 // ---- Mortar team: a soldier behind a short fat tube on a baseplate; a shell rises out of it when it fires ---------------------------------
 const mortarTeam = (g, o) => {
-  const { s, c, dk, w, ph, run } = o, { l, bb } = gait(s, o);
-  const cy = run ? Math.max(0, Math.sin(w * 1.1 + ph)) : 0;
-  g.save(); g.translate(-.2 * s, 0); g.scale(.92, .92);                               // the loader stands behind the tube
+  const { s, c, dk } = o, { l, bb } = gait(s, o);
+  g.save(); g.translate(-.12 * s, 0); g.scale(.92, .92);                             // the loader stands right behind the tube
   legs(g, s, l, dk); torso(g, s, bb, c); head(g, s, bb); helmet(g, s, bb, dk);
   g.restore();
+  g.save(); g.translate(-.06 * s, 0);
   box(g, s, .06, .26, .36, .045, 2, '#3b3b3b');                                      // baseplate
   stroke(g, s, .3, .05, .4, .26, 3, '#3b3b3b');                                      // bipod leg
   g.save(); g.translate(.2 * s, .25 * s); g.rotate(-1.2);                            // the tube, nearly vertical
@@ -97,7 +97,7 @@ const mortarTeam = (g, o) => {
   box(g, s, .04, -.055, .34, .11, 2, '#4d535c');                                     // tube
   box(g, s, .36, -.06, .06, .12, 1, INK);                                            // muzzle
   g.restore();
-  if (cy > .5) { const k = (cy - .5) * 2; oval(g, s, .31 - k * .02, -.1 - k * .12, .022, .045, '#d9b44a'); }   // the shell, leaving
+  g.restore();
 };
 
 // ---- Conscript: a soldier with a fur winter hat instead of a helmet ---------------------------------------------------------------------
@@ -124,29 +124,30 @@ const spy = (g, o) => {
 // On land: a soldier in a dark wetsuit with an air tank and a mask pushed up on the forehead. Afloat (waterSprite diver_swim): a dark body with a
 // mask, a tank and one fin.
 const diver = (g, o) => {
-  const { s, c, dk } = o, { l, bb } = gait(s, o);
+  const { s, c } = o, { l, bb } = gait(s, o);
   const suit = '#2a2e36';
-  legs(g, s, l, suit);
-  box(g, s, -.25, -.12 + bb, .1, .22, 4, '#c9ccd2'); box(g, s, -.25, -.04 + bb, .1, .04, 0, c);   // air tank on the back, with a team band
+  legs(g, s, l, c);                                                                   // team-coloured fins
+  box(g, s, -.25, -.12 + bb, .1, .22, 4, c);                                          // air tank on the back, in the team colour
   torso(g, s, bb, suit);
-  box(g, s, -.16, -.02 + bb, .32, .04, 1, c);                                         // team-coloured chest stripe
   head(g, s, bb);
   dome(g, s, bb, .095, suit);                                                         // the hood
   oval(g, s, .05, -.225 + bb, .06, .035, mix(c, '#ffffff', .25)); oval(g, s, .06, -.225 + bb, .04, .02, '#9fe0ff');   // the mask, pushed up
+  stroke(g, s, -.09, -.2 + bb, -.09, -.34 + bb, 3, INK); stroke(g, s, -.09, -.34 + bb, -.03, -.34 + bb, 3, INK);       // the snorkel, up the side of the head
 };
 const diverSwim = (g, { s, c, dk, w, ph, run, moving, b }) => {
   const bb = b / s, kick = run ? Math.sin(w * (moving ? 8 : 3) + ph) : 0;
-  afloat(g, s, w, run, -.3, .3, (light) => {
-    const suit = light ? '#2a2e36' : mix('#2a2e36', c, .3), tank = light ? '#c9ccd2' : mix('#c9ccd2', dk, UNDER_SHADE);
+  afloat(g, s, w, run, -.34, .32, (light) => {
+    const suit = light ? '#2a2e36' : mix('#2a2e36', c, .3), team = light ? c : mix(c, dk, UNDER_SHADE);
     g.save(); g.translate(0, (bb - .08) * s);
-    g.save(); g.translate(-.1 * s, .1 * s); g.rotate(kick * .2);                       // legs and a short fin, kicking
-    box(g, s, -.1, -.03, .12, .07, 3, suit);
-    poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], light ? '#e8a020' : mix('#e8a020', dk, UNDER_SHADE));
+    g.save(); g.translate(-.15 * s, .1 * s); g.rotate(kick * .2);                      // legs and a team-coloured fin, kicking
+    box(g, s, -.1, -.03, .13, .07, 3, suit);
+    poly(g, s, [[-.1, -.03], [-.21, -.08], [-.22, .0], [-.21, .08], [-.1, .04]], team);
     g.restore();
-    box(g, s, -.14, .02, .3, .16, 7, suit);                                            // body
-    box(g, s, -.12, -.09, .2, .14, 5, tank);                                           // air tank
-    disc(g, s, .2, -.01, .095, suit);                                                  // head
-    oval(g, s, .26, -.01, .055, .045, light ? '#9fe0ff' : mix('#9fe0ff', dk, .4));     // mask
+    box(g, s, -.17, .02, .34, .16, 7, suit);                                           // body
+    box(g, s, -.14, -.09, .22, .14, 5, team);                                          // air tank
+    disc(g, s, .22, -.01, .095, suit);                                                 // head
+    oval(g, s, .28, -.01, .055, .045, light ? '#9fe0ff' : mix('#9fe0ff', dk, .4));     // mask
+    stroke(g, s, .2, -.09, .17, -.2, 3, INK); stroke(g, s, .17, -.2, .22, -.2, 3, INK);   // the snorkel, standing up out of the water
     g.restore();
   }, -.02);
 };

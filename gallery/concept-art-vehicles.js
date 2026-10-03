@@ -1,7 +1,7 @@
-// Experimental concept units, group "vehicles": an amphibious tank, a tracked SAM carrier, a rocket buggy and a motorcycle trooper.
+// Experimental concept units, group "vehicles": an amphibious tank, a wheeled SAM truck, a rocket buggy and a motorcycle trooper.
 // Sprites only; described in parts/vehicles.json. Same conventions as concept-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
 // centred on (0, 0), +x forward, sizes are tile fractions; the ground is at about y = .29.
-import { box, disc, oval, poly, stroke, mix, wheel, treads, propeller, turret, tubes, dish, INK, STEEL, SKIN } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, propeller, turret, tubes, dish, INK, STEEL, SKIN } from '../src/render/parts.js';
 
 const RED = '#d4442e', ORANGE = '#ff9a2e';
 
@@ -24,10 +24,10 @@ const amphibiousTank = (g, { s, c, dk, w, ph, run, j }) => {
 };
 
 // ---- SAM launcher -----------------------------------------------------------------------------------------------------------
-// A tracked carrier with a cab, a small turning radar dish on the cab roof and a raised pod of four angled missile tubes that kicks back now and then.
+// A wheeled truck with a cab, a small turning radar dish on the cab roof and a raised pod of four angled missile tubes that kicks back now and then.
 const samLauncher = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s;
-  treads(g, s, -.34, .34, .12 + jj, .17, w, run);
+  wheels(g, s, [-.24, -.04, .2], .2 + jj, .1, w, run, 12);                                   // a wheeled truck: three big wheels
   box(g, s, -.3, -.01 + jj, .6, .14, 4, c);                                                  // hull
   box(g, s, .14, -.12 + jj, .17, .13, 3, dk);                                                    // cab
   // radar dish on a short mast above the cab
@@ -73,26 +73,21 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
 };
 
 // ---- Motorcycle infantry ----------------------------------------------------------------------------------------------------
-// A soldier hunched over a motorbike: two spinning wheels, a team-coloured tank, helmet with a visor and a rifle slung across the back. The bike bobs a little.
+// A racing bike: low, with a nose fairing and a tail hump, and the rider lying almost flat along the tank, helmet down by the handlebars.
 const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
   const bob = (run ? Math.sin(w * (moving ? 12 : 4) + ph) * (moving ? .008 : .004) : 0) + b / s;
   const wy = .19;
-  wheel(g, s, -.22, wy, .1, w, run, 14); wheel(g, s, .22, wy, .1, w, run, 14);
+  wheel(g, s, -.24, wy, .1, w, run, 14); wheel(g, s, .24, wy, .1, w, run, 14);
   g.save(); g.translate(0, bob * s);
-  stroke(g, s, .22, wy, .13, -.02, 3.5, STEEL);                                               // front fork
-  stroke(g, s, -.22, wy, -.04, .1, 3, INK);                                                   // swing arm
-  poly(g, s, [[-.05, .12], [.1, .12], [.12, .0], [-.04, .0]], dk);                            // engine block
-  poly(g, s, [[-.06, -.02], [.1, -.04], [.14, .03], [-.04, .06]], c);                         // fuel tank
-  box(g, s, -.22, .0, .2, .045, 3, INK);                                                      // seat
-  stroke(g, s, .13, -.02, .1, -.1, 2.5, INK); stroke(g, s, .1, -.1, .16, -.1, 2.5, INK);      // handlebars
-  // rider
-  stroke(g, s, -.1, .02, .02, .1, 5, dk);                                                     // thigh/shin to the peg
-  stroke(g, s, .02, .1, .0, .17, 4.5, INK);
-  stroke(g, s, -.14, -.01, -.02, -.19, 11, c);                                                // back/torso, leaning forward
-  stroke(g, s, -.04, -.14, .1, -.1, 4, c);                                                    // arm to the grip
-  stroke(g, s, -.17, .0, -.11, -.27, 2.5, INK);                                             // rifle slung across the back
-  disc(g, s, .0, -.255, .06, SKIN);
-  g.fillStyle = dk; g.beginPath(); g.arc(.0, -.26 * s, .07 * s, Math.PI * .95, Math.PI * 1.95); g.fill();   // helmet
+  stroke(g, s, .24, wy, .15, .02, 3.5, STEEL);                                                // front fork
+  poly(g, s, [[-.3, .05], [-.22, -.03], [-.1, -.02], [-.08, .1], [-.24, .15]], mix(c, dk, .35));   // tail hump
+  poly(g, s, [[-.12, .02], [.06, -.02], [.18, .0], [.27, .08], [.17, .15], [-.1, .15]], c);   // body and nose fairing
+  // rider: lying forward along the tank
+  stroke(g, s, -.17, -.02, .07, -.09, 11, dk);                                                // back
+  stroke(g, s, -.14, .0, -.02, .09, 5, dk);                                                  // thigh, tucked in
+  stroke(g, s, .03, -.08, .17, -.02, 4, dk);                                                  // arm to the grip
+  disc(g, s, .13, -.1, .062, c);                                                              // helmet
+  box(g, s, .14, -.125, .05, .04, 1, INK);                                                    // visor
   g.restore();
 };
 

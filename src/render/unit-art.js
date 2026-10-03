@@ -251,7 +251,9 @@ const destroyer = (g, { s, c, dk, w, run, b }) => {
     if (!light) propeller(g, s, -.38 - .02, .32, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      poly(g, s, [[-.18, D], [-.12, D - .25], [.03, D - .25], [.1, D]], c);                                  // bridge: a tall trapezoid, wider at the deck
+      poly(g, s, [[-.19, D], [-.15, D - .1], [.08, D - .1], [.12, D]], c);                                      // bridge: a trapezoid base,
+      box(g, s, -.18, D - .125, .3, .03, 2, c);                                                       // a balcony ledge, wider than the levels either side,
+      poly(g, s, [[-.13, D - .125], [-.1, D - .22], [.0, D - .22], [.04, D - .125]], c);              // and a narrower pilot house on top
       box(g, s, .14, D - .05, .1, .05, 2, c);                                                        // the gun sits on a raised mount
       turret(g, s, .19, D - .05, .12, .13, { dk, bar: .035 });
     }

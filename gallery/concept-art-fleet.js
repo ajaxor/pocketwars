@@ -1,44 +1,22 @@
 // Experimental concept ships, "fleet" group (Shipyard): a tank landing ship and two submarines. Sprites only, NOT in the game.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })   SHADOWS[name](g, { s, alt, w, ph, run })
 // The landing ship floats like the real ships (afloat). The submarines are drawn dived, always in the underwater shade like the abyss sub.
-import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, periscope, UNDER_SHADE, INK, STEEL, RED } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, periscope, UNDER_SHADE, INK, STEEL, RED, SKIN } from '../src/render/parts.js';
 
-// A small side-view tank for the well deck: treads, hull, turret and a barrel. `col` is the team colour.
-const miniTank = (g, s, x, y, col, w, run) => {
-  g.save(); g.translate(x * s, y * s); g.scale(1.3, 1.3); x = 0; y = 0;
-  const dark = mix(col, '#000000', .35);
-  box(g, s, x - .17, y - .05, .34, .05, .025 * s, '#2b2b2b');                          // tracks
-  for (let i = 0; i < 5; i++) disc(g, s, x - .125 + i * .0625, y - .025, .017, run ? (i % 2 ? '#8a8a8a' : '#6f6f6f') : '#777');   // road wheels
-  box(g, s, x - .16, y - .105, .32, .07, 3, col);                                       // hull
-  poly(g, s, [[x + .13, y - .1], [x + .17, y - .05], [x + .13, y - .04]], dark);       // glacis
-  box(g, s, x - .075, y - .165, .15, .07, 3, mix(col, '#ffffff', .22));                 // turret
-  box(g, s, x + .06, y - .15, .15, .026, 1, INK);                                       // barrel
-  disc(g, s, x - .02, y - .19, .014, dark);                                             // hatch
-  g.restore();
-};
-
-// Tank transport: a landing ship. Blunt bow with a drop-down ramp, a flat open well deck holding one team-coloured tank, a small stern bridge.
+// Landing craft: a D-Day style Higgins boat. A flat-bottomed, boxy hull with a blunt bow whose drop ramp is raised, high plain sides round an open
+// well with a row of helmeted troops, and a little helmsman's shelter at the stern. (It can still carry a tank; none is drawn.)
 const tankTransport = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s + .02, D = .07, x0 = -.4, x1 = .36;
+  const bb = b / s + .02, D = .06, x0 = -.4, x1 = .34;
   afloat(g, s, w, run, x0, x1, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, x0 - .02, .26, w, run, dk);
-    g.beginPath(); g.moveTo(x0 * s, D * s); g.lineTo(x1 * s, D * s); g.lineTo((x1 - .01) * s, .2 * s); g.lineTo((x1 - .06) * s, .31 * s);
-    g.lineTo((x0 + .06) * s, .31 * s); g.lineTo(x0 * s, .24 * s); g.closePath(); g.fillStyle = light ? c : dk; g.fill();
+    if (!light) propeller(g, s, x0 - .02, .24, w, run, dk);
+    g.beginPath(); g.moveTo(x0 * s, D * s); g.lineTo(x1 * s, D * s); g.lineTo((x1 + .02) * s, .2 * s); g.lineTo((x1 - .06) * s, .29 * s);
+    g.lineTo((x0 + .05) * s, .29 * s); g.lineTo(x0 * s, .23 * s); g.closePath(); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      const well = mix(dk, '#000000', .25);
-      box(g, s, -.22, D - .035, .56, .05, 1, well);                                        // the well deck, sunk between the bulwarks
-      miniTank(g, s, -.03, D + .005, mix(c, '#ffffff', .12), w, run);                        // the cargo
-      box(g, s, -.23, D - .05, .58, .035, 1, mix(c, dk, .25));                             // the bulwark along the near side (low: the tank stands over it)
-      // stern bridge: small and boxy, with a mast
-      box(g, s, -.38, D - .2, .13, .2, 3, c);
-      stroke(g, s, -.315, D - .2, -.315, D - .29, 2, INK);
-      // the bow ramp, lowered: a hinged plate down to the water with chevron marks, and two hydraulic arms
-      const sw = run ? Math.sin(w * 2 + ph) * .006 : 0;
-      poly(g, s, [[x1 - .02, D - .035], [x1 + .02, D - .035], [x1 + .12, D + .1 + sw], [x1 + .08, D + .115 + sw]], mix(c, dk, .3));
-      stroke(g, s, x1 + .05, D - .0, x1 + .09, D + .1 + sw, 1.6, mix(c, '#ffffff', .3));
-      stroke(g, s, x1 - .02, D - .08, x1 + .05, D - .0, 2, INK);
-      box(g, s, x1 - .045, D - .1, .04, .07, 1, mix(c, dk, .5));                           // bow post with the ramp's winch
+      for (const x of [-.12, -.01, .1, .21]) { disc(g, s, x, D - .075, .045, SKIN); g.fillStyle = mix(c, '#000000', .4); g.beginPath(); g.arc(x * s, (D - .08) * s, .05 * s, Math.PI, 0); g.fill(); }   // helmets in the well
+      box(g, s, -.3, D - .05, .64, .06, 1, mix(c, dk, .2));                                // the near side wall, hiding the troops' bodies
+      poly(g, s, [[x1 - .02, D - .06], [x1 + .03, D - .06], [x1 + .05, .24], [x1 + .0, .24]], mix(c, dk, .35));   // the bow ramp, raised: a plate across the blunt bow
+      box(g, s, -.4, D - .18, .12, .18, 3, c);                                             // the helmsman's shelter, stern
     }
     g.restore();
   });

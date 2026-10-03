@@ -18,17 +18,19 @@ const mount = (g, s, x, y, w, len, { dk, n = 1, elev = 0, dir = 1, bar = .035, r
 // ---- Shipyard ---------------------------------------------------------------------------------------------------------------
 // Aircraft carrier: the longest, flattest hull. One thin flight deck overhangs the whole ship (just the runway line), with a single mast.
 const carrier = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s + .04, H = { x0: -.47, x1: .47, deck: .02, keel: .3, rise: .0, sweep: .12 };
+  const bb = b / s + .04, H = { x0: -.47, x1: .47, deck: .02, keel: .3, rise: .1, sweep: .55 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
     if (!light) propeller(g, s, -.47 - .02, .27, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       const deck = mix(c, '#26282e', .5);
+      g.save(); g.translate(-.2 * s, 0); g.rotate(-.075); g.translate(.2 * s, 0);               // the flight deck tilts up toward the bow, like the battleship's
       poly(g, s, [[-.47, -.06], [.47, -.06], [.47, -.02], [.4, .035], [-.43, .035], [-.47, .0]], deck);   // the flight deck, overhanging the hull
       poly(g, s, [[-.43, .035], [.4, .035], [.38, .06], [-.4, .06]], mix(c, dk, .65));         // shadowed underside of the overhang
       for (let i = 0; i < 7; i++) box(g, s, -.42 + i * .12, -.042, .07, .012, 0, WHITE);        // the runway's centreline
-      poly(g, s, [[.1, -.06], [.16, -.06], [.15, -.3], [.12, -.3]], c);                         // the mast, a thin tapered pole
+      poly(g, s, [[.08, -.06], [.19, -.06], [.17, -.3], [.12, -.3]], c);                        // the mast, thick and tapered
+      g.restore();
     }
     g.restore();
   });

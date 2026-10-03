@@ -83,8 +83,8 @@ const seaMine = (g, { s, c, dk, w, run, b }) => {
   afloat(g, s, w, run, -.17, .17, (light) => {
     const col = light ? c : dk;
     g.save(); g.translate(0, b * .8);
-    if (!light) stroke(g, s, 0, .15, 0, .36, 2, dk);                                          // anchor chain
-    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 + .5; stroke(g, s, Math.cos(a) * .15, cy + Math.sin(a) * .15, Math.cos(a) * .24, cy + Math.sin(a) * .24, 4, col); }
+    if (!light) stroke(g, s, 0, .24, 0, .4, 2, dk);                                          // anchor chain
+    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 - Math.PI / 2; stroke(g, s, Math.cos(a) * .15, cy + Math.sin(a) * .15, Math.cos(a) * .24, cy + Math.sin(a) * .24, 4, col); }
     disc(g, s, 0, cy, .165, col);
     g.restore();
   }, 0);                                                                                      // waterline through the ball's centre

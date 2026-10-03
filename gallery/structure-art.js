@@ -125,35 +125,41 @@ export const BASES = {
 /** Which of the four neighbours of (x, y) are walls. */
 export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall(x + 1, y), s: !!isWall(x, y + 1), w: !!isWall(x - 1, y) });
 
-/** One wall tile, drawn like the factories (front face, lighter roof, darker side, up-and-right depth) and filling its tile: a tall post in the
- *  middle and an arm to every linked neighbour, so a run of walls draws as one wall. Cracked walls are darker, split by cracks, with a
- *  chunk knocked out and rubble: the variant that can be destroyed. */
+/** One wall tile: a giant dark pipe. A hub at the middle of the tile and a pipe to every linked neighbour, so a run of walls draws as one long
+ *  pipe and a ring of them as a fort. Cracked walls are the breakable variant: rusted and split, with a hole blown in one pipe. */
 export function drawWall(g, px, py, S, owner, { links = {}, cracked = false } = {}) {
-  const k = kit(g, px, py, S), { rect, poly, line } = k;
-  const face = cracked ? '#a3998a' : '#b9b7ad', roof = shade(face, .28), side = shade(face, -.3), dark = '#4a4338';
-  const DX = .9, DY = -.7, d = .12, dx = d * DX, dy = d * DY;
+  const k = kit(g, px, py, S), { rect, poly, line, X, Y } = k;
+  const body = cracked ? '#4d443c' : '#363a44', hi = cracked ? '#6b5e50' : '#575d6c', lo = cracked ? '#2f2924' : '#23262d', ring = cracked ? '#5a4a3c' : '#444956', INKC = '#15161a';
+  const T = .4, CY = .56, y0 = CY - T / 2, x0 = .5 - T / 2, F = .06;           // pipe thickness, centre line, flange size
   const { n, e, s, w } = links;
-  const Y0 = .5, YB = .88, H = YB - Y0;                                         // the arms' front faces run from Y0 to YB
-  const PX0 = .27, PX1 = .73, PY0 = .4;                                        // the post is a little wider and taller
-  poly([[0, YB], [1, YB], [1 + .12, YB - .07], [1 + .12, YB - .02], [.12, YB + .04], [0, YB + .04]], 'rgba(0,0,0,.2)');   // ground shadow to the lower right
-  if (n) { rect(.36, 0, .28, PY0, roof); poly([[.64, 0], [.64, PY0], [.64 + dx, PY0 + dy], [.64 + dx, dy]], side); }   // arms running up the tile: seen from above
-  if (s) { rect(.36, YB, .28, 1 - YB, face); poly([[.36, YB - .02], [.64, YB - .02], [.64 + dx, YB - .02 + dy], [.36 + dx, YB - .02 + dy]], roof); }
-  const arm = (x0, x1) => {                                                    // a horizontal arm: roof, then front face
-    poly([[x0, Y0], [x0 + dx, Y0 + dy], [x1 + dx, Y0 + dy], [x1, Y0]], roof);
-    rect(x0, Y0, x1 - x0, H, face);
+  const horiz = (xa, xb) => {                                                  // a horizontal pipe: body, highlight along the top, shade along the bottom
+    rect(xa, y0, xb - xa, T, body); rect(xa, y0 + .04, xb - xa, .07, hi); rect(xa, y0 + T - .09, xb - xa, .09, lo);
   };
-  if (w) arm(0, PX0 + .02); if (e) arm(PX1 - .02, 1);
-  if (!e) poly([[PX1, Y0], [PX1 + dx, Y0 + dy], [PX1 + dx, YB + dy], [PX1, YB]], side);
-  if (!w && !e && !s && !n) poly([[PX0, Y0], [PX0 + dx, Y0 + dy], [PX1 + dx, Y0 + dy], [PX1, Y0]], roof);
-  poly([[PX0, PY0], [PX0 + dx, PY0 + dy], [PX1 + dx, PY0 + dy], [PX1, PY0]], roof);       // the post: roof, side, front
-  poly([[PX1, PY0], [PX1 + dx, PY0 + dy], [PX1 + dx, YB + dy], [PX1, YB]], side);
-  rect(PX0, PY0, PX1 - PX0, YB - PY0, face);
-  rect(PX0, PY0 + .1, PX1 - PX0, .08, owner);                                           // team-coloured band across the post
+  const vert = (ya, yb) => { rect(x0, ya, T, yb - ya, body); rect(x0 + .04, ya, .07, yb - ya, hi); rect(x0 + T - .09, ya, .09, yb - ya, lo); };
+  poly([[0, CY + T / 2], [1, CY + T / 2], [1.1, CY + T / 2 - .06], [1.1, CY + T / 2 + .02], [.1, CY + T / 2 + .08], [0, CY + T / 2 + .08]], 'rgba(0,0,0,.22)');   // shadow to the lower right
+  if (n) vert(0, CY); if (s) vert(CY, 1);
+  if (w) horiz(0, .5); if (e) horiz(.5, 1);
+  // flanges at the tile edges where a pipe continues into the next tile
+  if (w) rect(0, y0 - F / 2, F, T + F, ring); if (e) rect(1 - F, y0 - F / 2, F, T + F, ring);
+  if (n) rect(x0 - F / 2, 0, T + F, F, ring);
+  if (s) rect(x0 - F / 2, 1 - F, T + F, F, ring);
+  const straightH = w && e && !n && !s, straightV = n && s && !w && !e;
+  if (straightH) rect(.45, y0, .1, T, owner);                                  // a straight run: a plain pipe with a team-coloured band
+  else if (straightV) rect(x0, CY - .05, T, .1, owner);
+  else {
+    // the hub: a round joint a little fatter than the pipes, with a team-coloured band
+    g.fillStyle = body; g.beginPath(); g.arc(X(.5), Y(CY), (T / 2 + .04) * S, 0, 7); g.fill();
+    g.fillStyle = hi; g.beginPath(); g.arc(X(.46), Y(CY - .05), .11 * S, 0, 7); g.fill();
+    g.strokeStyle = owner; g.lineWidth = Math.max(2, .07 * S); g.beginPath(); g.arc(X(.5), Y(CY), (T / 2 - .02) * S, 0, 7); g.stroke();
+    g.strokeStyle = INKC; g.lineWidth = Math.max(1, .02 * S); g.beginPath(); g.arc(X(.5), Y(CY), (T / 2 + .04) * S, 0, 7); g.stroke();
+  }
   if (cracked) {
-    line([[.4, PY0 + .02], [.47, .56], [.43, .64], [.5, .74], [.46, YB]], dark, .025);   // a crack down the post
-    if (w) line([[.14, Y0], [.2, .62], [.15, .72], [.21, YB]], dark, .022);
-    if (e) { line([[.84, Y0], [.78, .64], [.85, .76], [.8, YB]], dark, .022); rect(.88, Y0 - .01, .1, .2, '#5e5a52'); }   // a chunk missing from the arm
-    if (!e && w) rect(.12, Y0 - .01, .1, .2, '#5e5a52');
-    for (const [a, b, r] of [[.62, .93, .03], [.7, .96, .022], [.28, .94, .026], [.34, .97, .02]]) { g.fillStyle = '#8d8678'; g.beginPath(); g.arc(k.X(a), k.Y(b), r * S, 0, 7); g.fill(); }   // rubble
+    line([[.43, y0 + .03], [.5, CY - .06], [.45, CY + .04], [.52, CY + .12], [.48, y0 + T]], INKC, .028);   // a crack across the hub
+    const gap = e ? 'e' : w ? 'w' : n ? 'n' : s ? 's' : null;                                              // a hole blown in one pipe, with torn edges
+    if (gap === 'e' || gap === 'w') { const hx = gap === 'e' ? .72 : .14; rect(hx, y0 + .02, .13, T - .04, INKC); poly([[hx, y0 + .02], [hx + .04, y0 - .02], [hx + .08, y0 + .03], [hx + .13, y0 - .01], [hx + .13, y0 + .04], [hx, y0 + .04]], body); }
+    if (gap === 'n') { rect(x0 + .02, .12, T - .04, .12, INKC); }
+    if (gap === 's') { rect(x0 + .02, .74, T - .04, .12, INKC); }
+    for (const [a, b] of [[.62, .97], [.7, .94], [.3, .96]]) { g.fillStyle = '#8a5a34'; g.beginPath(); g.arc(X(a), Y(b), .028 * S, 0, 7); g.fill(); }   // rust flakes and rubble
+    rect(.16, y0 + .12, .08, .05, '#8a5a34'); rect(.78, y0 + T - .16, .08, .05, '#8a5a34');                 // rust patches
   }
 }
