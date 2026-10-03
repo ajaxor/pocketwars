@@ -27,17 +27,11 @@ const carrier = (g, { s, c, dk, w, ph, run, b }) => {
     if (!light) propeller(g, s, -.47 - .02, .33, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      const deck = mix(c, '#26282e', .62), side = mix(c, dk, .6), rim = mix(deck, '#ffffff', .3);
-      const P = (t, v) => { const xn = -.47 + .89 * t, xf = -.38 + .74 * t; return [xn + (xf - xn) * v, -.06 - .16 * v]; };   // t along the deck, v from the near edge (0) to the far edge (1)
+      const deck = '#34373e', side = mix(c, dk, .6);
+      const P = (t, v) => { const xn = -.47 + .89 * t, xf = -.3 + .6 * t; return [xn + (xf - xn) * v, -.06 - .16 * v]; };   // t along the deck, v from the near edge (0) to the far edge (1): a trapezoid
       poly(g, s, [[-.47, -.06], [.42, -.06], [.42, .04], [-.43, .04], [-.47, .0]], side);          // the slab's front face, overhanging the hull
-      poly(g, s, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], deck);                                       // the flight deck in perspective
-      stroke(g, s, ...P(0, 0), ...P(1, 0), 2, rim); stroke(g, s, ...P(0, 1), ...P(1, 1), 1.4, rim); // lit edges, near and far
-      const rw = (k) => [.32 + .2 * k, .03 + .64 * k], half = (k) => .17 * (1 - .78 * k);              // the angled runway: a trapezoid, wide at the near edge facing the camera and narrow far away, set low on the deck
-      const L = (k) => { const [t, v] = rw(k); return P(t - half(k), v); }, R = (k) => { const [t, v] = rw(k); return P(t + half(k), v); }, C = (k) => P(...rw(k));
-      poly(g, s, [L(0), R(0), R(1), L(1)], mix(deck, '#ffffff', .3));
-      stroke(g, s, ...L(0), ...L(1), 1.4, 'rgba(255,255,255,.8)'); stroke(g, s, ...R(0), ...R(1), 1.4, 'rgba(255,255,255,.8)');
-      for (let i = 0; i < 5; i++) { const k = .1 + i * .19; stroke(g, s, ...C(k), ...C(k + .08), 2.2 * (1 - .4 * k), WHITE); }   // centreline dashes, shorter far away
-      for (const t of [.1, .2, .31]) { const [x, y] = P(t, .8); box(g, s, x - .028, y - .007, .056, .014, 2, '#d8dbe0'); box(g, s, x - .004, y - .026, .014, .052, 1, '#c4c8cf'); box(g, s, x - .03, y - .018, .012, .014, 0, '#c4c8cf'); }   // parked planes
+      poly(g, s, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], deck);                                       // the flight deck in perspective, plain dark grey
+      for (let i = 0; i < 4; i++) { const v0 = .06 + i * .24, v1 = v0 + .13; stroke(g, s, ...P(.45, v0), ...P(.45, v1), 6.5 * (1 - .65 * v0), WHITE); }   // one runway centreline, bigger near the camera
       poly(g, s, [[.2, -.06], [.37, -.06], [.34, -.28], [.25, -.28]], c);                           // the island: a tall tapered block on the near edge
       box(g, s, .255, -.25, .075, .022, 1, '#cfe6f5');                                               // bridge windows
       box(g, s, .27, -.33, .03, .05, 0, mix(c, dk, .4)); stroke(g, s, .285, -.33, .285, -.42, 3, INK); oval(g, s, .3, -.385, .035, .014, STEEL);   // mast and radar
@@ -81,12 +75,12 @@ const dreadnought = (g, { s, c, dk, w, ph, run, b }) => {
     if (light) {
       const stack = (dir) => {                                                                       // big turret below, smaller one on its roof
         mount(g, s, 0, -.005, .28, .19, { dk, n: 2, elev: .22, dir, bar: .045 });
-        mount(g, s, 0, -.005 - .14, .19, .15, { dk, n: 2, elev: .3, dir, bar: .036 });
+        mount(g, s, 0, -.005 - .13, .16, .13, { dk, n: 2, elev: .3, dir, bar: .032 });
       };
       const f = deckAt(H, .32); g.save(); g.translate(.32 * s, f.y * s); g.rotate(f.ang); stack(1); g.restore();   // forward stack sits on the swept-up bow
       g.save(); g.translate(-.32 * s, D * s); stack(-1); g.restore();                                // aft stack
       poly(g, s, [[-.045, D - .44], [.045, D - .44], [.13, D], [-.13, D]], c);                       // the mast: stout, flaring wide at its base
-      box(g, s, -.14, D - .12, .28, .05, 2, c); box(g, s, -.1, D - .25, .2, .05, 2, c); box(g, s, -.07, D - .37, .14, .05, 2, c);   // three tiers of wings, centred on it
+      box(g, s, -.23, D - .12, .46, .05, 2, c); box(g, s, -.18, D - .25, .36, .05, 2, c); box(g, s, -.13, D - .37, .26, .05, 2, c);   // three tiers of wings, centred on it
     }
     g.restore();
   });

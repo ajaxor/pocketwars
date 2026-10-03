@@ -35,7 +35,6 @@ const hoverScout = (g, { s, c, dk, w, ph, run }) => {
   g.save(); g.translate(0, h * s);
   hoverTubes(g, s, -.22, .24, .21, w, run, { ground: .285 - h });
   poly(g, s, [[-.32, .17], [-.3, .02], [-.1, -.05], [.14, -.05], [.4, .07], [.36, .17]], c);   // low wedge hull
-  poly(g, s, [[.14, -.05], [.4, .07], [.3, .07], [.1, -.0]], mix(c, dk, .4));
   oval(g, s, .06, -.06, .1, .055, GLASS);                                                    // bubble canopy
   const rec = Math.max(0, Math.sin(w * 2.4 + ph)) * .01 * run;                               // a light chin gun that kicks back
   box(g, s, .24, .08, .07, .07, 1, dk); box(g, s, .3 - rec, .095, .18, .026, 0, INK); box(g, s, .47 - rec, .09, .02, .036, 0, STEEL);
@@ -47,10 +46,7 @@ const hoverTank = (g, { s, c, dk, w, ph, run }) => {
   g.save(); g.translate(0, h * s);
   hoverTubes(g, s, -.28, .28, .22, w, run, { ground: .285 - h });
   poly(g, s, [[-.36, .19], [-.41, .07], [-.3, -.04], [.2, -.04], [.34, .04], [.43, .11], [.36, .19]], c);   // faceted wedge hull
-  poly(g, s, [[-.3, -.04], [.2, -.04], [.3, .02], [-.35, .02]], mix(c, '#ffffff', .14));      // sloped top plate
-  poly(g, s, [[-.36, .12], [.38, .12], [.36, .19], [-.34, .19]], mix(c, dk, .45));            // angled side skirt
   poly(g, s, [[-.13, -.04], [-.07, -.17], [.12, -.19], [.24, -.1], [.2, -.04]], dk);           // angular turret
-  poly(g, s, [[-.07, -.17], [.12, -.19], [.14, -.15], [-.05, -.13]], mix(dk, '#ffffff', .18));   // its sloped roof
   const rec = Math.max(0, Math.sin(w * 1.6 + ph)) * .012 * run;
   g.fillStyle = INK; g.fillRect((.16 - rec) * s, -.12 * s, s * .28, s * .04);                // gun
   g.restore();
@@ -62,7 +58,6 @@ const hoverCarrier = (g, { s, c, dk, w, ph, run }) => {
   hoverTubes(g, s, -.32, .32, .23, w, run, { ground: .285 - h });
   box(g, s, -.4, -.14, .8, .33, 6, c);                                                       // long box hull
   poly(g, s, [[.4, -.1], [.4, .19], [.28, .19], [.28, -.1]], dk);                            // bow ramp, folded up
-  box(g, s, .3, -.07, .06, .22, 1, mix(dk, '#ffffff', .2));
   box(g, s, .05, -.2, .13, .07, 2, dk);                                                      // cockpit bump
   g.restore();
 };
@@ -184,9 +179,9 @@ const mineLayer = (g, { s, c, dk, w, run, b }) => {
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       box(g, s, .08, D - .17, .22, .17, 3, c);                                                  // wheelhouse, forward
-      box(g, s, .09, D - .21, .07, .05, 1, mix(c, dk, .4));                                       // crane pedestal on the wheelhouse roof
+      box(g, s, .09, D - .21, .07, .05, 1, c);                                       // crane pedestal on the wheelhouse roof
       const sway = run ? Math.sin(w * 2 + 1) * .006 : 0;                                         // a small crane: a boom reaching aft over the mine rack, a cable and a hook
-      stroke(g, s, .125, D - .2, -.04, D - .33, 4, INK); stroke(g, s, -.04, D - .33, -.04 + sway, D - .24, 1, STEEL); disc(g, s, -.04 + sway, D - .235, .02, INK);
+      stroke(g, s, .125, D - .2, -.04, D - .33, 4, c); stroke(g, s, -.04, D - .33, -.04 + sway, D - .24, 1, STEEL); disc(g, s, -.04 + sway, D - .235, .02, INK);
       for (let i = 0; i < 3; i++) mine(g, s, -.3 + i * .12, D - .1, .045, INK);               // the mines, in a rack
     }
     g.restore();

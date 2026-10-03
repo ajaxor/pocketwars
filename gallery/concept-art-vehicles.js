@@ -42,7 +42,7 @@ const amphibiousTank = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s;
   treads(g, s, -.33, .33, .14 + jj, .15, w, run);                                            // treads, mostly covered
   poly(g, s, HULL(jj), c);                                                                   // sealed hull
-  box(g, s, -.34, .07 + jj, .66, .1, .05 * s, mix(c, '#ffffff', .55));                       // flotation collar / skirt
+  box(g, s, -.34, .07 + jj, .66, .1, .05 * s, dk);                       // flotation collar / skirt
   amphibTop(g, s, c, dk, w, ph, run, jj);
 };
 const amphibiousTankSwim = (g, { s, c, dk, w, ph, run, b }) => {
@@ -51,8 +51,8 @@ const amphibiousTankSwim = (g, { s, c, dk, w, ph, run, b }) => {
     g.save(); g.translate(0, bb * s);
     treads(g, s, -.33, .33, .14, .15, w, 0);                                                 // the treads are back, but parked: not animated in the water
     poly(g, s, HULL(0), light ? c : wc);
-    if (light) { box(g, s, -.34, .07, .66, .1, .05 * s, mix(c, '#ffffff', .55)); amphibTop(g, s, c, dk, w, ph, run, 0); }
-    else { stroke(g, s, -.28, .17, -.28, .27, 3, wc); propeller(g, s, -.28, .275, w, run, wc, true); }   // the propeller hangs below the hull, under the surface
+    if (light) { box(g, s, -.34, .07, .66, .1, .05 * s, dk); amphibTop(g, s, c, dk, w, ph, run, 0); }
+    else { stroke(g, s, -.34, .15, -.43, .19, 3, wc); propeller(g, s, -.44, .19, w, run, wc, true); }   // the propeller hangs below the hull, under the surface
     g.restore();
   });
 };
@@ -75,14 +75,14 @@ const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   stroke(g, s, -r * .1, 0, r * .5, 0, 1.4, INK); disc(g, s, r * .5, 0, .012, RED);           // the feed horn on its arm
   g.restore();
   // the launcher: a bed hinged at the rear of the hull, raised on a strut, with three missiles arrayed front to back
-  const ang = -.9, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.3, Fy = -.03 + bb, L = .34, DX = .115, DY = -.02;
+  const ang = -.9, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.3, Fy = -.03 + bb, L = .34, DX = .0, DY = -.045;
   const rec = Math.max(0, Math.sin(w * 1.5 + ph)) * .014 * run;
   stroke(g, s, -.06, -.01 + bb, Fx + ux * .24 + DX, Fy + uy * .24 + DY, 5, '#4a4f58'); stroke(g, s, -.075, -.03 + bb, Fx + ux * .22 + DX, Fy + uy * .22 + DY + .02, 2.4, STEEL);   // the support strut and its piston
   box(g, s, -.1, -.03 + bb, .09, .03, 1, INK);                                               // its foot on the hull
   poly(g, s, [[Fx, Fy], [Fx + ux * L, Fy + uy * L], [Fx + ux * L + DX * 3.2, Fy + uy * L + DY * 3.2], [Fx + DX * 3.2, Fy + DY * 3.2]], mix(dk, '#ffffff', .12));   // the bed, in perspective
   stroke(g, s, Fx, Fy, Fx + ux * L, Fy + uy * L, 3, mix(dk, '#000000', .3));                  // its near rail
   for (const i of [2, 1, 0]) {                                                               // back missile first, near one last
-    const k = i + .8, col = i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .18 * i);
+    const k = i + .6, col = i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .18 * i);
     missile(g, s, Fx + DX * k + .01 - rec * ux, Fy + DY * k - rec * uy, ang, .33, .06, col);
   }
   disc(g, s, Fx, Fy, .022, INK);                                                             // the hinge
@@ -95,11 +95,11 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s, bounce = run ? Math.sin(w * 9 + ph) * .006 : 0, y0 = jj + bounce;
   g.save(); g.translate(0, y0 * s);
   // rocket rack: held up on a post above the hoop, two rockets side by side front to back
-  const ang = -.75, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.27, Fy = -.2, L = .27, DX = .125, DY = -.012;
+  const ang = -.28, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.2, Fy = -.26, L = .36, DX = .0, DY = -.045;
   stroke(g, s, -.28, .0, Fx, Fy, 3.5, INK); stroke(g, s, -.2, .0, Fx + DX, Fy + DY * .5, 3.5, INK);          // the posts up from the body
   poly(g, s, [[Fx, Fy], [Fx + ux * L, Fy + uy * L], [Fx + ux * L + DX * 2.4, Fy + uy * L + DY * 2.4], [Fx + DX * 2.4, Fy + DY * 2.4]], dk);
   stroke(g, s, Fx, Fy, Fx + ux * L, Fy + uy * L, 3, darkInterior(dk));   // the rack, in perspective
-  for (const i of [1, 0]) missile(g, s, Fx + DX * (i + .7) + .01, Fy + DY * (i + .7), ang, .27, .058, i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .2));
+  for (const i of [1, 0]) missile(g, s, Fx + DX * (i + .7) + .01, Fy + DY * (i + .7), ang, .36, .06, i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .2));
   // driver: only the head and shoulders clear the cockpit rim
   box(g, s, -.075, -.075, .13, .09, 3, dk);                                                   // shoulders
   disc(g, s, -.01, -.115, .045, SKIN); g.fillStyle = dk; g.beginPath(); g.arc(-.01 * s, -.12 * s, .05 * s, Math.PI, 0); g.fill();   // head and helmet

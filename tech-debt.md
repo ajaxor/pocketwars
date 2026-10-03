@@ -66,4 +66,7 @@
 - **Mech visors share one scanner in `helm`.** The sweeping light runs on a fixed rate (`w * 3`) for every walker and ignores the walker's state; the scout still draws its own eye disc over the visor.
 - **Hover tank and scout shapes are polygon-by-hand,** with the scout's chin gun placed against the hull by eye; nothing ties either to a shared hover hull part.
 - **Submarine hull shapes are duplicated by hand.** The missile sub's `half()` profile (thickness, stern taper) and the hunter sub's quadratic body are separate from the regular sub in `unit-art.js`; the sail, bow plane and tail fin shapes are all per-sprite.
+- **Mech idle is only the visor light now.** Legs and arms are frozen unless the walker moves; shading was cut to two tones (body and dark), but the shield face, rocket pod tubes and fuel tank still use ad hoc lighter/darker mixes in `concept-art-mechs.js`.
+- **Missile overlap is tuned by eye again.** The SAM and buggy now stack their rockets with a small perspective offset (`DX`, `DY`) so the back ones peek over the front one; the buggy's rack is a flat polygon behind them. Still no shared launcher part.
+- **The missile sub and the regular sub are now near-twins but separate code** (`box` hull plus tower plus periscope in both); the bulge under the forward section exists only on the missile sub. A parametric sub hull part would fold the three subs together.
 
