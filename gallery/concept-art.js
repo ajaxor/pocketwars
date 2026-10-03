@@ -165,12 +165,9 @@ const abyssSub = (g, { s, c, dk, w, run, b }) => {
 };
 
 // Mine layer: a low work boat; mines in a rack on its stern deck, one of them just rolled off the ramp.
-const mine = (g, s, x, y, r, c) => {
-  g.save(); g.translate(x * s, y * s);
-  for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2; stroke(g, s, Math.cos(a) * r * .8, Math.sin(a) * r * .8, Math.cos(a) * r * 1.5, Math.sin(a) * r * 1.5, 2, INK); }
-  g.restore();
+const mine = (g, s, x, y, r, c) => {                                                       // like the sea mine: one colour, six even spikes (top and bottom included) round a ball
+  for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 - Math.PI / 2; stroke(g, s, x + Math.cos(a) * r * .8, y + Math.sin(a) * r * .8, x + Math.cos(a) * r * 1.5, y + Math.sin(a) * r * 1.5, 3.5, c); }
   disc(g, s, x, y, r, c);
-  disc(g, s, x - r * .3, y - r * .3, r * .28, '#8d96a6');
 };
 const mineLayer = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s, D = .05, H = { x0: -.4, x1: .42, deck: D, keel: .3, rise: .02, sweep: .18 };
@@ -183,7 +180,7 @@ const mineLayer = (g, { s, c, dk, w, run, b }) => {
       box(g, s, .09, D - .21, .07, .05, 1, c);                                       // crane pedestal on the wheelhouse roof
       const sway = run ? Math.sin(w * 2 + 1) * .006 : 0;                                         // a small crane: a boom reaching aft over the mine rack, a cable and a hook
       stroke(g, s, .125, D - .2, -.04, D - .33, 4, c); stroke(g, s, -.04, D - .33, -.04 + sway, D - .24, 1, STEEL); disc(g, s, -.04 + sway, D - .235, .02, INK);
-      mine(g, s, -.2, D - .11, .06, INK);                                                       // a single mine, on the deck aft
+      mine(g, s, -.2, D - .1, .06, c);                                                       // a single mine, on the deck aft
     }
     g.restore();
   });

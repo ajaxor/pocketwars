@@ -22,18 +22,18 @@ const mount = (g, s, x, y, w, len, { dk, n = 1, elev = 0, dir = 1, bar = .035, r
 // perspective (the near edge longer than the far one) with an angled runway running across it toward the camera's far side, parked planes at
 // the back, and a tall island standing on the near edge.
 const carrier = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s + .04, H = { x0: -.47, x1: .47, deck: .02, keel: .36, rise: .1, sweep: .55 };
+  const bb = b / s - .03, H = { x0: -.47, x1: .47, deck: .02, keel: .36, rise: .1, sweep: .55 };
   afloat(g, s, w, run, -.47, .47, (light) => {
     g.save(); g.translate(0, bb * s);
     if (!light) propeller(g, s, -.47 - .02, .33, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
-      g.translate(0, .03 * s);                                                                      // the hull rises, the flight deck sits lower
+      g.translate(0, .06 * s);                                                                      // the hull rides high, the flight deck sits low and overhangs
       const deck = '#34373e', side = mix(c, dk, .6);
-      const P = (t, v) => { const xn = -.47 + .86 * t, xf = -.18 + .48 * t; return [xn + (xf - xn) * v, -.06 - .16 * v]; };   // t along the deck, v from the near edge (0) to the far edge (1): a trapezoid
-      poly(g, s, [[-.47, -.06], [.42, -.06], [.42, .04], [-.43, .04], [-.47, .0]], side);          // the slab's front face, overhanging the hull
+      const P = (t, v) => { const xn = -.53 + .92 * t, xf = -.18 + .48 * t; return [xn + (xf - xn) * v, -.06 - .16 * v]; };   // t along the deck, v from the near edge (0) to the far edge (1): a trapezoid
+      poly(g, s, [[-.53, -.06], [.42, -.06], [.42, .04], [-.49, .04], [-.53, .0]], side);          // the slab's front face, overhanging the hull
       poly(g, s, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], deck);                                       // the flight deck in perspective, plain dark grey
-      for (const v0 of [.04, .38, .72]) stroke(g, s, ...P(.5, v0), ...P(.5, v0 + .2), 6.5 * (1 - .65 * v0), WHITE);   // one runway centreline in clear dashes, bigger near the camera
+      for (const v0 of [.04, .38, .72]) stroke(g, s, ...P(.5, v0), ...P(.5, v0 + .2), 9 * (1 - .6 * v0), '#ffffff');   // one runway centreline in clear dashes, bigger near the camera
       poly(g, s, [[.2, -.06], [.37, -.06], [.34, -.28], [.25, -.28]], c);                           // the island: a tall tapered block on the near edge
       box(g, s, .27, -.33, .03, .05, 0, mix(c, dk, .4)); stroke(g, s, .285, -.33, .285, -.42, 3, INK); oval(g, s, .3, -.385, .035, .014, STEEL);   // mast and radar
     }
@@ -68,10 +68,10 @@ const gunBoat = (g, { s, c, dk, w, ph, run, moving, b }) => {
 // Dreadnought: the biggest battleship. Two stacks of twin turrets, one forward and one aft, each a big turret on the deck with a smaller one
 // riding on top of it, and a tall, stout mast with THREE tiers of wings (the battleship's has two).
 const dreadnought = (g, { s, c, dk, w, ph, run, b }) => {
-  const bb = b / s + .05, D = .02, H = { x0: -.48, x1: .48, deck: D, keel: .31, rise: .16, sweep: .55 };
+  const bb = b / s + .05, D = .02, H = { x0: -.48, x1: .48, deck: D, keel: .43, rise: .16, sweep: .55 };
   afloat(g, s, w, run, -.48, .48, (light) => {
     g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.48 - .02, .29, w, run, dk);
+    if (!light) propeller(g, s, -.48 - .02, .38, w, run, dk);
     hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
     if (light) {
       poly(g, s, [[-.045, D - .44], [.045, D - .44], [.13, D], [-.13, D]], c);                       // the mast: stout, flaring wide at its base

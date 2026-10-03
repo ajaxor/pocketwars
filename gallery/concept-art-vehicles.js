@@ -9,7 +9,7 @@ const RED = '#d4442e';
 
 // A rocket or missile seen from the side with its tail at (x, y), pointing along `ang` (radians, negative = up): a dark outline so overlapping rockets
 // stay readable, a cream body with a dark band, a red nose cone and swept tail fins. `col` tints the body, so a rocket further back can be darker.
-const missile = (g, s, x, y, ang, len, th, col = '#e8e4d8', fin = '#555a64') => {
+const missile = (g, s, x, y, ang, len, th, col = '#e8e4d8', fin = '#555a64', nose = RED) => {
   const o = .009;
   g.save(); g.translate(x * s, y * s); g.rotate(ang);
   poly(g, s, [[-.02, -th * .95 - o], [len * .16, -th / 2 - o], [len * .16, th / 2 + o], [-.02, th * .95 + o]], INK);                 // fin outline
@@ -17,7 +17,7 @@ const missile = (g, s, x, y, ang, len, th, col = '#e8e4d8', fin = '#555a64') => 
   poly(g, s, [[0, -th / 2], [-.02, -th * .95], [len * .16, -th / 2]], fin); poly(g, s, [[0, th / 2], [-.02, th * .95], [len * .16, th / 2]], fin);
   box(g, s, 0, -th / 2, len * .78, th, 2, col);
   box(g, s, len * .5, -th / 2, len * .06, th, 0, mix(col, '#000000', .35));                                                          // a dark band
-  poly(g, s, [[len * .76, -th / 2], [len, 0], [len * .76, th / 2]], RED);
+  poly(g, s, [[len * .76, -th / 2], [len, 0], [len * .76, th / 2]], nose);
   box(g, s, len * .05, -th * .36, len * .66, th * .2, 1, mix(col, '#ffffff', .6));                                                   // a highlight along the top
   g.restore();
 };
@@ -79,12 +79,9 @@ const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   const rec = Math.max(0, Math.sin(w * 1.5 + ph)) * .014 * run;
   stroke(g, s, -.06, -.01 + bb, Fx + ux * .24 + DX, Fy + uy * .24 + DY, 5, '#4a4f58'); stroke(g, s, -.075, -.03 + bb, Fx + ux * .22 + DX, Fy + uy * .22 + DY + .02, 2.4, STEEL);   // the support strut and its piston
   box(g, s, -.1, -.03 + bb, .09, .03, 1, INK);                                               // its foot on the hull
-  poly(g, s, [[Fx, Fy], [Fx + ux * L, Fy + uy * L], [Fx + ux * L + DX * 3.2, Fy + uy * L + DY * 3.2], [Fx + DX * 3.2, Fy + DY * 3.2]], mix(dk, '#ffffff', .12));   // the bed, in perspective
+  poly(g, s, [[Fx, Fy], [Fx + ux * L, Fy + uy * L], [Fx + ux * L + DX * 1.4, Fy + uy * L + DY * 1.4], [Fx + DX * 1.4, Fy + DY * 1.4]], mix(dk, '#ffffff', .12));   // the bed, in perspective
   stroke(g, s, Fx, Fy, Fx + ux * L, Fy + uy * L, 3, mix(dk, '#000000', .3));                  // its near rail
-  for (const i of [2, 1, 0]) {                                                               // back missile first, near one last
-    const k = i + .6, col = i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .18 * i);
-    missile(g, s, Fx + DX * k + .01 - rec * ux, Fy + DY * k - rec * uy, ang, .33, .06, col);
-  }
+  missile(g, s, Fx + DX * .5 + .01 - rec * ux, Fy + DY * .5 - rec * uy, ang, .44, .08);        // one big anti-air missile, white
   disc(g, s, Fx, Fy, .022, INK);                                                             // the hinge
 };
 
@@ -97,8 +94,8 @@ const rocketBuggy = (g, { s, c, dk, w, ph, run, j }) => {
   // rocket rack: held up on a post above the hoop, two rockets side by side front to back
   const ang = -.2, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.19, Fy = -.225, L = .36, DX = .0, DY = -.045;
   stroke(g, s, -.1, -.2, Fx + .06, Fy + .02, 3.5, c); stroke(g, s, .09, -.2, Fx + .27, Fy + .02, 3.5, c);                     // short posts from the roof hoop: the rockets sit on the roof
-  poly(g, s, [[Fx, Fy + .02], [Fx + ux * L, Fy + .02 + uy * L], [Fx + ux * L + DX * 2.4, Fy + .02 + uy * L + DY * 2.4], [Fx + DX * 2.4, Fy + .02 + DY * 2.4]], dk);
-  for (const i of [1, 0]) missile(g, s, Fx + DX * (i + .7) + .01, Fy + DY * (i + .7), ang, .36, .06, i === 0 ? '#e8e4d8' : mix('#e8e4d8', dk, .2));
+  poly(g, s, [[Fx, Fy + .02], [Fx + ux * L, Fy + .02 + uy * L], [Fx + ux * L + DX * 1.4, Fy + .02 + uy * L + DY * 1.4], [Fx + DX * 1.4, Fy + .02 + DY * 1.4]], dk);
+  missile(g, s, Fx + DX * .5 + .01, Fy + DY * .5, ang, .42, .075, c, dk, dk);                    // one rocket in the player's colour (white is for anti-air missiles)
   // driver: only the head and shoulders clear the cockpit rim
   box(g, s, -.075, -.075, .13, .09, 3, dk);                                                   // shoulders
   disc(g, s, -.01, -.115, .045, SKIN); g.fillStyle = dk; g.beginPath(); g.arc(-.01 * s, -.12 * s, .05 * s, Math.PI, 0); g.fill();   // head and helmet

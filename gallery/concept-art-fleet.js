@@ -37,7 +37,7 @@ const missileSub = (g, { s, c, dk, w, ph, run, b, submerged }) => {
     const col = light ? c : dk, deep = mix(col, '#000000', .3), hi = mix(col, '#ffffff', .12);
     propeller(g, s, -.51, .08, w, run, col, !light);
     box(g, s, -.46, -.08, .92, .3, s * .15, col);                                                // the long round hull
-    disc(g, s, .17, .1, .2, col);                                                                // the round bulge under the forward section
+    box(g, s, -.02, .1, .5, .22, s * .11, col);                                                  // the pill-shaped bulge under the forward section
     for (let i = 0; i < 3; i++) { const hx = -.2 + i * .11; oval(g, s, hx, -.085, .055, .028, hi); oval(g, s, hx, -.08, .045, .02, deep); }   // sunken hatches
     box(g, s, .1, -.24, .17, .17, 3, col);                                                       // conning tower, forward of the hatches
     if (light) periscope(g, s, .24, -.24, -.38, INK);
@@ -55,8 +55,6 @@ const hunterSub = (g, { s, c, dk, w, ph, run, moving, b }) => {
   propeller(g, s, -.44, .03, w, run, deep, false);
   g.fillStyle = col; g.beginPath(); g.moveTo(.46 * s, .04 * s); g.quadraticCurveTo(.3 * s, -.06 * s, .1 * s, -.1 * s); g.quadraticCurveTo(-.15 * s, -.13 * s, -.36 * s, -.01 * s);
   g.lineTo(-.36 * s, .06 * s); g.quadraticCurveTo(-.1 * s, .16 * s, .12 * s, .14 * s); g.quadraticCurveTo(.34 * s, .12 * s, .46 * s, .04 * s); g.fill();   // torpedo body
-  g.fillStyle = belly; g.beginPath(); g.moveTo(.46 * s, .04 * s); g.quadraticCurveTo(.34 * s, .12 * s, .12 * s, .14 * s); g.quadraticCurveTo(-.1 * s, .16 * s, -.36 * s, .06 * s);
-  g.lineTo(-.36 * s, .035 * s); g.quadraticCurveTo(-.05 * s, .075 * s, .2 * s, .055 * s); g.quadraticCurveTo(.36 * s, .047 * s, .46 * s, .04 * s); g.fill();   // pale belly
   box(g, s, -.04, -.22, .17, .14, 3, col);                                                       // conning tower, like the regular sub's
   periscope(g, s, .09, -.22, -.34, INK);
   box(g, s, .03, .12, .1, .09, 1, deep);                                                         // a small, squarish bow plane
