@@ -18,12 +18,14 @@ const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
   stroke(g, s, .03, -.09, .16, -.03, 4.5, c);                                                 // arm to the bar
   stroke(g, s, .05, -.08, .15, -.07, 4.5, c);                                                 // the gun arm
   box(g, s, .13, -.09, .2, .035, 1, INK); box(g, s, .16, -.065, .04, .06, 1, INK);             // the gun: barrel and grip, held low
-  // a full-face motorcycle helmet, in the dark colour of the soldiers' helmets: a smooth shell, longer front to back than tall, with a dark visor band
-  // cut into its front by clipping to the shell, so nothing pokes out of it
-  const hx = .105, hy = -.15, hrx = .085, hry = .07;
-  g.beginPath(); g.ellipse(hx * s, hy * s, hrx * s, hry * s, 0, 0, Math.PI * 2); g.fillStyle = dk; g.fill();
-  g.save(); g.beginPath(); g.ellipse(hx * s, hy * s, hrx * s, hry * s, 0, 0, Math.PI * 2); g.clip();
-  g.fillStyle = INK; g.beginPath(); g.moveTo((hx + .0) * s, (hy - .035) * s); g.lineTo((hx + .1) * s, (hy - .045) * s); g.lineTo((hx + .1) * s, (hy + .012) * s); g.lineTo((hx + .0) * s, (hy + .004) * s); g.closePath(); g.fill();   // the visor
+  // a full-face motorcycle helmet, in the dark colour of the soldiers' helmets: round on top, a cylinder round the face, a straight flat edge along the bottom
+  // and a dark visor band across the front (clipped to the shell, so nothing pokes out of it)
+  const hx = .1, hy = -.15, hr = .075, hb = -.082, hf = hx + hr + .02;
+  const shell = () => { g.beginPath(); g.moveTo((hx - hr) * s, hb * s); g.arc(hx * s, hy * s, hr * s, Math.PI, Math.PI * 2); g.lineTo(hf * s, hb * s); g.closePath(); };
+  shell(); g.fillStyle = dk; g.fill();
+  g.save(); shell(); g.clip();
+  g.fillStyle = INK; g.fillRect((hx - .005) * s, (hy - .04) * s, (hr + .05) * s, .055 * s);   // the visor
+  g.restore();
   g.restore();
   g.restore();
 };
