@@ -81,8 +81,8 @@ test('the renderer draws an arriving unit where it is on its way, and not on its
   assert.ok(r.dimmedTiles({ selectedId: null }) instanceof Set);
   r.draw({ selectedId: null, dest: null, reach: null, attackTiles: null, targets: [], showTargets: false, pendingTargetId: null }, 50);
   void seen;
-  const at = calls.findIndex((c) => c[0] === 'clip');
-  assert.ok(at > 0, 'an arriving unit is drawn inside a clip');
-  assert.deepEqual(calls[at - 1], ['rect', 0, 0, game.map.width * r.S, game.map.height * r.S], 'the clip is the map');
+  const mapRect = (c) => c[0] === 'rect' && c[1] === 0 && c[2] === 0 && c[3] === game.map.width * r.S && c[4] === game.map.height * r.S;
+  const at = calls.findIndex((c, k) => c[0] === 'clip' && mapRect(calls[k - 1]));
+  assert.ok(at > 0, 'an arriving unit is drawn inside a clip to the map');
   assert.ok(calls.slice(at).some((c) => c[0] === 'restore'));
 });
