@@ -263,8 +263,9 @@ const barrageBalloon = (g, { s, c, dk, w, ph, run }) => {
   disc(g, s, -.04, .12, .05, dk); disc(g, s, -.04, .12, .02, STEEL);                                            // the drum
 };
 
-// Tank trap: three steel "hedgehogs" of crossed beams, painted in the team colour: vehicles cannot pass, infantry climb through.
-const tankTrap = (g, { s, c, dk }) => {
+// Tank trap: three steel "hedgehogs" of crossed beams in plain grey (no owner, like the walls): vehicles cannot pass, infantry climb through.
+const tankTrap = (g, { s }) => {
+  const c = '#646b78', dk = '#464b55';   // plain steel, the colour of the pipe walls: it belongs to nobody
   const hog = (x, y, r) => {
     const t = Math.max(3, s * .06);
     stroke(g, s, x - r, y, x + r * .7, y - r * 1.6, t, dk);                                                     // the far beam

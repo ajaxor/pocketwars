@@ -8,14 +8,20 @@ import { box, disc, oval, poly, stroke, mix, tubes, plume, INK, STEEL, RED } fro
 
 export const FOOTING = '#4a4843';
 const BLADES = ['#6f9f48', '#86b95c', '#5d8c3c'];          // the terrain's grass green, a lighter and a darker blade
-/** Tufts of grass along the ground from x0 to x1, rising over whatever is behind them: three-blade clumps of varied height, always the same. */
-export const grass = (g, s, x0, x1, base = .3) => {
-  const n = Math.max(3, Math.round((x1 - x0) / .13));
+/** A repeatable pseudo-random number in 0..1 from three integers (so the grass is always the same, and never repeats in a short cycle). */
+const rnd = (i, k, seed) => { const v = Math.sin((i + 1) * 127.1 + k * 311.7 + seed * 74.7) * 43758.5453; return v - Math.floor(v); };
+/**
+ * Tufts of grass along the ground from x0 to x1, rising over whatever is behind them: clumps of two to four blades, each clump of its own
+ * height, width and spacing, so the pattern does not repeat along a footing. `seed` makes another arrangement (a different tile, a different place).
+ */
+export const grass = (g, s, x0, x1, base = .3, seed = 0) => {
+  const n = Math.max(2, Math.round((x1 - x0) / .17));
   for (let i = 0; i < n; i++) {
-    const x = x0 + (i + .5) * (x1 - x0) / n, k = (i * 7 + 3) % 5;                                  // a repeating pseudo-random pattern, so it never flickers
-    for (let j = -1; j <= 1; j++) {
-      const hgt = (.03 + ((k + j + 3) % 3) * .014 + (j === 0 ? .012 : 0)), lean = j * .016 + (k - 2) * .004, bw = .015;
-      poly(g, s, [[x + j * .022 - bw, base], [x + j * .022 + lean, base - hgt], [x + j * .022 + bw, base]], BLADES[(k + j + 4) % 3]);
+    const r = (k) => rnd(i, k, seed);
+    const x = x0 + (i + .5 + (r(1) - .5) * .6) * (x1 - x0) / n, big = .75 + r(2) * 1.15, blades = r(3) < .45 ? 3 : r(3) < .75 ? 2 : 4;
+    for (let j = 0; j < blades; j++) {
+      const off = (j - (blades - 1) / 2) * .026, hgt = (.03 + r(4 + j) * .04) * big, lean = off * .6 + (r(8 + j) - .5) * .05, bw = .015;
+      poly(g, s, [[x + off - bw, base], [x + off + lean, base - hgt], [x + off + bw, base]], BLADES[Math.floor(r(12 + j) * 3)]);
     }
   }
 };
@@ -30,48 +36,66 @@ export const footShadow = (x0, x1, d = .07) => (g, { s }) => {
   poly(g, s, [[x0 + .04, b], [x1, b], [x1 + dx, b - dy], [x1 + dx + .09, b - dy + .04], [x1 + .09, b + .045], [x0 + .04, b + .045]], 'rgba(0,0,0,.2)');
 };
 
-// Gun turret: a squat bunker under a dark dome, with a machine gun out of the dome that sweeps a little.
+// ---- guns that turn ------------------------------------------------------------------------------------------------------------
+/**
+ * The yaw of a gun that sweeps: 0 points right, PI/2 points at the camera, PI points left, and it goes there and back again, slowing at the ends.
+ * A defence that is not running (a disabled or still picture) rests a little off the right-hand side.
+ */
+export const sweep = (w, ph, run, rate = .5) => (run ? Math.PI * (.5 - .5 * Math.cos(w * rate + ph)) : .3);
+/**
+ * A barrel of length `len` on a mount at (mx, my), turned `phi` round the vertical (see sweep) and raised `el` radians. It is seen from the front and
+ * a little above, so a barrel turned toward the camera points down the screen and shortens, and then shows its muzzle. `ext` lengthens it (a recoil
+ * is a negative ext). Returns the tip.
+ */
+export function aim(g, s, mx, my, len, phi, el, thick, col = INK, ext = 0) {
+  const ce = Math.cos(el), L = len + ext, ux = ce * Math.cos(phi), uy = -Math.sin(el) + ce * Math.sin(phi) * .45;
+  const tx = mx + L * ux, ty = my + L * uy;
+  stroke(g, s, mx, my, tx, ty, thick, col);
+  stroke(g, s, mx + (L - .07) * ux, my + (L - .07) * uy, tx, ty, thick * 1.45, col);                       // the muzzle brake
+  const end = Math.max(0, Math.sin(phi) * ce - .5) * 2;                                                     // 0 side-on .. 1 straight at us: the bore shows
+  if (end > 0) { disc(g, s, tx, ty, thick / s * .72 * (.6 + .4 * end), col); disc(g, s, tx, ty, thick / s * .3 * end, '#3a3f49'); }
+  return [tx, ty];
+}
+
+// Gun turret: a squat bunker under a dark dome, with a machine gun out of the dome that sweeps round, through facing us.
 const gunTurret = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.3, .3);
-  const sw = run ? Math.sin(w * 1.1 + ph) * .07 : 0;
-  g.save(); g.translate(.08 * s, -.08 * s); g.rotate(sw);
-  box(g, s, 0, -.025, .32, .05, 1, INK); box(g, s, .27, -.035, .06, .07, 1, INK);                 // the gun and its flash hider
-  g.restore();
-  g.fillStyle = dk; g.beginPath(); g.arc(-.02 * s, -.02 * s, .17 * s, Math.PI, 0); g.fill();         // the dome
   box(g, s, -.26, -.03, .52, .24, 4, c);                                                            // the bunker
+  g.fillStyle = dk; g.beginPath(); g.arc(-.02 * s, -.02 * s, .17 * s, Math.PI, 0); g.fill();         // the dome
   box(g, s, -.17, .05, .3, .045, 1, INK);                                                           // a firing slit
+  aim(g, s, -.02, -.07, .3, sweep(w, ph, run, .55), 0, Math.max(3, s * .05));                       // the gun
 };
 
-// Cannon turret: a fortified block with a tank-like turret on its roof and a long cannon that recoils.
+// Cannon turret: a fortified block with a tank-like turret on its roof and a long cannon that sweeps round and recoils.
 const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.36, .36);
   const rec = run ? Math.max(0, Math.sin(w * 1.3 + ph)) ** 8 * .035 : 0;
-  box(g, s, .1 - rec, -.17, .36, .055, 1, INK); box(g, s, .41 - rec, -.18, .06, .075, 1, INK);      // the cannon and its muzzle brake
-  box(g, s, -.17, -.24, .34, .17, 3, dk);                                                           // the turret
   box(g, s, -.32, -.07, .64, .27, 4, c);                                                            // the block
   box(g, s, -.32, -.07, .64, .05, 2, mix(c, '#ffffff', .2));                                        // a lighter roof edge
+  box(g, s, -.17, -.24, .34, .17, 3, dk);                                                           // the turret
+  aim(g, s, 0, -.155, .4, sweep(w, ph, run, .42), 0, Math.max(3.5, s * .06), INK, -rec);            // the cannon
 };
 
-// SAM site: a block with a turntable, and a pod of missiles tipped at the sky.
-const samSite = (g, { s, c, dk }) => {
+// SAM site: a block with a turntable, and a pod of missiles tipped at the sky that turns on it.
+const samSite = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.32, .32);
-  g.save(); g.translate(-.04 * s, -.06 * s); g.rotate(-.75);
-  tubes(g, s, .15, 0, .38, .17, { n: 2, col: dk });
-  g.restore();
-  box(g, s, -.12, -.09, .2, .08, 2, dk);                                                            // the turntable
   box(g, s, -.28, -.02, .56, .23, 4, c);
+  box(g, s, -.12, -.09, .24, .08, 2, dk);                                                           // the turntable
+  const phi = sweep(w, ph, run, .4), el = 1.0;
+  for (const off of [-.035, .035]) {                                                                // two missiles side by side
+    const [tx, ty] = aim(g, s, off, -.08, .32, phi, el, Math.max(3, s * .05), dk);
+    disc(g, s, tx, ty, .022, RED);
+  }
 };
 
-// Artillery emplacement: a heavy gun behind a wide rounded berm, the barrel up and out; it slides back when it fires.
+// Artillery emplacement: a heavy gun behind a wide rounded berm, the barrel up and out; it turns, and slides back when it fires.
 const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.4, .4);
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
-  g.save(); g.translate(-.06 * s, -.04 * s); g.rotate(-.6);
-  box(g, s, -.04 - rec, -.035, .56, .07, 1, INK); box(g, s, .48 - rec, -.045, .07, .09, 1, INK);   // the barrel
-  g.restore();
-  box(g, s, -.2, -.14, .2, .16, 3, dk);                                                             // the gun shield
   box(g, s, -.38, .0, .76, .21, .08 * s, c);                                                        // the berm
   box(g, s, -.3, .05, .6, .035, 1, mix(c, '#000000', .2));
+  box(g, s, -.2, -.14, .2, .16, 3, dk);                                                             // the gun shield
+  aim(g, s, -.06, -.06, .5, sweep(w, ph, run, .36), .62, Math.max(3.5, s * .065), INK, -rec);       // the barrel
 };
 
 // Jammer: a small hut with a mast, a dish on top, and signal rings spreading from it.
