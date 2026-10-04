@@ -18,8 +18,10 @@ const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
   stroke(g, s, .03, -.09, .16, -.03, 4.5, c);                                                 // arm to the bar
   stroke(g, s, .05, -.08, .15, -.07, 4.5, c);                                                 // the gun arm
   box(g, s, .13, -.09, .2, .035, 1, INK); box(g, s, .16, -.065, .04, .06, 1, INK);             // the gun: barrel and grip, held low
-  disc(g, s, .1, -.15, .06, dk);                                                              // helmet, the dark colour of the soldiers' helmets
-  box(g, s, .12, -.17, .05, .04, 1, INK);                                                     // visor
+  disc(g, s, .1, -.15, .072, dk);                                                             // a full-face motorcycle helmet, the dark colour of the soldiers' helmets
+  poly(g, s, [[.13, -.12], [.2, -.125], [.205, -.075], [.15, -.07]], dk);                       // the chin bar, jutting forward
+  poly(g, s, [[.11, -.19], [.19, -.178], [.2, -.14], [.12, -.145]], INK);                       // the visor: a wide dark band across the face
+  poly(g, s, [[.03, -.16], [.0, -.19], [.045, -.2]], dk);                                       // a small flick at the back of the shell
   g.restore();
 };
 

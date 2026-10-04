@@ -34,13 +34,13 @@ const carrier = (g, { s, c, dk, w, ph, run, b }) => {
       poly(g, s, [[-.53, -.06], [.42, -.06], [.42, .04], [-.49, .04], [-.53, .0]], side);          // the slab's front face, overhanging the hull
       poly(g, s, [P(0, 0), P(1, 0), P(1, 1), P(0, 1)], deck);                                       // the flight deck in perspective, plain dark grey
       poly(g, s, [[.2, -.06], [.37, -.06], [.34, -.28], [.25, -.28]], c);                           // the island: a tall tapered block on the near edge
-      box(g, s, .27, -.46, .03, .2, 0, mix(c, dk, .4)); stroke(g, s, .285, -.45, .285, -.58, 3, INK); oval(g, s, .3, -.52, .035, .014, STEEL);   // mast and radar
-      const sw = run ? 1 : 0, hx = .285, hy = -.6;                                                    // a windsock off the top of the mast, oversized so it reads: striped segments streaming aft, rippling
-      stroke(g, s, hx, -.58, hx, hy - .02, 2.5, INK);
+      box(g, s, .27, -.46, .03, .2, 0, mix(c, dk, .4)); stroke(g, s, .285, -.45, .285, -.55, 3, INK);   // mast and radar
+      const sw = run ? 1 : 0, hx = .285, hy = -.53;                                                    // a windsock off the top of the mast, oversized so it reads: striped segments streaming aft, rippling
+      stroke(g, s, hx, -.55, hx, hy - .02, 2.5, INK);
       for (let i = 0; i < 4; i++) {
         const x0 = hx - i * .065, x1 = x0 - .065, y0 = hy + Math.sin(w * 5 - i * .9) * .014 * sw + i * .006, y1 = hy + Math.sin(w * 5 - (i + 1) * .9) * .014 * sw + (i + 1) * .006;
         const h0 = .075 * (1 - i * .2), h1 = .075 * (1 - (i + 1) * .2);
-        poly(g, s, [[x0, y0 - h0 / 2], [x1, y1 - h1 / 2], [x1, y1 + h1 / 2], [x0, y0 + h0 / 2]], i % 2 ? '#ffffff' : '#ff6a2a');
+        poly(g, s, [[x0, y0 - h0 / 2], [x1, y1 - h1 / 2], [x1, y1 + h1 / 2], [x0, y0 + h0 / 2]], i % 2 ? dk : c);
       }
     }
     g.restore();

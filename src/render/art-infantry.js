@@ -32,7 +32,7 @@ const ak47 = (g, s, x, y, ang) => {
   box(g, s, -.2, -.02, .13, .05, 1, WOOD);                                         // wooden stock
   box(g, s, -.08, -.03, .17, .05, 1, INK);                                         // receiver
   box(g, s, .09, -.025, .12, .04, 1, INK);                                         // handguard, black like the barrel
-  box(g, s, .09, -.012, .27, .018, 0, INK);                                        // barrel, all black
+  box(g, s, .09, -.019, .27, .032, 0, INK);                                       // barrel, all black, thick enough to read without an outline
   poly(g, s, [[.0, .02], [.06, .02], [.09, .13], [.03, .14]], '#3a2c20');          // the curved magazine
   g.restore();
 };
@@ -52,7 +52,7 @@ const rpgTrooper = (g, o) => {
   g.save(); g.translate(-.14 * s, (.07 + bb) * s); g.rotate(-.5);                        // held diagonally in front of the body, like the AT infantry's bazooka
   box(g, s, -.03, -.045, .5, .09, 3, '#5d6445');
   poly(g, s, [[-.08, -.065], [-.02, -.045], [-.02, .045], [-.08, .065]], '#3c4130');      // rear flare
-  box(g, s, .44, -.06, .045, .12, 1, '#3c4130'); poly(g, s, [[.485, -.075], [.58, -.04], [.63, 0], [.58, .04], [.485, .075]], RED);   // the rocket's warhead in the muzzle
+  box(g, s, .44, -.06, .045, .12, 1, '#3c4130'); poly(g, s, [[.485, -.075], [.58, -.04], [.63, 0], [.58, .04], [.485, .075]], c);   // the rocket's warhead in the muzzle, in the team colour
   g.restore();
 };
 
