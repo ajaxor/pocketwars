@@ -6,7 +6,7 @@
 // The rule (docs/unit-art-lessons.md): few shapes, one idea per building, no windows or small fittings.
 import { kit } from '../src/render/buildings.js';
 import { shade } from '../src/render/color.js';
-import { FOOTING, grass } from './concept-art-static.js';
+import { grass } from './concept-art-static.js';
 
 const DIRT = '#7a6a4a', STEEL = '#8d93a0', DARK = '#2b2d33', GLASSY = '#bfe0f2', WHITE = '#f1f1ec', RED = '#d4442e';
 const disc = (g, x, y, r, col) => { g.fillStyle = col; g.beginPath(); g.arc(x, y, Math.max(.5, r), 0, 7); g.fill(); };
@@ -157,7 +157,7 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
   if (lone) ell(CX + .07, GY + .02, R + .1, .07, 'rgba(0,0,0,.2)');
   // Where a pipe goes into the ground: a dark hole in the soil, wider than the pipe, behind the pipe's rounded foot.
   const hole = (cx, rx, cy = GY, ry = .1) => ell(cx, cy, rx + .09, ry, col.hole);
-  if (endH) hole(dir > 0 ? pv - R : pv + R, R); else if (lone) hole(CX, R); else if (endN) ell(CX, GY, R + .11, .12, FOOTING);   // (a pipe that dives gets a rim of bare earth instead; its hole goes over the pipe) else if (endS) hole(CX, R + .02, CY - .1, .09);
+  if (endH) hole(dir > 0 ? pv - R : pv + R, R); else if (endN || lone) hole(CX, R); else if (endS) hole(CX, R + .02, CY - .1, .09);
   // Grass round the hole, drawn BEFORE the pipe so it never lies over it: it shows at the sides of the pipe, like the footings of the defences.
   const seed = (Math.round(px / S) * 7 + Math.round(py / S) * 13) % 97;
   const tufts = (cx, base) => { g.save(); g.translate(X(.5), Y(.5)); const k = 2.1; grass(g, S * k, (cx - R - .24 - .5) / k, (cx + R + .24 - .5) / k, (base - .5) / k, seed); g.restore(); };   // a bit bigger than on the defences: the pipes are small on the board
@@ -167,9 +167,9 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
   for (const pass of [0, 1]) {
     const gr = pass ? 0 : OW, c = pass ? col.body : col.out;
     // `round` = [top-left, top-right, bottom-right, bottom-left]: which corners of the part are free (not joined to another part or the tile edge)
-    const box = (x0, y0, x1, y1, round = [0, 0, 0, 0]) => {
+    const box = (x0, y0, x1, y1, round = [0, 0, 0, 0], rc = RC) => {
       const a = x0 <= 0 ? 0 : x0 - gr, b = y0 <= 0 ? 0 : y0 - gr, d = x1 >= 1 ? 1 : x1 + gr, f = y1 >= 1 ? 1 : y1 + gr;
-      g.fillStyle = c; g.beginPath(); g.roundRect(X(a), Y(b), (d - a) * S, (f - b) * S, round.map((r) => (r ? (RC + gr) * S : 0))); g.fill();
+      g.fillStyle = c; g.beginPath(); g.roundRect(X(a), Y(b), (d - a) * S, (f - b) * S, round.map((r) => (r ? (rc + gr) * S : 0))); g.fill();
     };
     const lieH = (xa, xb) => box(xa, CY - R, xb, CY + R);                      // a pipe lying east-west from xa to xb
     const lieV = (ya, yb) => box(CX - R, ya, CX + R, yb);                      // a pipe lying north-south from ya to yb
@@ -186,10 +186,9 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
       g.fillStyle = c; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), (2 * R + gr) * S, a0, a1); g.closePath(); g.fill();
       if (dir > 0) lieH(pv - .03, 1); else lieH(0, pv + .03);                    // overlaps the bend a little so no seam shows
       foot(dir > 0 ? pv - R : pv + R);
-    } else if (endN) lieV(0, GY - .02);                                              // runs toward us, then goes down into the ground (the hole is drawn over its end, below)
+    } else if (endN) { lieV(0, GY); foot(CX); }                                  // runs toward us, then goes into the ground, like the sideways ends
     else if (endS) {                                                              // comes out of the ground at the back and runs toward us
-      lieV(CY - .1, 1);
-      ell(CX, CY - .1, R + gr, .06 + gr, c, Math.PI, Math.PI * 2);
+      box(CX - R, CY - .1, CX + R, 1, [1, 1, 0, 0], .24);                         // a well-rounded top, sunk into the hole behind
     } else if (lone) { box(CX - R, CY - R, CX + R, GY, [1, 1, 0, 0]); foot(CX); }   // a standing stump
     else {
       if (n) lieV(0, CY); if (s) lieV(CY, 1);
@@ -201,7 +200,6 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
       if (s && w) fillet(CX - R, GY, -1, 1);
     }
   }
-  if (endN) { ell(CX, GY - .01, R + .05, .085, col.hole); ell(CX, GY - .005, R + .0, .05, '#0c0d10'); }   // the hole in front of the pipe's end: the pipe disappears into it
   if (cracked) {
     // the same pipe, with a crack that starts at its edge and runs part of the way in
     const ink = col.out, lw = Math.max(1.2, .026 * S);

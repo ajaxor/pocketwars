@@ -74,7 +74,7 @@
     "vex": {
       "infantry": "spy",
       "build": {
-        "barracks": ["spy", "motorcycle", "sniper"],
+        "barracks": ["spy", "motorcycle", "sniper", "diver"],
         "factory": ["recon", "tank", "rocket_launcher", "flak", "sam_launcher"],
         "airfield": ["transport_copter", "stealth_copter", "fighter", "bomber"],
         "shipyard": ["destroyer", "gun_boat", "submarine", "missile_sub", "cruiser"]
@@ -144,7 +144,7 @@
     "rex": {
       "infantry": "marine",
       "build": {
-        "barracks": ["marine", "rpg_trooper", "medic"],
+        "barracks": ["marine", "rpg_trooper", "medic", "mortar"],
         "factory": ["recon", "amphibious_tank", "heavy_tank", "artillery", "rocket_launcher", "flak"],
         "airfield": ["copter", "fighter", "bomber", "torpedo_bomber"],
         "shipyard": ["gun_boat", "hunter_sub", "troop_transport", "cruiser", "battleship", "aircraft_carrier", "mine_layer"]
@@ -190,7 +190,7 @@
     "dmitri": {
       "infantry": "conscript",
       "build": {
-        "barracks": ["conscript", "rpg_trooper", "sniper"],
+        "barracks": ["conscript", "rpg_trooper", "mechanic", "mortar"],
         "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "apc"],
         "airfield": ["copter", "fighter", "vintage_bomber", "torpedo_bomber"],
         "shipyard": ["destroyer", "missile_sub", "mine_layer", "cruiser", "battleship", "troop_transport"]

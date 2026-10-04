@@ -43,17 +43,21 @@ export const footShadow = (x0, x1, d = .07) => (g, { s }) => {
  */
 export const sweep = (w, ph, run, rate = .5) => (run ? Math.PI * (.5 - .5 * Math.cos(w * rate + ph)) : .3);
 /**
- * A barrel of length `len` on a mount at (mx, my), turned `phi` round the vertical (see sweep) and raised `el` radians. It is seen from the front and
- * a little above, so a barrel turned toward the camera points down the screen and shortens, and then shows its muzzle. `ext` lengthens it (a recoil
- * is a negative ext). Returns the tip.
+ * A barrel of length `len` on a mount at (mx, my), turned `phi` round the vertical (see sweep) and raised `el` radians, drawn in orthographic
+ * projection from the side: turning only changes its horizontal length (len x cos phi), so it swings straight across without any depth, shrinks to
+ * nothing when it faces the camera (where its muzzle shows as a disc) and comes out the other side. `ext` lengthens it (a recoil is a negative ext).
+ * `from`..`to` draws only that stretch of it (a sleeve over the breech). Returns the tip.
  */
-export function aim(g, s, mx, my, len, phi, el, thick, col = INK, ext = 0) {
-  const ce = Math.cos(el), L = len + ext, ux = ce * Math.cos(phi), uy = -Math.sin(el) + ce * Math.sin(phi) * .45;
-  const tx = mx + L * ux, ty = my + L * uy;
-  stroke(g, s, mx, my, tx, ty, thick, col);
-  stroke(g, s, mx + (L - .07) * ux, my + (L - .07) * uy, tx, ty, thick * 1.45, col);                       // the muzzle brake
-  const end = Math.max(0, Math.sin(phi) * ce - .5) * 2;                                                     // 0 side-on .. 1 straight at us: the bore shows
-  if (end > 0) { disc(g, s, tx, ty, thick / s * .72 * (.6 + .4 * end), col); disc(g, s, tx, ty, thick / s * .3 * end, '#3a3f49'); }
+export function aim(g, s, mx, my, len, phi, el, thick, col = INK, ext = 0, from = 0, to = null, muzzle = true) {
+  const ce = Math.cos(el), L = len + ext, ux = ce * Math.cos(phi), uy = -Math.sin(el);
+  const at = (l) => [mx + l * ux, my + l * uy];
+  const [ax, ay] = at(from), [tx, ty] = at(to === null ? L : to);
+  stroke(g, s, ax, ay, tx, ty, thick, col);
+  if (!muzzle) return [tx, ty];
+  const [bx, by] = at(L - .07);
+  stroke(g, s, bx, by, tx, ty, thick * 1.45, col);                                                          // the muzzle brake
+  const end = Math.max(0, Math.abs(Math.sin(phi)) * ce - .6) * 2.5;                                          // 0 side-on .. 1 straight at us: the bore shows
+  if (end > 0) { disc(g, s, tx, ty, thick / s * .72 * (.7 + .3 * end), col); disc(g, s, tx, ty, thick / s * .3 * end, '#3a3f49'); }
   return [tx, ty];
 }
 
@@ -88,26 +92,31 @@ const samSite = (g, { s, c, dk, w, ph, run }) => {
   }
 };
 
-// Artillery emplacement: a heavy gun behind a wide rounded berm, the barrel up and out; it turns, and slides back when it fires.
+// Artillery emplacement: a field gun on a sandbag berm: a big spoked wheel, two trail legs, a gun shield, and a long barrel (with its recoil sleeve
+// over the breech) raised at an angle, that turns and slides back when it fires.
 const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.4, .4);
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
-  box(g, s, -.38, .0, .76, .21, .08 * s, c);                                                        // the berm
-  box(g, s, -.3, .05, .6, .035, 1, mix(c, '#000000', .2));
-  box(g, s, -.2, -.14, .2, .16, 3, dk);                                                             // the gun shield
-  aim(g, s, -.06, -.06, .5, sweep(w, ph, run, .36), .62, Math.max(3.5, s * .065), INK, -rec);       // the barrel
+  box(g, s, -.4, .1, .8, .11, .055 * s, c);                                                         // the berm, low
+  stroke(g, s, 0, .06, -.32, .19, Math.max(3, s * .05), dk); stroke(g, s, 0, .06, -.2, .19, Math.max(3, s * .05), mix(dk, '#000000', .2));   // the split trail
+  disc(g, s, 0, .06, .14, INK); disc(g, s, 0, .06, .11, '#585d68'); disc(g, s, 0, .06, .035, INK);   // the wheel, tyre and hub
+  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 4; stroke(g, s, Math.cos(a) * .1, .06 + Math.sin(a) * .1, -Math.cos(a) * .1, .06 - Math.sin(a) * .1, 1.5, '#8d93a0'); }   // spokes
+  const phi = sweep(w, ph, run, .36), el = .5, thick = Math.max(3, s * .06);
+  aim(g, s, -.04, -.02, .5, phi, el, thick, INK, -rec);                                             // the barrel
+  aim(g, s, -.04, -.02, .5, phi, el, thick * 1.7, dk, -rec, 0, .17, false);                          // the recoil sleeve over its breech
+  box(g, s, -.15, -.17, .075, .2, 2, dk);                                                           // the gun shield
 };
 
-// Jammer: a small hut with a mast, a dish on top, and signal rings spreading from it.
-const jammer = (g, { s, c, dk, w, run }) => {
+// Jammer: a hut with a mast and a big dish that turns from facing right, through facing us, to facing left and back.
+const jammer = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.24, .24);
-  stroke(g, s, .02, .02, .02, -.2, Math.max(2.5, s * .035), STEEL);                                 // the mast
-  oval(g, s, .02, -.24, .12, .06, '#e6e8ee'); oval(g, s, .03, -.245, .06, .028, dk);               // the dish
-  for (let i = 0; i < 2; i++) {
-    const f = run ? (w * .7 + i / 2) % 1 : (i + .5) / 2, r = (.08 + f * .14) * s;
-    g.strokeStyle = mix(c, '#ffffff', .45); g.globalAlpha = Math.min(1, (1 - f) * 1.3); g.lineWidth = 2.5;
-    g.beginPath(); g.arc(.02 * s, -.25 * s, r, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); g.globalAlpha = 1;
-  }
+  const phi = sweep(w, ph, run, .5), r = .24, cx = 0, cy = -.2, k = Math.sin(phi), nx = Math.cos(phi);   // the dish faces (nx, k): k is how much it faces us
+  stroke(g, s, 0, .02, 0, cy + .04, Math.max(3, s * .04), STEEL);                                    // the mast
+  const rx = Math.max(.035, r * k);
+  oval(g, s, cx - nx * .03, cy, rx + .02, r + .02, INK);                                              // the dish's rim, seen at an angle
+  oval(g, s, cx - nx * .03, cy, rx, r, '#e6e8ee');
+  oval(g, s, cx + nx * r * .22 * k - nx * .02, cy, Math.max(.01, rx * .78), r * .8, mix(dk, '#ffffff', .15));   // the hollow of the dish, shifted toward the way it faces
+  stroke(g, s, cx, cy, cx + nx * .17, cy - .01, Math.max(2, s * .03), INK); disc(g, s, cx + nx * .17, cy - .01, .03, RED);   // the feed on its arm
   box(g, s, -.2, .0, .4, .21, 4, c);                                                                // the hut
   box(g, s, -.2, .0, .4, .05, 2, dk);                                                               // its roof
   box(g, s, -.12, .08, .1, .12, 1, INK);                                                            // a door
