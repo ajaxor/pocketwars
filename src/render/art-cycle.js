@@ -18,18 +18,18 @@ const motorcycle = (g, { s, c, dk, w, ph, run, moving, b }) => {
   stroke(g, s, .03, -.09, .16, -.03, 4.5, c);                                                 // arm to the bar
   stroke(g, s, .05, -.08, .15, -.07, 4.5, c);                                                 // the gun arm
   box(g, s, .13, -.09, .2, .035, 1, INK); box(g, s, .16, -.065, .04, .06, 1, INK);             // the gun: barrel and grip, held low
-  // a full-face motorcycle helmet, in the dark colour of the soldiers' helmets: a round dome on top that runs down into a cylinder round the face
-  // (straight back and front, a rounded chin corner) with a flat bottom edge, a wide dark visor window on the front, and a thin line between visor and chin bar
-  const hx = .095, hy = -.15, hr = .085, hb = -.07, hf = hx + hr + .03;
+  // a full-face motorcycle helmet, one colour (the dark colour of the soldiers' helmets) apart from its black visor: a round dome on top that runs down
+  // into a cylinder round the face, with one straight front edge shared by the visor and the chin bar below it, and a flat bottom. It is tilted down a
+  // few degrees about the neck to follow the rider's forward lean.
+  const hx = .095, hy = -.15, hr = .085, hb = -.07, hf = hx + hr + .01;
+  g.save(); g.translate(.07 * s, hb * s); g.rotate(.2); g.translate(-.07 * s, -hb * s);
   const shell = () => {
     g.beginPath(); g.moveTo((hx - hr) * s, hb * s); g.lineTo((hx - hr) * s, hy * s); g.arc(hx * s, hy * s, hr * s, Math.PI, Math.PI * 2);
-    g.lineTo((hx + hr) * s, hy * s); g.lineTo(hf * s, (hy + .02) * s); g.lineTo(hf * s, (hb - .02) * s); g.quadraticCurveTo(hf * s, hb * s, (hf - .02) * s, hb * s); g.closePath();
+    g.lineTo(hf * s, hy * s); g.lineTo(hf * s, (hb - .015) * s); g.quadraticCurveTo(hf * s, hb * s, (hf - .015) * s, hb * s); g.closePath();
   };
   shell(); g.fillStyle = dk; g.fill();
   g.save(); shell(); g.clip();
-  g.fillStyle = INK; g.fillRect((hx + .005) * s, (hy - .045) * s, (hr + .05) * s, .06 * s);                                  // the visor window
-  g.fillStyle = mix(dk, '#ffffff', .22); g.fillRect((hx - hr) * s, (hy - .075) * s, (hr * 2 + .03) * s, .014 * s);          // a light sheen along the dome
-  g.fillStyle = mix(dk, '#000000', .35); g.fillRect((hx + .005) * s, (hy + .02) * s, (hr + .05) * s, .01 * s);              // the seam above the chin bar
+  g.fillStyle = INK; g.fillRect((hx + .005) * s, (hy - .045) * s, (hf - hx) * s, .06 * s);                                     // the visor window, out to the shell's front edge
   g.restore();
   g.restore();
   g.restore();
