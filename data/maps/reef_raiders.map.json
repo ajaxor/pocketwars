@@ -17,6 +17,8 @@
     }
   ],
   "legend": {
+    "k": { "terrain": "barracks", "owner": 0 },
+    "K": { "terrain": "barracks", "owner": 1 },
     ".": {
       "terrain": "plain"
     },
@@ -65,7 +67,7 @@
   },
   "tiles": [
     "MM.FFrrrrrrrrFF.MM",
-    "M.cO.frr..rrg.Bc.M",
+    "M.cOkfrr..rrgKBc.M",
     "..rrrr..~~..rrrr..",
     "F.r.c.~~~~~~.c.r.F",
     "..r.Y~~~~~~~~Z.r..",

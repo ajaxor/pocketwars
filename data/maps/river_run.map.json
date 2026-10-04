@@ -9,6 +9,8 @@
     { "faction": "vantor_reach", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
+    "k": { "terrain": "barracks", "owner": 0 },
+    "K": { "terrain": "barracks", "owner": 1 },
     ".": { "terrain": "plain" },
     ":": { "terrain": "rough" },
     "F": { "terrain": "forest" },
@@ -28,10 +30,10 @@
     "FF......FFFF~~FFFF......FF",
     "FF....rrrrrrrrrrrrrr....FF",
     "...rc.r..::.~~.::..r.c....",
-    "...r..rMM::.~~.::MMr..r.V.",
+    ".k.r..rMM::.~~.::MMr..r.V.",
     ".OrrrrrMM::.~~.::MMr..r...",
     "...r..rMM::.~~.::MMrrrrrB.",
-    ".v.r..rMM::.~~.::MMr..r...",
+    ".v.r..rMM::.~~.::MMr..r.K.",
     "....c.r..::.~~.::..r.cr...",
     "FF....rrrrrrrrrrrrrr....FF",
     "FF......FFFF~~FFFF......FF",

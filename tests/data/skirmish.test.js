@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../../src/data/loader.js';
-import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction } from '../../src/data/skirmish.js';
+import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction, adoptLeaderColours } from '../../src/data/skirmish.js';
 import { placeStart } from '../../src/data/formation.js';
 import { loadCampaign } from '../../src/data/campaign.js';
 import { SkirmishScreen } from '../../src/ui/skirmish-screen.js';
@@ -270,4 +270,15 @@ test('launcher: Skirmish offers the campaign\'s leaders, and Start plays a map w
   assert.deepEqual(m.players.map((p) => p.leader), ['harlan', 'ada'], 'the human is the hero of the home nation; the computer rolled the first other leader');
   assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'harlan').length);
   assert.ok(Object.isFrozen(m));
+});
+
+test('a leader brings the colour of their nation: picked leaders on the page, random ones when rolled', () => {
+  const nationOf = { ada: 'x', vex: 'y' };
+  const players = [{ faction: 'y' }, { faction: 'x' }, { faction: 'z' }];
+  const colours = (leaders, only) => adoptLeaderColours(players, leaders, nationOf, only).map((p) => p.faction);
+  assert.deepEqual(colours(['ada', null, 'vex']), ['x', 'z', 'y'], 'each takes their nation, trading with whoever held it');
+  assert.deepEqual(colours(['ada', RANDOM_LEADER, null]), ['x', 'y', 'z'], 'an unrolled random leader brings nothing');
+  assert.deepEqual(colours(['ada', 'ada', null]), ['x', 'y', 'z'], 'a second leader of one nation does not steal it');
+  assert.deepEqual(colours(['ada', 'vex', null], (i) => i === 1), ['x', 'y', 'z'], 'only the slots asked for change');
+  assert.deepEqual(players.map((p) => p.faction), ['y', 'x', 'z'], 'the input is untouched');
 });

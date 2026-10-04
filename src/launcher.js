@@ -78,7 +78,7 @@ export async function launch({
       onBack: () => { skirmish.remove(); skirmish = null; },
       onStart: (map, settings) => {
         skirmish.remove(); skirmish = null;
-        game.play(applySkirmish(map, settings, game.registry, random));
+        game.play(applySkirmish(map, settings, game.registry, random, Object.fromEntries(leaders.map((l) => [l.id, l.faction]))));
         started = true; t.remove();
       },
     });

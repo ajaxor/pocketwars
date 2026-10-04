@@ -15,7 +15,7 @@
 
 import { drawPortrait } from '../render/portrait-art.js';
 import { drawMinimap, miniTile } from '../render/minimap.js';
-import { FUNDS_CHOICES, RANDOM_LEADER, defaultSkirmish, skirmishProblems, swapFaction } from '../data/skirmish.js';
+import { FUNDS_CHOICES, RANDOM_LEADER, defaultSkirmish, skirmishProblems, swapFaction, adoptLeaderColours } from '../data/skirmish.js';
 import { button, h, toggle } from './kit.js';
 
 const fmtFunds = (n) => (n === null ? 'Map default' : Number(n).toLocaleString('en-US'));
@@ -76,7 +76,14 @@ export class SkirmishScreen {
     return s;
   }
 
-  #defaults(map) { return defaultSkirmish(map, this.roster.map((l) => l.id), this.starter); }
+  #defaults(map) { return this.#coloured(defaultSkirmish(map, this.roster.map((l) => l.id), this.starter)); }
+
+  /** The settings with every team that has a leader in the colour of that leader's nation (the swatches can still change it afterwards). */
+  #coloured(settings) {
+    const nationOf = Object.fromEntries(this.roster.filter((l) => l.faction).map((l) => [l.id, l.faction]));
+    const players = adoptLeaderColours(settings.players, settings.players.map((p) => p.leader ?? null), nationOf).map((p, i) => ({ ...settings.players[i], faction: p.faction }));
+    return { ...settings, players };
+  }
 
   /** Pick a map: its own teams and colours become the settings; the funds and the leaders picked for the teams it shares are kept. */
   pick(mapId) {
@@ -85,14 +92,19 @@ export class SkirmishScreen {
     const { funds, players: before } = this.settings;
     const next = this.#defaults(map);
     this.map = map;
-    this.settings = { ...next, funds, players: next.players.map((p, i) => (before[i] ? { ...p, leader: before[i].leader } : p)) };
+    this.settings = this.#coloured({ ...next, funds, players: next.players.map((p, i) => (before[i] ? { ...p, leader: before[i].leader } : p)) });
     this.#render();
   }
 
   setController(slot, controller) { this.settings.players[slot].controller = controller; this.#render(); }
   setFaction(slot, faction) { this.settings = { ...this.settings, players: swapFaction(this.settings.players, slot, faction) }; this.#render(); }
   /** @param {string|null} leader a leader id, RANDOM_LEADER, or null for no leader (the map's own units) */
-  setLeader(slot, leader) { this.settings.players[slot].leader = leader; this.#render(); }
+  setLeader(slot, leader) {
+    this.settings.players[slot].leader = leader;
+    const nation = this.roster.find((l) => l.id === leader)?.faction;
+    if (nation) this.settings = { ...this.settings, players: swapFaction(this.settings.players, slot, nation) };   // the leader's nation brings its colour
+    this.#render();
+  }
   setFunds(funds) { this.settings.funds = funds; this.#render(); }
 
   get problems() { return skirmishProblems(this.map, this.registry, this.settings); }

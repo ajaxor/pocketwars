@@ -122,3 +122,11 @@ test('in a 3+ player game, losing an HQ eliminates that player and the game goes
   assert.equal(game.state.winner, 0);
   void events;
 });
+
+test('every shipped map gives each player a barracks, so every kit can build infantry', async () => {
+  for (const id of ids) {
+    const game = new Game(registry, await loadMap(readData, registry, id));
+    const props = allProperties(game);
+    game.state.funds.forEach((_, p) => assert.ok(props.some((q) => q.owner === p && q.terrain.id === 'barracks'), `${id}: player ${p} has a barracks`));
+  }
+});

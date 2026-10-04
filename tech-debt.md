@@ -94,3 +94,7 @@
 - **Leader is not derived from faction.** `players[i].leader` is set separately from `faction`, so a map can pair any nation with any kit; tests must pass `leader` explicitly to get a leader's menu.
 - **Marine keeps the `amphibious` category** only to stay off the standard menus; with the shipyard no longer building it, the category and the `amphibious` rule in `ai.json` are mostly vestigial (the AI builds marines only where a leader's barracks menu offers them).
 - **Start-army balance is hand-tuned** against current costs; changing a unit price silently skews factions until the leaders test fails.
+
+## Skirmish colours
+- **Colour and leader are still two settings.** Picking a leader now sets the team's colour to the leader's nation (and a random leader brings theirs when rolled), but the nation lives only in `campaign.json`, so `applySkirmish` takes a `nationOf` map from the launcher. Putting the nation on the loadout (or in the registry) would remove that plumbing.
+- **Four sea maps were missing barracks** (nothing checked for it); a test now requires one per player on every shipped map.
