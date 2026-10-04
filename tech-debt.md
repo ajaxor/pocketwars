@@ -104,3 +104,8 @@
 - **Dock repair is a special case in `economy.startTurn`** (adjacent owned `noEntry` property); resupply already works by range, repair does not.
 - **`moveFirePenalty` is now unused** by any shipped unit (the motorcycle lost it); the attribute and its combat code remain.
 - **`ammo.cost` was removed**: replacing rounds is free except for rounds that stand for a unit (`deploy`, `layMines`), derived in `roundCost`.
+
+## Maps and skirmish (latest pass)
+- **The new water maps are generated, not drawn.** `island_chain`, `sky_strait` and `four_seas` came from a throwaway script (symmetry by mirror or rotation); there is no map editor or generator in the repo, so they can only be tweaked by hand-editing the tile strings.
+- **The AI never plans amphibious landings,** so every map still needs a land route between the HQs (the island map uses a causeway); real island-hopping play is human-only until the AI learns to use transports.
+- **Skirmish no longer offers Random or No leader,** and a colour with no leader (none exist today) would play with the map's own units; `RANDOM_LEADER` and `resolveLeaders` remain in `src/data/skirmish.js` for map files and tests only.

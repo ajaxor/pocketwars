@@ -29,7 +29,7 @@
   "leaders": {
     "harlan": {
       "build": {
-        "barracks": ["soldier", "mech", "sniper"],
+        "barracks": ["soldier", "medic", "mech", "sniper"],
         "airfield": ["torpedo_bomber", "vintage_fighter", "vintage_bomber"],
         "factory": ["recon", "tank", "heavy_tank", "artillery", "apc", "flak"],
         "shipyard": ["destroyer", "cruiser", "battleship", "troop_transport"]
@@ -48,7 +48,7 @@
     "ada": {
       "build": {
         "barracks": ["commando", "rpg_trooper", "mechanic"],
-        "factory": ["rocket_buggy", "tank", "rocket_launcher", "flak"],
+        "factory": ["rocket_buggy", "tank", "rocket_launcher", "sam_launcher"],
         "airfield": ["transport_copter", "copter", "fighter", "bomber"],
         "shipyard": ["gun_boat", "hunter_sub", "mine_layer", "cruiser", "battleship"]
       },
@@ -140,7 +140,7 @@
     },
     "rex": {
       "build": {
-        "barracks": ["marine", "mech", "sniper"],
+        "barracks": ["marine", "rpg_trooper", "medic"],
         "factory": ["recon", "amphibious_tank", "heavy_tank", "artillery", "rocket_launcher", "flak"],
         "airfield": ["copter", "fighter", "bomber", "torpedo_bomber"],
         "shipyard": ["gun_boat", "hunter_sub", "troop_transport", "cruiser", "battleship", "aircraft_carrier", "mine_layer"]
@@ -152,7 +152,7 @@
           { "unit": "artillery", "at": [0, 1] }
         ],
         "barracks": [
-          { "unit": "mech", "at": [0, 1] }
+          { "unit": "rpg_trooper", "at": [0, 1] }
         ],
         "airfield": [
           { "unit": "torpedo_bomber", "at": [0, 1] }
@@ -187,7 +187,7 @@
       "build": {
         "barracks": ["conscript", "rpg_trooper", "sniper"],
         "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "apc"],
-        "airfield": ["copter", "fighter", "vintage_bomber"],
+        "airfield": ["copter", "fighter", "vintage_bomber", "torpedo_bomber"],
         "shipyard": ["destroyer", "missile_sub", "mine_layer", "cruiser", "battleship", "troop_transport"]
       },
       "start": {
@@ -210,9 +210,9 @@
     "lysandra": {
       "build": {
         "barracks": ["marine", "mech", "sniper", "medic"],
-        "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "supply_truck"],
-        "airfield": ["copter", "fighter", "stealth_bomber"],
-        "shipyard": ["destroyer", "submarine", "cruiser", "dreadnought"]
+        "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "sam_launcher", "supply_truck"],
+        "airfield": ["copter", "fighter", "stealth_bomber", "radar_plane"],
+        "shipyard": ["destroyer", "gun_boat", "cruiser", "dreadnought"]
       },
       "start": {
         "hq": [

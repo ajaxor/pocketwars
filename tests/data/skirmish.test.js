@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../../src/data/loader.js';
-import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction, adoptLeaderColours } from '../../src/data/skirmish.js';
+import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction } from '../../src/data/skirmish.js';
 import { placeStart } from '../../src/data/formation.js';
 import { loadCampaign } from '../../src/data/campaign.js';
 import { SkirmishScreen } from '../../src/ui/skirmish-screen.js';
@@ -178,70 +178,64 @@ test('every map plays with every leader pairing the shipped kits allow (no unit 
   }
 });
 
-// ---- the screen: picking leaders ---------------------------------------------------------------------------------------------------------------
+// ---- the screen: the colour picks the leader ---------------------------------------------------------------------------------------------------
 const screen = (o = {}) => {
   const doc = new FakeDoc(); const started = [];
-  const s = new SkirmishScreen(doc, { registry, maps, selectedId: 'classic', leaders: campaign.leaders, starter: 'harlan', onStart: (m, st) => started.push([m, st]), onBack() {}, ...o });
-  return { s, started, strips: () => s.root.find((e) => e.className === 'sk-leaders'), notes: () => s.root.find((e) => e.className === 'sk-leader-note').map((e) => e.textContent) };
+  const s = new SkirmishScreen(doc, { registry, maps, selectedId: 'classic', leaders: campaign.leaders, speech: campaign.speech, onStart: (m, st) => started.push([m, st]), onBack() {}, ...o });
+  const text = (cls) => s.root.find((e) => e.className === cls).map((e) => e.textContent);
+  return { s, started, strips: () => s.root.find((e) => e.className === 'sk-leaders'), who: () => text('sk-leader-who'), quotes: () => text('sk-leader-quote') };
 };
 const nameOf = (btn) => btn.find((e) => e.className === 'sk-leader-name')[0].textContent;
-const pickedIn = (strip) => strip.find((e) => e.className.includes('is-picked')).map(nameOf);
 
-test('each team gets a strip: Random, every leader, then None; the human starts on the starter and the computer on Random', () => {
-  const { s, strips, notes } = screen();
-  assert.equal(strips().length, 2);
-  for (const strip of strips()) {
-    assert.deepEqual(strip.children.map(nameOf), ['Random', 'Harlan', 'Ada', 'Vex', 'Hiroshi', 'Ludwig', 'Rex', 'Chase', 'Dmitri', 'Lysandra', 'None']);
-  }
-  assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Random']]);
-  assert.match(notes()[0], /^Col\. Harlan - Lastholm - Grizzled veteran$/);
-  assert.match(notes()[1], /picked at random when the battle starts/);
+test('each team shows only the leader of its colour, with their name and a line they say', () => {
+  const { s, strips, who, quotes } = screen();
+  assert.deepEqual(strips().map((strip) => strip.children.map(nameOf)), [['Ada'], ['Vex']], 'classic is Ashmark against Vantor Reach');
+  assert.deepEqual(s.settings.players.map((p) => p.leader), ['ada', 'vex']);
+  assert.match(who()[0], /^Cmdr\. Ada - Ashmark - /);
+  const lines = campaign.speech.ada.lines.greeting;
+  assert.ok(lines.some((l) => quotes()[0] === `\u201c${l}\u201d`), 'a greeting from the leader\'s own speech file');
   assert.equal(strips()[0].attrs['aria-label'], 'Team 1 leader');
-  assert.deepEqual(s.settings.players.map((p) => p.leader), ['harlan', RANDOM_LEADER]);
 });
 
-test('tapping a leader picks them for that team only; Random and None are on the strip too', () => {
-  const { s, strips, notes } = screen();
-  const tap = (slot, label) => strips()[slot].children.find((b) => b.attrs['aria-label'] === label).click();
-  tap(1, 'Adm. Rex');
-  assert.deepEqual(s.settings.players.map((p) => p.leader), ['harlan', 'rex']);
-  assert.deepEqual(strips().map(pickedIn), [['Harlan'], ['Rex']]);
-  assert.match(notes()[1], /^Adm\. Rex - Tidehaven - /);
-  tap(1, 'No leader');
-  assert.equal(s.settings.players[1].leader, null);
-  assert.match(notes()[1], /No leader: this map's own units/);
-  tap(0, 'Random leader');
-  assert.equal(s.settings.players[0].leader, RANDOM_LEADER);
-  assert.deepEqual(strips().map(pickedIn), [['Random'], ['None']]);
-  assert.equal(strips()[0].children.find((b) => b.attrs['aria-label'] === 'Random leader').attrs['aria-pressed'], 'true');
-  s.setLeader(0, 'ada'); assert.match(notes()[0], /Cmdr\. Ada/);
+test('choosing a colour chooses its leader, and the other team follows when colours swap', () => {
+  const { s, strips, who } = screen();
+  s.setFaction(1, 'tidehaven');
+  assert.deepEqual(s.settings.players.map((p) => [p.faction, p.leader]), [['ashmark', 'ada'], ['tidehaven', 'rex']]);
+  assert.deepEqual(strips().map((strip) => strip.children.map(nameOf)), [['Ada'], ['Rex']]);
+  assert.match(who()[1], /^Adm\. Rex - Tidehaven - /);
+  s.setFaction(0, 'tidehaven');   // swaps with team 2
+  assert.deepEqual(s.settings.players.map((p) => [p.faction, p.leader]), [['tidehaven', 'rex'], ['ashmark', 'ada']]);
 });
 
-test('leaders survive changing the colour or who plays, and picking another map keeps the leaders of the teams it shares', () => {
+test('the line is kept while nothing changes and drawn again when a colour does', () => {
+  const { s, quotes } = screen();
+  const first = quotes();
+  s.setFunds(5000);
+  assert.deepEqual(quotes(), first, 'redrawing for another reason keeps the line');
+  for (const f of ['solace', 'skyreach', 'deepmere']) { s.setFaction(0, f); assert.match(quotes()[0], /^\u201c.+\u201d$/); }
+});
+
+test('picking another map gives every team the leader of its colour; funds are kept', () => {
   const { s } = screen();
-  s.setLeader(0, 'vex'); s.setLeader(1, 'dmitri');
-  s.setFaction(0, 'solace'); s.setController(1, 'human');
-  assert.deepEqual(s.settings.players.map((p) => p.leader), ['vex', 'dmitri']);
+  s.setFunds(10000);
   s.pick(four.id);
-  assert.deepEqual(s.settings.players.map((p) => p.leader), ['vex', 'dmitri', RANDOM_LEADER, RANDOM_LEADER], 'new teams get the defaults');
-  s.pick('classic');
-  assert.deepEqual(s.settings.players.map((p) => p.leader), ['vex', 'dmitri']);
-  assert.equal(s.root.find((e) => e.className === 'sk-leaders').length, 2);
+  assert.deepEqual(s.settings.players.map((p) => p.leader), four.players.map((p) => registry.leaderIds.find((id) => campaign.leaders.find((l) => l.id === id).faction === p.faction)));
+  assert.equal(s.settings.funds, 10000);
+  assert.equal(s.root.find((e) => e.className === 'sk-leaders').length, 4);
 });
 
-test('Start hands the leader choices on, still unrolled', () => {
+test('Start hands the leaders on as picked by colour, as a copy', () => {
   const { s, started } = screen();
-  s.setLeader(0, 'lysandra');
+  s.setFaction(0, 'highspire');
   s.go.click();
-  assert.deepEqual(started[0][1].players.map((p) => p.leader), ['lysandra', RANDOM_LEADER]);
+  assert.deepEqual(started[0][1].players.map((p) => [p.faction, p.leader]), [['highspire', 'lysandra'], ['vantor_reach', 'vex']]);
   started[0][1].players[0].leader = 'x';
-  assert.equal(s.settings.players[0].leader, 'lysandra', 'what the screen hands on is a copy');
+  assert.equal(s.settings.players[0].leader, 'lysandra');
 });
 
 test('without the campaign the leaders are still offered, by id; without any loadouts the strips are not there at all', () => {
-  const noNames = screen({ leaders: undefined });
-  assert.deepEqual(noNames.strips()[0].children.slice(1, 4).map(nameOf), ['Harlan', 'Ada', 'Vex']);
-  assert.deepEqual(noNames.s.settings.players.map((p) => p.leader), ['harlan', RANDOM_LEADER]);
+  const noNames = screen({ leaders: undefined, speech: undefined });
+  assert.deepEqual(noNames.s.settings.players.map((p) => p.leader), [null, null], 'no campaign: no nation is known, so no leader goes with a colour');
   const doc = new FakeDoc(); const started = [];
   const s = new SkirmishScreen(doc, { registry: bare, maps, selectedId: 'classic', onStart: (m, st) => started.push(st), onBack() {} });
   assert.equal(s.root.find((e) => e.className === 'sk-leaders').length, 0);
@@ -250,13 +244,8 @@ test('without the campaign the leaders are still offered, by id; without any loa
   assert.equal(started.length, 1);
 });
 
-test('an odd starter id falls back to the first leader', () => {
-  assert.equal(screen({ starter: 'nobody' }).s.settings.players[0].leader, 'harlan');
-  assert.equal(screen({ starter: 'ada' }).s.settings.players[0].leader, 'ada');
-});
-
 // ---- the launcher with the campaign ------------------------------------------------------------------------------------------------------------
-test('launcher: Skirmish offers the campaign\'s leaders, and Start plays a map where the teams have their leaders and armies', async () => {
+test('launcher: Skirmish offers the colour\'s leaders, and Start plays a map where the teams have their leaders and armies', async () => {
   const doc = new FakeDoc();
   doc.body.classList.add('loading'); doc.withId('boot');
   const played = [];
@@ -264,21 +253,11 @@ test('launcher: Skirmish offers the campaign\'s leaders, and Start plays a map w
   const title = await launch({ doc, base: '', tag: 't', hash: 't', getVersion: async () => ({ hash: 't' }), goTo() {}, reload() {}, loadCss: async () => {}, loadGame: async () => game, random: () => 0 });
   title.skirmish.click();
   const open = doc.body.children.find((c) => c.className === 'sk');
-  assert.ok(open.find((e) => e.className === 'sk-leader-name' && e.textContent === 'Harlan').length > 0, 'names come from the campaign');
+  assert.ok(open.find((e) => e.className === 'sk-leader-name' && e.textContent === 'Ada').length > 0, 'names come from the campaign');
+  assert.ok(open.find((e) => e.className === 'sk-leader-quote').length > 0, 'and so does the line they say');
   open.find((e) => e.className === 'btn-label' && e.textContent === 'Start battle')[0].parent.click();
   const m = played[0];
-  assert.deepEqual(m.players.map((p) => p.leader), ['harlan', 'ada'], 'the human is the hero of the home nation; the computer rolled the first other leader');
-  assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'harlan').length);
+  assert.deepEqual(m.players.map((p) => p.leader), ['ada', 'vex']);
+  assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'ada').length);
   assert.ok(Object.isFrozen(m));
-});
-
-test('a leader brings the colour of their nation: picked leaders on the page, random ones when rolled', () => {
-  const nationOf = { ada: 'x', vex: 'y' };
-  const players = [{ faction: 'y' }, { faction: 'x' }, { faction: 'z' }];
-  const colours = (leaders, only) => adoptLeaderColours(players, leaders, nationOf, only).map((p) => p.faction);
-  assert.deepEqual(colours(['ada', null, 'vex']), ['x', 'z', 'y'], 'each takes their nation, trading with whoever held it');
-  assert.deepEqual(colours(['ada', RANDOM_LEADER, null]), ['x', 'y', 'z'], 'an unrolled random leader brings nothing');
-  assert.deepEqual(colours(['ada', 'ada', null]), ['x', 'y', 'z'], 'a second leader of one nation does not steal it');
-  assert.deepEqual(colours(['ada', 'vex', null], (i) => i === 1), ['x', 'y', 'z'], 'only the slots asked for change');
-  assert.deepEqual(players.map((p) => p.faction), ['y', 'x', 'z'], 'the input is untouched');
 });

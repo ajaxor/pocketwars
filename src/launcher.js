@@ -74,11 +74,11 @@ export async function launch({
     if (leaders.length) portraitColors();
     skirmish = new SkirmishScreen(doc, {
       registry: game.registry, maps: game.maps, selectedId: game.defaultMapId,
-      leaders, starter: leaders.find((l) => l.faction === game.campaign.home)?.id,
+      leaders, speech: game.campaign?.speech || {},
       onBack: () => { skirmish.remove(); skirmish = null; },
       onStart: (map, settings) => {
         skirmish.remove(); skirmish = null;
-        game.play(applySkirmish(map, settings, game.registry, random, Object.fromEntries(leaders.map((l) => [l.id, l.faction]))));
+        game.play(applySkirmish(map, settings, game.registry, random));
         started = true; t.remove();
       },
     });

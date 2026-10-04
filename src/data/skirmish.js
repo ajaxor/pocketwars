@@ -12,7 +12,6 @@
 //   resolveLeaders(players, pool, random)       the leader id (or null) each slot fights with, with every 'random' rolled
 //   applySkirmish(map, s, registry, random)     a copy of the map (frozen, like every GameMap) with the settings in place
 //   swapFaction(players, slot, faction)         give a slot a colour; if another slot had it, that slot gets the old colour
-//   adoptLeaderColours(players, leaders, nationOf, only)   slots with a leader take the colour of that leader's nation (`only`: which slots)
 
 import { withLeaders } from './formation.js';
 import { RANDOM_LEADER } from './validate.js';
@@ -84,15 +83,13 @@ const deepFreeze = (o) => {
  * The map with the settings applied. Teams with a leader (rolled now for 'random') get that leader's build menus and the leader's
  * starting formation around their HQ in place of the map's own units for them (see formation.js); the registry is only needed then.
  */
-export function applySkirmish(map, s, registry, random = Math.random, nationOf = {}) {
+export function applySkirmish(map, s, registry, random = Math.random) {
   const wanted = s.players.some((p) => p.leader);
   if (wanted && !registry) throw new Error('applySkirmish needs the registry to give teams their leaders');
   const leaders = wanted ? resolveLeaders(s.players, registry.leaderIds, random) : s.players.map(() => null);
-  // a leader rolled at random brings their nation's colour; a leader picked by hand keeps the colour chosen on the page
-  const coloured = adoptLeaderColours(s.players, leaders, nationOf, (i) => s.players[i].leader === RANDOM_LEADER);
   const set = {
     ...map,
-    players: map.players.map((p, i) => ({ faction: coloured[i].faction, controller: s.players[i].controller, funds: s.funds ?? p.funds })),
+    players: map.players.map((p, i) => ({ faction: s.players[i].faction, controller: s.players[i].controller, funds: s.funds ?? p.funds })),
   };
   return leaders.some(Boolean) ? withLeaders(set, registry, leaders) : deepFreeze(set);
 }
@@ -103,27 +100,5 @@ export function swapFaction(players, slot, faction) {
   const other = out.findIndex((p, i) => i !== slot && p.faction === faction);
   if (other >= 0) out[other].faction = out[slot].faction;
   out[slot].faction = faction;
-  return out;
-}
-
-/**
- * A new players list in which each slot (that `only` accepts) with a leader takes the colour of that leader's nation, trading with whoever held it.
- * A slot whose colour was set this way is not traded away again, so two leaders of one nation leave the second with its own colour.
- * @param {{faction:string}[]} players
- * @param {(string|null)[]} leaders  the leader id of each slot (null for none; 'random' counts as none)
- * @param {Record<string,string>} nationOf  leader id -> faction id
- * @param {(slot:number)=>boolean} [only]
- */
-export function adoptLeaderColours(players, leaders, nationOf, only = () => true) {
-  let out = players.map((p) => ({ ...p }));
-  const fixed = new Set();
-  leaders.forEach((l, i) => {
-    const nation = l && l !== RANDOM_LEADER ? nationOf[l] : null;
-    if (!nation || !only(i)) return;
-    const holder = out.findIndex((p, j) => j !== i && p.faction === nation);
-    if (holder >= 0 && fixed.has(holder)) return;
-    out = swapFaction(out, i, nation);
-    fixed.add(i);
-  });
   return out;
 }

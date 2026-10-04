@@ -49,5 +49,6 @@ export const CHIN_STYLES = {
   angular:  { parts: [['poly', [37, 56], [63, 56], [59.5, 69.5], [50, 72.5], [40.5, 69.5]]] },
   double:   { parts: [['ell', 50, 66.5, 13.5, 8], ['ell', 50, 71, 10, 5]], fold: true },
   delicate: { parts: [['poly', [39, 58], [61, 58], [55, 69], [50, 71], [45, 69]]] },
+  round:    { parts: [['ell', 50, 63, 10.5, 6.5]] },
   smooth:   { parts: [['ell', 50, 64.5, 12.5, 7]] },
 };

@@ -8,6 +8,9 @@
     "tri_point": "tri_point.map.json",
     "harbor_front": "harbor_front.map.json",
     "reef_raiders": "reef_raiders.map.json",
-    "twin_fleets": "twin_fleets.map.json"
+    "twin_fleets": "twin_fleets.map.json",
+    "island_chain": "island_chain.map.json",
+    "sky_strait": "sky_strait.map.json",
+    "four_seas": "four_seas.map.json"
   }
 }

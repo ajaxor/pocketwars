@@ -1,5 +1,5 @@
-// The shipped water maps must be winnable and playable: no transports exist yet, so the only way to capture an HQ is on foot
-// over land, and ships need open deep water from their shipyards.
+// The shipped water maps must be playable: every HQ is joined to the others by land (the AI does not plan landings), and ships need open
+// deep water from their shipyards.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
@@ -40,7 +40,7 @@ for (const id of Object.keys(index.maps)) {
   });
 }
 
-for (const id of ['harbor_front', 'reef_raiders', 'twin_fleets']) {
+for (const id of ['harbor_front', 'reef_raiders', 'twin_fleets', 'island_chain', 'sky_strait', 'four_seas']) {
   test(`${id}: each shipyard opens onto deep water that reaches the other side's shipyards`, async () => {
     const map = await loadMap(readData, registry, id);
     const game = new Game(registry, map);
@@ -57,7 +57,7 @@ for (const id of ['harbor_front', 'reef_raiders', 'twin_fleets']) {
   test(`${id}: the AI can play five rounds without an invalid order`, async () => {
     const map = await loadMap(readData, registry, id);
     const game = new Game(registry, map);
-    for (let i = 0; i < 10 && !game.isOver; i++) { playTurn(game); if (!game.isOver) game.endTurn(); }
+    for (let i = 0; i < 5 * map.players.length && !game.isOver; i++) { playTurn(game); if (!game.isOver) game.endTurn(); }
     assert.ok(game.state.day >= 5 || game.isOver);
   });
 }
