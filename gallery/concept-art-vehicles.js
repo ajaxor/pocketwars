@@ -63,17 +63,9 @@ const amphibiousTankSwim = (g, { s, c, dk, w, ph, run, b }) => {
 // bounces on its suspension while the wheels stay planted.
 const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s * .45;                                                                    // body bounce; the wheels do not take it
-  wheels(g, s, [-.24, -.04, .2], .205, .085, w * .4, run, 12);                                    // a wheeled truck: three wheels
   box(g, s, -.36, .03 + bb, .72, .14, 3, dk);                                                // dark chassis, like the rocket launcher's
   box(g, s, .17, -.08 + bb, .19, .17, 3, c); box(g, s, .22, -.05 + bb, .12, .07, 2, GLASS);   // cab and its window
   box(g, s, -.32, -.02 + bb, .44, .06, 2, c);                                                // the flatbed
-  // radar dish in side profile on a short mast: a shallow bowl that tips up and down
-  stroke(g, s, .27, -.08 + bb, .27, -.16 + bb, 2, INK); box(g, s, .24, -.18 + bb, .06, .035, 1, INK);
-  const r = .095, tilt = -(.75 + (run ? Math.sin(w * 1.8 + ph) * .5 : 0));
-  g.save(); g.translate(.27 * s, (-.205 + bb) * s); g.rotate(tilt);
-  g.fillStyle = mix(STEEL, '#ffffff', .5); g.beginPath(); g.moveTo(0, -r * s); g.quadraticCurveTo(-r * .9 * s, 0, 0, r * s); g.quadraticCurveTo(-r * .25 * s, 0, 0, -r * s); g.fill();   // the bowl
-  stroke(g, s, -r * .1, 0, r * .5, 0, 1.4, INK); disc(g, s, r * .5, 0, .012, RED);           // the feed horn on its arm
-  g.restore();
   // the launcher: a bed hinged at the rear of the hull, raised on a strut, with three missiles arrayed front to back
   const ang = -.9, ux = Math.cos(ang), uy = Math.sin(ang), Fx = -.22, Fy = -.03 + bb, L = .34, DX = .0, DY = -.045;
   const rec = Math.max(0, Math.sin(w * 1.5 + ph)) * .014 * run;
@@ -83,6 +75,7 @@ const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   stroke(g, s, Fx, Fy, Fx + ux * L, Fy + uy * L, 3, mix(dk, '#000000', .3));                  // its near rail
   missile(g, s, Fx + DX * .5 + .01 - rec * ux, Fy + DY * .5 - rec * uy, ang, .44, .08);        // one big anti-air missile, white
   disc(g, s, Fx, Fy, .022, INK);                                                             // the hinge
+  wheels(g, s, [-.24, -.04, .2], .205, .085, w * .4, run, 12);                               // the wheels are drawn last, on top of the chassis
 };
 
 // ---- Rocket buggy -----------------------------------------------------------------------------------------------------------
