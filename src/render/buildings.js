@@ -69,7 +69,7 @@ export const BUILDINGS = {
     k.windows(.12, .5, .64, .2, 5, 1, owner);
     k.rect(.4, .7, .16, .18, '#2a2a35');
     k.box(.3, .25, .32, .2, .1, owner);
-    k.star(.46, .35, .075, '#ffe45c');
+    k.star(.46, .35, .075, '#ffffff');
     k.line([[.46, .19], [.46, .03]], '#222', .03);
     k.poly([[.46, .03], [.68, .09], [.46, .15]], owner);
   },
@@ -128,7 +128,10 @@ export const BUILDINGS = {
     const cx = .3, cy = .5, r = .2, front = [], back = [];
     for (let i = 0; i <= 12; i++) { const a = Math.PI - i * Math.PI / 12; front.push([cx + Math.cos(a) * r, cy - Math.sin(a) * r]); back.push([cx + Math.cos(a) * r + dx, cy - Math.sin(a) * r + dy]); }
     k.poly([[.5, .62], [.5 + dx, .62 + dy], [.5 + dx, cy + dy], [.5, cy]], shade(owner, -.3));
-    k.poly([...front, ...back.reverse()], shade(owner, .18));
+    const pts = [...front, ...back].sort((a, b) => a[0] - b[0] || a[1] - b[1]), cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]), lo = [], up = [];
+    for (const q of pts) { while (lo.length > 1 && cross(lo[lo.length - 2], lo[lo.length - 1], q) <= 0) lo.pop(); lo.push(q); }
+    for (const q of [...pts].reverse()) { while (up.length > 1 && cross(up[up.length - 2], up[up.length - 1], q) <= 0) up.pop(); up.push(q); }
+    k.poly([...lo.slice(0, -1), ...up.slice(0, -1)], shade(owner, .18));                  // the roof: the hull of the front arch and the same arch pushed back, so its top is a clean straight-edged barrel
     g.fillStyle = owner; g.beginPath(); g.moveTo(k.X(.1), k.Y(.62)); g.lineTo(k.X(.1), k.Y(cy)); g.arc(k.X(cx), k.Y(cy), r * S, Math.PI, 0); g.lineTo(k.X(.5), k.Y(.62)); g.closePath(); g.fill();
     g.fillStyle = '#2b2d33'; g.beginPath(); g.moveTo(k.X(.21), k.Y(.62)); g.lineTo(k.X(.21), k.Y(.53)); g.arc(k.X(.3), k.Y(.53), .09 * S, Math.PI, 0); g.lineTo(k.X(.39), k.Y(.62)); g.closePath(); g.fill();
     // control tower
@@ -148,9 +151,8 @@ export const BUILDINGS = {
       k.poly([[x0, .52], [x0 + w, .52], [x0 + w, .38]], shade(owner, -.12));
       k.poly([[x0, .52], [x0 + w, .38], [x0 + w, .4], [x0 + .02, .52]], '#cfe6f5');
     }
-    k.rect(.14, .66, .26, .2, '#2b2d33');                             // slipway door, with a strip of water showing
-    k.rect(.14, .8, .26, .06, '#3d7ec7');
-    for (let i = 1; i < 3; i++) k.rect(.14, .66 + i * .05, .26, .012, '#4a4d55');
+    k.rect(.14, .66, .26, .2, '#2b2d33');                             // a closed door with slats, like the factory's
+    for (let i = 1; i < 4; i++) k.rect(.14, .66 + i * .05, .26, .012, '#4a4d55');
     // anchor emblem on the front: ring, shank, stock and the two curved arms
     const cx = .6;
     g.strokeStyle = ink; g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = Math.max(1, .026 * S);

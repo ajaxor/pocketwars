@@ -81,40 +81,43 @@ const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
   aim(g, s, 0, -.155, .4, sweep(w, ph, run, .42), 0, Math.max(3.5, s * .06), INK, -rec);            // the cannon
 };
 
-// SAM site: a block with a turntable, and a big anti-air missile (like the SAM launcher's) on a rail, tipped at the sky, that turns on it.
+/** The angle on the screen of a gun swung like a clock hand: it sweeps from pointing up-right, through straight up, to up-left and back (never toward the camera). */
+const hand = (w, ph, run, rate) => -(.12 * Math.PI + .76 * sweep(w, ph, run, rate));
+
+// SAM site: a block with a turntable, and two big anti-air missiles (like the SAM launcher's) that swing round like a clock hand.
 const samSite = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.32, .32);
   box(g, s, -.28, -.02, .56, .23, 4, c);
   box(g, s, -.12, -.09, .24, .08, 2, dk);                                                           // the turntable
-  const phi = sweep(w, ph, run, .4), el = 1.0, ux = Math.cos(el) * Math.cos(phi), uy = -Math.sin(el), ang = Math.atan2(uy, ux), len = Math.hypot(ux, uy);
-  missile(g, s, -.045 - ux * .03, -.075 - uy * .03, ang, .44 * len, .075, mix('#e8e4d8', '#000000', .3), '#3f434c');    // one behind
-  missile(g, s, .035 - ux * .03, -.085 - uy * .03, ang, .44 * len, .08);                            // and one in front
-  disc(g, s, 0, -.085, .03, INK);                                                                    // the pivot they rest on
+  const ang = hand(w, ph, run, .4), px = 0, py = -.1, nx = -Math.sin(ang), ny = Math.cos(ang);       // (nx, ny): across the missiles
+  missile(g, s, px - nx * .035, py - ny * .035, ang, .44, .075, mix('#e8e4d8', '#000000', .3), '#3f434c');   // one behind
+  missile(g, s, px + nx * .035, py + ny * .035, ang, .44, .08);                                      // and one in front
+  disc(g, s, px, py, .035, INK);                                                                     // the pivot they swing on
 };
 
-// Artillery emplacement: a long gun barrel in a simple round mount (a ring on a pedestal) that turns, raises and lowers its aim, and slides back
-// when it fires.
+// Artillery emplacement: a long gun barrel in a simple round mount (a ring on a pedestal) that swings round like a clock hand, and slides back when it fires.
 const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.4, .4);
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
   box(g, s, -.22, .02, .44, .2, 4, c);                                                              // the pedestal
   box(g, s, -.22, .02, .44, .05, 2, dk);
-  const phi = sweep(w, ph, run, .36), el = run ? .6 + .3 * Math.sin(w * .55 + ph * 2) : .5, thick = Math.max(3, s * .06), cy = -.07;
-  aim(g, s, 0, cy, .56, phi, el, thick, INK, -rec);                                                 // the barrel
+  const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.07, ca = Math.cos(ang), sa = Math.sin(ang), L = .56 - rec;
   disc(g, s, 0, cy, .15, INK); disc(g, s, 0, cy, .125, dk); disc(g, s, 0, cy, .07, mix(dk, '#ffffff', .18));   // the round mount it pivots in
-  aim(g, s, 0, cy, .56, phi, el, thick * 1.4, INK, -rec, 0, .13, false);                            // the barrel's root, over the mount
+  stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel
+  stroke(g, s, ca * (L - .07), cy + sa * (L - .07), ca * L, cy + sa * L, thick * 1.45, INK);         // its muzzle brake
+  stroke(g, s, 0, cy, ca * .13, cy + sa * .13, thick * 1.5, INK);                                    // the barrel's root over the mount
   disc(g, s, 0, cy, .035, INK);                                                                      // the trunnion
 };
 
-// Jammer: a hut with a mast and a big dish that turns from facing right, through facing us, to facing left and back.
+// Jammer: a hut with a mast and a big dish, a single flat colour cut off flat at the top and bottom, that turns from facing right, through facing us, to facing left and back.
 const jammer = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.24, .24);
-  const phi = sweep(w, ph, run, .5), r = .24, cx = 0, cy = -.2, k = Math.sin(phi), nx = Math.cos(phi);   // the dish faces (nx, k): k is how much it faces us
+  const phi = sweep(w, ph, run, .5), r = .44, cx = 0, cy = -.2, k = Math.sin(phi), nx = Math.cos(phi);   // the dish faces (nx, k): k is how much it faces us
   stroke(g, s, 0, .02, 0, cy + .04, Math.max(3, s * .04), STEEL);                                    // the mast
-  const rx = Math.max(.035, r * k);
-  oval(g, s, cx - nx * .03, cy, rx + .02, r + .02, INK);                                              // the dish's rim, seen at an angle
-  oval(g, s, cx - nx * .03, cy, rx, r, '#e6e8ee');
-  oval(g, s, cx + nx * r * .22 * k - nx * .02, cy, Math.max(.01, rx * .78), r * .8, mix(dk, '#ffffff', .15));   // the hollow of the dish, shifted toward the way it faces
+  const rx = Math.max(.035, .3 * k);
+  g.save(); g.beginPath(); g.rect((cx - .5) * s, (cy - .2) * s, s, .4 * s); g.clip();               // the dish is cut off flat above and below
+  oval(g, s, cx - nx * .03, cy, rx, r, c);
+  g.restore();
   stroke(g, s, cx, cy, cx + nx * .17, cy - .01, Math.max(2, s * .03), INK); disc(g, s, cx + nx * .17, cy - .01, .03, RED);   // the feed on its arm
   box(g, s, -.2, .0, .4, .21, 4, c);                                                                // the hut
   box(g, s, -.2, .0, .4, .05, 2, dk);                                                               // its roof
