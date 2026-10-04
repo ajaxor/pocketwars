@@ -253,7 +253,7 @@
   "spy": {
     "name": "Spy",
     "category": "infantry",
-    "cost": 3500,
+    "cost": 1500,
     "move": 2,
     "moveClass": "foot",
     "layer": "ground",

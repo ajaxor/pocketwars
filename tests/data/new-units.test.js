@@ -10,11 +10,11 @@ const registry = await loadRegistry(readData);
 const unit = (id) => registry.unit(id);
 const weaponsOf = (id) => unit(id).weapons.map((w) => registry.weapons[w]);
 
-test('the spy is stealth infantry that captures: expensive, fragile, with a weak pistol, and no special orders', () => {
+test('the spy is stealth infantry that captures: a little dearer than a soldier, fragile, with a weak pistol, and no special orders', () => {
   const spy = unit('spy');
   assert.ok(hasAttribute(spy, 'cloak') && hasAttribute(spy, 'capture'));
   assert.ok(!hasAttribute(spy, 'heal'));
-  assert.ok(spy.cost > unit('soldier').cost && spy.cost >= unit('mech').cost, 'dearer than the soldier');
+  assert.ok(spy.cost > unit('soldier').cost, 'dearer than the soldier');
   assert.ok(weaponsOf('spy')[0].damage < registry.weapons.rifle.damage, 'weaker than a rifle');
 });
 
