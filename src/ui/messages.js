@@ -27,6 +27,13 @@ export function describeEvents(game, events) {
       text = `${name(ev.unit)} resupplied` + (ev.cost ? ` for ${ev.cost.toLocaleString('en-US')}` : '');
     } else if (ev.type === 'resupplyDenied') {
       text = 'Not enough credits';
+    } else if (ev.type === 'detonate') {
+      text = `${name(ev.mine)} explodes! ${name(ev.unit)} -${ev.damage}` + (ev.destroyed ? ' - destroyed!' : ', its move is cancelled');
+    } else if (ev.type === 'supply') {
+      const n = ev.supplied.length, cost = ev.supplied.reduce((a, s) => a + s.cost, 0);
+      text = `${name(ev.unit)} supplies ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');
+    } else if (ev.type === 'lay') {
+      text = `${name(ev.unit)} lays a mine for ${ev.cost.toLocaleString('en-US')}`;
     } else if (ev.type === 'heal') {
       const n = ev.healed.length, cost = ev.healed.reduce((a, h) => a + h.cost, 0);
       text = `${name(ev.unit)} heals ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');

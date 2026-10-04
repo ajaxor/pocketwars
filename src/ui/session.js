@@ -1,7 +1,7 @@
 // Session: owns one running game (Game + Renderer + HUD + Controller) and drives the frame loop,
 // the End-turn button and the AI's turns with their pacing delays.
 
-import { buildPhase, chooseOrder, tryDeploy } from '../engine/ai.js';
+import { buildPhase, chooseOrder, surfaceToTravel, tryDeploy } from '../engine/ai.js';
 import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
@@ -362,6 +362,7 @@ export class Session {
     return events.filter((ev) => {
       if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
       if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
+      if (ev.type === 'lay') return false;   // nobody sees a mine go down
       return true;
     });
   }
@@ -395,6 +396,11 @@ export class Session {
     const viewer = this.#viewer();
     animator.arrow = null;
     let shown = false;   // did the human get to see this unit act?
+    if (!unit.fresh) {   // a submarine that is not threatened comes up to travel at the surface speed
+      const wasVisible = canSee(game, viewer, unit);
+      const up = surfaceToTravel(game, unit);
+      if (up.length) { presenter.present(this.#visibleTo(viewer, up, wasVisible), { now: this.#now() }); shown = wasVisible; }
+    }
     // An order can be cut short by a hidden unit; the unit then gets another order.
     for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done; step++) {
       const order = chooseOrder(game, unit);

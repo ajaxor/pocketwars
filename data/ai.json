@@ -11,7 +11,8 @@
     "blockCapture": 6,
     "crowFlies": 0.1,
     "deployRange": 8,
-    "healValue": 2
+    "healValue": 2,
+    "maxMines": 4
   },
   "build": {
     "infantry": [
@@ -45,20 +46,32 @@
       { "unit": "marine",  "max": 2 }
     ],
     "naval": [
+      { "unit": "dreadnought", "max": 1 },
+      { "unit": "hunter_sub", "max": 2, "when": "enemyHasSub" },
+      { "unit": "missile_sub", "max": 1 },
+      { "unit": "mine_layer", "max": 1 },
       { "unit": "gun_boat",   "max": 2 },
       { "unit": "cruiser",    "max": 2, "when": "enemyHasAirborne" },
       { "unit": "destroyer",  "max": 2 },
       { "unit": "submarine",  "max": 2 },
       { "unit": "cruiser",    "max": 1 },
-      { "unit": "battleship", "max": 1 }
+      { "unit": "battleship", "max": 1 },
+      { "unit": "aircraft_carrier", "max": 1 },
+      { "unit": "troop_transport", "max": 1 }
     ],
     "vehicle": [
+      { "unit": "sam_launcher", "max": 2, "when": "enemyHasAirborne" },
       { "unit": "flak",       "max": 2, "when": "enemyHasAirborne" },
+      { "unit": "hover_tank", "max": 2 },
+      { "unit": "amphibious_tank", "max": 2 },
       { "unit": "heavy_tank", "max": 2 },
       { "unit": "tank",       "max": 3 },
+      { "unit": "rocket_buggy", "max": 2 },
       { "unit": "artillery",  "max": 2 },
       { "unit": "stealth_tank", "max": 1 },
       { "unit": "rocket_launcher", "max": 1 },
+      { "unit": "apc", "max": 1 },
+      { "unit": "supply_truck", "max": 1 },
       { "unit": "recon",      "max": 1 }
     ]
   }

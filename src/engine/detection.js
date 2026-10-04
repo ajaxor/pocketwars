@@ -14,7 +14,7 @@
 // Sight is a property of the current state. There is no memory: a hidden unit that stops being noticed is hidden again.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
-import { distance, layerIdOf, unitDef } from './queries.js';
+import { distance, inBounds, layerIdOf, tileIndex, unitDef } from './queries.js';
 
 /** Does a unit lift its cloak when it fires (`cloak: { revealedByFiring }`)? */
 export const revealsWhenFiring = (game, unit) => attributeConfig(unitDef(game, unit), 'cloak')?.revealedByFiring === true;
@@ -65,4 +65,21 @@ export function canSee(game, player, unit) {
 /** The units of other players that `player` cannot see right now (ids). */
 export function hiddenFrom(game, player) {
   return game.state.units.filter((u) => u.owner !== player && !canSee(game, player, u)).map((u) => u.id);
+}
+
+/**
+ * The tiles a unit's sonar covers from (x, y): every tile within its `sonar` range except its own, as a Set of tile indexes. null when the
+ * unit has no sonar. The board draws it as an overlay while such a unit is selected.
+ */
+export function sonarTiles(game, unit, x = unit.x, y = unit.y) {
+  const range = attributeConfig(unitDef(game, unit), 'sonar');
+  if (range === undefined) return null;
+  const out = new Set();
+  for (let dy = -range; dy <= range; dy++) {
+    for (let dx = -range; dx <= range; dx++) {
+      if ((!dx && !dy) || Math.abs(dx) + Math.abs(dy) > range || !inBounds(game.map, x + dx, y + dy)) continue;
+      out.add(tileIndex(game.map, x + dx, y + dy));
+    }
+  }
+  return out;
 }

@@ -6,6 +6,10 @@ export const AI_CONDITIONS = {
   enemyHasAirborne: (game, player) => game.state.units.some(
     (u) => u.owner !== player && game.registry.rules.layers[game.registry.unit(u.type).layer].airborne === true,
   ),
+  /** True when any opposing unit carries the `sub` tag (a submarine of any kind: a hunter sub has something to hunt). */
+  enemyHasSub: (game, player) => game.state.units.some(
+    (u) => u.owner !== player && game.registry.unit(u.type).tags?.includes('sub'),
+  ),
   /** True when any opposing unit is on a ship's layer or under the water (a torpedo bomber has something to hit). */
   enemyHasNaval: (game, player) => game.state.units.some(
     (u) => u.owner !== player && game.registry.unit(u.type).moveClass === 'naval',

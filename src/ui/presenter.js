@@ -22,6 +22,11 @@ export class Presenter {
       } else if (ev.type === 'interrupt') {
         this.effects.interrupt(ev, t);
         t += 500;
+      } else if (ev.type === 'detonate') {
+        this.effects.detonate(ev, t);
+        t += 600;
+      } else if (ev.type === 'supply') {
+        this.effects.supplied(ev, t);
       } else if (ev.type === 'dive') {
         this.effects.dive(ev, t, true);
       } else if (ev.type === 'surface') {

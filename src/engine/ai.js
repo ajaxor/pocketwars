@@ -11,6 +11,12 @@
 // Support units. A healer (medic, mechanic: the `heal` attribute) walks toward the friendly units it can heal, the damaged ones first, and likes
 // tiles next to them (`healValue`); a radar plane stays with the army. It gives the Heal order in preference to a weak attack.
 //
+// Supply units (supply truck, aircraft carrier: the `supply` attribute) walk toward the friends that need ammo (or repairs, for a carrier) and
+// give the Supply order next to them. A mine layer lays a mine (the Lay order) at the free tile in range closest to the enemy, while it can
+// afford it and has fewer than `maxMines` mines out. A unit that can hit nothing it can see (an anti-air battery with no aircraft about, a hunter
+// sub with no submarine in sight) stays with the army instead of marching into the enemy. A submerged submarine comes up before moving unless an
+// enemy is close, so it travels at the surface speed (`surfaceToTravel`).
+//
 // Carriers (the transport copter) fly toward properties they could have captured, drop their troops once close to one (`tryDeploy`, after
 // the carrier's own move; the dropped unit is then ordered like any other), and go back to an airfield for more when empty and the owner
 // can pay for it. Resupply is only chosen when the unit is low or empty and the money is there.
@@ -18,18 +24,20 @@
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
 // hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
-import { ammoLevel, canResupplyAt, resupplyCost } from './ammo.js';
+import { ammoLevel, canResupplyAt, resupplyCost, roundCost } from './ammo.js';
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
 import { canHealAt } from './heal.js';
-import { calcDamage, canAttackFrom } from './combat.js';
+import { canSupplyAt, supplyConfig, supplyPlan } from './supply.js';
+import { isMine, layConfig, layTiles } from './mines.js';
+import { calcDamage, canAttackFrom, canTarget } from './combat.js';
 import { canSee } from './detection.js';
 import { canDeploy, deployConfig, deployReach } from './deploy.js';
 import { buildProblem, menuFor } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
 import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
-import { canSubmergeAt } from './submerge.js';
+import { canSubmergeAt, canSurface } from './submerge.js';
 
 /** The friendly units `unit` (a healer) could heal, by the categories of its `heal` attribute. */
 function healable(game, unit) {
@@ -49,6 +57,15 @@ function healScore(game, unit, x, y, w) {
     score += Math.min(cfg.amount, max - u.hp) * unitDef(game, u).cost / w.costUnit * (w.healValue ?? 2);
   }
   return score;
+}
+
+/** Does friendly `v` need something a unit with the `supply` config `cfg` gives (rounds, or HP when it repairs)? */
+const needsSupply = (game, cfg, v) => cfg.categories.includes(unitDef(game, v).category)
+  && ((ammoLevel(game, v) !== null && ammoLevel(game, v) !== 'ok') || (!!cfg.repair && v.hp < game.registry.rules.maxHp));
+
+/** What a Supply order from (x, y) is worth to the AI: the price of the rounds and the HP it would give, in the profile's cost units. */
+function supplyScore(game, unit, x, y, w) {
+  return supplyPlan(game, unit, x, y).reduce((a, p) => a + (p.rounds * roundCost(game, p.unit) + p.hp * unitDef(game, p.unit).cost / game.registry.rules.maxHp) / w.costUnit, 0);
 }
 
 /**
@@ -75,12 +92,27 @@ function goalTiles(game, unit) {
     const army = state.units.filter((u) => u !== unit && u.owner === unit.owner && !hasAttribute(unitDef(game, u), 'radar'));
     if (army.length) return army.map((u) => [u.x, u.y]);
   }
+  const sup = supplyConfig(game, unit);
+  if (sup) {   // a supplier goes to the friends that need it, or else stays with the ones it looks after
+    const mine = state.units.filter((u) => u !== unit && u.owner === unit.owner && sup.categories.includes(unitDef(game, u).category));
+    const needy = mine.filter((u) => needsSupply(game, sup, u));
+    const chosen = needy.length ? needy : mine;
+    if (chosen.length) return chosen.map((u) => [u.x, u.y]);
+  }
+  if (def.weapons.length && !deployConfig(game, unit)) {   // armed, but nothing it can see is a target (SAM with no aircraft about): it keeps to the army
+    const visible = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e));
+    if (visible.length && !visible.some((e) => canTarget(game, unit, e))) {
+      const army = state.units.filter((u) => u !== unit && u.owner === unit.owner && !isMine(game, u));
+      if (army.length) return army.map((u) => [u.x, u.y]);
+    }
+  }
   if (hasAttribute(def, 'capture') || deployConfig(game, unit)) {   // a carrier takes its troops where they can capture
     const props = allProperties(game).filter((p) => p.owner !== unit.owner).map((p) => [p.x, p.y]);
     if (props.length) return props;
   }
-  const enemies = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e)).map((e) => [e.x, e.y]);
-  if (enemies.length) return enemies;
+  const seen = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e));
+  const hunted = def.weapons.length ? seen.filter((e) => canTarget(game, unit, e)) : seen;   // a hunter sub only chases submarines
+  if (hunted.length) return hunted.map((e) => [e.x, e.y]);
   const hqs = allProperties(game).filter((p) => p.owner !== unit.owner && hasAttribute(p.terrain, 'victoryOnCapture')).map((p) => [p.x, p.y]);
   if (hqs.length) return hqs;
   return [[Math.floor(map.width / 2), Math.floor(map.height / 2)]];
@@ -110,6 +142,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
     let target = null;
     let capture = false;
     let heal = false;
+    let supply = false;
 
     if (mayFire(moved)) {
       for (const e of enemies) {
@@ -132,13 +165,42 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
     }
     // a healer with someone to heal does that rather than plink with a pistol
     if (mayAct && canHealAt(game, unit, x, y)) { score = w.attackBase + healScore(game, unit, x, y, w) + defense; heal = true; target = null; capture = false; }
-    if (!best || score > best.score) best = { x, y, score, target, capture, heal };
+    // a supplier with someone to supply does that (unless it has something to shoot)
+    if (mayAct && !target && canSupplyAt(game, unit, x, y)) { score = w.attackBase * .5 + supplyScore(game, unit, x, y, w) + defense; supply = true; capture = false; }
+    if (!best || score > best.score) best = { x, y, score, target, capture, heal, supply };
   }
 
   // with nothing to shoot or capture, a submarine goes under (it cannot be hunted there without sonar, and it can still strike from there)
-  const dive = mayAct && !best.target && !best.capture && !best.heal && canSubmergeAt(game, unit, best.x, best.y);
-  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : best.heal ? { type: 'heal' } : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) && ammoLevel(game, unit) !== 'ok' && resupplyCost(game, unit) <= game.state.funds[unit.owner] ? { type: 'resupply' } : { type: 'wait' };
+  const dive = mayAct && !best.target && !best.capture && !best.heal && !best.supply && canSubmergeAt(game, unit, best.x, best.y);
+  const lay = mayAct && !best.target && !best.capture && !best.heal && !best.supply ? layOrder(game, unit, best, goals, w) : null;
+  const action = best.target ? { type: 'attack', targetId: best.target.e.id } : best.capture ? { type: 'capture' } : best.heal ? { type: 'heal' } : best.supply ? { type: 'supply' } : lay ? lay : dive ? { type: 'submerge' } : canResupplyAt(game, unit, best.x, best.y) && ammoLevel(game, unit) !== 'ok' && resupplyCost(game, unit) <= game.state.funds[unit.owner] ? { type: 'resupply' } : { type: 'wait' };
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
+}
+
+/** A Lay order for a mine layer standing on `best`: the free tile in range nearest the enemy, while it can pay and has fewer than `maxMines` out; null otherwise. */
+function layOrder(game, unit, best, goals, w) {
+  const cfg = layConfig(game, unit);
+  if (!cfg) return null;
+  const out = game.state.units.filter((u) => u.owner === unit.owner && isMine(game, u)).length;
+  if (out >= (w.maxMines ?? 4) || game.state.funds[unit.owner] < game.registry.unit(cfg.unit).cost * 2) return null;
+  let pick = null;
+  for (const t of layTiles(game, unit, best.x, best.y)) {
+    const d = Math.min(...goals.map(([gx, gy]) => distance(t.x, t.y, gx, gy)));
+    if (!pick || d < pick.d) pick = { t, d };
+  }
+  return pick ? { type: 'lay', at: pick.t } : null;
+}
+
+/**
+ * A submerged submarine comes up before it moves unless an enemy it can see is close: on the surface it travels faster (see `submerge.move`), and it
+ * dives again at the end of its move. Returns the events (empty when nothing happens).
+ */
+export function surfaceToTravel(game, unit) {
+  if (game.isOver || unit.done || unit.halted || !canSurface(game, unit)) return [];
+  const near = game.state.units.some((e) => e.owner !== unit.owner && canSee(game, unit.owner, e) && distance(unit.x, unit.y, e.x, e.y) <= 6);
+  if (near) return [];
+  const res = game.setSubmerged({ unitId: unit.id, submerged: false });
+  return res.ok ? res.events : [];
 }
 
 /**
@@ -190,6 +252,7 @@ export function tryDeploy(game, unit, ai = game.registry.ai) {
 
 /** Give `unit` its order(s): a second one when the first was cut short by a hidden unit. */
 function orderUnit(game, unit, events) {
+  if (!unit.fresh) events.push(...surfaceToTravel(game, unit));
   for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
     const result = game.act(chooseOrder(game, unit));
     if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);

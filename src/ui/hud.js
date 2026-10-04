@@ -242,7 +242,7 @@ export class Hud {
     const w = windowBox(this.doc, { accent: spec.accent, cls: 'win--actions' });
     if (spec.hint) w.body.append(h(this.doc, 'div', 'hint', spec.hint));
     const row = h(this.doc, 'div', 'btn-row');
-    for (const it of spec.items) row.append(button(this.doc, { label: it.label, variant: it.variant, onClick: it.onClick }));
+    for (const it of spec.items) row.append(button(this.doc, { label: it.label, variant: it.variant, onClick: it.onClick, disabled: !!it.disabled }));
     w.body.append(row);
     this.el.main.append(w.root);
   }

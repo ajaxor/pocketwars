@@ -92,6 +92,28 @@ export class Effects {
     this.lockUntil = Math.max(this.lockUntil, t0 + 900);
   }
 
+  /** A mine going off under a unit (a 'detonate' event): a blast on the mine's tile, the damage over the unit, and its end if it did not survive. */
+  detonate(ev, t0) {
+    const { mine, unit, damage, destroyed } = ev;
+    this.holds.set(unit.id, { hp: Math.round((unit.hp + damage) * 10) / 10, until: t0 + 150 });
+    this.list.push(
+      { k: 'burst', x: mine.x + .5, y: mine.y + .5, t0, d: 700, big: true },
+      { k: 'txt', x: unit.x + .5, y: unit.y + .5, s: '-' + damage, t0: t0 + 150, d: 900 },
+      { k: 'hit', id: unit.id, t0: t0 + 100, d: 300 },
+    );
+    if (destroyed) this.list.push({ k: 'die', unit, t0: t0 + 150, d: 600 });
+    this.lockUntil = Math.max(this.lockUntil, t0 + 900);
+  }
+
+  /** Friends topped up by a supply order (a 'supply' event): a call-out over each. Does not lock input. */
+  supplied(ev, t0) {
+    ev.supplied.forEach((s, i) => {
+      const gained = s.ammoFrom !== null && s.ammoTo > s.ammoFrom, healed = s.to > s.from;
+      const label = gained && healed ? 'Supplied +HP' : healed ? `+${Math.round((s.to - s.from) * 10) / 10}` : 'Resupplied';
+      this.list.push({ k: 'txt', x: s.x + .5, y: s.y + .35, s: label, sz: .28, c: '#9be564', t0: t0 + i * 120, d: 1200 });
+    });
+  }
+
   /** A unit diving or coming up: ripples on the water. `down` is true for a dive. */
   dive(ev, t0, down) {
     this.list.push({ k: 'ripple', x: ev.unit.x + .5, y: ev.unit.y + .5, down, t0, d: 800 });

@@ -85,7 +85,7 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
     layerLabel: layerInfo(game, unit).label,
     ammo: ammoConfig(game, unit) ? { now: ammoOf(game, unit), max: ammoConfig(game, unit).max, low: ammoConfig(game, unit).low } : null,
     fresh: !!unit.fresh && unit.owner === game.state.turn,
-    acted: !!unit.done && unit.owner === game.state.turn,
+    acted: !!unit.done && unit.owner === game.state.turn && !def.attributes.mine,
     cover: terrainStars(game, where),
     capture: unit.capture && prop ? { progress: unit.capture, needed: prop.capturePoints } : null,
     forecast: attacker ? calcDamage(game, attacker, where, attackerAt) : null,

@@ -16,7 +16,7 @@ wrong kind of entity, fail validation.
 | `capture` | Can capture properties it stands on; progress per action = current HP. | `tests/attributes/capture.test.js` |
 | `indirect` | Cannot move and fire in the same turn; no counterattack either way. Every weapon needs `range[0] >= 2`. (Not the same as the `indirect_ground` target mode, which decides whether obstacles block a shot: see [combat.md](combat.md).) | `indirect.test.js` |
 | `ignoresTerrainDefense` | Terrain defense does not reduce damage this unit takes. | `ignoresTerrainDefense.test.js` |
-| `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer }` names the layer while down; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. With `auto: true` (the diver) there are no Submerge/Surface orders: the unit is down exactly while it stands on deep water. | `tests/engine/naval.test.js` |
+| `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer, move? }` names the layer while down (`move`: the speed while down, lower than the surface speed); a unit that has not moved can dive or surface for free first (`game.setSubmerged`), or after moving as an order; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. With `auto: true` (the diver) there are no Submerge/Surface orders: the unit is down exactly while it stands on deep water. | `tests/engine/naval.test.js` |
 | `sonar` | Detects hidden enemies within this many tiles (integer >= 2; adjacent units are always noticed). | `tests/engine/naval.test.js` |
 | `moveFirePenalty` | Config `{ multiplier }`: the weapon does that share of its damage when the unit moved this turn before firing (the motorcycle: 0.5). Counterattacks are never reduced. | `tests/engine/new-infantry.test.js` |
 | `cloak` | Hidden from other players unless one of their units is adjacent or has `radar` in range. Config `true`: everywhere. Config `{ terrain: [ids], revealedByFiring? }`: only on those terrains (the sniper in forest, rough and mountain); with `revealedByFiring` an attack reveals the unit until its owner's next turn starts. Keeps its own layer. Sonar does not find it. | `tests/attributes/cloak.test.js` |
@@ -26,6 +26,12 @@ wrong kind of entity, fail validation.
 | `terrainDefenseMultiplier` | Multiplies the terrain defense this unit gets (`2` doubles it; must be > 1). No effect on 0-defense terrain, and `ignoresTerrainDefense` still wins. | `terrainDefenseMultiplier.test.js` |
 | `ammo` | `{max, low, cost?}`: a limited supply, tracked as `unit.ammo`. Weapons with an `ammo` cost spend it; a bullet shows on the tile (flashing at `low` or fewer, steady red at 0). Generic: any unit can have it. | `tests/attributes/ammo.test.js` |
 | `deploy` | `{unit, ammo?}`: a separate, factory-like action (before or after the carrier's own order, once per turn): a new `unit` is placed on the carrier's tile and ordered with the normal move-and-act order (it can attack; cancelling puts it back), spending `ammo` (default 1). Not on a just-built carrier. Requires `ammo`. Transport copter. | `tests/engine/transport.test.js` |
+| `surfacesToFire` | A submerged unit that attacks is brought up by it and stays exposed until it dives again (missile sub). Requires `submerge`. | `tests/engine/gallery-units.test.js` |
+| `supply` | `{categories, repair?}`: a Supply order (after moving) refills the ammo of adjacent friendly units of those categories at the usual price per round, and repairs them `repair` HP for free (truck: no repair; carrier: aircraft, 2 HP). | `gallery-units.test.js` |
+| `reloads` | A unit that did not move last turn is fully reloaded for free at the start of its next turn (SAM launcher). Requires `ammo`. | `gallery-units.test.js` |
+| `layMines` | `{unit, range}`: a Lay order (after moving) puts a `mine` unit on a free tile within `range` that the mine could enter, for its price (`mines.js`). | `gallery-units.test.js` |
+| `mine` | `{damage, triggers}`: never acts; hidden; when an enemy move is interrupted by it and the mover's category is in `triggers` it detonates (damage can kill), vanishes, and cancels the rest of that move. Infantry only bump into it; aircraft and `ignoresMines` units pass over. | `gallery-units.test.js` |
+| `ignoresMines` | Mines never go off under this unit (hover tank). | `gallery-units.test.js` |
 
 ## Terrain attributes
 
@@ -41,7 +47,7 @@ wrong kind of entity, fail validation.
 ## Other data-driven stats (not attributes)
 
 Terrain `moveCost` per move class (`null` = impassable); unit `layer`, `weapons`, `toughness` and `armor`, and the weapons table
-(damage, armor piercing, range, target modes): see [combat.md](combat.md); `layers`/`targetModes`/`moveClasses`/`maxHp` in
+(damage, armor piercing, range, target modes, and `onlyTags`: the weapon can only hit units carrying one of those unit `tags`, the hunter sub's torpedoes vs `sub`): see [combat.md](combat.md); `layers`/`targetModes`/`moveClasses`/`maxHp` in
 `rules.json`; AI weights and build rules in `ai.json`. Layer and target-mode rules are covered by `tests/attributes/layers.test.js`.
 
 ## Adding an attribute

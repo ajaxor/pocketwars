@@ -10,6 +10,8 @@
 //   showTargets: boolean
 //   pendingTargetId: number|null  enemy awaiting attack confirmation
 //   cursor: {x,y}|null            tile the player last tapped (outlined while nothing is selected)
+//   sonar: Set<number>|null       tiles covered by the selected unit's sonar (a cyan wash)
+//   layTiles: {x,y}[]|null        tiles a mine layer may drop its mine on (a pulsing outline)
 // }
 //
 // The canvas covers the whole window. A Camera (camera.js) decides which part of the map is on screen: a small map is centred
@@ -20,6 +22,7 @@ import { ammoLevel } from '../engine/ammo.js';
 import { canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
+import { isMine } from '../engine/mines.js';
 import { facingAlong, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
@@ -151,7 +154,7 @@ export class Renderer {
     const moving = arriving || (animator.current !== null && animator.current.unitId === u.id);
     const base = (arriving && this.arrivals.positionOf(u.id, now, S)) || animator.positionOf(u.id, now, S) || [lp.x * S, lp.y * S];
     const [dx, dy] = effects.unitOffset(u.id, now, S);
-    const acted = u.done && u.owner === game.state.turn;
+    const acted = u.done && u.owner === game.state.turn && !isMine(game, u);   // a mine is always `done`, but it is not spent
     const cx = Math.floor((base[0] + S / 2) / S), cy = Math.floor((base[1] + S / 2) / S);   // the tile under the unit's centre, even mid-slide
     const onWater = !dying && !!game.registry.terrainDef(game.map.terrain[Math.min(game.map.height - 1, Math.max(0, cy))]?.[Math.min(game.map.width - 1, Math.max(0, cx))])?.render.water;
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: dying ? u.hp : effects.displayHp(u, now) }, {
@@ -238,6 +241,26 @@ export class Renderer {
         g.roundRect(x * S, y * S, S, S, [round(n, w), round(n, e), round(s, e), round(s, w)]);
       }
       g.fill();
+    }
+    if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a cool wash over the water it listens to, with a ring at its edge
+      g.save(); g.fillStyle = 'rgba(70,200,255,.16)'; g.strokeStyle = `rgba(120,225,255,${.55 + .2 * Math.sin(now / 300)})`; g.lineWidth = 2.5; g.lineCap = 'square';
+      for (const k of view.sonar) {
+        const x = k % map.width, y = Math.floor(k / map.width);
+        g.fillRect(x * S, y * S, S, S);
+        const l = x * S + 1, t = y * S + 1, r = l + S - 2, b = t + S - 2;
+        g.beginPath();
+        if (!view.sonar.has(tileIndex(map, x, y - 1)) || y === 0) { g.moveTo(l, t); g.lineTo(r, t); }
+        if (!view.sonar.has(tileIndex(map, x, y + 1)) || y === map.height - 1) { g.moveTo(l, b); g.lineTo(r, b); }
+        if (!view.sonar.has(tileIndex(map, x - 1, y)) || x === 0) { g.moveTo(l, t); g.lineTo(l, b); }
+        if (!view.sonar.has(tileIndex(map, x + 1, y)) || x === map.width - 1) { g.moveTo(r, t); g.lineTo(r, b); }
+        g.stroke();
+      }
+      g.restore();
+    }
+    if (view.layTiles && view.layTiles.length) {
+      g.save(); g.strokeStyle = `rgba(255,228,92,${.6 + .4 * Math.sin(now / 200)})`; g.fillStyle = 'rgba(255,228,92,.18)'; g.lineWidth = 3;
+      for (const t of view.layTiles) { g.beginPath(); g.roundRect(...this.face(t.x, t.y, 2)); g.fill(); g.stroke(); }
+      g.restore();
     }
     if (view.showTargets) {
       g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;

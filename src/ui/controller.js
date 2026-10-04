@@ -7,6 +7,7 @@
 //         or tap an enemy to preview the best attack position
 //   anim  the selected unit is sliding to the previewed tile (taps ignored)
 //   act   the unit sits at its previewed tile; pick Wait / Capture / an enemy (tap twice to attack)
+//   lay   a mine layer is choosing the tile for its mine (any free sea tile in range)
 //   build the build menu is open
 //
 // BUILDING: a unit is built on the property and the controller selects it at once, for its free move (it is `fresh`: it can only move and
@@ -14,6 +15,11 @@
 // DEPLOYING works the same way: the Deploy button of a carrier (transport copter) puts the new unit on the carrier's tile and selects it;
 // it is then ordered with the normal move-and-attack interface. Cancelling (cancelAll) before it is ordered puts it back in the carrier.
 // HEAL (a medic or mechanic next to damaged friends) is offered next to Wait, like Resupply (engine/heal.js).
+// SUPPLY (a supply truck or carrier next to friends that need ammo or repairs) is offered next to Wait, like Heal (engine/supply.js).
+// LAY (a mine layer): the Lay button highlights the tiles in range and the next tap on one lays the mine there (engine/mines.js).
+// DIVING: a submarine that has not moved yet can Dive / Surface for free from the move window (game.setSubmerged); the unit is then
+// re-selected, because its reach changes (slower under water). Diving after the move is the usual end-of-move order.
+// SONAR: while a unit with sonar is selected the board shows the tiles its sonar covers (`view.sonar`).
 // RESUPPLY replaces Wait next to a property that refills the unit; it costs money and ends the turn (engine/ammo.js).
 //
 // An order can come back INTERRUPTED (the path ran into a hidden unit, see engine/game.js): the unit has already moved, so the
@@ -25,7 +31,9 @@
 import { canCapture } from '../engine/capture.js';
 import { canHealAt, healPlan } from '../engine/heal.js';
 import { canTarget, forecastAttack } from '../engine/combat.js';
-import { canSee } from '../engine/detection.js';
+import { canSee, sonarTiles } from '../engine/detection.js';
+import { layConfig, layTiles } from '../engine/mines.js';
+import { canSupplyAt, supplyPlan } from '../engine/supply.js';
 import { canResupplyAt, resupplyCost } from '../engine/ammo.js';
 import { canDeploy, deployConfig } from '../engine/deploy.js';
 import { buildOptions } from '../engine/economy.js';
@@ -61,6 +69,7 @@ export class Controller {
     this.pendingTargetId = null;
     this.preview = null; // { reach, attack }: where a tapped unit that cannot be ordered (an enemy's, say) could move and hit
     this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
+    this.layTiles = null; // the tiles a mine layer can put its mine on (mode 'lay')
     this.cards = null;  // the info cards for the current selection; while orders are being given they start hidden (see #setCards)
     this.infoOn = false;
   }
@@ -77,6 +86,8 @@ export class Controller {
       pendingTargetId: this.pendingTargetId,
       cursor: this.cursor,
       forecast: this.#forecast(),
+      sonar: this.sel && this.mode !== 'idle' ? sonarTiles(this.game, this.sel, this.#selPos()) : null,
+      layTiles: this.mode === 'lay' ? this.layTiles : null,
     };
   }
 
@@ -149,6 +160,9 @@ export class Controller {
         return;
       }
       this.cancelAll();
+    } else if (this.mode === 'lay') {
+      if (this.layTiles.some((t) => t.x === x && t.y === y)) this.#commit({ type: 'lay', at: { x, y } });
+      else { this.layTiles = null; this.#actMenu(); }
     } else if (this.mode === 'act') {
       const pos = this.#selPos();
       const target = this.targets.find((e) => e.x === x && e.y === y);
@@ -207,6 +221,7 @@ export class Controller {
     const { game, sel } = this;
     if (!sel.fresh && canCapture(game, sel, pos.x, pos.y)) return { type: 'capture' };
     if (!sel.fresh && canHealAt(game, sel, pos.x, pos.y)) return { type: 'heal' };
+    if (!sel.fresh && canSupplyAt(game, sel, pos.x, pos.y)) return { type: 'supply' };
     return canResupplyAt(game, sel, pos.x, pos.y) ? { type: 'resupply' } : { type: 'wait' };
   }
 
@@ -220,8 +235,28 @@ export class Controller {
   #selectOrders() {
     this.hud.actions({
       hint: this.sel.carriedBy ? 'Move it out and give it an order. Cancel puts it back in the transport.' : this.sel.fresh ? 'Just built: tap a highlighted tile to move it out (it cannot attack yet).' : 'Tap a highlighted tile to move, or an enemy to attack it.',
-      items: [...this.#deployItem(this.sel, () => this.#deployNow(this.sel)), this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+      items: [...this.#deployItem(this.sel, () => this.#deployNow(this.sel)), ...this.#diveItem(), this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
+  }
+
+  /** The free Dive / Surface button of a submarine that has not moved yet (the move window): it changes how far and how fast the unit can go. */
+  #diveItem() {
+    const { game, sel } = this;
+    if (sel.fresh || sel.carriedBy || sel.halted) return [];
+    if (canSurface(game, sel)) return [{ label: 'Surface', onClick: () => this.#setDive(false) }];
+    if (canSubmergeAt(game, sel)) return [{ label: 'Dive', onClick: () => this.#setDive(true) }];
+    return [];
+  }
+
+  #setDive(down) {
+    const { game } = this;
+    const unit = this.sel;
+    const res = game.setSubmerged({ unitId: unit.id, submerged: down });
+    if (!res.ok) { this.cancelAll(); this.#msg(`Cannot do that (${res.error}).`); return; }
+    this.presenter.present(res.events, { now: this.clock(), animateMoves: false });
+    this.onEvents(res.events);
+    this.animator.arrow = null;
+    this.#select(unit, down ? 'Diving: it moves slower under water, and is hidden.' : 'On the surface: it moves faster, but can be seen.');
   }
 
   /** The selected unit with the terrain at its (previewed) position. */
@@ -292,29 +327,52 @@ export class Controller {
     const capture = !fresh && canCapture(game, sel, pos.x, pos.y);
     const heal = !fresh && canHealAt(game, sel, pos.x, pos.y);
     const healCost = heal ? healPlan(game, sel, pos.x, pos.y).reduce((a, p) => a + p.cost, 0) : 0;
+    const supply = !fresh && canSupplyAt(game, sel, pos.x, pos.y);
+    const supplyCost = supply ? supplyPlan(game, sel, pos.x, pos.y).reduce((a, p) => a + p.cost, 0) : 0;
+    const lay = !fresh && !!layConfig(game, sel) && layTiles(game, sel, pos.x, pos.y).length > 0;
+    const layCost = lay ? game.registry.unit(layConfig(game, sel).unit).cost : 0;
     const pending = this.pendingTargetId !== null ? this.targets.find((e) => e.id === this.pendingTargetId) : null;
     const items = [];
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
     if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
     if (heal) items.push({ label: healCost ? `Heal ${healCost.toLocaleString('en-US')}` : 'Heal', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'heal' }) });
+    if (supply) items.push({ label: supplyCost ? `Supply ${supplyCost.toLocaleString('en-US')}` : 'Supply', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'supply' }) });
+    if (lay) items.push({ label: `Lay mine ${layCost.toLocaleString('en-US')}`, variant: pending ? undefined : 'primary', disabled: game.state.funds[sel.owner] < layCost, onClick: () => this.#layMode() });
     if (!fresh) items.push(...this.#deployItem(sel, () => this.#deployAfterMove()));
     if (!fresh && canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
     if (!fresh && canSurface(game, sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
     // Wait becomes Resupply when the unit is short on ammo and stops next to a property that resupplies it
     const resup = !fresh && canResupplyAt(game, sel, pos.x, pos.y);
     const price = resup ? resupplyCost(game, sel) : 0;
-    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture || heal ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
-      : { label: 'Wait', variant: pending || capture || heal ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
+    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture || heal || supply ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
+      : { label: 'Wait', variant: pending || capture || heal || supply || lay ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
     items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
     hud.actions({
       hint: pending ? `Attack ${name}? Tap it again or press Attack.`
         : capture ? 'Capture this property, or pick another action.'
           : heal ? 'Heal the damaged units next to you, or pick another action.'
+          : supply ? 'Resupply the friends next to you, or pick another action.'
+          : lay ? 'Lay a mine, or pick another action.'
           : fresh ? 'Tap your unit to confirm the move.'
           : this.targets.length ? 'Tap an enemy to target it, or tap your unit to wait.'
             : 'Tap your unit to confirm the move.',
       items,
+    });
+  }
+
+  /** The mine layer picks the tile for its mine: the free sea tiles in range are shown, and the next tap on one lays it. */
+  #layMode() {
+    const { game, sel } = this;
+    const pos = this.#selPos();
+    this.mode = 'lay';
+    this.layTiles = layTiles(game, sel, pos.x, pos.y);
+    this.attack = null;
+    this.targets = [];
+    this.pendingTargetId = null;
+    this.hud.actions({
+      hint: `Tap a highlighted sea tile to lay the ${game.registry.unit(layConfig(game, sel).unit).name}. Enemies only see it when they come next to it.`,
+      items: [{ label: 'Back', variant: 'ghost', onClick: () => { this.layTiles = null; this.#actMenu(); } }, { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
   }
 
