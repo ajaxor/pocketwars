@@ -1,7 +1,7 @@
 // Turn income, repair, resupply and unit production, all driven by the terrain `property` attribute.
 
 import { healAtTurnStart } from './heal.js';
-import { propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, tileIndex, unitAt } from './queries.js';
+import { propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -21,7 +21,7 @@ export function startTurn(game, player) {
   const repaired = [];
   for (const u of state.units) {
     if (u.owner !== player) continue;
-    u.done = false;
+    u.done = !!unitDef(game, u).attributes.mine;   // a mine never acts
     u.halted = null;
     delete u.fresh;
     delete u.deployed;

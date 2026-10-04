@@ -1,9 +1,9 @@
-// Experimental concept units, group "vehicles": an APC, an amphibious tank, a wheeled SAM truck and a rocket buggy (the motorcycle trooper is a real unit now: src/render/art-cycle.js).
-// Sprites only; described in concepts.json. Same conventions as concept-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
+// Vehicle art: the APC, the amphibious tank (on land and swimming), the SAM launcher and the rocket buggy. unit-art.js takes them by name.
+// Same conventions as unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
 // centred on (0, 0), +x forward, sizes are tile fractions; the ground is at about y = .29.
-import { box, disc, poly, stroke, mix, wheel, wheels, treads, propeller, afloat, UNDER_SHADE, INK, STEEL, SKIN, GLASS } from '../src/render/parts.js';
+import { box, disc, poly, stroke, mix, wheel, wheels, treads, propeller, afloat, UNDER_SHADE, INK, STEEL, SKIN, GLASS } from './parts.js';
 
-import * as CYCLE from '../src/render/art-cycle.js';
+import * as CYCLE from './art-cycle.js';
 
 const RED = '#d4442e';
 

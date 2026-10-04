@@ -7,28 +7,17 @@ import * as INFANTRY from '../src/render/art-infantry.js';
 import * as STATIC from './concept-art-static.js';
 import * as AIR from '../src/render/art-air.js';
 import * as SHIPS from '../src/render/art-ships.js';
-import * as VEHICLES from './concept-art-vehicles.js';
-import * as FLEET from './concept-art-fleet.js';
+import * as VEHICLES from '../src/render/art-vehicles.js';
+import * as FLEET from '../src/render/art-fleet.js';
+import { hoverLift } from '../src/render/art-support.js';
 import * as MECHS from './concept-art-mechs.js';
 
 const BRASS = '#d9b44a', RED = '#d4442e', GREEN = '#46b86a', ORANGE = '#ff9a2e', PANEL = '#2f5fa8';
 
 // ---- War Factory ----------------------------------------------------------------------------------------------------------
-// Supply truck: a dark box body for the cargo, a faction-coloured cab and chassis with a window, three wheels.
-const supplyTruck = (g, { s, c, dk, w, run, j }) => {
-  const jj = j / s;
-  box(g, s, -.36, .02 + jj, .72, .15, 3, c);                                                 // chassis
-  box(g, s, -.36, -.2 + jj, .5, .24, 3, dk);                                                 // cargo box
-  box(g, s, -.36, -.2 + jj, .5, .04, 2, mix(dk, '#ffffff', .18));                            // roof edge of the box
-  box(g, s, .16, -.1 + jj, .2, .19, 3, c);                                                   // cab
-  poly(g, s, [[.2, -.07 + jj], [.3, -.07 + jj], [.33, -.01 + jj], [.2, -.01 + jj]], GLASS);  // cab window
-  wheel(g, s, -.25, .2, .085, w, run, 10); wheel(g, s, -.04, .2, .085, w, run, 10); wheel(g, s, .26, .2, .085, w, run, 10);
-};
-
 // ---- Hover Lab --------------------------------------------------------------------------------------------------------------
 // Hover craft ride on tubing under the hull: a manifold pipe with nozzles that fire rings of force at the ground on a fast interval. The craft sits
 // well above the ground (altitude 0 in the data: the lift is drawn here) and rocks up and down deeply but slowly, about a third as fast as the waves.
-const hoverLift = (w, ph, run) => -.075 + (run ? Math.sin(w * .9 + ph) * .028 : 0);
 
 const hoverScout = (g, { s, c, dk, w, ph, run }) => {
   const h = hoverLift(w, ph, run);
@@ -39,17 +28,6 @@ const hoverScout = (g, { s, c, dk, w, ph, run }) => {
   stroke(g, s, .06, -.115, .06, -.05, 1.4, mix(c, dk, .5));                                   // its frame
   const rec = Math.max(0, Math.sin(w * 2.4 + ph)) * .01 * run;                               // a light chin gun that kicks back
   box(g, s, .1, .07, .07, .07, 1, dk); box(g, s, .16 - rec, .085, .2, .026, 0, INK); box(g, s, .35 - rec, .08, .02, .036, 0, STEEL);
-  g.restore();
-};
-
-const hoverTank = (g, { s, c, dk, w, ph, run }) => {
-  const h = hoverLift(w, ph, run);
-  g.save(); g.translate(0, h * s);
-  hoverTubes(g, s, -.28, .28, .22, w, run, { ground: .285 - h });
-  poly(g, s, [[-.36, .19], [-.41, .07], [-.3, -.04], [.2, -.04], [.34, .04], [.43, .11], [.36, .19]], c);   // faceted wedge hull
-  poly(g, s, [[-.13, -.04], [-.07, -.17], [.12, -.19], [.24, -.1], [.2, -.04]], dk);           // angular turret
-  const rec = Math.max(0, Math.sin(w * 1.6 + ph)) * .012 * run;
-  g.fillStyle = INK; g.fillRect((.16 - rec) * s, -.12 * s, s * .28, s * .04);                // gun
   g.restore();
 };
 
@@ -164,28 +142,6 @@ const abyssSub = (g, { s, c, dk, w, run, b }) => {
   bubbles(g, s, w, run, -.2, -.12);
 };
 
-// Mine layer: a low work boat; mines in a rack on its stern deck, one of them just rolled off the ramp.
-const mine = (g, s, x, y, r, c) => {                                                       // like the sea mine: one colour, six even spikes (top and bottom included) round a ball
-  for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 - Math.PI / 2; stroke(g, s, x + Math.cos(a) * r * .8, y + Math.sin(a) * r * .8, x + Math.cos(a) * r * 1.5, y + Math.sin(a) * r * 1.5, 3.5, c); }
-  disc(g, s, x, y, r, c);
-};
-const mineLayer = (g, { s, c, dk, w, run, b }) => {
-  const bb = b / s, D = .05, H = { x0: -.4, x1: .42, deck: D, keel: .3, rise: .02, sweep: .18 };
-  afloat(g, s, w, run, -.4, .42, (light) => {
-    g.save(); g.translate(0, bb * s);
-    if (!light) propeller(g, s, -.42, .27, w, run, dk);
-    hullPath(g, s, H); g.fillStyle = light ? c : dk; g.fill();
-    if (light) {
-      box(g, s, .08, D - .17, .22, .17, 3, c);                                                  // wheelhouse, forward
-      box(g, s, .09, D - .21, .07, .05, 1, c);                                       // crane pedestal on the wheelhouse roof
-      const sway = run ? Math.sin(w * 2 + 1) * .006 : 0;                                         // a small crane: a boom reaching aft over the mine rack, a cable and a hook
-      stroke(g, s, .125, D - .2, -.04, D - .33, 4, c); stroke(g, s, -.04, D - .33, -.04 + sway, D - .24, 1, STEEL); disc(g, s, -.04 + sway, D - .235, .02, INK);
-      mine(g, s, -.2, D - .1, .06, c);                                                       // a single mine, on the deck aft
-    }
-    g.restore();
-  });
-};
-
 // Torpedo drone: a small unmanned torpedo that runs on the surface, a red warhead in front, a trail of bubbles behind.
 const torpedoDrone = (g, { s, c, dk, w, run, b }) => {
   const bb = b / s * .5;
@@ -243,12 +199,10 @@ const repairDrone = (g, { s, c, dk, w, run }) => {
 };
 
 const OWN_SPRITES = {
-  supply_truck: supplyTruck,
-  hover_scout: hoverScout, hover_tank: hoverTank, hover_carrier: hoverCarrier,
+  hover_scout: hoverScout, hover_carrier: hoverCarrier,
   troop_glider: (g, o) => { g.save(); g.scale(.92, .92); troopGlider(g, o); g.restore(); }, scout_glider: scoutGlider,
   drop_pod: dropPod, shuttle: (g, o) => { g.save(); g.scale(.95, .95); shuttle(g, o); g.restore(); }, satellite,
   abyss_sub: (g, o) => { g.save(); g.scale(.95, .95); abyssSub(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); },
-  mine_layer: (g, o) => { g.save(); g.scale(.88, .88); mineLayer(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); },
   torpedo_drone: (g, o) => { g.save(); g.scale(.9, .9); torpedoDrone(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); },
   swarm_drones: swarmDrones, repair_drone: repairDrone,
 };
@@ -264,13 +218,12 @@ const airShadow = (outline, k = 1) => (g, { s, alt = 0 }) => {
 const bar = (hw) => mirror([[hw, 0], [hw * .8, -.07], [-hw * .8, -.07], [-hw, 0]]);
 
 const OWN_SHADOWS = {
-  supply_truck: ground(.35, .05, .285),
-  hover_scout: ground(.34, .045, .295), hover_tank: ground(.38, .05, .295), hover_carrier: ground(.42, .05, .295),
+  hover_scout: ground(.34, .045, .295), hover_carrier: ground(.42, .05, .295),
   troop_glider: airShadow(mirror([[.42, 0], [.1, -.08], [-.06, -.4], [-.2, -.4], [-.2, -.07], [-.4, -.12], [-.42, 0]]), .92),
   scout_glider: airShadow(mirror([[.3, 0], [-.38, -.3], [-.3, 0]])),
   drop_pod: airShadow(mirror([[.17, 0], [.15, -.14], [.07, -.26], [-.07, -.26], [-.15, -.14], [-.17, 0]])), shuttle: airShadow(mirror([[.46, 0], [.4, -.07], [.0, -.07], [-.1, -.36], [-.3, -.36], [-.3, -.05], [-.38, -.05], [-.38, 0]]), .95),
   satellite: airShadow(bar(.46)),
-  abyss_sub: none, mine_layer: none, torpedo_drone: none,
+  abyss_sub: none, torpedo_drone: none,
   swarm_drones: airShadow(mirror([[.3, 0], [.15, -.08], [-.2, -.08], [-.3, 0]])), repair_drone: airShadow(bar(.3)),
 };
 

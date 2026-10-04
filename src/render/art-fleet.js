@@ -1,12 +1,12 @@
-// Experimental concept ships, "fleet" group (Shipyard): a tank landing ship and two submarines. Sprites only, NOT in the game.
+// Fleet art: the troop transport and two submarines (missile sub, hunter sub). unit-art.js takes them by name.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j, submerged })   SHADOWS[name](g, { s, alt, w, ph, run })
 // The landing ship floats like the real ships (afloat). The missile sub rides the surface and dives like the regular submarine (surfacing, bubbles
 // only when it is down). The hunter sub is drawn dived, always in the underwater shade like the abyss sub.
-import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, periscope, surfacing, UNDER_SHADE, INK, RED, GLASS } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, propeller, bubbles, periscope, surfacing, UNDER_SHADE, INK, RED, GLASS } from './parts.js';
 
 // Landing craft: a D-Day style Higgins boat, tall-sided, with a bow that tapers down to a raised drop ramp, a small bridge on the deck at the
-// stern, and the outline of a door on the rear of the hull. (It can still carry a tank; none is drawn.)
-const tankTransport = (g, { s, c, dk, w, ph, run, b }) => {
+// stern, and the outline of a door on the rear of the hull. (It carries two infantry; none are drawn.)
+const troopTransport = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s + .02, D = -.1, x0 = -.4, x1 = .34, K = .17;     // K: where the deck starts to slope down to the bow
   afloat(g, s, w, run, x0, x1, (light) => {
     g.save(); g.translate(0, bb * s);
@@ -63,10 +63,10 @@ const hunterSub = (g, { s, c, dk, w, ph, run, moving, b }) => {
 
 const under = (f, k = 1) => (g, o) => { g.save(); g.scale(k, k); f(g, { ...o, dk: mix(o.c, o.dk, UNDER_SHADE) }); g.restore(); };
 export const SPRITES = {
-  tank_transport: under((g, o) => { g.save(); g.translate(.03 * o.s, 0); tankTransport(g, o); g.restore(); }, 1.02),
+  troop_transport: under((g, o) => { g.save(); g.translate(.03 * o.s, 0); troopTransport(g, o); g.restore(); }, 1.02),
   missile_sub: under(missileSub, .92),
   hunter_sub: under(hunterSub, .9),
 };
 
 const none = () => {};
-export const SHADOWS = { tank_transport: none, missile_sub: none, hunter_sub: none };
+export const SHADOWS = { troop_transport: none, missile_sub: none, hunter_sub: none };

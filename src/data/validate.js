@@ -104,6 +104,7 @@ export function validateWeapons(weapons, rules, problems) {
     if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
     if (w.ammo !== undefined && !(Number.isInteger(w.ammo) && w.ammo >= 1)) problems.push(`weapon "${id}": ammo (rounds used per shot) must be a positive whole number`);
+    if (w.onlyTags !== undefined && (!Array.isArray(w.onlyTags) || !w.onlyTags.length || w.onlyTags.some((t) => !isStr(t)))) problems.push(`weapon "${id}": onlyTags (the unit tags it may hit) must be a non-empty list of names`);
     if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
     if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);
     if (w.targetMultipliers !== undefined) {
@@ -137,6 +138,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     }
     if (u.toughness !== undefined && !(isNum(u.toughness) && u.toughness > 0)) problems.push(`unit "${id}": toughness must be a positive number (1 = no bonus)`);
     if (u.armor !== undefined && !(isNum(u.armor) && u.armor >= 0 && u.armor <= 1)) problems.push(`unit "${id}": armor must be a number from 0 to 1`);
+    if (u.tags !== undefined && (!Array.isArray(u.tags) || u.tags.some((t) => !isStr(t)))) problems.push(`unit "${id}": tags must be a list of names (weapons with onlyTags can only hit units that carry one)`);
     if (u.exclusive !== undefined && typeof u.exclusive !== 'boolean') problems.push(`unit "${id}": exclusive must be true or false (true: only a leader's loadout can put it on a build menu)`);
     if (u.attributes && u.attributes.indirect && Array.isArray(u.weapons) && isObj(weapons)) {
       for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
@@ -157,6 +159,16 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     if (isObj(heals) && Array.isArray(heals.categories)) {
       const known = new Set(Object.values(units).filter(isObj).map((x) => x.category));
       for (const c of heals.categories) if (typeof c === 'string' && !known.has(c)) problems.push(`unit "${id}": attribute "heal" names unknown unit category "${c}"`);
+    }
+    const sup = u.attributes && u.attributes.supply;
+    if (isObj(sup) && Array.isArray(sup.categories)) {
+      const known = new Set(Object.values(units).filter(isObj).map((x) => x.category));
+      for (const c of sup.categories) if (typeof c === 'string' && !known.has(c)) problems.push(`unit "${id}": attribute "supply" names unknown unit category "${c}"`);
+    }
+    const lay = u.attributes && u.attributes.layMines;
+    if (isObj(lay) && isStr(lay.unit)) {
+      if (!units[lay.unit]) problems.push(`unit "${id}": attribute "layMines" names unknown unit "${lay.unit}"`);
+      else if (!isObj(units[lay.unit].attributes) || !units[lay.unit].attributes.mine) problems.push(`unit "${id}": attribute "layMines" names "${lay.unit}", which is not a mine (it needs the "mine" attribute)`);
     }
     const drop = u.attributes && u.attributes.deploy;
     if (isObj(drop) && isStr(drop.unit) && !units[drop.unit]) problems.push(`unit "${id}": attribute "deploy" names unknown unit "${drop.unit}"`);

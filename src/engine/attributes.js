@@ -46,7 +46,62 @@ export const UNIT_ATTRIBUTES = {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "layer": "underwater" }');
       if (typeof v.layer !== 'string' || !v.layer) fail('layer must name a layer from rules.json');
       if (v.auto !== undefined && typeof v.auto !== 'boolean') fail('auto must be true or false');
+      if (v.move !== undefined && (!Number.isInteger(v.move) || v.move < 1)) fail('move (the speed while down) must be a positive whole number');
     },
+  },
+  surfacesToFire: {
+    label: 'Surfaces to fire',
+    help: 'If it fires while submerged it comes up, and stays exposed until it dives again.',
+    doc: 'A unit that is submerged and attacks is brought up by the attack (a \'surface\' event follows the strike): it stays visible and can be hit by anything that reaches surface ships until it dives again (the missile sub). Requires the `submerge` attribute.',
+    check: (v, e, fail) => {
+      if (!isFlag(v)) fail('must be true');
+      if (!e.attributes || !e.attributes.submerge) fail('requires the submerge attribute');
+    },
+  },
+  supply: {
+    label: 'Supplies',
+    help: (v) => `Supply order (after moving, instead of Wait): refills the ammo of friendly ${v.categories.join(', ')} units next to it${v.repair ? ` and repairs them ${v.repair} HP` : ''}, paying the usual price per round.`,
+    doc: 'A support order. Config: { categories, repair? }. After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round (ammo.js roundCost), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "categories": ["aircraft"], "repair": 2 }');
+      if (!Array.isArray(v.categories) || !v.categories.length || v.categories.some((c) => typeof c !== 'string' || !c)) fail('categories must be a non-empty array of unit category names');
+      if (v.repair !== undefined && (!Number.isInteger(v.repair) || v.repair < 1)) fail('repair must be a positive whole number of HP');
+    },
+  },
+  reloads: {
+    label: 'Reloads',
+    help: 'If it does not move during a turn it is fully reloaded at the start of the next.',
+    doc: 'Free self-resupply while still: at the start of its owner\'s turn a unit that did not change tile during its last turn gets its ammo back to full (heal.js). Requires the `ammo` attribute.',
+    check: (v, e, fail) => {
+      if (!isFlag(v)) fail('must be true');
+      if (!e.attributes || !e.attributes.ammo) fail('requires the ammo attribute');
+    },
+  },
+  layMines: {
+    label: 'Lays mines',
+    help: (v, registry) => `Lay order (after moving, instead of Wait): puts a hidden ${registry?.units?.[v.unit]?.name ?? v.unit} on any empty sea tile within ${v.range} tiles, for ${(registry?.units?.[v.unit]?.cost ?? 0).toLocaleString('en-US')} credits.`,
+    doc: 'Config: { unit, range }. A `lay` order (after moving, ends the unit\'s turn) puts a new unit of type `unit` (which needs the `mine` attribute) on an empty tile within `range` tiles that its move class can enter, paid for from the owner\'s funds at that unit\'s price. See mines.js.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "unit": "sea_mine", "range": 2 }');
+      if (typeof v.unit !== 'string' || !v.unit) fail('unit must name a unit from units.json');
+      if (!Number.isInteger(v.range) || v.range < 1) fail('range must be a positive whole number of tiles');
+    },
+  },
+  mine: {
+    label: 'Mine',
+    help: (v) => `Hidden unless an enemy unit is next to it. When an enemy ${v.triggers.join(' or ')} unit runs into it the mine explodes for ${v.damage} damage and the rest of that unit's move is cancelled. It never moves or acts. Aircraft fly over it and infantry do not set it off.`,
+    doc: 'A mine. Config: { damage, triggers }. The unit never acts (it starts and stays `done`). It sits on a hidden layer; when an enemy move is interrupted by it (game.js act) and the mover\'s category is one of `triggers` (and the mover lacks `ignoresMines`), the mine detonates: `damage` HP off the mover (it can kill), the mine is removed, and the mover\'s move is cancelled where it stands. Other movers are simply stopped, revealing the mine. Aircraft (airborne layers) pass over mines. See mines.js.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "damage": 4, "triggers": ["naval", "vehicle"] }');
+      if (typeof v.damage !== 'number' || !(v.damage > 0)) fail('damage must be a positive number of HP');
+      if (!Array.isArray(v.triggers) || !v.triggers.length || v.triggers.some((c) => typeof c !== 'string' || !c)) fail('triggers must be a non-empty array of unit category names');
+    },
+  },
+  ignoresMines: {
+    label: 'Mine-proof',
+    help: 'Floats clear of mines: they never go off under it, and it is not stopped by them.',
+    doc: 'Mines do not detonate for this unit (the hover tank). It still cannot stop on a hidden mine\'s tile.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
   },
   sonar: {
     label: (v) => `Sonar ${v}`,

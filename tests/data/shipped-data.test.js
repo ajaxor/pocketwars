@@ -40,23 +40,30 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('capture'), ['conscript', 'marine', 'mech', 'motorcycle', 'rpg_trooper', 'sniper', 'soldier', 'spy']);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando', 'conscript']);
   assert.deepEqual(withAttr('indirect'), ['artillery', 'mortar', 'rocket_launcher', 'sniper']);
-  assert.deepEqual(withAttr('submerge'), ['diver', 'submarine']);
-  assert.deepEqual(withAttr('sonar'), ['destroyer', 'radar_plane']);
+  assert.deepEqual(withAttr('submerge'), ['diver', 'missile_sub', 'submarine']);
+  assert.deepEqual(withAttr('sonar'), ['destroyer', 'hunter_sub', 'radar_plane']);
   assert.deepEqual(withAttr('radar'), ['radar_plane']);
   assert.deepEqual(withAttr('cloak'), ['sniper', 'spy', 'stealth_bomber', 'stealth_copter', 'stealth_fighter']);
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
-  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(withAttr('ammo'), ['mortar', 'rocket_launcher', 'rpg_trooper', 'stealth_fighter', 'torpedo_bomber', 'transport_copter']);
-  assert.deepEqual(withAttr('deploy'), ['transport_copter']);
+  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
+  assert.deepEqual(withAttr('ammo'), ['apc', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
+  assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
+  assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);
+  assert.deepEqual(withAttr('reloads'), ['sam_launcher']);
+  assert.deepEqual(withAttr('layMines'), ['mine_layer']);
+  assert.deepEqual(withAttr('mine'), ['sea_mine']);
+  assert.deepEqual(withAttr('ignoresMines'), ['hover_tank']);
+  assert.deepEqual(withAttr('surfacesToFire'), ['missile_sub']);
 });
 
 test('exclusive units are on no standard menu, and every one of them is on some leader\'s menu', () => {
   const exclusive = registry.unitIds.filter((id) => registry.unit(id).exclusive).sort();
-  assert.equal(exclusive.length, 17, 'the seventeen drafted units');
+  assert.equal(exclusive.length, 30, 'the seventeen drafted units and the thirteen gallery units (supply truck to hunter sub)');
   const standard = new Set(Object.values(registry.loadouts.default.build).flat());
   for (const id of exclusive) {
     assert.ok(!standard.has(id), `${id} is not on the standard menu`);
+    if (registry.unit(id).category === 'mine') continue;   // a mine is laid by a mine layer, never built
     const owners = registry.leaderIds.filter((l) => Object.values(registry.loadoutFor(l).build).flat().includes(id));
     assert.ok(owners.length >= 1, `${id} is on at least one leader's menu`);
   }

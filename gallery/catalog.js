@@ -21,7 +21,7 @@ export const GROUPS = [
 /** Buildings the game already has (terrain render.building), shown in the Structures tab. */
 const GAME_BUILDING_NAME = { hq: 'HQ', city: 'City', factory: 'Factory', barracks: 'Barracks', airfield: 'Airfield', shipyard: 'Shipyard' };
 
-const CATEGORY_GROUP = { infantry: 'infantry', amphibious: 'infantry', vehicle: 'vehicle', aircraft: 'air', naval: 'naval' };
+const CATEGORY_GROUP = { infantry: 'infantry', amphibious: 'infantry', vehicle: 'vehicle', aircraft: 'air', naval: 'naval', mine: 'naval' };
 
 /** "range 2-3" from the unit's longest-reaching weapon, or "unarmed". */
 export function rangeNote(def, weapons) {

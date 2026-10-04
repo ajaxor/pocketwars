@@ -31,5 +31,13 @@
   "wrench":        { "name": "Wrench", "damage": 12, "armorPiercing": 1, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "rpg":           { "name": "RPG", "damage": 80, "armorPiercing": 1, "range": [2, 3], "targets": ["direct_ground", "low_air"], "ammo": 1 },
   "conscript_rifle": { "name": "Old rifle", "damage": 35, "armorPiercing": 0, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
-  "harpoon":       { "name": "Harpoon gun", "damage": 55, "armorPiercing": 0.9, "range": [1, 1], "targets": ["direct_ground", "surface", "underwater"], "targetMultipliers": { "surface": 1.5, "underwater": 1.5 } }
+  "harpoon":       { "name": "Harpoon gun", "damage": 55, "armorPiercing": 0.9, "range": [1, 1], "targets": ["direct_ground", "surface", "underwater"], "targetMultipliers": { "surface": 1.5, "underwater": 1.5 } },
+  "buggy_rockets": { "name": "Buggy rockets", "damage": 85, "armorPiercing": 0.4, "range": [1, 2], "targets": ["direct_ground"], "ammo": 1, "fx": "arc" },
+  "amphibious_cannon": { "name": "Amphibious cannon", "damage": 75, "armorPiercing": 0.9, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
+  "sam": { "name": "SAM", "damage": 110, "armorPiercing": 0, "range": [3, 7], "targets": ["low_air", "high_air"], "targetMultipliers": { "low_air": 1.2 }, "ammo": 1, "fx": "arc" },
+  "carrier_guns": { "name": "Carrier guns", "damage": 45, "armorPiercing": 0, "range": [1, 1], "targets": ["surface", "direct_ground", "low_air"], "fx": "shot" },
+  "dreadnought_guns": { "name": "Dreadnought guns", "damage": 140, "armorPiercing": 0.8, "range": [2, 5], "indirect": true, "targets": ["surface", "indirect_ground"], "targetMultipliers": { "indirect_ground": 0.75 }, "fx": "arc" },
+  "dreadnought_secondary": { "name": "Secondary battery", "damage": 60, "armorPiercing": 0.3, "range": [1, 1], "targets": ["surface", "direct_ground"], "fx": "shot" },
+  "cruise_missiles": { "name": "Cruise missiles", "damage": 95, "armorPiercing": 0.6, "range": [3, 6], "indirect": true, "targets": ["indirect_ground", "surface"], "ammo": 1, "fx": "arc" },
+  "hunter_torpedoes": { "name": "Hunter torpedoes", "damage": 125, "armorPiercing": 0.85, "range": [1, 1], "targets": ["underwater", "surface"], "onlyTags": ["sub"], "fx": "torpedo" }
 }

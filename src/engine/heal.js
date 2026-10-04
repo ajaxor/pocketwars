@@ -4,12 +4,14 @@
 //       Resupply: after moving (or staying put) the unit heals every damaged friendly unit of those categories on a tile next to it, each
 //       by up to `amount` HP. `costRate` is the price of one HP as a fraction of the healed unit's cost, paid from the owner's funds; when
 //       the funds run short only the HP that can be paid for are restored. A unit that has nothing to heal cannot give the order.
+//   `reloads: true`   a unit that did not change tile during its last turn is topped up to full ammo for free at the start of its next one (the SAM launcher).
 //   `rest: { heal }`   a unit that did not change tile during its owner's last turn (`unit.moved` was never set, see game.js) regains
 //       `heal` HP of its own at the start of its next turn. `unit.moved` is cleared here, for every unit of the player, once it has been looked at.
 //
 // Both only ever add HP up to rules.maxHp. The Heal order reports a 'heal' event { unit, healed: [{ id, x, y, from, to, cost }] }; rest
 // reports 'healed' entries ({ id, x, y, from, to, by: null, cost: 0 }) on the 'turnStart' event.
 
+import { ammoConfig, usesAmmo } from './ammo.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { distance, round1, snapshotUnit, unitDef } from './queries.js';
 
@@ -26,6 +28,7 @@ export function healAtTurnStart(game, player) {
       u.hp = Math.min(max, round1(u.hp + rest.heal));
       healed.push({ id: u.id, x: u.x, y: u.y, from, to: u.hp, by: null, cost: 0 });
     }
+    if (!u.moved && hasAttribute(unitDef(game, u), 'reloads') && usesAmmo(game, u)) u.ammo = ammoConfig(game, u).max;   // sat out a turn: fully reloaded
     delete u.moved;
   }
   return healed;

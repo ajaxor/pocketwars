@@ -33,10 +33,13 @@ const modesOf = (game, weapon) => weapon.targets.map((m) => game.registry.rules.
 // the layer a unit is on right now: a submerged submarine is on another layer than a surfaced one
 const layerOf = (game, unit) => layerIdOf(game, unit);
 
-/** Could `attacker` ever damage `defender`? (Some weapon has a target mode for the defender's layer; position is ignored.) */
+/** May `weapon` hit this unit at all, as far as tags go (`onlyTags`: the hunter sub's torpedoes only hit units tagged `sub`)? */
+const tagOk = (game, weapon, defender) => !weapon.onlyTags || weapon.onlyTags.some((t) => unitDef(game, defender).tags?.includes(t));
+
+/** Could `attacker` ever damage `defender`? (Some weapon has a target mode for the defender's layer and may hit its tags; position is ignored.) */
 export function canTarget(game, attacker, defender) {
   const layer = layerOf(game, defender);
-  return weaponsOf(game, attacker).some((w) => w.damage > 0 && modesOf(game, w).some((m) => m.layer === layer));
+  return weaponsOf(game, attacker).some((w) => w.damage > 0 && tagOk(game, w, defender) && modesOf(game, w).some((m) => m.layer === layer));
 }
 
 /**
@@ -54,6 +57,7 @@ export function weaponFor(game, attacker, defender, from = attacker, { moved = h
     if ((moved || counter) && isIndirect(game, attacker, w)) continue;   // indirect weapons need a standing start and never counter
     if (!ignoreAmmo && !hasAmmoFor(game, attacker, w)) continue;
     if (d < w.range[0] || d > w.range[1]) continue;
+    if (!tagOk(game, w, defender)) continue;
     if (!modesOf(game, w).some((m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)))) continue;
     const damage = rawDamage(game, w, attacker, defender, !counter && firedAfterMoving(attacker, from));
     if (damage > bestDamage) { best = w; bestDamage = damage; }
@@ -72,7 +76,7 @@ export function attackProblem(game, attacker, defender, x = attacker.x, y = atta
   if (weaponFor(game, attacker, defender, { x, y }, { moved: false })) return 'cannot-move-and-fire';   // only an indirect weapon reaches, and the unit moved
   const d = distance(x, y, defender.x, defender.y);
   const layer = layerOf(game, defender);
-  const inRange = weaponsOf(game, attacker).some((w) => d >= w.range[0] && d <= w.range[1] && modesOf(game, w).some((m) => m.layer === layer));
+  const inRange = weaponsOf(game, attacker).some((w) => tagOk(game, w, defender) && d >= w.range[0] && d <= w.range[1] && modesOf(game, w).some((m) => m.layer === layer));
   return inRange ? 'no-line-of-sight' : 'out-of-range';
 }
 

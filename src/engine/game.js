@@ -1,14 +1,15 @@
 // Game: the single entry point for changing game state. UI, AI and tests all go through these methods.
 //
 //   const game = new Game(registry, map);
-//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'heal' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId } })
+//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'heal' | 'supply' | 'lay' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId, at } })
 //   game.build(x, y, unitType)
+//   game.setSubmerged({ unitId, submerged })   a submarine dives or surfaces for free before it moves
 //   game.deploy({ unitId, to })        a carrier (transport copter) puts a unit down, apart from its own order
 //   game.endTurn()
 //   game.undo()
 //
-// Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, dive, surface, strike,
-// capture, build, deploy, resupply, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
+// Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, detonate, dive, surface, strike,
+// capture, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
 //
 // BUILDING AND THE FREE MOVE. A unit is built on the property itself and is ready at once, but `fresh` (see state.js): its one order
@@ -34,11 +35,13 @@ import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
 import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
+import { detonate, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
+import { canSupplyAt, resolveSupply } from './supply.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
 import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
 import { createState, restoreState, snapshotState } from './state.js';
-import { canSubmergeAt, canSurface, divesByItself, submergibleAt } from './submerge.js';
+import { canDive, canSubmergeAt, canSurface, divesByItself, submergibleAt, surfacesToFire } from './submerge.js';
 import { evaluateVictory } from './victory.js';
 
 const fail = (error) => ({ ok: false, error, events: [] });
@@ -91,6 +94,13 @@ export class Game {
     if (action.type === 'resupply') {
       return canResupplyAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-resupply');
     }
+    if (action.type === 'supply') {
+      return canSupplyAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-supply');
+    }
+    if (action.type === 'lay') {
+      const problem = layProblem(this, unit, to.x, to.y, action.at);
+      return problem ? fail(problem) : { ok: true, unit, reach };
+    }
     if (action.type === 'attack') {
       const target = unitById(this, action.targetId);
       if (!target || target.owner === unit.owner) return fail('invalid-target');
@@ -123,8 +133,10 @@ export class Game {
       let blocker = null;
       for (let i = 1; i < path.length && !blocker; i++) {
         const there = unitAt(this, path[i][0], path[i][1]);
-        if (there && there !== unit && there.owner !== unit.owner) blocker = there;
-        else if (!there) last = i;
+        if (there && there !== unit && there.owner !== unit.owner) {
+          if (passesOverMines(this, unit, there) && i < path.length - 1) continue;   // flies or floats over a mine; it just cannot stop on it
+          blocker = there;
+        } else if (!there) last = i;
       }
       if (last > 0) {
         unit.moved = true;   // read (and cleared) by heal.js at the start of its owner's next turn: a unit that stayed put can rest
@@ -134,7 +146,7 @@ export class Game {
         unit.facing = facingAlong(path.slice(0, last + 1), unit.facing);   // faces the way it last moved sideways
         events.push({ type: 'move', unitId: unit.id, path: path.slice(0, last + 1) });
       }
-      if (unit.submerged && !submergibleAt(this, unit.x, unit.y)) {   // a submarine that ends its move outside deep water comes up
+      if (unit.submerged && canDive(this, unit) && !submergibleAt(this, unit.x, unit.y)) {   // a submarine that ends its move outside deep water comes up
         unit.submerged = false;
         events.push({ type: 'surface', unit: snapshotUnit(unit), forced: true });
       }
@@ -146,14 +158,25 @@ export class Game {
         unit.halted = { moved: last > 0 };
         events.push({ type: 'interrupt', unitId: unit.id, at: { x: unit.x, y: unit.y }, blocker: snapshotUnit(blocker) });
         this.undoSnapshot = null; // the unit found something out: taking the move back would be free scouting
+        if (triggersMine(this, unit, blocker)) {   // a mine: it goes off and the rest of the move is cancelled
+          const boom = detonate(this, blocker, unit);
+          events.push(boom);
+          if (boom.destroyed) { events.push(...evaluateVictory(this)); return { ok: true, events }; }
+        }
         return { ok: true, events, interrupted: { unitId: unit.id, at: { x: unit.x, y: unit.y }, blocker: snapshotUnit(blocker) } };
       }
     }
     if (action.type === 'capture') events.push(...resolveCapture(this, unit));
     else if (action.type === 'heal') events.push(...resolveHeal(this, unit));
+    else if (action.type === 'supply') events.push(...resolveSupply(this, unit));
+    else if (action.type === 'lay') events.push(...resolveLay(this, unit, action.at));
     else if (action.type === 'attack') {
       events.push(...resolveAttack(this, unit, target));
       if (revealsWhenFiring(this, unit)) unit.revealed = true;   // muzzle flash: visible until its owner's next turn starts
+      if (unit.submerged && surfacesToFire(this, unit) && unitById(this, unit.id)) {   // firing gives the missile sub away: it comes up
+        unit.submerged = false;
+        events.push({ type: 'surface', unit: snapshotUnit(unit), forced: true });
+      }
     }
     else if (action.type === 'submerge') { unit.submerged = true; events.push({ type: 'dive', unit: snapshotUnit(unit) }); }
     else if (action.type === 'surface') { unit.submerged = false; events.push({ type: 'surface', unit: snapshotUnit(unit), forced: false }); }
@@ -169,6 +192,24 @@ export class Game {
     // An order that shows the player a hidden unit (by moving next to it, say) cannot be taken back either.
     if (hiddenBefore.some((id) => { const e = unitById(this, id); return e && canSee(this, unit.owner, e); })) this.undoSnapshot = null;
     return { ok: true, events };
+  }
+
+  /**
+   * A submarine that has not moved or acted yet goes down or comes up for free, before its order (the order itself then moves it, slowly
+   * under water or quickly on the surface). `submerged` true dives, false surfaces. Returns { ok, events }.
+   */
+  setSubmerged({ unitId, submerged }) {
+    if (this.isOver) return fail('game-over');
+    const unit = unitById(this, unitId);
+    if (!unit) return fail('no-such-unit');
+    if (unit.owner !== this.state.turn) return fail('not-your-turn');
+    if (unit.done) return fail('unit-already-acted');
+    if (unit.fresh) return fail('just-built');
+    if (unit.halted) return fail('unit-already-moved');
+    if (submerged ? !canSubmergeAt(this, unit) : !canSurface(this, unit)) return fail(submerged ? 'cannot-submerge' : 'cannot-surface');
+    this.undoSnapshot = this.controllerOf(this.state.turn) === 'human' ? snapshotState(this.state) : null;
+    unit.submerged = submerged;
+    return { ok: true, events: [{ type: submerged ? 'dive' : 'surface', unit: snapshotUnit(unit), forced: false }] };
   }
 
   /**

@@ -77,26 +77,12 @@ const landMine = (g, { s, c, w, ph, run }) => {
   disc(g, s, .06, .17, .022, run && Math.sin(w * 6 + ph) < -.2 ? '#6b2a22' : RED);            // the light
 };
 
-// Sea mine: one colour (a darker shade of it below the waterline), a spiked ball centred on the tile.
-const seaMine = (g, { s, c, dk, w, run, b }) => {
-  const cy = 0;
-  afloat(g, s, w, run, -.17, .17, (light) => {
-    const col = light ? c : dk;
-    g.save(); g.translate(0, b * .8);
-    for (let i = 0; i < 6; i++) { const a = (i / 6) * Math.PI * 2 - Math.PI / 2; stroke(g, s, Math.cos(a) * .15, cy + Math.sin(a) * .15, Math.cos(a) * .24, cy + Math.sin(a) * .24, 4, col); }
-    disc(g, s, 0, cy, .165, col);
-    if (!light) for (let i = 0; i < 4; i++) oval(g, s, 0, .3 + i * .045, i % 2 ? .008 : .016, .02, dk);   // anchor chain: links hanging from the bottom spike
-    g.restore();
-  }, 0);                                                                                      // waterline through the ball's centre
-};
-
 export const SPRITES = {
   gun_turret: (g, o) => { g.save(); g.translate(o.s * .04, 0); gunTurret(g, o); g.restore(); },
   cannon_turret: cannonTurret, sam_site: samSite, artillery_emplacement: artilleryEmplacement,
   jammer: (g, o) => { g.save(); g.translate(0, .06 * o.s); g.scale(.92, .92); jammer(g, o); g.restore(); },
   auto_factory: autoFactory,
   land_mine: (g, o) => { g.save(); g.translate(0, -.05 * o.s); g.scale(1.25, 1.25); landMine(g, o); g.restore(); },
-  sea_mine: (g, o) => { g.save(); g.scale(.9, .9); seaMine(g, { ...o, dk: mix(o.c, o.dk, .75) }); g.restore(); },
 };
 
 // ---- shadows ----------------------------------------------------------------------------------------------------------------
@@ -104,5 +90,5 @@ const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,
 const none = () => {};
 export const SHADOWS = {
   gun_turret: ground(.38, .05, .325, .04), cannon_turret: ground(.45, .05, .325), sam_site: ground(.4, .05, .325),
-  artillery_emplacement: ground(.47, .05, .325), jammer: ground(.25, .05, .35), auto_factory: ground(.46, .05, .33), land_mine: ground(.27, .05, .3), sea_mine: none,
+  artillery_emplacement: ground(.47, .05, .325), jammer: ground(.25, .05, .35), auto_factory: ground(.46, .05, .33), land_mine: ground(.27, .05, .3),
 };

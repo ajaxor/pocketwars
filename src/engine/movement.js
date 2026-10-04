@@ -10,6 +10,8 @@ import { hasAmmoFor } from './ammo.js';
 import { hasAttribute } from './attributes.js';
 import { canAttackFrom, isIndirect, weaponsOf } from './combat.js';
 import { canSee } from './detection.js';
+import { passesOverMines } from './mines.js';
+import { moveOf } from './submerge.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
 export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveCost[moveClass];
@@ -51,6 +53,7 @@ export class ReachMap {
 export function computeReach(game, unit) {
   const { map } = game;
   const def = unitDef(game, unit);
+  const allowance = moveOf(game, unit);
   const cost = new Map();
   const prev = new Map();
   const start = tileIndex(map, unit.x, unit.y);
@@ -66,11 +69,11 @@ export function computeReach(game, unit) {
       const ny = y + dy;
       if (!inBounds(map, nx, ny)) continue;
       const occupant = unitAt(game, nx, ny);
-      if (occupant && occupant.owner !== unit.owner && canSee(game, unit.owner, occupant)) continue;   // a hidden enemy does not block the plan
+      if (occupant && occupant.owner !== unit.owner && canSee(game, unit.owner, occupant) && !passesOverMines(game, unit, occupant)) continue;   // a hidden enemy does not block the plan (nor does a mine for a unit that floats or flies over it)
       const step = moveCostAt(game, def.moveClass, nx, ny);
       if (step === null) continue;
       const nc = c + step;
-      if (nc > def.move) continue;
+      if (nc > allowance) continue;
       const k = tileIndex(map, nx, ny);
       if (!cost.has(k) || nc < cost.get(k)) {
         cost.set(k, nc);
@@ -79,10 +82,10 @@ export function computeReach(game, unit) {
       }
     }
   }
-  // Can pass through friends but not end the move on them. (A hidden enemy is not known to be there, so its tile stays on offer.)
+  // Can pass through friends (and over a mine it can see) but not end the move on them. (A hidden enemy is not known to be there, so its tile stays on offer.)
   for (const k of [...cost.keys()]) {
     const occupant = unitAt(game, k % map.width, Math.floor(k / map.width));
-    if (occupant && occupant !== unit && occupant.owner === unit.owner) cost.delete(k);
+    if (occupant && occupant !== unit && (occupant.owner === unit.owner || canSee(game, unit.owner, occupant))) cost.delete(k);
   }
   return new ReachMap(map.width, [unit.x, unit.y], cost, prev);
 }
