@@ -20,7 +20,7 @@ Notes from iterating on unit sprites (mostly the naval rework) so the next round
 - Hidden units get an eye marker (white when an enemy can see them, and only when the viewer can see that), a submerge animation, and fade out instead of vanishing.
 - **Keep icons simple; minimise detail.** No windows on ships (a hull, a superstructure and one distinguishing silhouette is enough). No wing markings, airframe stripes, lamps, rails or hubs. Aircraft carriers are a deck, a runway line and a mast.
 - **Specialist infantry = a plain soldier plus one prop** (bandana and AK-47, one white case with one cross, one large wrench, a fur hat). Don't add gear that doesn't change the silhouette.
-- **Structures:** few shapes, one idea per building, no windows; walls and static defences use the buildings' language (blocks seen from the front-left and above: lit front, dark right side, light roof, shadow to the lower right) on a pale concrete pad. Walls are concrete runs with a team-coloured coping and a team-coloured post wherever the line turns, ends or branches; a defence is a small team-coloured block with one dark weapon on it.
+- **Structures:** few shapes, one idea per building, no windows; static defences are drawn like units (flat, side-on, team-coloured body, dark upper part, black weapon) bolted to a pale concrete footing where a unit would have treads; walls are giant round pipes that fill the tile, rising out of the ground in an elbow at each end (or an upright riser at corners and branches) and lying along the ground between, with team-coloured flanges at every joint.
 - Walkers' legs use the shared `pillarLeg` (a straight swinging pillar with a flat foot) rather than jointed limbs.
 
 ## Pitfalls

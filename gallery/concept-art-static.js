@@ -1,108 +1,91 @@
-// Experimental concept units, Engineer Works group: immobile static defences. They are drawn in the BUILDINGS' language rather than the
-// units' (src/render/buildings.js): solid blocks seen from the front-left and above, a lit front face in the team colour, a darker right side,
-// a lighter roof, and a soft shadow to the lower right, all standing on a pale poured-concrete pad (the same concrete as the walls,
-// gallery/structure-art.js). The weapon is the one dark part, like a unit's gun, so a defence reads as "a small building with a gun on it".
-// Same calling convention as the unit sprites (concept-art.js):
+// Experimental concept units, Engineer Works group: immobile static defences, drawn in the SAME flat style as the units (unit-art.js):
+// side-on, flat rounded blocks in the team colour, the upper part (turret, roof) in the team's dark colour like a tank's turret, the weapon in
+// near-black, and a soft oval shadow. Where a unit has treads or wheels, a defence has a FOOTING: a pale concrete slab with dark bolts, the
+// same size and place as a tread, so it reads as "a unit that is bolted down" and never as one that drives.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
-import { box, disc, oval, poly, stroke, mix, tubes, INK, STEEL, RED } from '../src/render/parts.js';
-import { shade } from '../src/render/color.js';
+import { box, disc, oval, poly, stroke, mix, tubes, plume, INK, STEEL, RED } from '../src/render/parts.js';
 
-export const CONCRETE = '#c9c5b8';
-const DX = .9, DY = -.7;                 // the buildings' depth direction: up and to the right, per unit of depth
-const GROUND = .29;                      // where a unit's feet are
-
-/** A block like a building's: front face with its top-left at (x, y), `w` wide and `h` tall, `d` deep. Right side, roof, then the front. */
-export const block = (g, s, x, y, w, h, d, col, { roof = shade(col, .25), side = shade(col, -.3) } = {}) => {
-  const dx = d * DX, dy = d * DY;
-  poly(g, s, [[x + w, y], [x + w + dx, y + dy], [x + w + dx, y + h + dy], [x + w, y + h]], side);
-  poly(g, s, [[x, y], [x + dx, y + dy], [x + w + dx, y + dy], [x + w, y]], roof);
-  poly(g, s, [[x, y], [x + w, y], [x + w, y + h], [x, y + h]], col);
+export const FOOTING = '#b3b0a6';
+/** The slab a defence is bolted to: pale concrete along the ground from x0 to x1, with a darker lower edge and a row of dark bolts. */
+export const footing = (g, s, x0 = -.34, x1 = .34, h = .09) => {
+  box(g, s, x0, .29 - h, x1 - x0, h, 3, FOOTING);
+  box(g, s, x0, .29 - h * .35, x1 - x0, h * .35, 2, mix(FOOTING, '#000000', .25));
+  const n = Math.max(2, Math.round((x1 - x0) / .12));
+  for (let i = 0; i < n; i++) { const x = x0 + .05 + i * (x1 - x0 - .1) / (n - 1); disc(g, s, x, .29 - h * .62, .016, '#55534d'); }
 };
-/** The ground shadow of a block whose front face sits on the ground at y = b from x to x + w: a band to the lower right, as the buildings cast. */
-const blockShadow = (g, s, x, w, d, b = GROUND) => {
-  const dx = d * DX, dy = d * DY;
-  poly(g, s, [[x + .03, b], [x + w, b], [x + w + dx, b + dy], [x + w + dx + .09, b + dy + .045], [x + w + .09, b + .045], [x + .03, b + .045]], 'rgba(0,0,0,.2)');
-};
-/** The poured pad every defence stands on: a low concrete slab. */
-const pad = (g, s, x0 = -.42, x1 = .3, d = .16) => block(g, s, x0, GROUND - .06, x1 - x0, .06, d, CONCRETE);
-/** A team-coloured stripe across a front face (the bunker's band), for blocks that are mostly concrete. */
-const stripe = (g, s, x, y, w, col) => box(g, s, x, y, w, .035, 0, col);
 
-// ---- the defences --------------------------------------------------------------------------------------------------------------
-// Gun turret (pillbox): a squat block with a dark firing slit; a machine gun pokes out of the slit and sweeps a little.
-const gunTurret = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.4, .26, .16);
-  block(g, s, -.32, .0, .44, .23, .17, c);
-  block(g, s, -.35, -.05, .5, .06, .19, shade(c, -.18));                                          // a thick roof slab
-  box(g, s, -.22, .07, .3, .055, 1, '#23252b');                                                    // the firing slit
+// Gun turret: a squat bunker under a dark dome, with a machine gun out of the dome that sweeps a little.
+const gunTurret = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.3, .3);
   const sw = run ? Math.sin(w * 1.1 + ph) * .07 : 0;
-  g.save(); g.translate(.02 * s, .098 * s); g.rotate(sw);
-  box(g, s, 0, -.018, .3, .036, 1, INK); box(g, s, .26, -.026, .05, .052, 1, INK);               // the gun and its flash hider
+  g.save(); g.translate(.08 * s, -.08 * s); g.rotate(sw);
+  box(g, s, 0, -.025, .32, .05, 1, INK); box(g, s, .27, -.035, .06, .07, 1, INK);                 // the gun and its flash hider
   g.restore();
+  g.fillStyle = dk; g.beginPath(); g.arc(-.02 * s, -.02 * s, .17 * s, Math.PI, 0); g.fill();         // the dome
+  box(g, s, -.26, -.03, .52, .24, 4, c);                                                            // the bunker
+  box(g, s, -.17, .05, .3, .045, 1, INK);                                                           // a firing slit
 };
 
-// Cannon turret: a fortified base with a block turret on its roof, and a long cannon that recoils.
-const cannonTurret = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.42, .28, .17);
-  block(g, s, -.36, .03, .5, .2, .19, c); stripe(g, s, -.36, .03, .5, shade(c, -.18));
-  const rec = run ? Math.max(0, Math.sin(w * 1.3 + ph)) ** 8 * .04 : 0;
-  box(g, s, .08 - rec, -.1, .4, .05, 1, INK); box(g, s, .4 - rec, -.11, .06, .07, 1, INK);        // the cannon and its muzzle brake
-  block(g, s, -.22, -.15, .3, .15, .13, shade(c, .08));                                           // the turret
-  box(g, s, -.15, -.09, .12, .03, 1, shade(c, -.3));
+// Cannon turret: a fortified block with a tank-like turret on its roof and a long cannon that recoils.
+const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.36, .36);
+  const rec = run ? Math.max(0, Math.sin(w * 1.3 + ph)) ** 8 * .035 : 0;
+  box(g, s, .1 - rec, -.17, .36, .055, 1, INK); box(g, s, .41 - rec, -.18, .06, .075, 1, INK);      // the cannon and its muzzle brake
+  box(g, s, -.17, -.24, .34, .17, 3, dk);                                                           // the turret
+  box(g, s, -.32, -.07, .64, .27, 4, c);                                                            // the block
+  box(g, s, -.32, -.07, .64, .05, 2, mix(c, '#ffffff', .2));                                        // a lighter roof edge
 };
 
-// SAM site: a launcher block on the roof of a low base, a pod of missile tubes tipped at the sky.
-const samSite = (g, { s, c }) => {
-  pad(g, s, -.42, .28, .17);
-  block(g, s, -.34, .06, .52, .17, .18, c); stripe(g, s, -.34, .06, .52, shade(c, -.18));
-  block(g, s, -.16, -.01, .2, .07, .1, shade(c, -.2));                                            // the turntable
-  g.save(); g.translate(-.06 * s, -.03 * s); g.rotate(-.7);
-  tubes(g, s, .13, -.02, .4, .18, { n: 2, col: shade(c, .08) });
+// SAM site: a block with a turntable, and a pod of missiles tipped at the sky.
+const samSite = (g, { s, c, dk }) => {
+  footing(g, s, -.32, .32);
+  g.save(); g.translate(-.04 * s, -.06 * s); g.rotate(-.75);
+  tubes(g, s, .15, 0, .38, .17, { n: 2, col: dk });
   g.restore();
+  box(g, s, -.12, -.09, .2, .08, 2, dk);                                                            // the turntable
+  box(g, s, -.28, -.02, .56, .23, 4, c);
 };
 
-// Artillery emplacement: an earth-and-concrete berm round a heavy gun, the barrel up and out over it; it slides back when it fires.
-const artilleryEmplacement = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.44, .3, .14);
-  const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .05 : 0;
-  g.save(); g.translate(-.06 * s, .02 * s); g.rotate(-.62);
-  box(g, s, -.04 - rec, -.04, .58, .08, 1, INK); box(g, s, .5 - rec, -.05, .07, .1, 1, INK);   // the barrel
+// Artillery emplacement: a heavy gun behind a wide rounded berm, the barrel up and out; it slides back when it fires.
+const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.4, .4);
+  const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
+  g.save(); g.translate(-.06 * s, -.04 * s); g.rotate(-.6);
+  box(g, s, -.04 - rec, -.035, .56, .07, 1, INK); box(g, s, .48 - rec, -.045, .07, .09, 1, INK);   // the barrel
   g.restore();
-  block(g, s, -.16, -.08, .17, .18, .1, shade(c, .08));                                                        // the gun shield, in the team colour
-  block(g, s, -.4, .08, .64, .15, .16, c); stripe(g, s, -.4, .08, .64, shade(c, -.18));            // the berm, in front of the gun
+  box(g, s, -.2, -.14, .2, .16, 3, dk);                                                             // the gun shield
+  box(g, s, -.38, .0, .76, .21, .08 * s, c);                                                        // the berm
+  box(g, s, -.3, .05, .6, .035, 1, mix(c, '#000000', .2));
 };
 
-// Jammer: a small hut with a lattice mast, a dish on top, and signal rings spreading from it.
-const jammer = (g, { s, c, w, run }) => {
-  g.save(); g.translate(0, .29 * s); g.scale(.88, .88); g.translate(0, -.29 * s);
-  pad(g, s, -.32, .2, .14);
-  const mx = .02;
-  stroke(g, s, mx - .05, .1, mx, -.24, 2, '#555a64'); stroke(g, s, mx + .05, .1, mx, -.24, 2, '#555a64');   // the lattice mast
-  for (const y of [.02, -.08, -.16]) stroke(g, s, mx - .04 + (.1 - y) * .0, y, mx + .04, y, 1.5, '#555a64');
-  block(g, s, -.3, .04, .26, .19, .14, c);                                                         // the hut
-  box(g, s, -.24, .12, .08, .11, 1, '#23252b');
-  oval(g, s, mx, -.26, .13, .06, '#e6e8ee'); oval(g, s, mx + .01, -.265, .06, .028, shade(c, -.1));   // the dish
+// Jammer: a small hut with a mast, a dish on top, and signal rings spreading from it.
+const jammer = (g, { s, c, dk, w, run }) => {
+  footing(g, s, -.24, .24);
+  stroke(g, s, .02, .02, .02, -.2, Math.max(2.5, s * .035), STEEL);                                 // the mast
+  oval(g, s, .02, -.24, .12, .06, '#e6e8ee'); oval(g, s, .03, -.245, .06, .028, dk);               // the dish
   for (let i = 0; i < 2; i++) {
-    const f = run ? (w * .7 + i / 2) % 1 : (i + .5) / 2, r = (.08 + f * .15) * s;
+    const f = run ? (w * .7 + i / 2) % 1 : (i + .5) / 2, r = (.08 + f * .14) * s;
     g.strokeStyle = mix(c, '#ffffff', .45); g.globalAlpha = Math.min(1, (1 - f) * 1.3); g.lineWidth = 2.5;
-    g.beginPath(); g.arc(mx * s, -.27 * s, r, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); g.globalAlpha = 1;
+    g.beginPath(); g.arc(.02 * s, -.25 * s, r, Math.PI * 1.15, Math.PI * 1.85); g.stroke(); g.globalAlpha = 1;
   }
-  g.restore();
+  box(g, s, -.2, .0, .4, .21, 4, c);                                                                // the hut
+  box(g, s, -.2, .0, .4, .05, 2, dk);                                                               // its roof
+  box(g, s, -.12, .08, .1, .12, 1, INK);                                                            // a door
 };
 
-// Automated factory: a small hall with the factory's sawtooth roof, a dark door and a conveyor carrying crates out of it.
-const autoFactory = (g, { s, c, w, run }) => {
-  pad(g, s, -.44, .3, .14);
-  block(g, s, .1, -.2, .07, .2, .04, '#565a63');                                                   // chimney, behind
-  block(g, s, -.36, -.02, .5, .25, .14, c);
-  for (let i = 0; i < 2; i++) { const x0 = -.36 + i * .25; poly(g, s, [[x0, -.02], [x0 + .25, -.02], [x0 + .25, -.12]], shade(c, -.12)); poly(g, s, [[x0, -.02], [x0 + .25, -.12], [x0 + .25, -.105], [x0 + .02, -.02]], '#cfe6f5'); }
-  box(g, s, -.24, .08, .2, .15, 1, '#23252b');                                                     // the door
-  box(g, s, -.08, .19, .38, .04, 1, '#3a3d44');                                                    // the conveyor belt
+// Automated factory: a plain shed with a dark sawtooth roof, a door with a crate coming out, and a smoking chimney.
+const autoFactory = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.4, .4);
+  box(g, s, .18, -.24, .07, .14, 1, STEEL);                                                         // chimney
+  plume(g, s, .215, -.25, w, run, ph, .7);
+  for (let i = 0; i < 3; i++) poly(g, s, [[-.36 + i * .24, -.08], [-.12 + i * .24, -.08], [-.12 + i * .24, -.16]], dk);   // the sawtooth roof
+  box(g, s, -.36, -.09, .72, .3, 3, c);                                                             // the shed
+  box(g, s, -.06, .04, .2, .17, 2, INK);                                                            // the door
   const f = run ? (w * .4) % 1 : .5;
-  block(g, s, -.04 + f * .24, .12, .07, .07, .05, '#b58a52');                                      // a crate riding it
+  box(g, s, -.02 + f * .1, .1, .1, .1, 2, '#b58a52');                                               // a crate coming out of it
 };
 
-// Land mine: a flat dark disc half-buried in a mound, with one red light. (Not a building, so it keeps the plain unit look.)
+// Land mine: a flat dark disc half-buried in a mound, with one red light.
 const landMine = (g, { s, c, w, ph, run }) => {
   oval(g, s, 0, .26, .27, .06, '#6b5338');
   oval(g, s, 0, .24, .2, .1, '#3b4048');
@@ -116,11 +99,9 @@ export const SPRITES = {
   land_mine: (g, o) => { g.save(); g.translate(0, -.05 * o.s); g.scale(1.25, 1.25); landMine(g, o); g.restore(); },
 };
 
-// ---- shadows: the buildings' lower-right band under the pad --------------------------------------------------------------------
-const padShadow = (x0, x1, d) => (g, { s }) => blockShadow(g, s, x0, x1 - x0, d);
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
+// ---- shadows: the units' soft oval under the footing ------------------------------------------------------------------------
+export const ground = (rx, ry = .05, y = .3, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
-  gun_turret: padShadow(-.4, .26, .16), cannon_turret: padShadow(-.42, .28, .17), sam_site: padShadow(-.42, .28, .17),
-  artillery_emplacement: padShadow(-.44, .3, .14), jammer: padShadow(-.32, .2, .14), auto_factory: padShadow(-.44, .3, .14), land_mine: ground(.27, .05, .3),
+  gun_turret: ground(.34), cannon_turret: ground(.4), sam_site: ground(.36), artillery_emplacement: ground(.44),
+  jammer: ground(.28), auto_factory: ground(.44), land_mine: ground(.27),
 };
-export const DEFENCE_KIT = { block, blockShadow, pad, stripe, CONCRETE, GROUND };

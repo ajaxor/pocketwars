@@ -3,12 +3,10 @@
 // wrecks, liberating assimilated units, ...). NOT in the game. Same conventions as concept-art.js:
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 // Infantry follow the training-ground rule (art-infantry.js): the plain soldier plus ONE thing. Vehicles are the game's flat blocks.
-// The new static defences use the defence kit (concept-art-static.js), which is the buildings' language.
+// The new static defences use the units' flat style and the footing from concept-art-static.js.
 import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hullPath, propeller, propDisc, legs, torso, head, dome, INK, STEEL, GLASS, RED } from '../src/render/parts.js';
 import { shade } from '../src/render/color.js';
-import { DEFENCE_KIT } from './concept-art-static.js';
-
-const { block, blockShadow, pad, CONCRETE, GROUND } = DEFENCE_KIT;
+import { footing } from './concept-art-static.js';
 const WOOD = '#7a4e2a', HAZARD = '#ffc531', RUST = '#9a5a2e', FLAME = '#ff9a2e', FLAME_HOT = '#ffe36b', ARC = '#9fe8ff';
 
 // ---- infantry ------------------------------------------------------------------------------------------------------------------
@@ -242,54 +240,52 @@ const qShip = (g, { s, c, dk, w, ph, run, b }) => {
   });
 };
 
-// ---- static defences (the defence kit) ----------------------------------------------------------------------------------------------
-// Coastal battery: a heavy casemate on the shoreline with a long naval gun; it fires out to sea.
-const coastalBattery = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.44, .3, .16);
+// ---- static defences (the units' flat style, bolted to a footing: concept-art-static.js) --------------------------------------------
+// Coastal battery: a heavy casemate with a dark roof and a long naval gun; it fires out to sea.
+const coastalBattery = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.38, .38);
   const rec = run ? Math.max(0, Math.sin(w * .9 + ph)) ** 8 * .04 : 0;
-  g.save(); g.translate(.02 * s, .02 * s); g.rotate(-.12);
-  box(g, s, .0 - rec, -.035, .44, .07, 1, INK); box(g, s, .38 - rec, -.045, .06, .09, 1, INK);
-  g.restore();
-  block(g, s, -.38, -.06, .5, .29, .18, c);                                                                     // the casemate
-  block(g, s, -.42, -.12, .58, .07, .2, shade(c, -.18));                                                        // its thick roof
-  box(g, s, -.02, -.02, .14, .09, 1, '#23252b');                                                                // the embrasure
-  box(g, s, -.3, .06, .18, .03, 1, shade(c, -.2)); box(g, s, -.3, .12, .18, .03, 1, shade(c, -.2));
+  box(g, s, .1 - rec, -.06, .34, .065, 1, INK); box(g, s, .39 - rec, -.075, .06, .095, 1, INK);                // the naval gun
+  box(g, s, -.36, -.12, .52, .33, 4, c);                                                                        // the casemate
+  box(g, s, -.38, -.17, .56, .08, 3, dk);                                                                       // its thick roof
+  box(g, s, .06, -.07, .1, .09, 1, INK);                                                                        // the embrasure
 };
 
-// Barrage balloon: a winch block on a pad and a fat silver balloon tethered high above it, bobbing.
-const barrageBalloon = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.3, .2, .14);
-  block(g, s, -.22, .08, .24, .15, .12, c);                                                                     // the winch house
-  disc(g, s, -.1, .14, .045, '#3a3d44');                                                                        // the drum
+// Barrage balloon: a winch hut on a footing and a fat silver balloon tethered high above it, bobbing.
+const barrageBalloon = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.24, .2);
   const by = -.27 + (run ? Math.sin(w * 1.2 + ph) * .02 : 0), bx = .04;
-  stroke(g, s, -.08, .1, bx - .04, by + .09, 1, '#555a64');                                                     // the cable
+  stroke(g, s, -.04, .04, bx - .04, by + .09, 1, '#555a64');                                                    // the cable
   poly(g, s, [[bx - .24, by], [bx - .31, by - .09], [bx - .2, by - .03]], c); poly(g, s, [[bx - .24, by], [bx - .31, by + .07], [bx - .2, by + .03]], c);   // fins
   oval(g, s, bx, by, .2, .1, '#d6d9de'); oval(g, s, bx + .02, by - .04, .13, .03, '#f2f3f5');
   box(g, s, bx - .12, by - .015, .04, .03, 1, c);
+  box(g, s, -.2, .04, .36, .17, 4, c);                                                                          // the winch hut
+  disc(g, s, -.04, .12, .05, dk); disc(g, s, -.04, .12, .02, STEEL);                                            // the drum
 };
 
-// Tank trap: three pyramid "dragon's teeth" of poured concrete with team-coloured tips: vehicles cannot pass, infantry climb through.
-const tankTrap = (g, { s, c }) => {
-  const tooth = (x, y, r) => {
-    poly(g, s, [[x - r, y], [x, y - r * 1.5], [x, y + r * .25]], shade(CONCRETE, .1));                           // lit left face
-    poly(g, s, [[x, y - r * 1.5], [x + r, y], [x, y + r * .25]], shade(CONCRETE, -.3));                           // shaded right face
-    poly(g, s, [[x - r * .3, y - r * 1.05], [x, y - r * 1.5], [x + r * .3, y - r * 1.05], [x, y - r * .95]], c);   // the tip
+// Tank trap: three steel "hedgehogs" of crossed beams, painted in the team colour: vehicles cannot pass, infantry climb through.
+const tankTrap = (g, { s, c, dk }) => {
+  const hog = (x, y, r) => {
+    const t = Math.max(3, s * .06);
+    stroke(g, s, x - r, y, x + r * .7, y - r * 1.6, t, dk);                                                     // the far beam
+    stroke(g, s, x - r * 1.15, y - r * .7, x + r * 1.15, y - r * .95, t, mix(c, '#000000', .2));               // the cross beam
+    stroke(g, s, x + r, y, x - r * .7, y - r * 1.6, t, c);                                                      // the near beam
   };
-  tooth(-.2, .14, .13); tooth(.14, .12, .12); tooth(-.02, .27, .15);
+  hog(-.2, .22, .15); hog(.2, .22, .15); hog(0, .3, .17);
 };
 
-// Watchtower: a timber tower carrying a team-coloured lookout cabin and a searchlight that sweeps.
-const watchtower = (g, { s, c, w, ph, run }) => {
-  pad(g, s, -.24, .2, .12);
-  for (const [x0, x1] of [[-.18, -.1], [.14, .06]]) stroke(g, s, x0, .23, x1, -.12, Math.max(2, s * .03), WOOD);   // legs
-  stroke(g, s, -.16, .12, .12, -.02, 1.5, WOOD); stroke(g, s, .12, .12, -.16, -.02, 1.5, WOOD);                    // cross braces
+// Watchtower: timber legs carrying a team-coloured lookout cabin with a dark roof and a searchlight that sweeps.
+const watchtower = (g, { s, c, dk, w, ph, run }) => {
+  footing(g, s, -.24, .24, .07);
+  for (const [x0, x1] of [[-.18, -.1], [.18, .1]]) stroke(g, s, x0, .22, x1, -.08, Math.max(2.5, s * .035), WOOD);   // legs
+  stroke(g, s, -.15, .14, .14, .0, 2, WOOD); stroke(g, s, .15, .14, -.14, .0, 2, WOOD);                           // cross braces
   const a = run ? Math.sin(w * .8 + ph) * .45 : .2;
-  g.save(); g.translate(.06 * s, -.19 * s); g.rotate(a);
-  poly(g, s, [[0, 0], [.42, -.07], [.42, .07]], 'rgba(255,245,190,.28)'); g.restore();                           // the beam
-  block(g, s, -.16, -.22, .22, .11, .1, c);                                                                     // the cabin
-  box(g, s, -.12, -.2, .14, .04, 1, '#23252b');                                                                 // its window slot
-  poly(g, s, [[-.2, -.22], [-.05, -.32], [.15, -.3], [.1, -.22]], shade(c, -.25));                              // its roof
-  disc(g, s, .06, -.19, .025, '#fff3b0');
+  g.save(); g.translate(.12 * s, -.15 * s); g.rotate(a);
+  poly(g, s, [[0, 0], [.34, -.06], [.34, .06]], 'rgba(255,245,190,.3)'); g.restore();                            // the beam
+  box(g, s, -.16, -.2, .3, .14, 3, c);                                                                          // the cabin
+  box(g, s, -.1, -.17, .16, .045, 1, INK);                                                                      // its window slot
+  poly(g, s, [[-.21, -.2], [-.01, -.3], [.19, -.2]], dk);                                                       // its roof
+  disc(g, s, .14, -.14, .03, '#fff3b0');
 };
 
 export const SPRITES = {
@@ -298,17 +294,16 @@ export const SPRITES = {
   technical, salvager, broadcast_truck: broadcastTruck,
   airship: (g, o) => { g.save(); g.scale(.95, .95); airship(g, o); g.restore(); }, loiter_drone: loiterDrone,
   q_ship: (g, o) => { g.save(); g.scale(.88, .88); qShip(g, o); g.restore(); },
-  coastal_battery: coastalBattery, barrage_balloon: barrageBalloon, tank_trap: (g, o) => { g.save(); g.translate(0, .29 * o.s); g.scale(1.3, 1.3); g.translate(0, -.27 * o.s); tankTrap(g, o); g.restore(); }, watchtower,
+  coastal_battery: coastalBattery, barrage_balloon: barrageBalloon, tank_trap: tankTrap, watchtower,
 };
 
 // ---- shadows ------------------------------------------------------------------------------------------------------------------
 const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 const air = (rx, ry) => (g, { s, alt = 0 }) => { g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(0, s * (.25 + alt * .35), rx * s, ry * s, 0, 0, 7); g.fill(); };
-const padShadow = (x0, x1, d) => (g, { s }) => blockShadow(g, s, x0, x1 - x0, d, GROUND);
 export const SHADOWS = {
   engineer: ground(.2, .04, .3), flame_trooper: ground(.22, .04, .3), shield_trooper: ground(.2, .04, .3), k9_team: ground(.3, .045, .3, .05),
   bridge_layer: ground(.4, .05, .285), decoy_tank: ground(.36, .05, .285), smoke_carrier: ground(.4, .05, .285), emp_truck: ground(.4, .05, .285),
   tank_destroyer: ground(.38, .05, .285), technical: ground(.38, .05, .285), salvager: ground(.36, .05, .285), broadcast_truck: ground(.4, .05, .285),
   airship: air(.38, .05), loiter_drone: air(.2, .04), q_ship: () => {},
-  coastal_battery: padShadow(-.44, .3, .16), barrage_balloon: padShadow(-.3, .2, .14), tank_trap: ground(.4, .05, .29), watchtower: padShadow(-.24, .2, .12),
+  coastal_battery: ground(.42, .05, .3), barrage_balloon: ground(.3, .05, .3), tank_trap: ground(.4, .05, .3), watchtower: ground(.3, .05, .3),
 };
