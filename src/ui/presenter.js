@@ -1,3 +1,5 @@
+import { MINE_SHOWN } from '../render/effects.js';
+
 // Presenter: turns engine events into animations and timing. It is the only bridge between the pure
 // engine and the effects/animation objects.
 
@@ -23,8 +25,9 @@ export class Presenter {
         this.effects.interrupt(ev, t);
         t += 500;
       } else if (ev.type === 'detonate') {
-        this.effects.detonate(ev, t);
-        t += 600;
+        // the mine appears together with the 'Contact!' call-out of the interrupt just before (500 ms), then goes off
+        this.effects.detonate(ev, t - 500);
+        t += MINE_SHOWN - 500 + 600;
       } else if (ev.type === 'supply') {
         this.effects.supplied(ev, t);
       } else if (ev.type === 'dive') {
