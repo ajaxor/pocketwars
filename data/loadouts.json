@@ -50,7 +50,7 @@
       "infantry": "commando",
       "build": {
         "barracks": ["commando", "rpg_trooper", "mechanic"],
-        "factory": ["rocket_buggy", "tank", "rocket_launcher", "sam_launcher"],
+        "factory": ["rocket_buggy", "tank", "rocket_launcher", "sam_launcher", "supply_truck"],
         "airfield": ["transport_copter", "copter", "fighter", "bomber"],
         "shipyard": ["gun_boat", "hunter_sub", "mine_layer", "cruiser", "battleship"]
       },
@@ -96,7 +96,7 @@
     "hiroshi": {
       "build": {
         "barracks": ["soldier", "mech", "mortar", "mechanic"],
-        "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "sam_launcher"],
+        "factory": ["recon", "tank", "heavy_tank", "artillery", "sam_launcher", "supply_truck"],
         "airfield": ["transport_copter", "copter", "fighter", "bomber"],
         "shipyard": ["destroyer", "submarine", "cruiser", "dreadnought", "mine_layer"]
       },
@@ -104,7 +104,7 @@
         "hq": [
           { "unit": "mech", "at": [-1, 1] },
           { "unit": "mortar", "at": [1, 1] },
-          { "unit": "rocket_launcher", "at": [0, 1] }
+          { "unit": "tank", "at": [0, 1] }
         ],
         "barracks": [
           { "unit": "mechanic", "at": [0, 1] }
@@ -120,7 +120,7 @@
     "ludwig": {
       "build": {
         "barracks": ["soldier", "medic", "mech", "sniper"],
-        "factory": ["recon", "hover_tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "supply_truck"],
+        "factory": ["rocket_buggy", "hover_tank", "artillery", "rocket_launcher", "flak", "supply_truck"],
         "airfield": ["stealth_copter", "fighter", "bomber", "radar_plane"],
         "shipyard": ["destroyer", "missile_sub", "cruiser", "battleship", "diver"]
       },
@@ -145,7 +145,7 @@
       "infantry": "marine",
       "build": {
         "barracks": ["marine", "rpg_trooper", "medic", "mortar"],
-        "factory": ["recon", "amphibious_tank", "heavy_tank", "artillery", "rocket_launcher", "flak"],
+        "factory": ["recon", "amphibious_tank", "artillery", "rocket_launcher", "flak"],
         "airfield": ["copter", "fighter", "bomber", "torpedo_bomber"],
         "shipyard": ["gun_boat", "hunter_sub", "troop_transport", "cruiser", "battleship", "aircraft_carrier", "mine_layer"]
       },
@@ -191,7 +191,7 @@
       "infantry": "conscript",
       "build": {
         "barracks": ["conscript", "rpg_trooper", "mechanic", "mortar"],
-        "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "apc"],
+        "factory": ["recon", "heavy_tank", "artillery", "rocket_launcher", "flak", "apc"],
         "airfield": ["copter", "fighter", "vintage_bomber", "torpedo_bomber"],
         "shipyard": ["destroyer", "missile_sub", "mine_layer", "cruiser", "battleship", "troop_transport"]
       },
