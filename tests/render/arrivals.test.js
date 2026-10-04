@@ -69,7 +69,8 @@ test('the renderer draws an arriving unit where it is on its way, and not on its
   const registry = await loadRegistry(readData);
   const game = new Game(registry, await loadMap(readData, registry, 'classic'));
   const seen = [];
-  const ctx = new Proxy({}, { get: (_, p) => (typeof p === 'symbol' ? undefined : () => ({ addColorStop() {} })), set: () => true });
+  const calls = [];
+  const ctx = new Proxy({}, { get: (_, p) => (typeof p === 'symbol' ? undefined : (...a) => { calls.push([p, ...a]); return { addColorStop() {} }; }), set: () => true });
   const r = new Renderer({ getContext: () => ctx, style: {}, width: 0, height: 0, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, game, new Effects(registry, (o) => registry.faction(game.map.players[o].faction)), new MoveAnimator());
   r.arrivals = new Arrivals();
   const u = game.state.units[0];
@@ -80,4 +81,8 @@ test('the renderer draws an arriving unit where it is on its way, and not on its
   assert.ok(r.dimmedTiles({ selectedId: null }) instanceof Set);
   r.draw({ selectedId: null, dest: null, reach: null, attackTiles: null, targets: [], showTargets: false, pendingTargetId: null }, 50);
   void seen;
+  const at = calls.findIndex((c) => c[0] === 'clip');
+  assert.ok(at > 0, 'an arriving unit is drawn inside a clip');
+  assert.deepEqual(calls[at - 1], ['rect', 0, 0, game.map.width * r.S, game.map.height * r.S], 'the clip is the map');
+  assert.ok(calls.slice(at).some((c) => c[0] === 'restore'));
 });
