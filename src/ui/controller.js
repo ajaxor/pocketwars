@@ -35,10 +35,10 @@ import { canSee, sonarTiles } from '../engine/detection.js';
 import { layConfig, layTiles } from '../engine/mines.js';
 import { canSupplyAt, supplyPlan } from '../engine/supply.js';
 import { ammoOf, canResupplyAt, resupplyCost } from '../engine/ammo.js';
-import { canDeploy, deployConfig } from '../engine/deploy.js';
+import { canDeploy } from '../engine/deploy.js';
 import { buildOptions } from '../engine/economy.js';
 import { attackTiles, bestAttackTile, canFireAfterMoving, computeReach, hasMovedAlready, targetsFrom } from '../engine/movement.js';
-import { ownerAt, unitAt, unitById } from '../engine/queries.js';
+import { deployedType, ownerAt, unitAt, unitById } from '../engine/queries.js';
 import { canSubmergeAt, canSurface } from '../engine/submerge.js';
 import { buildMenuModel, defaultChoice } from './build-menu.js';
 import { terrainInfo, unitInfo } from './info.js';
@@ -228,7 +228,7 @@ export class Controller {
   /** The Deploy button for a carrier that can put a unit down, or nothing. `onClick` decides where it leads from. */
   #deployItem(carrier, onClick) {
     if (!canDeploy(this.game, carrier)) return [];
-    const name = this.game.registry.unit(deployConfig(this.game, carrier).unit).name;
+    const name = this.game.registry.unit(deployedType(this.game, carrier)).name;
     return [{ label: `Deploy ${name}`, onClick }];
   }
 

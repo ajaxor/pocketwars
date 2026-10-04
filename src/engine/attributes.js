@@ -61,11 +61,12 @@ export const UNIT_ATTRIBUTES = {
   supply: {
     label: 'Supplies',
     help: (v) => `Supply order (after moving, instead of Wait): refills the ammo of friendly ${v.categories.join(', ')} units next to it${v.repair ? ` and repairs them ${v.repair} HP` : ''}, paying the usual price per round.`,
-    doc: 'A support order. Config: { categories, repair? }. After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round that stands for a unit (ammo.js roundCost; plain ammunition is free), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
+    doc: 'A support order. Config: { categories, repair?, fuelTags? }. It also refuels units that use fuel (free): all of them, or only those with one of the unit tags in `fuelTags` (the supply truck refuels helicopters but not planes), and the same units are refuelled at the start of their owner\'s turn when next to this unit (fuel.js). After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round that stands for a unit (ammo.js roundCost; plain ammunition is free), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "categories": ["aircraft"], "repair": 2 }');
       if (!Array.isArray(v.categories) || !v.categories.length || v.categories.some((c) => typeof c !== 'string' || !c)) fail('categories must be a non-empty array of unit category names');
       if (v.repair !== undefined && (!Number.isInteger(v.repair) || v.repair < 1)) fail('repair must be a positive whole number of HP');
+      if (v.fuelTags !== undefined && (!Array.isArray(v.fuelTags) || !v.fuelTags.length || v.fuelTags.some((t) => typeof t !== 'string' || !t))) fail('fuelTags must be a non-empty array of unit tags (only units with one of them are refuelled; without it every unit of the categories is)');
     },
   },
   reloads: {
@@ -120,13 +121,30 @@ export const UNIT_ATTRIBUTES = {
       if (!Number.isInteger(v.low) || v.low < 0 || (Number.isInteger(v.max) && v.low >= v.max)) fail('low must be a whole number from 0 up to (not including) max');
     },
   },
+  fuel: {
+    label: (v) => `Fuel ${v.max}`,
+    help: (v) => `Burns 1 fuel for every tile it flies and cannot go further than its fuel allows. A can flashes on its tile when it is down to ${v.low} or fewer, and stays red at 0. It refuels for free at the start of its owner's turn on or next to an airfield of theirs, an aircraft carrier of theirs (or, for helicopters, a supply truck), and when it Resupplies. A unit that begins its turn with an empty tank crashes when the turn ends.`,
+    doc: 'A limited range for flyers. Config: { max, low }. The unit starts full (`unit.fuel`); each tile moved costs 1 (fuel.js), the unit cannot move further than the fuel it has left (submerge.js moveOf), and it is shown as a fuel can bottom left of its tile: flashing when fuel <= `low` (and above 0), steady red at 0. Refuelling is free: at the start of its owner\'s turn, when a terrain with the `resupply` attribute for its category is in range, an aircraft carrier (a friendly unit whose `supply` covers its category) is next to it, or a friendly supply unit whose `supply` has `fuelTags` matching the unit\'s tags is next to it; also by the Resupply and Supply orders. A unit that starts its turn at 0 (`unit.fuelOut`) is destroyed when that turn ends unless it was refuelled. Only meaningful for units that move without touching the ground.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "max": 30, "low": 6 }');
+      if (!Number.isInteger(v.max) || v.max < 1) fail('max must be a positive whole number of tiles');
+      if (!Number.isInteger(v.low) || v.low < 0 || (Number.isInteger(v.max) && v.low >= v.max)) fail('low must be a whole number from 0 up to (not including) max');
+    },
+  },
+  attacksPerTurn: {
+    label: (v) => `Attacks x${v}`,
+    help: (v) => `Can attack ${v} times in one turn, at the same or different targets. It cannot move between the attacks, so after the first one it fires again from where it stands (or waits).`,
+    doc: 'Several attacks per turn. Config: a whole number of at least 2. An order that ends in an attack does not end the unit\'s turn while it has attacks left (`unit.attacks` counts them, cleared when its owner\'s turn starts): the unit is `halted` where it stands, exactly as after an interrupted move (it keeps whether it moved, so a unit that moved still cannot use indirect weapons), and its next order can only be another attack or Wait from the same tile. Each attack is resolved on its own, counterattack included, and spends ammo normally. See game.js act.',
+    check: (v, e, fail) => { if (!Number.isInteger(v) || v < 2) fail('must be a whole number of at least 2 (the attacks per turn)'); },
+  },
   deploy: {
     label: (v, registry) => `Deploys ${registry?.units?.[v.unit]?.name ?? v.unit}`,
-    help: (v, registry) => `Carries ${registry?.units?.[v.unit]?.name ?? v.unit} troops as ammo. Once a turn, before or after it moves, Deploy places one on it, and you then move and order it as normal (it can attack). Cancel puts it back.`,
-    doc: 'A separate action, like a factory building a unit: before or after the carrier\'s own move-and-act order (not part of it), once per turn, spending `ammo` (default 1) of its ammo. A new unit of type `unit` is placed on the carrier\'s tile and is ordered with the normal move-and-act order (it must leave the tile; it can attack); until ordered it can be put back (game.cancelDeploy, which returns the ammo). It belongs to the same player at full HP. A carrier that was just built cannot deploy. Requires the `ammo` attribute. See deploy.js.',
+    help: (v, registry) => `Carries ${v.basic ? 'its leader\'s basic infantry' : registry?.units?.[v.unit]?.name ?? v.unit} troops as ammo. Once a turn, before or after it moves, Deploy places one on it, and you then move and order it as normal (it can attack). Cancel puts it back.`,
+    doc: 'A separate action, like a factory building a unit: before or after the carrier\'s own move-and-act order (not part of it), once per turn, spending `ammo` (default 1) of its ammo. With `basic: true` the type is the basic infantry of the carrier\'s leader (loadouts.json -> infantry; `unit` is the fallback for a player without one). A new unit of that type is placed on the carrier\'s tile and is ordered with the normal move-and-act order (it must leave the tile; it can attack); until ordered it can be put back (game.cancelDeploy, which returns the ammo). It belongs to the same player at full HP. A carrier that was just built cannot deploy. Requires the `ammo` attribute. See deploy.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "unit": "soldier", "ammo": 1 }');
       if (typeof v.unit !== 'string' || !v.unit) fail('unit must name a unit from units.json');
+      if (v.basic !== undefined && typeof v.basic !== 'boolean') fail('basic must be true or false');
       if (v.ammo !== undefined && (!Number.isInteger(v.ammo) || v.ammo < 1)) fail('ammo (the cost of one drop) must be a positive whole number');
       if (!e.attributes || !e.attributes.ammo) fail('requires the ammo attribute');
       else if (Number.isInteger(v.ammo) && Number.isInteger(e.attributes.ammo.max) && v.ammo > e.attributes.ammo.max) fail('ammo (the cost of one drop) is more than the unit can carry');

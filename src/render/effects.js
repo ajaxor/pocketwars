@@ -114,9 +114,28 @@ export class Effects {
   supplied(ev, t0) {
     ev.supplied.forEach((s, i) => {
       const gained = s.ammoFrom !== null && s.ammoTo > s.ammoFrom, healed = s.to > s.from;
-      const label = gained && healed ? 'Supplied +HP' : healed ? `+${Math.round((s.to - s.from) * 10) / 10}` : 'Resupplied';
+      const fuelled = s.fuelTo != null && s.fuelFrom != null && s.fuelTo > s.fuelFrom;
+      const label = gained && healed ? 'Supplied +HP' : healed ? `+${Math.round((s.to - s.from) * 10) / 10}` : fuelled && !gained ? 'Refuelled' : 'Resupplied';
       this.list.push({ k: 'txt', x: s.x + .5, y: s.y + .35, s: label, sz: .28, c: '#9be564', t0: t0 + i * 120, d: 1200 });
     });
+  }
+
+  /** Flyers topped up at the start of their owner's turn (the `refuelled` list of a turnStart event): a call-out over each. Does not lock input. */
+  refuelled(ev, t0) {
+    (ev.refuelled || []).forEach((r, i) => {
+      this.list.push({ k: 'txt', x: r.unit.x + .5, y: r.unit.y + .35, s: 'Refuelled', sz: .28, c: '#ffd23f', t0: t0 + 300 + i * 120, d: 1200 });
+    });
+  }
+
+  /** A flyer that began its turn dry and still is (a 'crash' event): it comes down in a burst. */
+  crash(ev, t0) {
+    const u = ev.unit;
+    this.list.push(
+      { k: 'txt', x: u.x + .5, y: u.y + .35, s: 'Out of fuel', sz: .3, c: '#ff3b30', t0, d: 1100 },
+      { k: 'burst', x: u.x + .5, y: u.y + .5, t0: t0 + 450, d: 700, big: true },
+      { k: 'die', unit: u, t0: t0 + 450, d: 600 },
+    );
+    this.lockUntil = Math.max(this.lockUntil, t0 + 1100);
   }
 
   /** A unit diving or coming up: ripples on the water. `down` is true for a dive. */

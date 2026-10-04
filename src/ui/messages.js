@@ -39,6 +39,10 @@ export function describeEvents(game, events) {
       text = `${name(ev.unit)} heals ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');
     } else if (ev.type === 'turnStart' && ev.healed?.length) {
       text = `${ev.healed.length} unit${ev.healed.length === 1 ? '' : 's'} healed`;
+    } else if (ev.type === 'crash') {
+      text = `${name(ev.unit)} ran out of fuel and crashed!`;
+    } else if (ev.type === 'turnStart' && ev.refuelled?.length) {
+      text = `${ev.refuelled.length} unit${ev.refuelled.length === 1 ? '' : 's'} refuelled`;
     } else if (ev.type === 'eliminated') {
       text = `${factionOf(game, ev.player).name} is out of the game!`;
     } else if (ev.type === 'gameOver') {

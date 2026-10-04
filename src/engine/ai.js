@@ -28,10 +28,11 @@ import { ammoOf, ammoLevel, canResupplyAt, resupplyCost, roundCost } from './amm
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
+import { fuelHomes, fuelOf, usesFuel } from './fuel.js';
 import { canHealAt } from './heal.js';
 import { canSupplyAt, supplyConfig, supplyPlan } from './supply.js';
 import { isMine, layConfig, layTiles } from './mines.js';
-import { calcDamage, canAttackFrom, canTarget } from './combat.js';
+import { attacksPerTurn, calcDamage, canAttackFrom, canTarget } from './combat.js';
 import { canSee } from './detection.js';
 import { canDeploy, deployConfig, deployReach } from './deploy.js';
 import { buildProblem, menuFor } from './economy.js';
@@ -74,6 +75,14 @@ function supplyScore(game, unit, x, y, w) {
  */
 function goalTiles(game, unit) {
   const { state, map } = game;
+  // a flyer that could not manage another full sortie and still get home turns back to where it refuels
+  if (usesFuel(game, unit)) {
+    const homes = fuelHomes(game, unit);
+    if (homes.length) {
+      const away = Math.min(...homes.map(([hx, hy]) => distance(unit.x, unit.y, hx, hy)));
+      if (away > 0 && fuelOf(game, unit) <= away + unitDef(game, unit).move) return homes;
+    }
+  }
   // out of ammo (and able to pay for more): back to the property that refills it
   if (ammoLevel(game, unit) === 'empty' && resupplyCost(game, unit) <= state.funds[unit.owner]) {
     const category = unitDef(game, unit).category;
@@ -253,11 +262,12 @@ export function tryDeploy(game, unit, ai = game.registry.ai) {
 /** Give `unit` its order(s): a second one when the first was cut short by a hidden unit. */
 function orderUnit(game, unit, events) {
   if (!unit.fresh) events.push(...surfaceToTravel(game, unit));
-  for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
+  const steps = 1 + Math.max(1, attacksPerTurn(game, unit));   // an interrupted move needs a second order; so does each further attack
+  for (let step = 0; step < steps && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
     const result = game.act(chooseOrder(game, unit));
     if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
     events.push(...result.events);
-    if (!result.interrupted) break;
+    if (!result.interrupted && unit.done) break;
   }
 }
 

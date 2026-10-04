@@ -5,6 +5,7 @@
 
 import { attributeConfig } from './attributes.js';
 import { ammoConfig, ammoOf, roundCost, usesAmmo } from './ammo.js';
+import { fuelOf, needsFuel, refuel, refuelsUnit } from './fuel.js';
 import { distance, round1, snapshotUnit, unitDef } from './queries.js';
 
 export const supplyConfig = (game, unit) => attributeConfig(unitDef(game, unit), 'supply');
@@ -22,9 +23,10 @@ export function supplyPlan(game, unit, x = unit.x, y = unit.y) {
     const price = roundCost(game, v);
     if (price > 0) rounds = Math.min(rounds, Math.floor(funds / price));
     const hp = cfg.repair ? Math.min(cfg.repair, round1(max - v.hp)) : 0;
-    if (rounds <= 0 && hp <= 0) continue;
+    const fuel = needsFuel(game, v) && refuelsUnit(game, unit, v);   // the tank is free
+    if (rounds <= 0 && hp <= 0 && !fuel) continue;
     funds -= rounds * price;
-    plan.push({ unit: v, rounds, hp, cost: rounds * price });
+    plan.push({ unit: v, rounds, hp, fuel, cost: rounds * price });
   }
   return plan;
 }
@@ -35,13 +37,15 @@ export const canSupplyAt = (game, unit, x, y) => supplyPlan(game, unit, x, y).le
 /** Carry out the order from where the unit stands: the single 'supply' event. */
 export function resolveSupply(game, unit) {
   const supplied = [];
-  for (const { unit: v, rounds, hp, cost } of supplyPlan(game, unit)) {
+  for (const { unit: v, rounds, hp, fuel, cost } of supplyPlan(game, unit)) {
     game.state.funds[unit.owner] -= cost;
     const ammoFrom = usesAmmo(game, v) ? ammoOf(game, v) : null;
     const from = v.hp;
+    const fuelFrom = fuelOf(game, v);
     if (rounds > 0) v.ammo = ammoOf(game, v) + rounds;
+    if (fuel) refuel(game, v);
     if (hp > 0) v.hp = Math.min(game.registry.rules.maxHp, round1(v.hp + hp));
-    supplied.push({ id: v.id, x: v.x, y: v.y, ammoFrom, ammoTo: usesAmmo(game, v) ? ammoOf(game, v) : null, from, to: v.hp, cost });
+    supplied.push({ id: v.id, x: v.x, y: v.y, ammoFrom, ammoTo: usesAmmo(game, v) ? ammoOf(game, v) : null, fuelFrom, fuelTo: fuelOf(game, v), from, to: v.hp, cost });
   }
   return [{ type: 'supply', unit: snapshotUnit(unit), supplied }];
 }

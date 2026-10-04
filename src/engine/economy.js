@@ -1,5 +1,7 @@
 // Turn income, repair, resupply and unit production, all driven by the terrain `property` attribute.
 
+import { isHidden } from './detection.js';
+import { refuelAtTurnStart } from './fuel.js';
 import { healAtTurnStart } from './heal.js';
 import { inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
@@ -38,6 +40,7 @@ export function startTurn(game, player) {
     if (u.owner !== player) continue;
     u.done = !!unitDef(game, u).attributes.mine;   // a mine never acts
     u.halted = null;
+    delete u.attacks;
     delete u.fresh;
     delete u.deployed;
     delete u.carriedBy;
@@ -49,8 +52,13 @@ export function startTurn(game, player) {
     }
   }
   for (const u of state.units) if (u.owner === player) delete u.revealed;
+  for (const u of state.units) {   // a unit that begins its turn hidden (cloaked, submerged) strikes with the ambush bonus this turn
+    if (u.owner !== player) continue;
+    if (isHidden(game, u) && !unitDef(game, u).attributes.mine) u.ambush = true; else delete u.ambush;
+  }
   const healed = healAtTurnStart(game, player);
-  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, healed }];
+  const refuelled = refuelAtTurnStart(game, player);
+  return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, healed, refuelled }];
 }
 
 /**

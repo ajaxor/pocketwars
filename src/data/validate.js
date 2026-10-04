@@ -20,6 +20,7 @@ const isColor = (v) => typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v);
 export function validateRules(rules, problems) {
   if (!isObj(rules)) return problems.push('rules.json must be an object');
   if (!Number.isInteger(rules.maxHp) || rules.maxHp < 1) problems.push('rules: maxHp must be a positive integer');
+  if (rules.ambushMultiplier !== undefined && !(typeof rules.ambushMultiplier === 'number' && rules.ambushMultiplier >= 1)) problems.push('rules: ambushMultiplier (the damage bonus of a unit that starts its turn hidden) must be a number of at least 1');
   if (!isColor(rules.neutralColor)) problems.push('rules: neutralColor must be a hex color');
   if (!Array.isArray(rules.moveClasses) || !rules.moveClasses.length || new Set(rules.moveClasses).size !== rules.moveClasses.length
     || rules.moveClasses.some((m) => !isStr(m))) problems.push('rules: moveClasses must be a non-empty array of unique names');
@@ -104,6 +105,7 @@ export function validateWeapons(weapons, rules, problems) {
     if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
     if (w.ammo !== undefined && !(Number.isInteger(w.ammo) && w.ammo >= 1)) problems.push(`weapon "${id}": ammo (rounds used per shot) must be a positive whole number`);
+    if (w.fromTerrain !== undefined && (!Array.isArray(w.fromTerrain) || !w.fromTerrain.length || w.fromTerrain.some((t) => !isStr(t)))) problems.push(`weapon "${id}": fromTerrain (the terrain it can be fired from) must be a non-empty list of terrain ids`);
     if (w.onlyTags !== undefined && (!Array.isArray(w.onlyTags) || !w.onlyTags.length || w.onlyTags.some((t) => !isStr(t)))) problems.push(`weapon "${id}": onlyTags (the unit tags it may hit) must be a non-empty list of names`);
     if (!isNum(w.damage) || w.damage <= 0) problems.push(`weapon "${id}": damage must be a positive number`);
     if (w.armorPiercing !== undefined && !(isNum(w.armorPiercing) && w.armorPiercing >= 0 && w.armorPiercing <= 1)) problems.push(`weapon "${id}": armorPiercing must be a number from 0 to 1`);
@@ -171,6 +173,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
       else if (!isObj(units[lay.unit].attributes) || !units[lay.unit].attributes.mine) problems.push(`unit "${id}": attribute "layMines" names "${lay.unit}", which is not a mine (it needs the "mine" attribute)`);
     }
     const drop = u.attributes && u.attributes.deploy;
+    if (isObj(drop) && drop.basic !== undefined && typeof drop.basic !== 'boolean') problems.push(`unit "${id}": attribute "deploy" basic must be true or false`);
     if (isObj(drop) && isStr(drop.unit) && !units[drop.unit]) problems.push(`unit "${id}": attribute "deploy" names unknown unit "${drop.unit}"`);
     const dive = u.attributes && u.attributes.submerge;
     if (isObj(dive) && isStr(dive.layer)) {
@@ -283,7 +286,8 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
 
   const checkKit = (kit, where, whole) => {
     if (!isObj(kit)) return problems.push(`${where} must be an object`);
-    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start') problems.push(`${where}: unknown key "${k}" (expected build and start)`);
+    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start' && k !== 'infantry') problems.push(`${where}: unknown key "${k}" (expected build, start and infantry)`);
+    if (kit.infantry !== undefined && (!isObj(units[kit.infantry]) || units[kit.infantry].attributes?.capture !== true)) problems.push(`${where}: infantry must name a unit that can capture (the basic soldier that transports carry)`);
     if (kit.build !== undefined) checkBuild(kit.build, where);
     else if (whole) problems.push(`${where}: build is required`);
     if (kit.start !== undefined) checkStart(kit.start, where);
@@ -311,6 +315,7 @@ export function validateData(raw) {
   validateTerrain(raw.terrain, rules, problems, raw.ground !== undefined);
   validateGround(raw.ground, rules, problems);
   validateWeapons(raw.weapons, rules, problems);
+  if (isObj(raw.weapons) && isObj(raw.terrain)) for (const [id, w] of Object.entries(raw.weapons)) for (const t of Array.isArray(w?.fromTerrain) ? w.fromTerrain : []) if (!raw.terrain[t]) problems.push(`weapon "${id}": fromTerrain names unknown terrain "${t}"`);
   validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);
   validateAi(raw.ai, raw.units, problems);
   validateLoadouts(raw.loadouts, raw.units, raw.terrain, problems);

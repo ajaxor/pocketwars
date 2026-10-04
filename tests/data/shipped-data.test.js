@@ -48,7 +48,9 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
+  assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
+  assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air').sort(), 'every flyer has a fuel tank, and nothing else does');
+  assert.deepEqual(withAttr('attacksPerTurn'), ['dreadnought']);
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);
   assert.deepEqual(withAttr('reloads'), ['sam_launcher']);
@@ -162,4 +164,17 @@ test('classic map: size, players, HQs', async () => {
   const hqs = [];
   map.terrain.forEach((row, y) => row.forEach((t, x) => { if (t === 'hq') hqs.push(map.owners[y][x]); }));
   assert.deepEqual(hqs.sort(), [0, 1]);
+});
+
+test('transports carry each leader\'s basic infantry, and the tuning of the stealth and fuel changes', () => {
+  const basic = Object.fromEntries(registry.leaderIds.map((l) => [l, registry.loadoutFor(l).infantry]));
+  assert.deepEqual(basic, { harlan: 'soldier', ada: 'commando', vex: 'soldier', hiroshi: 'soldier', ludwig: 'soldier', rex: 'marine', chase: 'soldier', dmitri: 'conscript', lysandra: 'marine' });
+  for (const id of ['transport_copter', 'apc', 'troop_transport']) assert.equal(registry.unit(id).attributes.deploy.basic, true, `${id} carries basic infantry`);
+  assert.ok(registry.unit('marine').weapons.includes('marine_deck_rifle'), 'marines can fight ships from the water');
+  assert.deepEqual(registry.weapon('marine_deck_rifle').fromTerrain, ['sea', 'shoals']);
+  assert.ok(registry.weapon('stealth_bombs').ammo >= 1 && registry.unit('stealth_bomber').attributes.ammo.max >= 1, 'the stealth bomber has a limited load');
+  assert.equal(registry.rules.ambushMultiplier, 1.5);
+  assert.ok(registry.unit('dreadnought').cost > 26000, 'two attacks a turn cost more');
+  assert.deepEqual(registry.unitIds.filter((id) => registry.unit(id).tags?.includes('helicopter')).sort(), ['copter', 'stealth_copter', 'transport_copter']);
+  assert.deepEqual(registry.unit('supply_truck').attributes.supply.fuelTags, ['helicopter']);
 });

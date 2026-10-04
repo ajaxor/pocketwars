@@ -1,5 +1,6 @@
 {
   "default": {
+    "infantry": "soldier",
     "build": {
       "barracks": ["soldier", "mech", "sniper"],
       "factory": ["recon", "tank", "stealth_tank", "heavy_tank", "artillery", "rocket_launcher", "flak"],
@@ -46,6 +47,7 @@
       }
     },
     "ada": {
+      "infantry": "commando",
       "build": {
         "barracks": ["commando", "rpg_trooper", "mechanic"],
         "factory": ["rocket_buggy", "tank", "rocket_launcher", "sam_launcher"],
@@ -139,6 +141,7 @@
       }
     },
     "rex": {
+      "infantry": "marine",
       "build": {
         "barracks": ["marine", "rpg_trooper", "medic"],
         "factory": ["recon", "amphibious_tank", "heavy_tank", "artillery", "rocket_launcher", "flak"],
@@ -184,6 +187,7 @@
       }
     },
     "dmitri": {
+      "infantry": "conscript",
       "build": {
         "barracks": ["conscript", "rpg_trooper", "sniper"],
         "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "apc"],
@@ -208,6 +212,7 @@
       }
     },
     "lysandra": {
+      "infantry": "marine",
       "build": {
         "barracks": ["marine", "mech", "sniper", "medic"],
         "factory": ["recon", "tank", "heavy_tank", "artillery", "rocket_launcher", "flak", "sam_launcher", "supply_truck"],

@@ -46,7 +46,7 @@
     "move": 2,
     "moveClass": "amphibious",
     "layer": "ground",
-    "weapons": ["marine_rifle"],
+    "weapons": ["marine_rifle", "marine_deck_rifle"],
     "toughness": 1,
     "armor": 0,
     "attributes": { "capture": true },
@@ -150,10 +150,11 @@
     "move": 6,
     "moveClass": "air",
     "layer": "low_air",
+    "tags": ["helicopter"],
     "weapons": [],
     "toughness": 1.5,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier" } },
+    "attributes": { "fuel": { "max": 30, "low": 6 }, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
     "render": { "sprite": "transport_copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "copter": {
@@ -163,10 +164,11 @@
     "move": 6,
     "moveClass": "air",
     "layer": "low_air",
+    "tags": ["helicopter"],
     "weapons": ["rocket_pods"],
     "toughness": 1.8,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true },
+    "attributes": { "fuel": { "max": 30, "low": 6 }, "ignoresTerrainDefense": true },
     "render": { "sprite": "copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "fighter": {
@@ -179,7 +181,7 @@
     "weapons": ["air_missiles"],
     "toughness": 1,
     "armor": 0.5,
-    "attributes": { "ignoresTerrainDefense": true },
+    "attributes": { "fuel": { "max": 36, "low": 9 }, "ignoresTerrainDefense": true },
     "render": { "sprite": "fighter", "attackFx": "shot", "altitude": 0.13 }
   },
   "bomber": {
@@ -192,7 +194,7 @@
     "weapons": ["bombs"],
     "toughness": 1,
     "armor": 0.3,
-    "attributes": { "ignoresTerrainDefense": true },
+    "attributes": { "fuel": { "max": 28, "low": 7 }, "ignoresTerrainDefense": true },
     "render": { "sprite": "bomber", "attackFx": "drop", "altitude": 0.13 }
   },
   "destroyer": {
@@ -342,7 +344,7 @@
     "weapons": ["wing_guns"],
     "toughness": 1,
     "armor": 0.2,
-    "attributes": { "ignoresTerrainDefense": true },
+    "attributes": { "fuel": { "max": 28, "low": 7 }, "ignoresTerrainDefense": true },
     "exclusive": true,
     "render": { "sprite": "vintage_fighter", "attackFx": "shot", "altitude": 0.1 }
   },
@@ -356,7 +358,7 @@
     "weapons": ["light_bombs"],
     "toughness": 1,
     "armor": 0.1,
-    "attributes": { "ignoresTerrainDefense": true },
+    "attributes": { "fuel": { "max": 24, "low": 6 }, "ignoresTerrainDefense": true },
     "exclusive": true,
     "render": { "sprite": "vintage_bomber", "attackFx": "drop", "altitude": 0.1 }
   },
@@ -370,7 +372,7 @@
     "weapons": ["aerial_torpedo"],
     "toughness": 1,
     "armor": 0.1,
-    "attributes": { "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 } },
+    "attributes": { "fuel": { "max": 28, "low": 7 }, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 } },
     "exclusive": true,
     "render": { "sprite": "torpedo_bomber", "attackFx": "torpedo", "altitude": 0.07 }
   },
@@ -384,7 +386,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true, "radar": 3, "sonar": 3 },
+    "attributes": { "fuel": { "max": 20, "low": 5 }, "ignoresTerrainDefense": true, "radar": 3, "sonar": 3 },
     "exclusive": true,
     "render": { "sprite": "radar_plane", "attackFx": "shot", "altitude": 0.1 }
   },
@@ -398,7 +400,7 @@
     "weapons": ["stealth_missiles"],
     "toughness": 1,
     "armor": 0.25,
-    "attributes": { "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 4, "low": 1 } },
+    "attributes": { "fuel": { "max": 27, "low": 9 }, "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 4, "low": 1 } },
     "exclusive": true,
     "render": { "sprite": "stealth_fighter", "attackFx": "shot", "altitude": 0.16 }
   },
@@ -409,10 +411,10 @@
     "move": 8,
     "moveClass": "air",
     "layer": "high_air",
-    "weapons": ["bombs"],
+    "weapons": ["stealth_bombs"],
     "toughness": 1,
     "armor": 0.4,
-    "attributes": { "ignoresTerrainDefense": true, "cloak": true },
+    "attributes": { "fuel": { "max": 24, "low": 8 }, "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 3, "low": 1 } },
     "exclusive": true,
     "render": { "sprite": "stealth_bomber", "attackFx": "drop", "altitude": 0.13 }
   },
@@ -423,10 +425,11 @@
     "move": 6,
     "moveClass": "air",
     "layer": "low_air",
+    "tags": ["helicopter"],
     "weapons": ["rocket_pods"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true, "cloak": true },
+    "attributes": { "fuel": { "max": 24, "low": 6 }, "ignoresTerrainDefense": true, "cloak": true },
     "exclusive": true,
     "render": { "sprite": "stealth_copter", "attackFx": "shot", "altitude": 0.07 }
   },
@@ -496,7 +499,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0.35,
-    "attributes": {"supply": {"categories": ["infantry", "vehicle", "aircraft", "amphibious"]}},
+    "attributes": {"supply": {"categories": ["infantry", "vehicle", "aircraft", "amphibious"], "fuelTags": ["helicopter"]}},
     "exclusive": true,
     "render": {"sprite": "supply_truck", "attackFx": "shot"}
   },
@@ -566,7 +569,7 @@
     "weapons": ["machine_gun"],
     "toughness": 1.2,
     "armor": 0.6,
-    "attributes": {"ammo": {"max": 2, "low": 1}, "deploy": {"unit": "soldier"}},
+    "attributes": {"ammo": {"max": 2, "low": 1}, "deploy": {"unit": "soldier", "basic": true}},
     "exclusive": true,
     "render": {"sprite": "apc", "attackFx": "shot"}
   },
@@ -580,7 +583,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0.3,
-    "attributes": {"ammo": {"max": 2, "low": 1}, "deploy": {"unit": "soldier"}},
+    "attributes": {"ammo": {"max": 2, "low": 1}, "deploy": {"unit": "soldier", "basic": true}},
     "exclusive": true,
     "render": {"sprite": "troop_transport", "attackFx": "shot"}
   },
@@ -629,14 +632,14 @@
   "dreadnought": {
     "name": "Dreadnought",
     "category": "naval",
-    "cost": 26000,
+    "cost": 34000,
     "move": 3,
     "moveClass": "naval",
     "layer": "surface",
     "weapons": ["dreadnought_guns", "dreadnought_secondary"],
     "toughness": 3.4,
     "armor": 0.85,
-    "attributes": {},
+    "attributes": { "attacksPerTurn": 2 },
     "exclusive": true,
     "render": {"sprite": "dreadnought", "attackFx": "arc"}
   },

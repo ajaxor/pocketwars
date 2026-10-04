@@ -28,6 +28,9 @@ export class Presenter {
         // the mine appears together with the 'Contact!' call-out of the interrupt just before (500 ms), then goes off
         this.effects.detonate(ev, t - 500);
         t += MINE_SHOWN - 500 + 600;
+      } else if (ev.type === 'crash') {
+        this.effects.crash(ev, t);
+        t += 1100;
       } else if (ev.type === 'supply') {
         this.effects.supplied(ev, t);
       } else if (ev.type === 'dive') {
@@ -48,6 +51,7 @@ export class Presenter {
       } else if (ev.type === 'turnStart') {
         this.effects.income(ev, t);
         this.effects.healed(ev, t);
+        this.effects.refuelled(ev, t);
       }
     }
   }

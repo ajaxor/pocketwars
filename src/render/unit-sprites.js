@@ -28,12 +28,13 @@ const ART = { SPRITES, SHADOWS };
  * @param {number} o.face      1 faces right (the way sprites are drawn), -1 mirrors the unit to face left
  * @param {boolean} o.onWater  the unit is on a water tile: a unit with render.waterSprite draws that instead (the marine's dinghy)
  * @param {null|'low'|'empty'} o.ammo  ammo warning bullet on the tile's bottom right (see drawAmmo): flashes when low, steady red when empty
+ * @param {null|'low'|'empty'} o.fuel  fuel warning can on the tile's bottom left (see drawFuel): flashes yellow when low, steady red when empty
  * @param {boolean} o.exposed  a hidden unit an enemy can see right now: it loses its eye (see detection.js isExposed)
  * @param {boolean} o.hidden    the unit is hidden from other players (submerged, or any other hidden layer): an eye on its corner
  * @param {boolean} o.submerged a dived unit: its sprite draws itself low in the water (see the submarine in unit-art.js)
  */
 export function drawUnit(g, unit, o) {
-  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false, face = 1, onWater = false, ammo = null } = o;
+  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false, face = 1, onWater = false, ammo = null, fuel = null } = o;
   const run = animate ? 1 : 0;
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
@@ -46,6 +47,7 @@ export function drawUnit(g, unit, o) {
   const dh = Math.ceil(unit.hp - 1e-9);
   const digit = showHp && dh < 10 && dh > 0;
   if (ammo === 'low' || ammo === 'empty') drawAmmo(g, px + s * .84, py + (digit ? s * .54 : s * .8), s, ammo, now, alpha);
+  if (fuel === 'low' || fuel === 'empty') drawFuel(g, px + s * .16, py + s * .8, s, fuel, now, alpha);
   if (digit) {
     const hx = px + s * .8, hy = py + s * .82, r = s * .3;
     drawFaded(g, alpha, hx - r, hy - r, r * 2, r * 2, (c) => {   // outline + digit as one image, so fading never greys the digit, and a unit that has acted keeps a clear white digit
@@ -71,6 +73,24 @@ export function drawAmmo(g, x, y, s, level, now, alpha = 1) {
   g.fillStyle = col; body(); g.fill();
   g.fillStyle = tip; g.beginPath(); g.moveTo(-w / 2, -h * .05); g.quadraticCurveTo(-w / 2, -h / 2, 0, -h / 2); g.quadraticCurveTo(w / 2, -h / 2, w / 2, -h * .05); g.closePath(); g.fill();   // the bullet's tip
   g.fillStyle = '#000'; g.fillRect(-w / 2, h * .28, w, Math.max(1, s * .02));   // the band at its base
+  g.restore();
+}
+
+/**
+ * The fuel warning: a jerrycan at (x, y) on the bottom left of the tile (the ammo bullet's twin on the other side). 'low' flashes yellow (on and
+ * off, in step with the ammo bullet), 'empty' is steady red. Nothing is drawn for a unit with plenty of fuel (the caller passes null).
+ */
+export function drawFuel(g, x, y, s, level, now, alpha = 1) {
+  if (level === 'low' && Math.floor(now / AMMO_BLINK_MS) % 2) return;
+  const col = level === 'empty' ? '#ff3b30' : '#ffd23f', dark = level === 'empty' ? '#a31510' : '#d98a1e';
+  const w = s * .2, h = s * .26;
+  g.save(); g.globalAlpha = alpha; g.translate(x, y);
+  const body = () => { g.beginPath(); g.moveTo(-w / 2, h / 2); g.lineTo(-w / 2, -h * .28); g.lineTo(-w * .18, -h / 2); g.lineTo(w / 2, -h / 2); g.lineTo(w / 2, h / 2); g.closePath(); };   // a can with a cut corner
+  g.lineJoin = 'round'; g.lineWidth = Math.max(2, s * .05); g.strokeStyle = '#000'; body(); g.stroke();
+  g.strokeRect(w * .02, -h * .72, w * .3, h * .26);   // the spout
+  g.fillStyle = col; body(); g.fill();
+  g.fillStyle = dark; g.fillRect(w * .02, -h * .72, w * .3, h * .26);
+  g.fillStyle = dark; g.fillRect(-w * .36, -h * .02, w * .72, Math.max(1.5, s * .04));   // the band across the can
   g.restore();
 }
 

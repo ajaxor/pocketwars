@@ -21,6 +21,7 @@ filling in a row and a column.
 | `armorPiercing` | `0..1`, default `0`. The fraction of the defender's `armor` this weapon ignores. |
 | `targetMultipliers` | Optional `{ targetMode: factor }`. Scales `damage` when the defender is reached through that mode, so a weapon can be strong against one layer (flak `low_air: 1.9`). Modes not listed use `1`. Each key must be one of the weapon's `targets`. |
 | `indirect` | Optional `true`. An artillery-style weapon: it can only fire if the unit has not moved this turn, is never answered by a counterattack and is never used to counter. Needs a minimum range of at least 2. The unit attribute `indirect` makes all of a unit's weapons so; this lets one unit carry both kinds (the battleship's long guns and its melee secondary guns). |
+| `fromTerrain` | Optional list of terrain ids. The weapon can only be fired from a tile of one of those terrains (the marine's boarding rifle: `sea`, `shoals`). From elsewhere it is not a candidate, and the order is refused with `wrong-terrain` when nothing else reaches. |
 | `range` | `[min, max]` tiles (Manhattan). |
 | `targets` | Target modes it can fire at, see below. |
 
@@ -31,6 +32,8 @@ damage (HP) = weapon.damage x targetMultiplier x (attackerHP / 10) x (1 - armor 
 
 Terrain stars: terrain `defense`, times the unit's `terrainDefenseMultiplier` if it has one, or 0 with `ignoresTerrainDefense`.
 Results under 1 HP keep one decimal; otherwise they round to whole HP.
+
+**Ambush.** A unit that begins its owner's turn hidden (cloaked, submerged, a sniper on cover) carries `unit.ambush` for that turn and its attacks are multiplied by `rules.ambushMultiplier` (1.5). Counterattacks on the enemy's turn never get it.
 
 A unit can carry several weapons. When it attacks, every weapon whose target mode, range and line of sight fit the defender from
 the tile it stands on is a candidate, and the one that would do the **most damage** to that defender wins (ties go to the weapon

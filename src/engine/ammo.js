@@ -13,9 +13,11 @@
 // for its mines). The owner pays it from their funds; without enough, nothing is refilled (the order is a Wait).
 //
 // A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say.
+// The same order also refills a flyer's fuel (fuel.js), for nothing; a unit short of fuel only can Resupply too.
 
 import { attributeConfig } from './attributes.js';
-import { allProperties, distance, snapshotUnit, unitDef } from './queries.js';
+import { fuelConfig, fuelOf, needsFuel, refuel, usesFuel } from './fuel.js';
+import { allProperties, deployedType, distance, snapshotUnit, unitDef } from './queries.js';
 
 /** `{ max, low }` for a unit type that carries a limited supply (a unit definition), or undefined. */
 export const ammoConfigOf = (def) => attributeConfig(def, 'ammo');
@@ -52,7 +54,7 @@ export function roundCost(game, unit) {
   const def = unitDef(game, unit);
   if (!ammoConfigOf(def)) return 0;
   const drop = attributeConfig(def, 'deploy');
-  if (drop) return Math.round(game.registry.unit(drop.unit).cost / (drop.ammo ?? 1));
+  if (drop) return Math.round(game.registry.unit(deployedType(game, unit)).cost / (drop.ammo ?? 1));
   const lay = attributeConfig(def, 'layMines');
   return lay ? game.registry.unit(lay.unit).cost : 0;
 }
@@ -60,11 +62,12 @@ export function roundCost(game, unit) {
 export const resupplyCost = (game, unit) => (usesAmmo(game, unit) ? Math.max(0, ammoConfig(game, unit).max - ammoOf(game, unit)) * roundCost(game, unit) : 0);
 
 /** Could `unit`, stopping on (x, y), take on ammo there (it is short and a friendly property in reach resupplies it)? The 'resupply' action needs this. */
-export const canResupplyAt = (game, unit, x, y) => usesAmmo(game, unit) && ammoOf(game, unit) < ammoConfig(game, unit).max && resupplySource(game, unit, x, y) !== null;
+const ammoShort = (game, unit) => usesAmmo(game, unit) && ammoOf(game, unit) < ammoConfig(game, unit).max;
+export const canResupplyAt = (game, unit, x, y) => (ammoShort(game, unit) || needsFuel(game, unit)) && resupplySource(game, unit, x, y) !== null;
 
 /** The friendly property that would refill `unit` if it stood on (x, y) (default: where it is), or null. */
 export function resupplySource(game, unit, x = unit.x, y = unit.y) {
-  if (!usesAmmo(game, unit)) return null;
+  if (!usesAmmo(game, unit) && !usesFuel(game, unit)) return null;
   const category = unitDef(game, unit).category;
   for (const p of allProperties(game)) {
     const r = p.terrain.attributes.resupply;
@@ -79,13 +82,15 @@ export function resupplySource(game, unit, x = unit.x, y = unit.y) {
  */
 export function resupply(game, unit) {
   const cfg = ammoConfig(game, unit);
-  if (!cfg || ammoOf(game, unit) >= cfg.max) return null;
+  if (!ammoShort(game, unit) && !needsFuel(game, unit)) return null;
   const source = resupplySource(game, unit);
   if (!source) return null;
   const cost = resupplyCost(game, unit);
   if (cost > game.state.funds[unit.owner]) return { type: 'resupplyDenied', unit: snapshotUnit(unit), cost };
   game.state.funds[unit.owner] -= cost;
   const from = ammoOf(game, unit);
-  unit.ammo = cfg.max;
-  return { type: 'resupply', unit: snapshotUnit(unit), from, to: cfg.max, cost, source: { x: source.x, y: source.y } };
+  const fuelFrom = fuelOf(game, unit);
+  if (cfg) unit.ammo = cfg.max;
+  refuel(game, unit);   // the tank is free
+  return { type: 'resupply', unit: snapshotUnit(unit), from, to: cfg ? cfg.max : null, fuelFrom, fuelTo: fuelOf(game, unit), cost, source: { x: source.x, y: source.y } };
 }

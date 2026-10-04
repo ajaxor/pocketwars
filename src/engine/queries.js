@@ -45,6 +45,13 @@ export function layerIdOf(game, unit) {
   return unit.submerged ? attributeConfig(def, 'submerge')?.layer ?? def.layer : def.layer;
 }
 export const layerInfo = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)];
+/** The unit type a carrier with the `deploy` attribute drops: its `unit`, or with `basic` the basic infantry of its owner's leader (loadouts.json), falling back to `unit`. */
+export function deployedType(game, unit) {
+  const cfg = attributeConfig(unitDef(game, unit), 'deploy');
+  if (!cfg) return null;
+  const leader = unit.owner == null ? null : game.map.players[unit.owner]?.leader ?? null;
+  return (cfg.basic && game.registry.loadoutFor(leader).infantry) || cfg.unit;
+}
 export const factionOf = (game, player) => game.registry.faction(game.map.players[player].faction);
 
 /** Which way a unit standing at column `x` faces when it starts: toward the middle of the map (1 right, -1 left; the middle column faces right). */

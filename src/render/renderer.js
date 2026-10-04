@@ -19,11 +19,11 @@
 // origin to the map's top-left corner (which may be off-screen), and only the tiles that are on screen are painted.
 
 import { ammoLevel } from '../engine/ammo.js';
+import { fuelLevel } from '../engine/fuel.js';
 import { canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { isMine } from '../engine/mines.js';
-import { hasAttribute } from '../engine/attributes.js';
 import { facingAlong, terrainAt, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
@@ -163,7 +163,8 @@ export class Renderer {
       face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(game.map.terrain[u.y][u.x]).render.water),
-      ammo: dying ? null : ammoLevel(game, u),   // drawUnit only draws it for 'low' and 'empty'
+      ammo: dying ? null : ammoLevel(game, u),
+      fuel: dying ? null : fuelLevel(game, u),   // drawUnit only draws it for 'low' and 'empty'
     });
     if (arriving) g.restore();
   }
@@ -245,12 +246,12 @@ export class Renderer {
       }
       g.fill();
     }
-    if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a small sonar mark on every empty stretch of deep water it listens to
+    if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a small sonar mark on every empty water tile (deep sea or shoals) it listens to
       g.save(); g.lineCap = 'round';
       const pulse = .55 + .25 * Math.sin(now / 350);
       for (const k of view.sonar) {
         const x = k % map.width, y = Math.floor(k / map.width);
-        if (!hasAttribute(terrainAt(this.game, x, y), 'submergible') || this.game.state.units.some((u) => u.x === x && u.y === y && this.isShown(u))) continue;
+        if (!terrainAt(x, y)?.render?.water || this.game.state.units.some((u) => u.x === x && u.y === y && this.isShown(u))) continue;
         const cx = x * S + S / 2, cy = y * S + S / 2, u = S * .1;
         g.strokeStyle = `rgba(150,235,255,${pulse})`; g.fillStyle = g.strokeStyle; g.lineWidth = Math.max(1.5, S * .035);
         g.beginPath(); g.arc(cx, cy + u * .6, u * .55, 0, 7); g.fill();               // the source dot, with two sound arcs above it

@@ -28,6 +28,9 @@ const hasMoved = (unit, from) => from.x !== unit.x || from.y !== unit.y || !!(un
 /** Did `unit` move this turn before firing from `from` (the damage penalty of `moveFirePenalty`; `unit.moved` is set by the order that moved it)? */
 const firedAfterMoving = (unit, from) => hasMoved(unit, from) || !!unit.moved;
 
+/** How many attacks `unit` may make in one turn (the attribute `attacksPerTurn`; 1 for everybody else). */
+export const attacksPerTurn = (game, unit) => attributeConfig(unitDef(game, unit), 'attacksPerTurn') ?? 1;
+
 export const weaponsOf = (game, unit) => unitDef(game, unit).weapons.map((id) => game.registry.weapon(id));
 const modesOf = (game, weapon) => weapon.targets.map((m) => game.registry.rules.targetModes[m]);
 // the layer a unit is on right now: a submerged submarine is on another layer than a surfaced one
@@ -35,6 +38,8 @@ const layerOf = (game, unit) => layerIdOf(game, unit);
 
 /** May `weapon` hit this unit at all, as far as tags go (`onlyTags`: the hunter sub's torpedoes only hit units tagged `sub`)? */
 const tagOk = (game, weapon, defender) => !weapon.onlyTags || weapon.onlyTags.some((t) => unitDef(game, defender).tags?.includes(t));
+/** May `weapon` be fired from tile `from` at all (`fromTerrain`: the marine's boarding rifle only works from the water)? */
+const standingOk = (game, weapon, from) => !weapon.fromTerrain || weapon.fromTerrain.includes(game.map.terrain[from.y][from.x]);
 
 /** Could `attacker` ever damage `defender`? (Some weapon has a target mode for the defender's layer and may hit its tags; position is ignored.) */
 export function canTarget(game, attacker, defender) {
@@ -56,6 +61,7 @@ export function weaponFor(game, attacker, defender, from = attacker, { moved = h
   for (const w of weaponsOf(game, attacker)) {
     if ((moved || counter) && isIndirect(game, attacker, w)) continue;   // indirect weapons need a standing start and never counter
     if (!ignoreAmmo && !hasAmmoFor(game, attacker, w)) continue;
+    if (!standingOk(game, w, from)) continue;
     if (d < w.range[0] || d > w.range[1]) continue;
     if (!tagOk(game, w, defender)) continue;
     if (!modesOf(game, w).some((m) => m.layer === layer && (!m.lineOfSight || d <= 1 || hasLineOfSight(game, from, defender)))) continue;
@@ -76,7 +82,8 @@ export function attackProblem(game, attacker, defender, x = attacker.x, y = atta
   if (weaponFor(game, attacker, defender, { x, y }, { moved: false })) return 'cannot-move-and-fire';   // only an indirect weapon reaches, and the unit moved
   const d = distance(x, y, defender.x, defender.y);
   const layer = layerOf(game, defender);
-  const inRange = weaponsOf(game, attacker).some((w) => tagOk(game, w, defender) && d >= w.range[0] && d <= w.range[1] && modesOf(game, w).some((m) => m.layer === layer));
+  if (!weaponsOf(game, attacker).some((w) => standingOk(game, w, { x, y }) && tagOk(game, w, defender) && modesOf(game, w).some((m) => m.layer === layer))) return 'wrong-terrain';   // only a weapon that has to be fired from somewhere else reaches this kind of target
+  const inRange = weaponsOf(game, attacker).some((w) => standingOk(game, w, { x, y }) && tagOk(game, w, defender) && d >= w.range[0] && d <= w.range[1] && modesOf(game, w).some((m) => m.layer === layer));
   return inRange ? 'no-line-of-sight' : 'out-of-range';
 }
 
@@ -125,7 +132,8 @@ function rawDamage(game, weapon, attacker, defender, moved = false) {
   const mode = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === layer);
   const vs = weapon.targetMultipliers?.[mode] ?? 1;
   const slow = moved ? attributeConfig(unitDef(game, attacker), 'moveFirePenalty')?.multiplier ?? 1 : 1;   // e.g. the motorcycle: half damage when it moved first
-  return (weapon.damage * vs * slow * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
+  const ambush = attacker.ambush && attacker.owner === game.state.turn ? game.registry.rules.ambushMultiplier ?? 1 : 1;   // started its turn hidden: +50% on the attack (never on a counterattack)
+  return (weapon.damage * vs * slow * ambush * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
 }
 
 /** The damage formula alone: HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands (whole HP, or one decimal below 1). */

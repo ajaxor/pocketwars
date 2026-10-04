@@ -9,7 +9,7 @@
 import { attributeConfig } from './attributes.js';
 import { ammoOf, spendAmmo } from './ammo.js';
 import { computeReach } from './movement.js';
-import { snapshotUnit, unitAt, unitById, unitDef } from './queries.js';
+import { deployedType, snapshotUnit, unitAt, unitById, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 /** `{ unit, ammo? }` for a unit that can drop troops, or undefined. */
@@ -24,7 +24,7 @@ export const deployCost = (config) => config.ammo ?? 1;
 export function deployReach(game, carrier) {
   const cfg = deployConfig(game, carrier);
   if (!cfg) return null;
-  const dropped = makeUnit(game.registry, game.map, -1, { type: cfg.unit, owner: carrier.owner, x: carrier.x, y: carrier.y });
+  const dropped = makeUnit(game.registry, game.map, -1, { type: deployedType(game, carrier), owner: carrier.owner, x: carrier.x, y: carrier.y });
   const reach = computeReach(game, dropped);
   const tiles = [...reach.tiles()].filter((t) => (t.x !== carrier.x || t.y !== carrier.y) && !unitAt(game, t.x, t.y)).map((t) => ({ x: t.x, y: t.y }));
   return { reach, tiles };
@@ -50,7 +50,7 @@ export function resolveDeploy(game, carrier) {
   const cfg = deployConfig(game, carrier);
   spendAmmo(game, carrier, deployCost(cfg));
   carrier.deployed = true;
-  const dropped = makeUnit(registry, map, state.nextUnitId++, { type: cfg.unit, owner: carrier.owner, x: carrier.x, y: carrier.y });
+  const dropped = makeUnit(registry, map, state.nextUnitId++, { type: deployedType(game, carrier), owner: carrier.owner, x: carrier.x, y: carrier.y });
   dropped.carriedBy = carrier.id;
   state.units.push(dropped);
   return [{ type: 'deploy', unit: snapshotUnit(carrier), dropped: snapshotUnit(dropped), ammo: ammoOf(game, carrier) }];

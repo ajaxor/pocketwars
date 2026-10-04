@@ -4,6 +4,7 @@
 
 import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } from '../engine/attributes.js';
 import { ammoConfig, ammoOf } from '../engine/ammo.js';
+import { fuelConfig, fuelOf } from '../engine/fuel.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
 import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
 
@@ -84,6 +85,7 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
     hp: Math.ceil(unit.hp - 1e-9), maxHp: game.registry.rules.maxHp,
     layerLabel: layerInfo(game, unit).label,
     ammo: ammoConfig(game, unit) ? { now: ammoOf(game, unit), max: ammoConfig(game, unit).max, low: ammoConfig(game, unit).low } : null,
+    fuel: fuelConfig(game, unit) ? { now: fuelOf(game, unit), max: fuelConfig(game, unit).max, low: fuelConfig(game, unit).low } : null,
     fresh: !!unit.fresh && unit.owner === game.state.turn,
     acted: !!unit.done && unit.owner === game.state.turn && !def.attributes.mine,
     cover: terrainStars(game, where),

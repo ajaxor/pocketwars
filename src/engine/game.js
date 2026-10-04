@@ -36,7 +36,9 @@ import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
 import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
 import { detonate, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
+import { attacksPerTurn } from './combat.js';
 import { canSupplyAt, resolveSupply } from './supply.js';
+import { crashEmpty, spendFuel } from './fuel.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
 import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
@@ -140,6 +142,7 @@ export class Game {
       }
       if (last > 0) {
         unit.moved = true;   // read (and cleared) by heal.js at the start of its owner's next turn: a unit that stayed put can rest
+        spendFuel(this, unit, last);   // a flyer burns a unit of fuel for every tile
         unit.x = path[last][0];
         unit.y = path[last][1];
         unit.capture = 0; // leaving a tile abandons capture progress
@@ -180,8 +183,13 @@ export class Game {
     }
     else if (action.type === 'submerge') { unit.submerged = true; events.push({ type: 'dive', unit: snapshotUnit(unit) }); }
     else if (action.type === 'surface') { unit.submerged = false; events.push({ type: 'surface', unit: snapshotUnit(unit), forced: false }); }
-    unit.done = true;
-    unit.halted = null;
+    if (action.type === 'attack' && unitById(this, unit.id) && (unit.attacks ?? 0) + 1 < attacksPerTurn(this, unit)) {
+      unit.attacks = (unit.attacks ?? 0) + 1;   // it has another attack left: it stays where it is, its turn not over
+      unit.halted = { moved: !!unit.moved };
+    } else {
+      unit.done = true;
+      unit.halted = null;
+    }
     delete unit.fresh;
     delete unit.carriedBy;   // a deployed unit has now been ordered: it cannot be put back
     if (action.type === 'resupply') {
@@ -251,7 +259,8 @@ export class Game {
     if (this.isOver) return fail('game-over');
     const { state, map } = this;
     this.undoSnapshot = null;
-    const events = [];
+    const events = crashEmpty(this, state.turn);   // a flyer that began the turn on an empty tank and is still dry falls out of the sky
+    if (events.length) { events.push(...evaluateVictory(this)); if (this.isOver) return { ok: true, events }; }
     for (let tries = 0; tries < map.players.length; tries++) {
       let next = state.turn;
       do {

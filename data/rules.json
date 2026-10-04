@@ -1,5 +1,6 @@
 {
   "maxHp": 10,
+  "ambushMultiplier": 1.5,
   "neutralColor": "#b9b9b9",
   "defaultGround": "grass",
   "moveClasses": ["foot", "wheels", "tread", "air", "naval", "amphibious", "bike", "diver", "hover", "amphibious_tread"],

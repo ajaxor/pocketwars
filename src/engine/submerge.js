@@ -5,6 +5,7 @@
 // layer is `hidden`, which is what detection.js acts on. A unit whose move ends on a tile that is not submergible comes up by itself. With `auto` (the diver) there are no orders: the unit is down exactly while it stands on submergible terrain.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
+import { fuelOf } from './fuel.js';
 import { terrainAt, unitDef } from './queries.js';
 
 /** Can this kind of unit dive at all? */
@@ -13,10 +14,12 @@ export const canDive = (game, unit) => hasAttribute(unitDef(game, unit), 'submer
 /** Does this unit dive by itself (`submerge: { auto: true }`: the diver is under whenever it is on deep water, never by order)? */
 export const divesByItself = (game, unit) => attributeConfig(unitDef(game, unit), 'submerge')?.auto === true;
 
-/** How far `unit` can move this turn: its `move`, or the `submerge.move` of a unit that is under water (a submarine creeps while down). */
+/** How far `unit` can move this turn: its `move`, or the `submerge.move` of a unit that is under water (a submarine creeps while down), and never more than the fuel it has left. */
 export function moveOf(game, unit) {
   const def = unitDef(game, unit);
-  return unit.submerged ? attributeConfig(def, 'submerge')?.move ?? def.move : def.move;
+  const move = unit.submerged ? attributeConfig(def, 'submerge')?.move ?? def.move : def.move;
+  const fuel = fuelOf(game, unit);
+  return fuel === null ? move : Math.min(move, fuel);
 }
 
 /** Does this unit come up when it fires (`surfacesToFire`)? */

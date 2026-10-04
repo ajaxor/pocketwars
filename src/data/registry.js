@@ -16,11 +16,11 @@ const withIds = (obj) => Object.fromEntries(Object.entries(obj).map(([id, def]) 
 
 /**
  * Resolve loadouts.json: every leader's kit with the default's parts filled in. A kit is { build: { <terrain id>: [unit ids] },
- * start: { hq|<building id>: [{ unit, at }] } }. Without loadouts.json there are no leaders, and every building gives the menu of its `builds` categories.
+ * start: { hq|<building id>: [{ unit, at }] }, infantry: the leader's basic foot soldier (what a transport with `deploy.basic` carries) }. Without loadouts.json there are no leaders, and every building gives the menu of its `builds` categories.
  */
 function resolveLoadouts(raw) {
-  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? {} };
-  const kit = (own = {}) => ({ build: { ...base.build, ...(own.build ?? {}) }, start: { ...base.start, ...(own.start ?? {}) } });
+  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? {}, infantry: raw?.default?.infantry };
+  const kit = (own = {}) => ({ ...((own.infantry ?? base.infantry) !== undefined && { infantry: own.infantry ?? base.infantry }), build: { ...base.build, ...(own.build ?? {}) }, start: { ...base.start, ...(own.start ?? {}) } });
   return { default: kit(), leaders: Object.fromEntries(Object.entries(raw?.leaders ?? {}).map(([id, own]) => [id, kit(own)])) };
 }
 
