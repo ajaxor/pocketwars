@@ -71,7 +71,18 @@ test('the standard start gives the HQ and each building type a set of units that
     assert.ok(list.length <= MAX_START_UNITS && list.every((s) => registry.units[s.unit]), site);
     assert.equal(new Set(list.map((s) => s.at.join(','))).size, list.length, `${site}: no two units share a spot`);
   }
-  assert.ok(start.factory.some((s) => s.unit === 'tank'));
+  assert.equal(start.hq.length, 3, 'the HQ gets three units');
+  for (const site of Object.keys(start).filter((k) => k !== 'hq')) assert.equal(start[site].length, 1, `${site} gets one extra unit`);
+});
+
+test('every leader starts with three HQ units and one unit per building, and the starting armies cost about the same', () => {
+  const costs = registry.leaderIds.map((id) => {
+    const start = { ...registry.loadouts.default.start, ...registry.loadouts.leaders[id]?.start };
+    assert.equal(start.hq.length, 3, `${id}: HQ`);
+    for (const site of ['barracks', 'factory', 'airfield', 'shipyard']) assert.equal(start[site].length, 1, `${id}: ${site}`);
+    return Object.values(start).flat().reduce((sum, s) => sum + registry.units[s.unit].cost, 0);
+  });
+  assert.ok(Math.max(...costs) - Math.min(...costs) <= 4000, `army costs ${costs.join(', ')} stay within 4,000 of each other`);
 });
 
 // ---- validation -----------------------------------------------------------------------------------------------------------------------

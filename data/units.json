@@ -41,6 +41,7 @@
   "marine": {
     "name": "Marine",
     "category": "amphibious",
+    "exclusive": true,
     "cost": 1500,
     "move": 2,
     "moveClass": "amphibious",

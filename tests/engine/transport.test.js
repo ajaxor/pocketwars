@@ -15,7 +15,7 @@ import { unitAt } from '../../src/engine/queries.js';
 const registry = await loadRegistry(readData);
 const legend = {
   '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' }, M: { terrain: 'mountain' },
-  H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, A: { terrain: 'airfield', owner: 0 },
+  H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, B: { terrain: 'barracks', owner: 0 }, A: { terrain: 'airfield', owner: 0 },
 };
 const players = [{ faction: 'ashmark', controller: 'human', funds: 20000 }, { faction: 'vantor_reach', controller: 'human', funds: 20000 }];
 const world = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
@@ -29,8 +29,8 @@ test('a marine walks on land, crosses shoals and sea, and captures like a soldie
   assert.equal(registry.unit('marine').attributes.capture, true);
 });
 
-test('a marine is built at a shipyard and can swim off it', () => {
-  const g = world(['H.Y~~h'], [['recon', 1, 5, 0]]);
+test('a marine is built at a barracks (by a leader whose kit has it) and can swim off it', () => {
+  const g = new Game(registry, parseMap(rawMap({ rows: ['H.B~~h'], unitsOnMap: [['recon', 1, 5, 0]], players: [{ faction: 'tidehaven', controller: 'human', funds: 20000, leader: 'rex' }, players[1]], legend }), registry));
   assert.ok(g.state.funds[0] >= registry.unit('marine').cost);
   assert.equal(g.build(2, 0, 'marine').ok, true);
   const marine = unitAt(g, 2, 0);

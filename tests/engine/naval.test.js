@@ -190,11 +190,11 @@ test('a shipyard builds once a turn, and not while a unit is still on it', () =>
   assert.equal(g.build(1, 0, 'destroyer').error, 'already-built', 'one unit per property per turn');
 });
 
-test('the shipyard builds ships and marines, not soldiers', () => {
+test('the shipyard builds ships, not soldiers or marines', () => {
   const g = yardGame(['.Y~']);
   const ids = buildOptions(g, 1, 0).map((u) => u.id);
-  assert.ok(ids.includes('marine') && ids.includes('destroyer'));
-  assert.ok(!ids.includes('soldier'));
+  assert.ok(ids.includes('destroyer'));
+  assert.ok(!ids.includes('soldier') && !ids.includes('marine'));
 });
 
 test('destroyer and cruiser anti-air weapons are melee range, like the submarine torpedoes', () => {

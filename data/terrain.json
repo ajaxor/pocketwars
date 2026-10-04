@@ -91,7 +91,7 @@
     "name": "Shipyard",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": 1, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval", "amphibious"] }, "resupply": { "range": 1, "categories": ["naval"] }, "blocksLineOfSight": 1 },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval"] }, "resupply": { "range": 1, "categories": ["naval"] }, "blocksLineOfSight": 1 },
     "render": { "building": "shipyard" }
   }
 }

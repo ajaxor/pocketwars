@@ -89,3 +89,8 @@
 - **Terrain move costs grew two columns** (`hover`, `amphibious_tread`) on all thirteen terrains by hand; a new terrain must remember both, and validation only reports the omission.
 - **Gallery art modules moved** (`art-vehicles.js`, `art-fleet.js`, `art-support.js` now in `src/render/`) but `concept-art.js` still imports them to keep its merged tables; the gallery's concept path no longer needs those entries.
 
+
+## Faction rework
+- **Leader is not derived from faction.** `players[i].leader` is set separately from `faction`, so a map can pair any nation with any kit; tests must pass `leader` explicitly to get a leader's menu.
+- **Marine keeps the `amphibious` category** only to stay off the standard menus; with the shipyard no longer building it, the category and the `amphibious` rule in `ai.json` are mostly vestigial (the AI builds marines only where a leader's barracks menu offers them).
+- **Start-army balance is hand-tuned** against current costs; changing a unit price silently skews factions until the leaders test fails.

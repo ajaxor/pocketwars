@@ -1,23 +1,23 @@
 {
   "ashmark": {
     "name": "Ashmark",
-    "color": "#e8712c",
-    "dark": "#9a3f0e"
+    "color": "#8b5a2b",
+    "dark": "#4e2f12"
   },
   "vantor_reach": {
     "name": "Vantor Reach",
-    "color": "#9a5fd8",
-    "dark": "#51298f"
+    "color": "#5a5f68",
+    "dark": "#2d3036"
   },
   "ironvale": {
     "name": "Ironvale",
-    "color": "#22a06b",
-    "dark": "#0f6440"
+    "color": "#d6453d",
+    "dark": "#8f221d"
   },
   "solace": {
     "name": "Solace",
-    "color": "#f2c81e",
-    "dark": "#a07c00"
+    "color": "#f4f4f0",
+    "dark": "#a9adb5"
   },
   "tidehaven": {
     "name": "Tidehaven",
@@ -26,18 +26,18 @@
   },
   "skyreach": {
     "name": "Skyreach",
-    "color": "#e0508a",
-    "dark": "#99285b"
+    "color": "#e8712c",
+    "dark": "#9a3f0e"
   },
   "deepmere": {
     "name": "Deepmere",
-    "color": "#d6453d",
-    "dark": "#8f221d"
+    "color": "#1fb5a8",
+    "dark": "#0d6b63"
   },
   "highspire": {
     "name": "Highspire",
-    "color": "#cfd6df",
-    "dark": "#7b8794"
+    "color": "#9a5fd8",
+    "dark": "#51298f"
   },
   "lastholm": {
     "name": "Lastholm",

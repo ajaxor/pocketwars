@@ -20,4 +20,12 @@ Forward is, from the building, toward the average enemy HQ, snapped to N/S/E/W (
 
 ## Exclusive units
 
-Units flagged `"exclusive": true` in `data/units.json` stay off the default kit and category menus; only a leader's `build` list can offer them. The thirty drafted units are assigned this way in `data/loadouts.json`: spy, commando, medic, mortar, mechanic, RPG trooper, conscript, diver, motorcycle infantry, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth copter/fighter/bomber, and (from the gallery) supply truck, hover tank, amphibious tank, SAM launcher, rocket buggy, APC, mine layer, sea mine (laid by the mine layer, never built), aircraft carrier, dreadnought, troop transport, missile sub, hunter sub.
+Units flagged `"exclusive": true` in `data/units.json` stay off the default kit and category menus; only a leader's `build` list can offer them. The thirty-one units (thirty drafted plus the marine) are assigned this way in `data/loadouts.json`: spy, commando, medic, mortar, mechanic, RPG trooper, conscript, marine (a barracks unit; the shipyard builds only ships plus the diver), diver, motorcycle infantry, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth copter/fighter/bomber, and (from the gallery) supply truck, hover tank, amphibious tank, SAM launcher, rocket buggy, APC, mine layer, sea mine (laid by the mine layer, never built), aircraft carrier, dreadnought, troop transport, missile sub, hunter sub.
+
+## Faction rules (rework)
+- Variants replace their original: a leader has one tank, recon, AA, copter, fighter, bomber, submarine, big-gun ship, small ship and mech/RPG trooper.
+- Each leader has exactly one basic infantry: soldier (Harlan, Hiroshi, Ludwig, Chase), commando (Ada), spy (Vex), conscript (Dmitri), marine (Rex, Lysandra).
+- Each leader can carry troops over water: transport copter, troop transport, marine or diver.
+- No technology belongs to one leader; units sit on several kits.
+- Starting armies: three HQ units that show the faction's spirit, plus one unit per production building. Totals are within 4,000 of each other (35,500 to 38,500); `tests/data/leaders.test.js` pins this.
+- Colours: Vex dark grey, Ada brown, Hiroshi red, Ludwig white, Chase orange, Dmitri teal, Lysandra purple (Rex blue, Harlan olive).

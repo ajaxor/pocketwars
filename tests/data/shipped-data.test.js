@@ -59,7 +59,7 @@ test('attributes are assigned to the intended units', () => {
 
 test('exclusive units are on no standard menu, and every one of them is on some leader\'s menu', () => {
   const exclusive = registry.unitIds.filter((id) => registry.unit(id).exclusive).sort();
-  assert.equal(exclusive.length, 30, 'the seventeen drafted units and the thirteen gallery units (supply truck to hunter sub)');
+  assert.equal(exclusive.length, 31, 'the seventeen drafted units, the thirteen gallery units (supply truck to hunter sub) and the marine');
   const standard = new Set(Object.values(registry.loadouts.default.build).flat());
   for (const id of exclusive) {
     assert.ok(!standard.has(id), `${id} is not on the standard menu`);
