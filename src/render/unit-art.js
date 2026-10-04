@@ -332,7 +332,7 @@ const stealthTank = (g, { s, c, dk, w, run, j }) => {
   const hull = [[-.4, y(.06)], [-.3, y(-.06)], [-.1, y(-.15)], [.1, y(-.15)], [.34, y(-.04)], [.46, y(.04)], [.44, y(.08)]];
   poly(g, s, hull, mix(c, dk, .3));                                                                       // the silhouette
   poly(g, s, [[-.3, y(-.06)], [-.1, y(-.15)], [.1, y(-.15)], [.34, y(-.04)], [.14, y(-.02)], [.04, y(-.06)]], mix(c, '#ffffff', .12));   // lit top planes
-  g.fillStyle = INK; g.fillRect(s * .36, y(.0) * s, s * .115, s * .03);                                  // the gun, just out of the nose
+  g.fillStyle = INK; g.fillRect(s * .2, y(-.1) * s, s * .3, s * .03);                                     // the gun: higher up the nose and longer
   poly(g, s, [[-.41, y(.1)], [-.36, y(.05)], [.3, y(.05)], [.44, y(.09)], [.42, y(.12)], [-.4, y(.12)]], dk);   // a thin side skirt over the top of the tracks
   g.restore();
 };

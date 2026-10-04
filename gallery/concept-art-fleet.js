@@ -37,7 +37,7 @@ const missileSub = (g, { s, c, dk, w, ph, run, b, submerged }) => {
     const col = light ? c : dk, deep = mix(col, '#000000', .3), hi = mix(col, '#ffffff', .12);
     propeller(g, s, -.51, .08, w, run, col, !light);
     box(g, s, -.46, -.08, .92, .3, s * .15, col);                                                // the long round hull
-    box(g, s, -.02, .1, .5, .22, s * .11, col);                                                  // the pill-shaped bulge under the forward section
+    box(g, s, -.2, .1, .5, .22, s * .11, col);                                                  // the pill-shaped bulge under the forward section
     for (let i = 0; i < 3; i++) { const hx = -.2 + i * .11; oval(g, s, hx, -.085, .055, .028, hi); oval(g, s, hx, -.08, .045, .02, deep); }   // sunken hatches
     box(g, s, .1, -.24, .17, .17, 3, col);                                                       // conning tower, forward of the hatches
     if (light) periscope(g, s, .24, -.24, -.38, INK);

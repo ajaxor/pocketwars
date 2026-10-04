@@ -64,13 +64,13 @@ const amphibiousTankSwim = (g, { s, c, dk, w, ph, run, b }) => {
 const samLauncher = (g, { s, c, dk, w, ph, run, b }) => {
   const bb = b / s * .45;                                                                    // body bounce; the wheels do not take it
   wheels(g, s, [-.24, -.04, .2], .205, .085, w * .4, run, 12);                                    // a wheeled truck: three wheels
-  box(g, s, -.3, -.01 + bb, .6, .14, 4, c);                                                  // hull
-  box(g, s, .14, -.12 + bb, .17, .13, 3, dk);                                                // cab
-  poly(g, s, [[.19, -.1 + bb], [.27, -.1 + bb], [.29, -.04 + bb], [.19, -.04 + bb]], GLASS);   // cab window
+  box(g, s, -.36, .03 + bb, .72, .14, 3, dk);                                                // dark chassis, like the rocket launcher's
+  box(g, s, .17, -.08 + bb, .19, .17, 3, c); box(g, s, .22, -.05 + bb, .12, .07, 2, GLASS);   // cab and its window
+  box(g, s, -.32, -.02 + bb, .44, .06, 2, c);                                                // the flatbed
   // radar dish in side profile on a short mast: a shallow bowl that tips up and down
-  stroke(g, s, .2, -.12 + bb, .2, -.2 + bb, 2, INK); box(g, s, .17, -.22 + bb, .06, .035, 1, INK);
+  stroke(g, s, .27, -.08 + bb, .27, -.16 + bb, 2, INK); box(g, s, .24, -.18 + bb, .06, .035, 1, INK);
   const r = .095, tilt = -(.75 + (run ? Math.sin(w * 1.8 + ph) * .5 : 0));
-  g.save(); g.translate(.2 * s, (-.245 + bb) * s); g.rotate(tilt);
+  g.save(); g.translate(.27 * s, (-.205 + bb) * s); g.rotate(tilt);
   g.fillStyle = mix(STEEL, '#ffffff', .5); g.beginPath(); g.moveTo(0, -r * s); g.quadraticCurveTo(-r * .9 * s, 0, 0, r * s); g.quadraticCurveTo(-r * .25 * s, 0, 0, -r * s); g.fill();   // the bowl
   stroke(g, s, -r * .1, 0, r * .5, 0, 1.4, INK); disc(g, s, r * .5, 0, .012, RED);           // the feed horn on its arm
   g.restore();
