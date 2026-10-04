@@ -14,7 +14,7 @@ const mod = await import(pathToFileURL(path.join(REPO, arg.art || 'gallery/conce
 const data = JSON.parse(readFileSync(path.join(REPO, arg.data || 'gallery/concepts.json'), 'utf8'));
 const S = Number(arg.size || 150), cols = Number(arg.cols || 5), bg = arg.bg || 'plain', t = Number(arg.t ?? .35);
 const only = typeof arg.only === 'string' ? arg.only.split(',') : null;
-const list = data.units.filter((u) => !only || only.includes(u.id));
+const list = data.units.filter((u) => mod.SPRITES[u.sprite] && (!only || only.includes(u.id)));   // walls and bases are drawn by structure-art.js, not as unit sprites
 const pad = Math.round(S * .06), rows = Math.ceil(list.length / cols);
 const cv = createCanvas(cols * 2 * (S + pad) + pad, rows * (S + pad) + pad), g = cv.getContext('2d');
 g.fillStyle = '#16181d'; g.fillRect(0, 0, cv.width, cv.height);
@@ -34,7 +34,7 @@ mkdirSync(path.dirname(out), { recursive: true }); writeFileSync(out, cv.toBuffe
 
 if (arg.check) {   // bounding box of every body (and its shadow) as a fraction of the tile; the tile spans -0.5 .. +0.5
   const R = 300, k = 200;
-  for (const u of data.units) {
+  for (const u of data.units.filter((u) => mod.SPRITES[u.sprite] && (!only || only.includes(u.id)))) {   // structures drawn as buildings or walls have no unit sprite
     const box = (only) => {
       const c2 = createCanvas(R * 2, R * 2), h = c2.getContext('2d'); h.translate(R, R);
       mod.SPRITES[u.sprite](h, { s: k, c: '#e8712c', dk: '#8a3d10', w: .35, ph: 0, run: 1, moving: true, b: 0, j: 0 });

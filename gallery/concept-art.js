@@ -11,6 +11,7 @@ import * as VEHICLES from '../src/render/art-vehicles.js';
 import * as FLEET from '../src/render/art-fleet.js';
 import { hoverLift } from '../src/render/art-support.js';
 import * as MECHS from './concept-art-mechs.js';
+import * as IDEAS from './concept-art-ideas.js';
 
 const BRASS = '#d9b44a', RED = '#d4442e', GREEN = '#46b86a', ORANGE = '#ff9a2e', PANEL = '#2f5fa8';
 
@@ -228,5 +229,5 @@ const OWN_SHADOWS = {
 };
 
 // the new concept groups live in their own files (infantry, static defences, gadgets, aircraft, ships, vehicles, fleet, mechs)
-export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES, ...VEHICLES.SPRITES, ...FLEET.SPRITES, ...MECHS.SPRITES };
-export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS, ...VEHICLES.SHADOWS, ...FLEET.SHADOWS, ...MECHS.SHADOWS };
+export const SPRITES = { ...OWN_SPRITES, ...INFANTRY.SPRITES, ...STATIC.SPRITES, ...AIR.SPRITES, ...SHIPS.SPRITES, ...VEHICLES.SPRITES, ...FLEET.SPRITES, ...MECHS.SPRITES, ...IDEAS.SPRITES };
+export const SHADOWS = { ...OWN_SHADOWS, ...INFANTRY.SHADOWS, ...STATIC.SHADOWS, ...AIR.SHADOWS, ...SHIPS.SHADOWS, ...VEHICLES.SHADOWS, ...FLEET.SHADOWS, ...MECHS.SHADOWS, ...IDEAS.SHADOWS };

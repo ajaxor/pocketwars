@@ -111,13 +111,17 @@ export const BASES = {
     k.box(.14, .42, .24, .2, .08, shade(owner, -.25));
     k.rect(.82, .62, .12, .26, '#5a6b3a'); k.rect(.82, .72, .12, .03, '#3a4626');
   },
-  // Bunker: a low concrete pillbox with a slit.
+  // Bunker: the defences' language at building size: a poured pad, a squat block in the owner's colour under a thick concrete roof slab, and one
+  // dark firing slit. No gun: it is a property a unit shelters in.
   bunker(g, px, py, S, owner) {
-    const k = kit(g, px, py, S);
-    k.boxShadow(.1, .56, .72, .32, .12);
-    k.box(.1, .56, .72, .32, .12, '#a9a79e');
-    k.rect(.1, .66, .72, .05, owner);                                                     // team stripe
-    k.rect(.3, .76, .32, .05, DARK);                                                      // the firing slit
+    const k = kit(g, px, py, S), CONC = '#c9c5b8';
+    k.boxShadow(.06, .82, .82, .07, .2);
+    k.box(.06, .82, .82, .07, .2, CONC);                                                  // the pad
+    k.box(.14, .52, .62, .3, .16, owner);                                                 // the block
+    k.box(.1, .44, .7, .09, .19, CONC);                                                   // the roof slab, overhanging
+    k.rect(.1, .5, .7, .03, shade(CONC, -.15));
+    k.rect(.24, .62, .42, .07, '#23252b');                                                // the firing slit
+    k.rect(.38, .74, .14, .08, shade(owner, -.35));                                       // a low door
   },
 };
 
@@ -125,41 +129,71 @@ export const BASES = {
 /** Which of the four neighbours of (x, y) are walls. */
 export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall(x + 1, y), s: !!isWall(x, y + 1), w: !!isWall(x - 1, y) });
 
-/** One wall tile: a giant dark pipe. A hub at the middle of the tile and a pipe to every linked neighbour, so a run of walls draws as one long
- *  pipe and a ring of them as a fort. Cracked walls are the breakable variant: rusted and split, with a hole blown in one pipe. */
+/** One wall tile: a run of poured concrete blocks seen like the buildings (from the front-left and above, lit from the upper left): a pale
+ *  concrete front, a darker right side, and a coping along the top in the owner's colour, so a line of walls carries the team colour at any
+ *  size. The wall's footprint is a strip down the middle of the tile, and its height is drawn straight up with a slight lean to the right
+ *  (the buildings' depth direction), so a horizontal run shows its front and a vertical run shows its top and right side. Where the line
+ *  turns, ends or branches (anything but a straight run) a taller square post stands on the joint with a team-coloured cap. Linked arms
+ *  reach the tile edge, so neighbouring tiles join with no seam. Cracked walls are the breakable variant: stained concrete, the coping
+ *  broken off, cracks, a bite out of the top and rubble at the foot. */
 export function drawWall(g, px, py, S, owner, { links = {}, cracked = false } = {}) {
-  const k = kit(g, px, py, S), { rect, poly, line, X, Y } = k;
-  const body = cracked ? '#4d443c' : '#363a44', hi = cracked ? '#6b5e50' : '#575d6c', lo = cracked ? '#2f2924' : '#23262d', ring = cracked ? '#5a4a3c' : '#444956', INKC = '#15161a';
-  const T = .4, CY = .56, y0 = CY - T / 2, x0 = .5 - T / 2, F = .06;           // pipe thickness, centre line, flange size
   const { n, e, s, w } = links;
-  const horiz = (xa, xb) => {                                                  // a horizontal pipe: body, highlight along the top, shade along the bottom
-    rect(xa, y0, xb - xa, T, body); rect(xa, y0 + .04, xb - xa, .07, hi); rect(xa, y0 + T - .09, xb - xa, .09, lo);
+  const CY = .68, T = .2, H = .34, LEAN = -.15;                                   // footprint centre line, wall thickness, height, lean per unit of height
+  const PT = .34, PH = .46;                                                      // the post: footprint and height
+  const conc = cracked ? '#9c9584' : '#c9c5b8', side = shade(conc, -.32), course = shade(conc, -.12), joint = shade(conc, -.28);
+  const cap = cracked ? shade(conc, .12) : shade(owner, .12), capSide = cracked ? side : shade(owner, -.3), capFront = cracked ? course : owner;
+  const P = (x, y, z = 0) => [px + (x + z * LEAN) * S, py + (y - z) * S];      // ground point (x, y) raised by z, in pixels
+  const fill = (pts, col) => { g.beginPath(); pts.forEach(([a, b], i) => (i ? g.lineTo(a, b) : g.moveTo(a, b))); g.closePath(); g.fillStyle = col; g.fill(); };
+  // ground shadow under the whole tile's footprint, filled once so the arms do not double it up; a pure move down (horizontal arms) or right (vertical arms)
+  // so the shadows of neighbouring tiles meet edge to edge
+  g.beginPath();
+  const sh = (x0, y0, x1, y1, dx, dy) => { const a = P(x0 + dx, y0 + dy), b = P(x1 + dx, y1 + dy); g.rect(a[0], a[1], b[0] - a[0], b[1] - a[1]); };
+  const ya = CY - T / 2, yb = CY + T / 2, xa = .5 - T / 2, xb = .5 + T / 2;
+  if (w) sh(0, ya, .5, yb, 0, .07); if (e) sh(.5, ya, 1, yb, 0, .07);
+  if (n) sh(xa, 0, xb, CY, .08, 0); if (s) sh(xa, CY, xb, 1, .08, 0);
+  const straight = (w && e && !n && !s) || (n && s && !w && !e);
+  if (!straight) sh(.5 - PT / 2, CY - PT / 2, .5 + PT / 2, CY + PT / 2, .08, .06);
+  g.fillStyle = 'rgba(0,0,0,.2)'; g.fill();
+  // one block: a footprint (x0..x1, y0..y1) raised to height h, in palette `pal` (front, side, top, band). Right side, front, then the top;
+  // a face that butts onto more wall is left out so the run looks continuous
+  const WALL = { front: conc, side, top: cap, band: capFront, bandSide: capSide, course };
+  const POST = cracked ? WALL : { front: owner, side: shade(owner, -.3), top: shade(owner, .25), band: shade(owner, -.18), bandSide: shade(owner, -.42), course: shade(owner, -.1) };
+  const block = (x0, y0, x1, y1, h, { front = true, right = true, coping = .05, joints = [], pal = WALL } = {}) => {
+    if (right) fill([P(x1, y1), P(x1, y0), P(x1, y0, h), P(x1, y1, h)], pal.side);
+    if (front) {
+      fill([P(x0, y1), P(x1, y1), P(x1, y1, h), P(x0, y1, h)], pal.front);
+      fill([P(x0, y1, h * .4), P(x1, y1, h * .4), P(x1, y1, h * .47), P(x0, y1, h * .47)], pal.course);   // one darker course across the front
+      for (const jx of joints) fill([P(jx - .008, y1), P(jx + .008, y1), P(jx + .008, y1, h - coping), P(jx - .008, y1, h - coping)], joint);
+      fill([P(x0, y1, h - coping), P(x1, y1, h - coping), P(x1, y1, h), P(x0, y1, h)], pal.band);       // the coping's front edge
+    }
+    if (right && coping) fill([P(x1, y1, h - coping), P(x1, y0, h - coping), P(x1, y0, h), P(x1, y1, h)], pal.bandSide);
+    fill([P(x0, y0, h), P(x1, y0, h), P(x1, y1, h), P(x0, y1, h)], pal.top);                            // the top
   };
-  const vert = (ya, yb) => { rect(x0, ya, T, yb - ya, body); rect(x0 + .04, ya, .07, yb - ya, hi); rect(x0 + T - .09, ya, .09, yb - ya, lo); };
-  poly([[0, CY + T / 2], [1, CY + T / 2], [1.1, CY + T / 2 - .06], [1.1, CY + T / 2 + .02], [.1, CY + T / 2 + .08], [0, CY + T / 2 + .08]], 'rgba(0,0,0,.22)');   // shadow to the lower right
-  if (n) vert(0, CY); if (s) vert(CY, 1);
-  if (w) horiz(0, .5); if (e) horiz(.5, 1);
-  // flanges at the tile edges where a pipe continues into the next tile
-  if (w) rect(0, y0 - F / 2, F, T + F, ring); if (e) rect(1 - F, y0 - F / 2, F, T + F, ring);
-  if (n) rect(x0 - F / 2, 0, T + F, F, ring);
-  if (s) rect(x0 - F / 2, 1 - F, T + F, F, ring);
-  const straightH = w && e && !n && !s, straightV = n && s && !w && !e;
-  if (straightH) rect(.45, y0, .1, T, owner);                                  // a straight run: a plain pipe with a team-coloured band
-  else if (straightV) rect(x0, CY - .05, T, .1, owner);
-  else {
-    // the hub: a round joint a little fatter than the pipes, with a team-coloured band
-    g.fillStyle = body; g.beginPath(); g.arc(X(.5), Y(CY), (T / 2 + .04) * S, 0, 7); g.fill();
-    g.fillStyle = hi; g.beginPath(); g.arc(X(.46), Y(CY - .05), .11 * S, 0, 7); g.fill();
-    g.strokeStyle = owner; g.lineWidth = Math.max(2, .07 * S); g.beginPath(); g.arc(X(.5), Y(CY), (T / 2 - .02) * S, 0, 7); g.stroke();
-    g.strokeStyle = INKC; g.lineWidth = Math.max(1, .02 * S); g.beginPath(); g.arc(X(.5), Y(CY), (T / 2 + .04) * S, 0, 7); g.stroke();
+  // back to front: the arm going north, the arms east and west, the post, then the arm coming south toward the viewer
+  if (n && !straight) block(xa, 0, xb, CY - PT / 2 + .02, H, { front: false });
+  if (w) block(0, ya, straight ? .5 : .5 - PT / 2 + .02, yb, H, { right: false, joints: [.25] });
+  if (e) block(straight ? .5 : .5 + PT / 2 - .02, ya, 1, yb, H, { right: false, joints: [.75] });
+  if (straight && w) { const a = P(.5, yb), b = P(.5, yb, H - .05); g.fillStyle = joint; g.fillRect(a[0] - .008 * S, b[1], .016 * S, a[1] - b[1]); }
+  if (!straight) {
+    const x0 = .5 - PT / 2, x1 = .5 + PT / 2, y0 = CY - PT / 2, y1 = CY + PT / 2;
+    block(x0, y0, x1, y1, PH, { coping: .07, pal: POST });
+    if (!cracked) fill([P(x0 + .1, y1, PH - .2), P(x1 - .1, y1, PH - .2), P(x1 - .1, y1, PH - .16), P(x0 + .1, y1, PH - .16)], '#2b2d33');   // a firing slit
   }
+  if (s) block(xa, straight ? 0 : CY + PT / 2 - .02, xb, 1, H, { front: false });
+  if (straight && n) block(xa, 0, xb, 1, H, { front: false });                                         // a vertical run is one long block
   if (cracked) {
-    line([[.43, y0 + .03], [.5, CY - .06], [.45, CY + .04], [.52, CY + .12], [.48, y0 + T]], INKC, .028);   // a crack across the hub
-    const gap = e ? 'e' : w ? 'w' : n ? 'n' : s ? 's' : null;                                              // a hole blown in one pipe, with torn edges
-    if (gap === 'e' || gap === 'w') { const hx = gap === 'e' ? .72 : .14; rect(hx, y0 + .02, .13, T - .04, INKC); poly([[hx, y0 + .02], [hx + .04, y0 - .02], [hx + .08, y0 + .03], [hx + .13, y0 - .01], [hx + .13, y0 + .04], [hx, y0 + .04]], body); }
-    if (gap === 'n') { rect(x0 + .02, .12, T - .04, .12, INKC); }
-    if (gap === 's') { rect(x0 + .02, .74, T - .04, .12, INKC); }
-    for (const [a, b] of [[.62, .97], [.7, .94], [.3, .96]]) { g.fillStyle = '#8a5a34'; g.beginPath(); g.arc(X(a), Y(b), .028 * S, 0, 7); g.fill(); }   // rust flakes and rubble
-    rect(.16, y0 + .12, .08, .05, '#8a5a34'); rect(.78, y0 + T - .16, .08, .05, '#8a5a34');                 // rust patches
+    const ink = '#3a352d', rust = '#8a5a34';
+    const crack = (pts) => { g.strokeStyle = ink; g.lineWidth = Math.max(1, .022 * S); g.lineJoin = 'round'; g.beginPath(); pts.forEach(([x, y, z], i) => { const [a, b] = P(x, y, z); i ? g.lineTo(a, b) : g.moveTo(a, b); }); g.stroke(); };
+    const fy = straight && n ? null : (straight ? yb : CY + PT / 2);                                 // the face the damage is drawn on
+    if (fy != null) {
+      const hh = straight ? H : PH;
+      crack([[.36, fy, hh], [.42, fy, hh * .6], [.38, fy, hh * .35], [.45, fy, 0]]);
+      crack([[.62, fy, hh * .9], [.58, fy, hh * .55]]);
+      fill([P(.44, fy, hh + .002), P(.6, fy, hh + .002), P(.54, fy, hh - .1), P(.5, fy, hh - .06)], side);   // a bite out of the top edge
+      g.strokeStyle = rust; g.lineWidth = Math.max(1, .014 * S); g.beginPath(); { const [a, b] = P(.5, fy, hh - .02), [c, d] = P(.53, fy, hh + .05); g.moveTo(a, b); g.lineTo(c, d); } g.stroke();   // a bent rebar
+    } else {
+      crack([[xa + .04, .2, H], [xb - .06, .35, H], [xa + .08, .5, H], [xb - .04, .62, H]]);           // across the top of a vertical run
+    }
+    for (const [x, y, r] of [[.24, .93, .035], [.7, .95, .028], [.82, .9, .02], [.32, .97, .02]]) { const [a, b] = P(x, y); g.fillStyle = r > .03 ? conc : side; g.beginPath(); g.arc(a, b, r * S, 0, 7); g.fill(); }   // rubble
   }
 }
