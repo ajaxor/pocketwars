@@ -46,8 +46,10 @@ for (const id of ['harbor_front', 'reef_raiders', 'twin_fleets', 'island_chain',
     const game = new Game(registry, map);
     const yards = allProperties(game).filter((p) => p.terrain.attributes.property.builds.includes('naval'));
     assert.ok(yards.length >= 2);
-    const reach = flood(map, yards[0], 'naval');
-    for (const y of yards) assert.ok(reach.has(y.y * map.width + y.x), `${id}: shipyard ${y.x},${y.y} is boxed in`);
+    const berth = (y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: y.x + dx, y: y.y + dy })).find((t) => registry.terrainDef(map.terrain[t.y]?.[t.x] ?? 'plain').moveCost.naval != null);
+    assert.ok(yards.every(berth), `${id}: every shipyard has water beside it to launch onto`);
+    const reach = flood(map, berth(yards[0]), 'naval');
+    for (const y of yards) assert.ok(reach.has(berth(y).y * map.width + berth(y).x), `${id}: shipyard ${y.x},${y.y} is boxed in`);
     for (const y of yards) {
       const around = [[1, 0], [-1, 0], [0, 1], [0, -1]].filter(([dx, dy]) => registry.terrainDef(map.terrain[y.y + dy]?.[y.x + dx] ?? 'plain').attributes?.submergible);
       assert.ok(around.length > 0, `${id}: shipyard ${y.x},${y.y} has no deep water next to it`);

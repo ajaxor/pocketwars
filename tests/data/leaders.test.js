@@ -103,7 +103,7 @@ test('loadout validation reports every kind of mistake', () => {
     /unknown key "extra"/, /build.base: "a" is listed twice/, /build.base: unknown unit "nope"/, /"hq" is not a production building/, /"ghost" is not a production building/, /"city" is not a production building/,
     /\[0, 0\] is the building itself/, /start.hq\[1\]: unknown key "x"/, /start.city: "city" is neither "hq" nor a production building/, /start.ghost: "ghost" is neither/, /start.base must be an array/, /another unit already has the spot \[1,1\]/, /unknown unit "zzz"/, /at must be \[side, forward\] whole numbers/, /start.hq\[5\] must be an object/,
     /leader id "Bad Id" must be lowercase/, /"random" is reserved/, /build.base must be a non-empty list/, /loadouts.leaders.empty: unknown key "mystery"/,
-    /build.base: "b" cannot enter Base/, /loadouts.leaders.string: start must be an object/,
+    /loadouts.leaders.string: start must be an object/,
   ]) assert.match(p, re);
 });
 

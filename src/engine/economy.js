@@ -12,7 +12,7 @@ export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduc
  * (a unit built last turn is no longer `fresh`). Every property may build again. Units that rested then heal
  * (heal.js).
  */
-/** The property of `player` that repairs `unit` now: the one it stands on, or an owned dock (`noEntry` for its move class) right next to it. */
+/** The property of `player` that repairs `unit` now: the one it stands on, or an owned one right next to it that the unit cannot enter (a ship beside its shipyard). */
 function repairingProperty(game, unit, player) {
   const here = propertyAt(game, unit.x, unit.y);
   if (here && ownerAt(game, unit.x, unit.y) === player) return here;
@@ -22,7 +22,7 @@ function repairingProperty(game, unit, player) {
     const y = unit.y + dy;
     if (!inBounds(game.map, x, y)) continue;
     const p = propertyAt(game, x, y);
-    if (p && ownerAt(game, x, y) === player && terrainAt(game, x, y).attributes.noEntry?.includes(moveClass)) return p;
+    if (p && ownerAt(game, x, y) === player && terrainAt(game, x, y).moveCost[moveClass] == null) return p;
   }
   return null;
 }
@@ -74,8 +74,9 @@ export const buildOptions = (game, x, y) => menuFor(game, ownerAt(game, x, y), x
 export const builtThisTurn = (game, x, y) => game.state.builtThisTurn.includes(tileIndex(game.map, x, y));
 
 /**
- * Why a build request is invalid, or null when it is fine. The new unit appears on the property itself, so it has to be free
- * (a unit that was built there last turn has to move off first) and must not have built already this turn.
+ * Why a build request is invalid, or null when it is fine. The new unit appears on the property itself whatever the terrain
+ * (a ship is built on the land of the shipyard and sails off it), so the tile has to be free (a unit that was built there last turn has to move
+ * off first), and the property must not have built already this turn.
  */
 export function buildProblem(game, player, x, y, typeId) {
   const { state, registry } = game;
@@ -91,7 +92,7 @@ export function buildProblem(game, player, x, y, typeId) {
 }
 
 /**
- * Produce a unit for `player` on the property at (x, y). It is ready at once but `fresh`: its one order can only be a move (and a
+ * Produce a unit for `player` on the property at (x, y), whatever its terrain. It is ready at once but `fresh`: its one order can only be a move (and a
  * Wait), so it gets off the property that built it without attacking, capturing or diving.
  */
 export function buildUnit(game, player, x, y, typeId) {

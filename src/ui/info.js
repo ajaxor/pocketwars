@@ -58,7 +58,7 @@ export function terrainInfo(game, x, y) {
   const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => tagOf(TERRAIN_ATTRIBUTES, name, cfg, registry));
   return {
     x, y, name: t.name, color: t.render.base ?? registry.groundDef(game.map.ground?.[y]?.[x])?.render.base ?? '#86b95c', defense: t.defense,
-    moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.attributes.noEntry?.includes(c) ? null : t.moveCost[c] ?? null })),
+    moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),
     property: prop ? {
       income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel),
       owner: owner === null ? null : { player: owner, name: factionOf(game, owner).name, color: factionOf(game, owner).color },

@@ -33,13 +33,14 @@ test('rough ground costs infantry nothing extra, a mountain still does', () => {
   assert.equal(registry.terrainDef('rough').moveCost.foot, 1);
 });
 
-test('a ship is built on a shipyard but cannot sail back onto it, and is repaired from the water next to it', () => {
+test('a shipyard is land: a ship is built on it and sails off, cannot sail back onto it, and are repaired from the water next to it', () => {
   const g = world(['H~~~~~h', '.Y~~~~Z'], [['destroyer', 0, 3, 1], ['recon', 1, 6, 0]]);
   const ship = g.state.units[0];
+  assert.equal(registry.terrainDef('shipyard').moveCost.naval, null);
   assert.equal(computeReach(g, ship).has(1, 1), false);
-  assert.equal(g.build(1, 1, 'cruiser').ok, true, 'but a ship can be built there');
+  assert.equal(g.build(1, 1, 'cruiser').ok, true, 'a ship can still be built there');
   const next = g.state.units.find((u) => u.type === 'cruiser');
-  assert.equal(next.x, 1);
+  assert.deepEqual([next.x, next.y], [1, 1], 'built on the shipyard itself');
   ship.x = 2; ship.hp = 5;
   startTurn(g, 0);
   assert.ok(ship.hp > 5, 'next to its own shipyard it is repaired');

@@ -212,12 +212,6 @@ export const TERRAIN_ATTRIBUTES = {
     doc: 'An obstacle: direct fire cannot pass over this tile. The number is its height (forest 1, mountain and buildings 2); a firer standing on a tile whose `vantage` is higher shoots over it. The tiles at either end of a shot never block it, and units never block.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
   },
-  noEntry: {
-    label: 'Dock',
-    help: (v) => `${v.join(' and ')} units are built here but cannot move onto it. They are resupplied and repaired from the water next to it.`,
-    doc: 'A list of move classes that cannot move onto this tile (the shipyard: ships are built on it and sail away, but cannot come back onto it). The tile keeps a normal moveCost for those classes, so units can still be built there. A unit of such a class next to an owned property with this attribute is repaired at turn start like a unit standing on it (economy.js).',
-    check: (v, e, fail) => { if (!Array.isArray(v) || !v.length || v.some((c) => typeof c !== 'string' || !c)) fail('must be a non-empty array of move class names'); },
-  },
   vantage: {
     label: 'High ground',
     help: 'High ground: a direct-fire unit standing here can shoot over obstacles lower than this.',

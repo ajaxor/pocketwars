@@ -186,11 +186,6 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     const builds = t && t.attributes && t.attributes.property && t.attributes.property.builds;
     if (Array.isArray(builds)) {
       for (const c of builds) if (!categories.has(c)) problems.push(`terrain "${id}": builds unknown unit category "${c}"`);
-      for (const [uid, u] of Object.entries(units)) {
-        if (isObj(u) && builds.includes(u.category) && isObj(t.moveCost) && t.moveCost[u.moveClass] == null) {
-          problems.push(`terrain "${id}": builds "${uid}", but its move class "${u.moveClass}" cannot enter the terrain (a new unit appears on the property)`);
-        }
-      }
     }
     const supplies = t && t.attributes && t.attributes.resupply && t.attributes.resupply.categories;
     if (Array.isArray(supplies)) for (const c of supplies) if (!categories.has(c)) problems.push(`terrain "${id}": resupplies unknown unit category "${c}"`);
@@ -256,7 +251,6 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
         if (!isObj(units[id])) { problems.push(`${here}: unknown unit "${id}"`); continue; }
         if (seen.has(id)) problems.push(`${here}: "${id}" is listed twice`);
         seen.add(id);
-        if (isObj(t.moveCost) && t.moveCost[units[id].moveClass] == null) problems.push(`${here}: "${id}" cannot enter ${t.name || tid} (a new unit appears on the building)`);
       }
     }
   };
