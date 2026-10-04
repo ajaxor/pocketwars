@@ -127,7 +127,7 @@
       "start": {
         "hq": [
           { "unit": "medic", "at": [-1, 1] },
-          { "unit": "supply_truck", "at": [1, 1] },
+          { "unit": "rocket_buggy", "at": [1, 1] },
           { "unit": "mech", "at": [0, 1] }
         ],
         "barracks": [
@@ -198,7 +198,7 @@
       "start": {
         "hq": [
           { "unit": "rpg_trooper", "at": [-1, 1] },
-          { "unit": "apc", "at": [1, 1] },
+          { "unit": "artillery", "at": [1, 1] },
           { "unit": "heavy_tank", "at": [0, 1] }
         ],
         "barracks": [
@@ -224,7 +224,7 @@
         "hq": [
           { "unit": "marine", "at": [-1, 1] },
           { "unit": "tank", "at": [1, 1] },
-          { "unit": "supply_truck", "at": [0, 1] }
+          { "unit": "artillery", "at": [0, 1] }
         ],
         "barracks": [
           { "unit": "mech", "at": [0, 1] }

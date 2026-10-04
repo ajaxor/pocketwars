@@ -9,7 +9,7 @@ const RED = '#d4442e';
 
 // A rocket or missile seen from the side with its tail at (x, y), pointing along `ang` (radians, negative = up): a dark outline so overlapping rockets
 // stay readable, a cream body with a dark band, a red nose cone and swept tail fins. `col` tints the body, so a rocket further back can be darker.
-const missile = (g, s, x, y, ang, len, th, col = '#e8e4d8', fin = '#555a64', nose = RED) => {
+export const missile = (g, s, x, y, ang, len, th, col = '#e8e4d8', fin = '#555a64', nose = RED) => {
   const o = .009;
   g.save(); g.translate(x * s, y * s); g.rotate(ang);
   poly(g, s, [[-.02, -th * .95 - o], [len * .16, -th / 2 - o], [len * .16, th / 2 + o], [-.02, th * .95 + o]], INK);                 // fin outline

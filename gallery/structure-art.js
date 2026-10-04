@@ -6,7 +6,7 @@
 // The rule (docs/unit-art-lessons.md): few shapes, one idea per building, no windows or small fittings.
 import { kit } from '../src/render/buildings.js';
 import { shade } from '../src/render/color.js';
-import { grass } from './concept-art-static.js';
+import { grass, FOOTING } from './concept-art-static.js';
 
 const DIRT = '#7a6a4a', STEEL = '#8d93a0', DARK = '#2b2d33', GLASSY = '#bfe0f2', WHITE = '#f1f1ec', RED = '#d4442e';
 const disc = (g, x, y, r, col) => { g.fillStyle = col; g.beginPath(); g.arc(x, y, Math.max(.5, r), 0, 7); g.fill(); };
@@ -140,6 +140,7 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
   const col = { body: '#646b78', hole: '#16181c', out: '#1f2228' };           // a cracked pipe is the same colour as a sound one
+  const dark = shade('#646b78', -.14);
   const OW = .03, RC = .13, FR = .08;                                           // the dark outline's width; the radius of rounded corners; of the fillets in inner corners
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
@@ -155,25 +156,30 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
   if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
   if (n || s) g.fillRect(X(CX + R), Y(n ? 0 : CY - .1), .06 * S, ((n && s) ? 1 : n ? GY : 1 - CY + .1) * S);
   if (lone) ell(CX + .07, GY + .02, R + .1, .07, 'rgba(0,0,0,.2)');
-  // Where a pipe goes into the ground: a dark hole in the soil, wider than the pipe, behind the pipe's rounded foot.
-  const hole = (cx, rx, cy = GY, ry = .1) => ell(cx, cy, rx + .09, ry, col.hole);
-  if (endH) hole(dir > 0 ? pv - R : pv + R, R); else if (endN || lone) hole(CX, R); else if (endS) hole(CX, R + .02, CY - .1, .09);
-  // Grass round the hole, drawn BEFORE the pipe so it never lies over it: it shows at the sides of the pipe, like the footings of the defences.
+  // Where a pipe goes into the ground: the same foundation as the defences (a dark slab with grass over its edge), under the pipe's rounded foot.
+  const slab = (cx) => { const x0 = Math.max(0, cx - R - .15), x1 = Math.min(1, cx + R + .15); g.fillStyle = FOOTING; g.beginPath(); g.roundRect(X(x0), Y(GY - .02), (x1 - x0) * S, .12 * S, 4); g.fill(); };
+  if (endH) slab(dir > 0 ? pv - R : pv + R); else if (endN || lone) slab(CX);
+  // Grass over the slab's edge, drawn BEFORE the pipe so it never lies over it: it shows at the sides of the pipe.
   const seed = (Math.round(px / S) * 7 + Math.round(py / S) * 13) % 97;
   const tufts = (cx, base) => { g.save(); g.translate(X(.5), Y(.5)); const k = 2.1; grass(g, S * k, (cx - R - .24 - .5) / k, (cx + R + .24 - .5) / k, (base - .5) / k, seed); g.restore(); };   // a bit bigger than on the defences: the pipes are small on the board
-  if (endH) tufts(dir > 0 ? pv - R : pv + R, GY + .03); else if (endN || lone) tufts(CX, GY + .03); else if (endS) tufts(CX, CY - .04);
+  if (endH) tufts(dir > 0 ? pv - R : pv + R, GY + .1); else if (endN || lone) tufts(CX, GY + .1);
   // The pipe is drawn twice: first every part grown by the outline width in dark (`gr`), then every part in the body colour on top. Parts that
   // run off a tile edge are not grown there, so neighbouring pipes join with no line between them. Every free corner is rounded.
   for (const pass of [0, 1]) {
     const gr = pass ? 0 : OW, c = pass ? col.body : col.out;
     // `round` = [top-left, top-right, bottom-right, bottom-left]: which corners of the part are free (not joined to another part or the tile edge)
-    const box = (x0, y0, x1, y1, round = [0, 0, 0, 0], rc = RC) => {
+    // `band` = [x0, y0, x1, y1]: a strip of the part drawn a shade darker on its lower / right side, so the pipe reads as round
+    const box = (x0, y0, x1, y1, round = [0, 0, 0, 0], rc = RC, band = null) => {
       const a = x0 <= 0 ? 0 : x0 - gr, b = y0 <= 0 ? 0 : y0 - gr, d = x1 >= 1 ? 1 : x1 + gr, f = y1 >= 1 ? 1 : y1 + gr;
       g.fillStyle = c; g.beginPath(); g.roundRect(X(a), Y(b), (d - a) * S, (f - b) * S, round.map((r) => (r ? (rc + gr) * S : 0))); g.fill();
+      if (pass && band) { g.save(); g.clip(); rect(band[0], band[1], band[2] - band[0], band[3] - band[1], dark); g.restore(); }
     };
-    const lieH = (xa, xb) => box(xa, CY - R, xb, CY + R);                      // a pipe lying east-west from xa to xb
-    const lieV = (ya, yb) => box(CX - R, ya, CX + R, yb);                      // a pipe lying north-south from ya to yb
-    const foot = (cx) => ell(cx, GY, R + gr, .05 + gr, c, 0, Math.PI);         // the rounded bottom of a pipe that stands in the ground
+    const lieH = (xa, xb) => box(xa, CY - R, xb, CY + R, [0, 0, 0, 0], RC, [xa, CY + R * .4, xb, CY + R]);                      // a pipe lying east-west from xa to xb
+    const lieV = (ya, yb) => box(CX - R, ya, CX + R, yb, [0, 0, 0, 0], RC, [CX + R * .4, ya, CX + R, yb]);                      // a pipe lying north-south from ya to yb
+    const foot = (cx) => {
+      ell(cx, GY, R + gr, .05 + gr, c, 0, Math.PI);
+      if (pass) { g.save(); g.beginPath(); g.ellipse(X(cx), Y(GY), R * S, .05 * S, 0, 0, Math.PI); g.clip(); rect(cx + R * .4, GY, R * .6, .06, dark); g.restore(); }
+    };         // the rounded bottom of a pipe that stands in the ground
     // a rounded inner corner at P: fills the notch between two arms with a quarter-round fillet (a, b = which way the empty corner lies)
     const fillet = (Px, Py, a, b) => {
       const r = FR - gr, Cx = Px + a * FR, Cy = Py + b * FR, ccw = a * b > 0;
@@ -184,16 +190,17 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
     else if (endH) {                                                              // an elbow: the pipe rises from the ground beside the run and bends over into it
       const a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0;
       g.fillStyle = c; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), (2 * R + gr) * S, a0, a1); g.closePath(); g.fill();
+      if (pass) { g.fillStyle = dark; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), R * .6 * S, a0, a1); g.closePath(); g.fill(); }   // the shaded inside of the bend
       if (dir > 0) lieH(pv - .03, 1); else lieH(0, pv + .03);                    // overlaps the bend a little so no seam shows
       foot(dir > 0 ? pv - R : pv + R);
     } else if (endN) { lieV(0, GY); foot(CX); }                                  // runs toward us, then goes into the ground, like the sideways ends
     else if (endS) {                                                              // comes out of the ground at the back and runs toward us
-      box(CX - R, CY - .1, CX + R, 1, [1, 1, 0, 0], .24);                         // a well-rounded top, sunk into the hole behind
-    } else if (lone) { box(CX - R, CY - R, CX + R, GY, [1, 1, 0, 0]); foot(CX); }   // a standing stump
+      box(CX - R, CY - .1, CX + R, 1, [1, 1, 0, 0], .24, [CX + R * .4, CY - .1, CX + R, 1]);                         // a well-rounded top, sunk into the hole behind
+    } else if (lone) { box(CX - R, CY - R, CX + R, GY, [1, 1, 0, 0], RC, [CX + R * .4, CY - R, CX + R, GY]); foot(CX); }   // a standing stump
     else {
       if (n) lieV(0, CY); if (s) lieV(CY, 1);
       if (w) lieH(0, CX); if (e) lieH(CX, 1);
-      box(CX - R, CY - R, CX + R, GY, [!n && !w, !n && !e, !s && !e, !s && !w]);   // the junction block: free corners rounded
+      box(CX - R, CY - R, CX + R, GY, [!n && !w, !n && !e, !s && !e, !s && !w], RC, [CX + R * .4, CY - R, CX + R, GY]);   // the junction block: free corners rounded
       if (n && w) fillet(CX - R, CY - R, -1, -1);                                  // and the inner corners between two arms
       if (n && e) fillet(CX + R, CY - R, 1, -1);
       if (s && e) fillet(CX + R, GY, 1, 1);

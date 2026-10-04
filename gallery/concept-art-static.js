@@ -4,6 +4,7 @@
 // defence has a FOOTING: a dark slab the same size and place as a tread, sunk into the ground with tufts of grass over its edge, so it reads as "a
 // unit that is bolted down" and never as one that drives.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
+import { missile } from '../src/render/art-vehicles.js';
 import { box, disc, oval, poly, stroke, mix, tubes, plume, INK, STEEL, RED } from '../src/render/parts.js';
 
 export const FOOTING = '#4a4843';
@@ -80,31 +81,29 @@ const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
   aim(g, s, 0, -.155, .4, sweep(w, ph, run, .42), 0, Math.max(3.5, s * .06), INK, -rec);            // the cannon
 };
 
-// SAM site: a block with a turntable, and a pod of missiles tipped at the sky that turns on it.
+// SAM site: a block with a turntable, and a big anti-air missile (like the SAM launcher's) on a rail, tipped at the sky, that turns on it.
 const samSite = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.32, .32);
   box(g, s, -.28, -.02, .56, .23, 4, c);
   box(g, s, -.12, -.09, .24, .08, 2, dk);                                                           // the turntable
-  const phi = sweep(w, ph, run, .4), el = 1.0;
-  for (const off of [-.035, .035]) {                                                                // two missiles side by side
-    const [tx, ty] = aim(g, s, off, -.08, .32, phi, el, Math.max(3, s * .05), dk);
-    disc(g, s, tx, ty, .022, RED);
-  }
+  const phi = sweep(w, ph, run, .4), el = 1.0, ux = Math.cos(el) * Math.cos(phi), uy = -Math.sin(el), ang = Math.atan2(uy, ux), len = Math.hypot(ux, uy);
+  missile(g, s, -.045 - ux * .03, -.075 - uy * .03, ang, .44 * len, .075, mix('#e8e4d8', '#000000', .3), '#3f434c');    // one behind
+  missile(g, s, .035 - ux * .03, -.085 - uy * .03, ang, .44 * len, .08);                            // and one in front
+  disc(g, s, 0, -.085, .03, INK);                                                                    // the pivot they rest on
 };
 
-// Artillery emplacement: a field gun on a sandbag berm: a big spoked wheel, two trail legs, a gun shield, and a long barrel (with its recoil sleeve
-// over the breech) raised at an angle, that turns and slides back when it fires.
+// Artillery emplacement: a long gun barrel in a simple round mount (a ring on a pedestal) that turns, raises and lowers its aim, and slides back
+// when it fires.
 const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.4, .4);
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
-  box(g, s, -.4, .1, .8, .11, .055 * s, c);                                                         // the berm, low
-  stroke(g, s, 0, .06, -.32, .19, Math.max(3, s * .05), dk); stroke(g, s, 0, .06, -.2, .19, Math.max(3, s * .05), mix(dk, '#000000', .2));   // the split trail
-  disc(g, s, 0, .06, .14, INK); disc(g, s, 0, .06, .11, '#585d68'); disc(g, s, 0, .06, .035, INK);   // the wheel, tyre and hub
-  for (let i = 0; i < 4; i++) { const a = i * Math.PI / 4; stroke(g, s, Math.cos(a) * .1, .06 + Math.sin(a) * .1, -Math.cos(a) * .1, .06 - Math.sin(a) * .1, 1.5, '#8d93a0'); }   // spokes
-  const phi = sweep(w, ph, run, .36), el = .5, thick = Math.max(3, s * .06);
-  aim(g, s, -.04, -.02, .5, phi, el, thick, INK, -rec);                                             // the barrel
-  aim(g, s, -.04, -.02, .5, phi, el, thick * 1.7, dk, -rec, 0, .17, false);                          // the recoil sleeve over its breech
-  box(g, s, -.15, -.17, .075, .2, 2, dk);                                                           // the gun shield
+  box(g, s, -.22, .02, .44, .2, 4, c);                                                              // the pedestal
+  box(g, s, -.22, .02, .44, .05, 2, dk);
+  const phi = sweep(w, ph, run, .36), el = run ? .6 + .3 * Math.sin(w * .55 + ph * 2) : .5, thick = Math.max(3, s * .06), cy = -.07;
+  aim(g, s, 0, cy, .56, phi, el, thick, INK, -rec);                                                 // the barrel
+  disc(g, s, 0, cy, .15, INK); disc(g, s, 0, cy, .125, dk); disc(g, s, 0, cy, .07, mix(dk, '#ffffff', .18));   // the round mount it pivots in
+  aim(g, s, 0, cy, .56, phi, el, thick * 1.4, INK, -rec, 0, .13, false);                            // the barrel's root, over the mount
+  disc(g, s, 0, cy, .035, INK);                                                                      // the trunnion
 };
 
 // Jammer: a hut with a mast and a big dish that turns from facing right, through facing us, to facing left and back.
