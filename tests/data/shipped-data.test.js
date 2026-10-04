@@ -168,7 +168,7 @@ test('classic map: size, players, HQs', async () => {
 
 test('transports carry each leader\'s basic infantry, and the tuning of the stealth and fuel changes', () => {
   const basic = Object.fromEntries(registry.leaderIds.map((l) => [l, registry.loadoutFor(l).infantry]));
-  assert.deepEqual(basic, { harlan: 'soldier', ada: 'commando', vex: 'soldier', hiroshi: 'soldier', ludwig: 'soldier', rex: 'marine', chase: 'soldier', dmitri: 'conscript', lysandra: 'marine' });
+  assert.deepEqual(basic, { harlan: 'soldier', ada: 'commando', vex: 'spy', hiroshi: 'soldier', ludwig: 'soldier', rex: 'marine', chase: 'soldier', dmitri: 'conscript', lysandra: 'marine' });
   for (const id of ['transport_copter', 'apc', 'troop_transport']) assert.equal(registry.unit(id).attributes.deploy.basic, true, `${id} carries basic infantry`);
   assert.ok(registry.unit('marine').weapons.includes('marine_deck_rifle'), 'marines can fight ships from the water');
   assert.deepEqual(registry.weapon('marine_deck_rifle').fromTerrain, ['sea', 'shoals']);

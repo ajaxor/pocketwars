@@ -1,7 +1,7 @@
-// Fuel: a flyer burns one unit of fuel per tile it flies and cannot go further than it has left. Nothing here knows about particular units.
+// Fuel: a flyer burns one unit of fuel per tile it flies. Nothing here knows about particular units.
 //
 //   unit attribute `fuel: { max, low }`   the unit starts full (`unit.fuel`); at `low` or fewer it is "low", at 0 it is "empty"
-//   a tile moved costs 1 fuel (game.js act), and moveOf (submerge.js) caps the move allowance at the fuel left
+//   a tile moved costs 1 fuel (game.js act); the tank never limits a move (the player does not have to count tiles), it only decides who crashes
 //
 // REFUELLING IS FREE AND AUTOMATIC. At the start of its owner's turn (economy.js startTurn) a unit is topped up when it stands where a source
 // reaches it: a property of its owner whose `resupply` covers its category (an airfield: on or next to it), a friendly unit whose `supply`

@@ -29,14 +29,15 @@ test('fuel: a flyer starts full, burns a unit per tile and its level is ok / low
   assert.equal(fuelLevel(g, g.state.units[1]), null, 'a unit without the attribute has no tank');
 });
 
-test('fuel: a flyer cannot fly further than its fuel, even with movement to spare', () => {
+test('fuel: the tank never limits a move; a flyer can fly on empty, and the tank bottoms out at 0', () => {
   const g = game(['H.......h'], [['flyer', 0, 0, 0], ['grunt', 1, 8, 0]]);
   const u = g.state.units[0];
   u.fuel = 2;
-  assert.equal(computeReach(g, u).has(2, 0), true);
-  assert.equal(computeReach(g, u).has(3, 0), false, 'move 6, but only 2 fuel');
+  assert.equal(computeReach(g, u).has(5, 0), true, 'move 6 is all there is to count');
   u.fuel = 0;
-  assert.equal(computeReach(g, u).size, 1, 'a dry flyer stays where it is');
+  assert.equal(computeReach(g, u).has(6, 0), true, 'even a dry flyer moves');
+  assert.equal(g.act({ unitId: u.id, to: { x: 4, y: 0 }, action: { type: 'wait' } }).ok, true);
+  assert.equal(u.fuel, 0);
 });
 
 test('fuel: refuelled for free at the start of the owner\'s turn next to their airfield, not next to an enemy one or far away', () => {

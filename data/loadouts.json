@@ -72,6 +72,7 @@
       }
     },
     "vex": {
+      "infantry": "spy",
       "build": {
         "barracks": ["spy", "motorcycle", "sniper"],
         "factory": ["recon", "tank", "rocket_launcher", "flak", "sam_launcher"],
