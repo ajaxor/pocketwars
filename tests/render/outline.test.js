@@ -45,3 +45,9 @@ test('drawOutlined with skipBlack redraws the body into a mask that ignores near
   assert.equal(filled.filter((c) => c === 'rgba(200, 60, 50, 0.5)').length, 2, 'a see-through red is not black');
   assert.ok(stamps.filter((c) => c[0] === 'drawImage').length >= 24, 'the silhouette is stamped round the rings');
 });
+
+test("the game's units are drawn with black parts left out of the outline (skipBlack is the default render mode)", async () => {
+  const { readFile } = await import('node:fs/promises');
+  const src = await readFile(new URL('../../src/render/unit-sprites.js', import.meta.url), 'utf8');
+  assert.match(src, /drawOutlined\([\s\S]*skipBlack: true/);
+});

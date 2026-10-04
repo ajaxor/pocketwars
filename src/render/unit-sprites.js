@@ -38,9 +38,9 @@ export function drawUnit(g, unit, o) {
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
   g.save(); g.translate(px + s / 2, py + s / 2);
-  // a thin line in the unit's dark team colour all round it
+  // a thin line in the unit's dark team colour all round it, except round the sprite's own black parts (barrels, visors, ink lines: skipBlack)
   drawOutlined(g, ART, onWater && def.render.waterSprite ? def.render.waterSprite : def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged, face },
-    { r: Math.max(1, s * OUTLINE_THIN), color: colors.dark, tint: run ? null : DISABLED_TINT, alpha });
+    { r: Math.max(1, s * OUTLINE_THIN), color: colors.dark, tint: run ? null : DISABLED_TINT, alpha, skipBlack: true });
   g.restore();
   if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha, exposed);
   const dh = Math.ceil(unit.hp - 1e-9);

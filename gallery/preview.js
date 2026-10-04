@@ -23,7 +23,7 @@ export const STATES = { idle: { run: 1, speed: 1, alpha: 1 }, moving: { run: 1, 
 export const OUTLINES = { off: 0, thin: OUTLINE_THIN, medium: .024, thick: .038 };   // radius as a fraction of the tile
 export const OUTLINE_COLORS = { navy: '#161a26', black: '#000000', faction: null };            // null: the faction's dark colour
 
-export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'outlined', make }) {
+export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'plain', make }) {
   const st = STATES[state] || STATES.idle;
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
@@ -55,7 +55,7 @@ async function boot() {
   const factions = Object.values(registry.factions).map((f) => ({ id: f.id, name: f.name, color: f.color, dark: f.dark }));
   const terrain = Object.fromEntries(['plain', 'road', 'sea'].map((id) => [id, registry.terrain[id].render.base || registry.terrain[id].render.mini]));
 
-  const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', blackLines: 'outlined', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
+  const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', blackLines: 'plain', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
   let clock = 0, last = performance.now();
   const tiles = [];   // { canvas, g, unit, faction, phase, visible }: everything animated on the page; only the ones on screen are redrawn
   const io = 'IntersectionObserver' in window ? new IntersectionObserver((entries) => entries.forEach((e) => { const t = tiles.find((x) => x.canvas === e.target); if (t) t.visible = e.isIntersecting; })) : null;
@@ -68,7 +68,7 @@ async function boot() {
       const def = registry.unit(unitId), cv = document.createElement('canvas'), dpr = window.devicePixelRatio || 1;
       cv.width = cv.height = Math.round(px * dpr); cv.style.width = cv.style.height = px + 'px'; cv.className = 'icon';
       const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
-      paintTile(g, { unit: { sprite: def.render.sprite, altitude: def.render.altitude || 0, concept: false }, faction, size: px, t: .4, state: 'idle', phase: 0, bg: terrain[def.moveClass === 'naval' ? 'sea' : 'plain'], outline: 'thin', outlineColor: 'faction' });
+      paintTile(g, { unit: { sprite: def.render.sprite, altitude: def.render.altitude || 0, concept: false }, faction, size: px, t: .4, state: 'idle', phase: 0, bg: terrain[def.moveClass === 'naval' ? 'sea' : 'plain'], outline: 'thin', outlineColor: 'faction', blackLines: 'plain' });
       cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', def.name);
       return cv;
     },
