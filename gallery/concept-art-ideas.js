@@ -6,7 +6,7 @@
 // The new static defences use the units' flat style and the footing from concept-art-static.js.
 import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hullPath, propeller, propDisc, legs, torso, head, dome, INK, STEEL, GLASS, RED } from '../src/render/parts.js';
 import { shade } from '../src/render/color.js';
-import { footing } from './concept-art-static.js';
+import { footing, footShadow } from './concept-art-static.js';
 const WOOD = '#7a4e2a', HAZARD = '#ffc531', RUST = '#9a5a2e', FLAME = '#ff9a2e', FLAME_HOT = '#ffe36b', ARC = '#9fe8ff';
 
 // ---- infantry ------------------------------------------------------------------------------------------------------------------
@@ -305,5 +305,5 @@ export const SHADOWS = {
   bridge_layer: ground(.4, .05, .285), decoy_tank: ground(.36, .05, .285), smoke_carrier: ground(.4, .05, .285), emp_truck: ground(.4, .05, .285),
   tank_destroyer: ground(.38, .05, .285), technical: ground(.38, .05, .285), salvager: ground(.36, .05, .285), broadcast_truck: ground(.4, .05, .285),
   airship: air(.38, .05), loiter_drone: air(.2, .04), q_ship: () => {},
-  coastal_battery: ground(.42, .05, .3), barrage_balloon: ground(.3, .05, .3), tank_trap: ground(.4, .05, .3), watchtower: ground(.3, .05, .3),
+  coastal_battery: footShadow(-.38, .38, .05), barrage_balloon: footShadow(-.24, .2), tank_trap: ground(.4, .05, .3), watchtower: footShadow(-.24, .24, .06),
 };

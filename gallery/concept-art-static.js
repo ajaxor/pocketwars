@@ -1,17 +1,33 @@
 // Experimental concept units, Engineer Works group: immobile static defences, drawn in the SAME flat style as the units (unit-art.js):
 // side-on, flat rounded blocks in the team colour, the upper part (turret, roof) in the team's dark colour like a tank's turret, the weapon in
-// near-black, and a soft oval shadow. Where a unit has treads or wheels, a defence has a FOOTING: a pale concrete slab with dark bolts, the
-// same size and place as a tread, so it reads as "a unit that is bolted down" and never as one that drives.
+// near-black, and a slanted ground shadow like the buildings' (to the lower right, sliding a little sideways). Where a unit has treads or wheels, a
+// defence has a FOOTING: a dark slab the same size and place as a tread, sunk into the ground with tufts of grass over its edge, so it reads as "a
+// unit that is bolted down" and never as one that drives.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 import { box, disc, oval, poly, stroke, mix, tubes, plume, INK, STEEL, RED } from '../src/render/parts.js';
 
-export const FOOTING = '#b3b0a6';
-/** The slab a defence is bolted to: pale concrete along the ground from x0 to x1, with a darker lower edge and a row of dark bolts. */
-export const footing = (g, s, x0 = -.34, x1 = .34, h = .09) => {
-  box(g, s, x0, .29 - h, x1 - x0, h, 3, FOOTING);
-  box(g, s, x0, .29 - h * .35, x1 - x0, h * .35, 2, mix(FOOTING, '#000000', .25));
-  const n = Math.max(2, Math.round((x1 - x0) / .12));
-  for (let i = 0; i < n; i++) { const x = x0 + .05 + i * (x1 - x0 - .1) / (n - 1); disc(g, s, x, .29 - h * .62, .016, '#55534d'); }
+export const FOOTING = '#4a4843';
+const BLADES = ['#6f9f48', '#86b95c', '#5d8c3c'];          // the terrain's grass green, a lighter and a darker blade
+/** Tufts of grass along the ground from x0 to x1, rising over whatever is behind them: three-blade clumps of varied height, always the same. */
+export const grass = (g, s, x0, x1, base = .3) => {
+  const n = Math.max(3, Math.round((x1 - x0) / .13));
+  for (let i = 0; i < n; i++) {
+    const x = x0 + (i + .5) * (x1 - x0) / n, k = (i * 7 + 3) % 5;                                  // a repeating pseudo-random pattern, so it never flickers
+    for (let j = -1; j <= 1; j++) {
+      const hgt = (.03 + ((k + j + 3) % 3) * .014 + (j === 0 ? .012 : 0)), lean = j * .016 + (k - 2) * .004, bw = .015;
+      poly(g, s, [[x + j * .022 - bw, base], [x + j * .022 + lean, base - hgt], [x + j * .022 + bw, base]], BLADES[(k + j + 4) % 3]);
+    }
+  }
+};
+/** The slab a defence is bolted to: a flat dark rounded block along the ground from x0 to x1, with grass over its foot so it seems to go into the ground. */
+export const footing = (g, s, x0 = -.34, x1 = .34, h = .1) => {
+  box(g, s, x0, .3 - h, x1 - x0, h, 3, FOOTING);
+  grass(g, s, x0 - .02, x1 + .02, .305);
+};
+/** The slanted ground shadow of a defence whose footing spans x0 to x1: a band along the ground that slides up and to the right, the way the buildings' do. */
+export const footShadow = (x0, x1, d = .07) => (g, { s }) => {
+  const b = .3, dx = d * .9, dy = d * .7;
+  poly(g, s, [[x0 + .04, b], [x1, b], [x1 + dx, b - dy], [x1 + dx + .09, b - dy + .04], [x1 + .09, b + .045], [x0 + .04, b + .045]], 'rgba(0,0,0,.2)');
 };
 
 // Gun turret: a squat bunker under a dark dome, with a machine gun out of the dome that sweeps a little.
@@ -99,9 +115,9 @@ export const SPRITES = {
   land_mine: (g, o) => { g.save(); g.translate(0, -.05 * o.s); g.scale(1.25, 1.25); landMine(g, o); g.restore(); },
 };
 
-// ---- shadows: the units' soft oval under the footing ------------------------------------------------------------------------
+// ---- shadows: the buildings' slanted band under the footing ----------------------------------------------------------------------
 export const ground = (rx, ry = .05, y = .3, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
-  gun_turret: ground(.34), cannon_turret: ground(.4), sam_site: ground(.36), artillery_emplacement: ground(.44),
-  jammer: ground(.28), auto_factory: ground(.44), land_mine: ground(.27),
+  gun_turret: footShadow(-.3, .3), cannon_turret: footShadow(-.36, .36), sam_site: footShadow(-.32, .32), artillery_emplacement: footShadow(-.4, .4, .05),
+  jammer: footShadow(-.24, .24), auto_factory: footShadow(-.4, .4, .05), land_mine: ground(.27),
 };

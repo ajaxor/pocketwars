@@ -129,17 +129,17 @@ export const BASES = {
 /** Which of the four neighbours of (x, y) are walls. */
 export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall(x + 1, y), s: !!isWall(x, y + 1), w: !!isWall(x - 1, y) });
 
-/** One wall tile: a giant round pipe that fills the tile. Where the line turns, ends, branches or stands alone, the pipe comes straight up out of
- *  the ground (a riser: a fat upright cylinder in a team-coloured collar, with a dark hole round its foot) and from there runs flat along the
- *  ground to every linked neighbour. A straight run is just the pipe, lying along the ground. Every linked tile edge has a team-coloured flange,
- *  half drawn by each tile, so a line of walls reads as one long pipe with team-coloured joints. Flat-shaded like the units: a base colour, a
- *  lit band, a thin shine and a shaded band, no gradients. Cracked walls are the breakable variant: rusted, split, with a hole torn in the pipe.
- *  Draw walls row by row from the top: a riser reaches a little into the tile above. */
-export function drawWall(g, px, py, S, owner, { links = {}, cracked = false } = {}) {
+/** One wall tile: a giant round pipe that fills the tile, plain grey metal with no team colour. Where the line ends it comes up out of the ground in an
+ *  elbow; at corners, branches and on its own it stands up as an upright riser; between those it lies along the ground. Flat-shaded like the units: one
+ *  body colour and a slightly darker one for the rings at the joints and the ground, the dark hole where it goes into the earth, and a lighter flat top
+ *  on an upright end. No gradients, highlights or stripes. Cracked walls are the breakable variant: the same shapes in rusty brown with a hole torn
+ *  in the pipe. `owner` is unused (walls are neutral) and kept so the call matches the buildings'. Draw walls row by row from the top: a riser or
+ *  elbow reaches a little into the tile above. */
+export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } = {}) {
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
-  const col = cracked ? { body: '#6e5545', hi: '#93735c', shine: '#bf9f84', lo: '#45362b', hole: '#1d1712' }
-                      : { body: '#5d6471', hi: '#848d9d', shine: '#c3cad6', lo: '#3b4049', hole: '#16181c' };
+  const col = cracked ? { body: '#7a5c48', ring: '#5a4334', top: '#8d6e58', hole: '#1d1712' }
+                      : { body: '#646b78', ring: '#464b55', top: '#7b8392', hole: '#16181c' };
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
   const ell = (x, y, rx, ry, c, a0 = 0, a1 = 7) => { g.fillStyle = c; g.beginPath(); g.ellipse(X(x), Y(y), rx * S, ry * S, 0, a0, a1); g.fill(); };
@@ -152,30 +152,17 @@ export function drawWall(g, px, py, S, owner, { links = {}, cracked = false } = 
   if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
   if (n || s) g.fillRect(X(CX + R), Y(n ? 0 : CY - .1), .06 * S, ((n && s) ? 1 : n ? GY : 1 - CY + .1) * S);
   if (riser) ell(CX + .07, GY + .02, R + .1, .07, 'rgba(0,0,0,.2)');
-  // a pipe lying east-west from xa to xb: lit along the top, shaded along the bottom
-  const lieH = (xa, xb) => {
-    rect(xa, CY - R, xb - xa, 2 * R, col.body); rect(xa, CY - R + .05, xb - xa, .08, col.hi); rect(xa, CY - R + .085, xb - xa, .025, col.shine);
-    rect(xa, CY + R - .12, xb - xa, .12, col.lo);
-  };
-  // a pipe lying north-south from ya to yb, seen from above: lit on the left, shaded on the right
-  const lieV = (ya, yb) => {
-    rect(CX - R, ya, 2 * R, yb - ya, col.body); rect(CX - R + .05, ya, .08, yb - ya, col.hi); rect(CX - R + .085, ya, .025, yb - ya, col.shine);
-    rect(CX + R - .12, ya, .12, yb - ya, col.lo);
-  };
-  // the team-coloured collar where a pipe goes into the ground, from x0 to x1, with the dark hole round it
-  const flangeH = (x) => { rect(x, CY - R - .03, .045, 2 * R + .06, owner); rect(x, CY + R - .06, .045, .09, shade(owner, -.35)); };   // at a left or right tile edge
-  const flangeV = (y) => { rect(CX - R - .03, y, 2 * R + .06, .045, owner); rect(CX + R - .06, y, .09, .045, shade(owner, -.35)); };  // at a top or bottom tile edge
-  const collar = (x0, x1) => {
-    ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .05, .06, col.hole);
-    rect(x0 - .02, GY - .08, x1 - x0 + .04, .08, owner); ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .02, .045, owner, 0, Math.PI);
-    rect(x1 - .08, GY - .08, .1, .08, shade(owner, -.35));
-  };
+  const lieH = (xa, xb) => rect(xa, CY - R, xb - xa, 2 * R, col.body);        // a pipe lying east-west from xa to xb
+  const lieV = (ya, yb) => rect(CX - R, ya, 2 * R, yb - ya, col.body);        // a pipe lying north-south from ya to yb
+  const jointH = (x) => rect(x, CY - R - .02, .04, 2 * R + .04, col.ring);   // a ring at a left or right tile edge
+  const jointV = (y) => rect(CX - R - .02, y, 2 * R + .04, .04, col.ring);   // a ring at a top or bottom tile edge
+  // where a pipe goes into the ground, from x0 to x1: the dark hole round its foot and a ring
+  const collar = (x0, x1) => { ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .05, .06, col.hole); rect(x0 - .02, GY - .06, x1 - x0 + .04, .06, col.ring); ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .02, .04, col.ring, 0, Math.PI); };
   // an elbow out of the ground: the pipe rises from the ground beside the run and bends over into it. `dir` 1 runs east, -1 west
   const elbow = (dir) => {
-    const pv = dir > 0 ? .62 : .38, a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0, ccw = false;
-    const arc = (r, c) => { g.fillStyle = c; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), r * S, a0, a1, ccw); g.closePath(); g.fill(); };
-    const band = (r, wd, c) => { g.strokeStyle = c; g.lineWidth = wd * S; g.lineCap = 'butt'; g.beginPath(); g.arc(X(pv), Y(GY), r * S, a0, a1, ccw); g.stroke(); };
-    arc(2 * R, col.body); band(2 * R - .09, .08, col.hi); band(2 * R - .075, .025, col.shine); arc(.12, col.lo);
+    const pv = dir > 0 ? .62 : .38, a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0;
+    g.fillStyle = col.body; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), 2 * R * S, a0, a1); g.closePath(); g.fill();
+    g.fillStyle = col.hole; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), .12 * S, a0, a1); g.closePath(); g.fill();   // the inside of the bend
     if (dir > 0) lieH(pv, 1); else lieH(0, pv);
     collar(dir > 0 ? pv - 2 * R : pv, dir > 0 ? pv : pv + 2 * R);
   };
@@ -186,37 +173,34 @@ export function drawWall(g, px, py, S, owner, { links = {}, cracked = false } = 
   else if (endS) {                                                                                          // rises out of the ground at the back, then runs toward us
     ell(CX, CY - .14, R + .06, .07, col.hole);
     lieV(CY - .12, 1);
-    ell(CX, CY - .12, R, .07, col.hi); ell(CX - .05, CY - .125, R * .5, .035, col.shine);
-    rect(CX - R - .02, CY - .06, 2 * R + .04, .06, owner); rect(CX + R - .06, CY - .06, .08, .06, shade(owner, -.35));
+    ell(CX, CY - .12, R, .07, col.top);
+    rect(CX - R - .02, CY - .06, 2 * R + .04, .06, col.ring);
   } else {
     if (n) lieV(0, CY); if (s) lieV(CY, 1);
     if (w) lieH(0, CX); if (e) lieH(CX, 1);
   }
-  if (w) flangeH(0); if (e) flangeH(.955);
-  if (n) flangeV(0); if (s) flangeV(.955);
+  if (w) jointH(0); if (e) jointH(.96);
+  if (n) jointV(0); if (s) jointV(.96);
   if (riser) {
-    // the pipe coming up out of the ground: a dark hole, the upright cylinder, a team-coloured collar at its foot and a rounded top
+    // the pipe coming up out of the ground: a dark hole, the upright cylinder, a ring at its foot and a flat lighter top
     const RR = R + .05, top = CY - R - .06;
     ell(CX, GY, RR + .05, .08, col.hole);
     rect(CX - RR, top, 2 * RR, GY - top, col.body);
-    rect(CX - RR + .05, top, .09, GY - top, col.hi); rect(CX - RR + .09, top, .025, GY - top, col.shine); rect(CX + RR - .13, top, .13, GY - top, col.lo);
     ell(CX, GY, RR, .07, col.body, 0, Math.PI);                                                                  // the round foot
-    rect(CX - RR - .02, GY - .1, 2 * (RR + .02), .1, owner); ell(CX, GY, RR + .02, .07, owner, 0, Math.PI);     // the collar, in the team colour
-    rect(CX + RR - .1, GY - .1, .12, .1, shade(owner, -.35));
-    ell(CX, top, RR, .1, col.hi); ell(CX - .04, top - .01, RR * .6, .05, col.shine);                            // the rounded top
-    rect(CX - RR, top + .07, 2 * RR, .05, owner);                                                               // and a team band near it
+    rect(CX - RR - .02, GY - .07, 2 * (RR + .02), .07, col.ring); ell(CX, GY, RR + .02, .06, col.ring, 0, Math.PI);   // the ring at the foot
+    ell(CX, top, RR, .1, col.top);                                                                              // the flat top
   }
   if (cracked) {
-    const ink = '#1d1712', rust = '#b0662e';
+    const ink = '#1d1712', rust = '#9a5a2e';
     const crack = (pts) => { g.strokeStyle = ink; g.lineWidth = Math.max(1, .022 * S); g.lineJoin = 'round'; g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)))); g.stroke(); };
     const [hx, hy] = riser ? [CX + .06, CY - .02] : (n || s) && !w && !e ? [CX - .02, .45] : [w && !e ? .3 : .7, CY - .02];
     ell(hx, hy, .1, .075, col.hole);                                                                             // a hole torn in the pipe
-    g.fillStyle = col.hi; g.beginPath();
+    g.fillStyle = col.top; g.beginPath();
     [[-.1, 0], [-.06, -.1], [-.02, -.06], [.03, -.12], [.07, -.05], [.1, 0], [.12, -.03], [.06, -.13], [-.08, -.13], [-.12, -.03]].forEach(([a, b], i) => (i ? g.lineTo(X(hx + a), Y(hy + b)) : g.moveTo(X(hx + a), Y(hy + b))));
     g.fill();                                                                                                     // its torn, peeled-back edge
     crack([[hx - .1, hy], [hx - .18, hy + .06], [hx - .22, hy + .02], [hx - .3, hy + .1]]);
     crack([[hx + .1, hy + .02], [hx + .17, hy + .1], [hx + .22, hy + .08]]);
     for (const [x, y] of [[.2, .4], [.8, .5], [.3, .74]]) rect(x, y, .07, .04, rust);                           // rust patches
-    for (const [x, y, r] of [[.18, .96, .025], [.78, .97, .02], [.88, .94, .016]]) ell(x, y, r, r, col.hi);     // flakes on the ground
+    for (const [x, y, r] of [[.18, .96, .025], [.78, .97, .02], [.88, .94, .016]]) ell(x, y, r, r, col.top);   // flakes on the ground
   }
 }
