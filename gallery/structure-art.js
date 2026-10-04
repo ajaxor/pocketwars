@@ -138,8 +138,9 @@ export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall
 export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } = {}) {
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
-  const col = cracked ? { body: '#7a5c48', ring: '#5a4334', top: '#8d6e58', hole: '#1d1712' }
-                      : { body: '#646b78', ring: '#464b55', top: '#7b8392', hole: '#16181c' };
+  const col = cracked ? { body: '#7a5c48', hi: '#a58770', top: '#8d6e58', hole: '#1d1712', out: '#2a1e17' }
+                      : { body: '#646b78', hi: '#8f98a9', top: '#7b8392', hole: '#16181c', out: '#1f2228' };
+  const OW = .03;                                                               // the dark outline's width
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
   const ell = (x, y, rx, ry, c, a0 = 0, a1 = 7) => { g.fillStyle = c; g.beginPath(); g.ellipse(X(x), Y(y), rx * S, ry * S, 0, a0, a1); g.fill(); };
@@ -152,43 +153,55 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
   if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
   if (n || s) g.fillRect(X(CX + R), Y(n ? 0 : CY - .1), .06 * S, ((n && s) ? 1 : n ? GY : 1 - CY + .1) * S);
   if (riser) ell(CX + .07, GY + .02, R + .1, .07, 'rgba(0,0,0,.2)');
-  const lieH = (xa, xb) => rect(xa, CY - R, xb - xa, 2 * R, col.body);        // a pipe lying east-west from xa to xb
-  const lieV = (ya, yb) => rect(CX - R, ya, 2 * R, yb - ya, col.body);        // a pipe lying north-south from ya to yb
-  const jointH = (x) => rect(x, CY - R - .02, .04, 2 * R + .04, col.ring);   // a ring at a left or right tile edge
-  const jointV = (y) => rect(CX - R - .02, y, 2 * R + .04, .04, col.ring);   // a ring at a top or bottom tile edge
-  // where a pipe goes into the ground, from x0 to x1: the dark hole round its foot and a ring
-  const collar = (x0, x1) => { ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .05, .06, col.hole); rect(x0 - .02, GY - .06, x1 - x0 + .04, .06, col.ring); ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .02, .04, col.ring, 0, Math.PI); };
-  // an elbow out of the ground: the pipe rises from the ground beside the run and bends over into it. `dir` 1 runs east, -1 west
-  const elbow = (dir) => {
-    const pv = dir > 0 ? .62 : .38, a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0;
-    g.fillStyle = col.body; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), 2 * R * S, a0, a1); g.closePath(); g.fill();
-    g.fillStyle = col.hole; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), .12 * S, a0, a1); g.closePath(); g.fill();   // the inside of the bend
-    if (dir > 0) lieH(pv, 1); else lieH(0, pv);
-    collar(dir > 0 ? pv - 2 * R : pv, dir > 0 ? pv : pv + 2 * R);
-  };
-  if (straightH) lieH(0, 1);
-  else if (straightV) lieV(0, 1);
-  else if (endH) elbow(e ? 1 : -1);
-  else if (endN) { lieV(0, GY - .08); collar(CX - R, CX + R); }                                              // runs toward us, then dives into the ground
-  else if (endS) {                                                                                          // rises out of the ground at the back, then runs toward us
-    ell(CX, CY - .14, R + .06, .07, col.hole);
-    lieV(CY - .12, 1);
-    ell(CX, CY - .12, R, .07, col.top);
-    rect(CX - R - .02, CY - .06, 2 * R + .04, .06, col.ring);
-  } else {
-    if (n) lieV(0, CY); if (s) lieV(CY, 1);
-    if (w) lieH(0, CX); if (e) lieH(CX, 1);
+  // The pipe is drawn twice: first every part grown by the outline width in dark (`gr`), then every part in the body colour on top. Parts that
+  // run off a tile edge are not grown there, so neighbouring pipes join with no line between them.
+  for (const pass of [0, 1]) {
+    const gr = pass ? 0 : OW, c = pass ? col.body : col.out;
+    const box = (x0, y0, x1, y1) => { const a = x0 <= 0 ? 0 : x0 - gr, b = y0 <= 0 ? 0 : y0 - gr, d = x1 >= 1 ? 1 : x1 + gr, f = y1 >= 1 ? 1 : y1 + gr; rect(a, b, d - a, f - b, c); };
+    const lieH = (xa, xb) => box(xa, CY - R, xb, CY + R);                      // a pipe lying east-west from xa to xb
+    const lieV = (ya, yb) => box(CX - R, ya, CX + R, yb);                      // a pipe lying north-south from ya to yb
+    // where a pipe goes into the ground, from x0 to x1: the dark hole round its foot
+    const collar = (x0, x1) => { if (pass) ell((x0 + x1) / 2, GY, (x1 - x0) / 2 + .04, .055, col.hole); };
+    // an elbow out of the ground: the pipe rises from the ground beside the run and bends over into it. `dir` 1 runs east, -1 west
+    const elbow = (dir) => {
+      const pv = dir > 0 ? .62 : .38, a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0;
+      g.fillStyle = c; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), (2 * R + gr) * S, a0, a1); g.closePath(); g.fill();
+      if (pass) { g.fillStyle = col.hole; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), .12 * S, a0, a1); g.closePath(); g.fill(); }   // the inside of the bend
+      if (dir > 0) lieH(pv, 1); else lieH(0, pv);
+      collar(dir > 0 ? pv - 2 * R : pv, dir > 0 ? pv : pv + 2 * R);
+    };
+    if (straightH) lieH(0, 1);
+    else if (straightV) lieV(0, 1);
+    else if (endH) elbow(e ? 1 : -1);
+    else if (endN) { lieV(0, GY - .08); collar(CX - R, CX + R); }                                              // runs toward us, then dives into the ground
+    else if (endS) {                                                                                          // rises out of the ground at the back, then runs toward us
+      if (pass) ell(CX, CY - .14, R + .06, .07, col.hole);
+      lieV(CY - .12, 1);
+      ell(CX, CY - .12, R + gr, .07 + gr, pass ? col.top : c);
+    } else {
+      if (pass) ell(CX, GY, R + .06, .08, col.hole);                                                           // the dark hole the upright comes out of
+      if (n) lieV(0, CY); if (s) lieV(CY, 1);
+      if (w) lieH(0, CX); if (e) lieH(CX, 1);
+      box(CX - R, CY - R, CX + R, GY);                                                                          // the junction block: no cap, it just joins the arms
+      ell(CX, GY, R + gr, .07 + gr, c, 0, Math.PI);                                                             // the round foot
+    }
   }
-  if (w) jointH(0); if (e) jointH(.96);
-  if (n) jointV(0); if (s) jointV(.96);
-  if (riser) {
-    // the pipe coming up out of the ground: a dark hole, the upright cylinder, a ring at its foot and a flat lighter top
-    const RR = R + .05, top = CY - R - .06;
-    ell(CX, GY, RR + .05, .08, col.hole);
-    rect(CX - RR, top, 2 * RR, GY - top, col.body);
-    ell(CX, GY, RR, .07, col.body, 0, Math.PI);                                                                  // the round foot
-    rect(CX - RR - .02, GY - .07, 2 * (RR + .02), .07, col.ring); ell(CX, GY, RR + .02, .06, col.ring, 0, Math.PI);   // the ring at the foot
-    ell(CX, top, RR, .1, col.top);                                                                              // the flat top
+  // a simple highlight along the upper (or left) side of every part, so the pipes read as round
+  const HL = .06, HO = .07;
+  const stripH = (xa, xb) => rect(xa, CY - R + HO, xb - xa, HL, col.hi);
+  const stripV = (ya, yb) => rect(CX - R + HO, ya, HL, yb - ya, col.hi);
+  if (straightH) stripH(0, 1);
+  else if (straightV) stripV(0, 1);
+  else if (endH) {
+    const dir = e ? 1 : -1, pv = dir > 0 ? .62 : .38;
+    if (dir > 0) stripH(pv, 1); else stripH(0, pv);
+    g.strokeStyle = col.hi; g.lineWidth = HL * S; g.beginPath(); g.arc(X(pv), Y(GY), (2 * R - HO - HL / 2) * S, dir > 0 ? Math.PI : -Math.PI / 2, dir > 0 ? Math.PI * 1.5 : 0); g.stroke();   // the highlight follows the bend
+  } else if (endN) stripV(0, GY - .1);
+  else if (endS) stripV(CY - .12, 1);
+  else {
+    if (n) stripV(0, GY - .06); else stripV(CY - R + HO, GY - .06);
+    if (s) stripV(GY - .06, 1);
+    if (w) stripH(0, CX - R + HO + HL); if (e) stripH(CX + R, 1);
   }
   if (cracked) {
     const ink = '#1d1712', rust = '#9a5a2e';
