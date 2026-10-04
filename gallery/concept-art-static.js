@@ -101,7 +101,7 @@ const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
   box(g, s, -.22, .02, .44, .2, 4, c);                                                              // the pedestal
   box(g, s, -.22, .02, .44, .05, 2, dk);
-  const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.07, ca = Math.cos(ang), sa = Math.sin(ang), L = .56 - rec;
+  const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.07, ca = Math.cos(ang), sa = Math.sin(ang), L = .46 - rec;
   disc(g, s, 0, cy, .15, INK); disc(g, s, 0, cy, .125, dk); disc(g, s, 0, cy, .07, mix(dk, '#ffffff', .18));   // the round mount it pivots in
   stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel
   stroke(g, s, ca * (L - .07), cy + sa * (L - .07), ca * L, cy + sa * L, thick * 1.45, INK);         // its muzzle brake
