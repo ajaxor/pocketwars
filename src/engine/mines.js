@@ -6,10 +6,11 @@
 //       whose category is in `triggers` (ships and vehicles; infantry just bump into it, which reveals it), and never for a mover with
 //       `ignoresMines` or one that flies (an airborne layer): those pass over it, though they cannot stop on its tile.
 //   unit attribute `layMines: { unit, range }`       the Lay order (after moving, instead of Wait): a new `unit` on an empty tile within
-//       `range` of where the layer stands that the mine itself could enter (sea, for a sea mine) and that is not a property. It costs the
-//       mine's price, paid from the owner's funds, and ends the layer's turn.
+//       `range` of where the layer stands that the mine itself could enter (sea, for a sea mine) and that is not a property. It costs a round
+//       of the layer's ammo (bought back at the mine's price when it resupplies next to a shipyard), and ends the layer's turn.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
+import { ammoOf, spendAmmo } from './ammo.js';
 import { distance, inBounds, layerIdOf, propertyAt, removeUnit, round1, snapshotUnit, terrainAt, unitAt, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
@@ -59,12 +60,12 @@ export function layTiles(game, unit, x = unit.x, y = unit.y) {
   return out;
 }
 
-/** Why `unit`, standing on (x, y), cannot lay a mine on `at`, or null when it can: 'cannot-lay', 'bad-lay-tile', 'not-enough-funds'. */
+/** Why `unit`, standing on (x, y), cannot lay a mine on `at`, or null when it can: 'cannot-lay', 'bad-lay-tile', 'out-of-mines'. */
 export function layProblem(game, unit, x, y, at) {
   const cfg = layConfig(game, unit);
   if (!cfg) return 'cannot-lay';
   if (!at || !layTiles(game, unit, x, y).some((t) => t.x === at.x && t.y === at.y)) return 'bad-lay-tile';
-  if (game.state.funds[unit.owner] < game.registry.unit(cfg.unit).cost) return 'not-enough-funds';
+  if ((ammoOf(game, unit) ?? 1) < 1) return 'out-of-mines';
   return null;
 }
 
@@ -72,8 +73,8 @@ export function layProblem(game, unit, x, y, at) {
 export function resolveLay(game, unit, at) {
   const cfg = layConfig(game, unit);
   const def = game.registry.unit(cfg.unit);
-  game.state.funds[unit.owner] -= def.cost;
+  spendAmmo(game, unit, 1);
   const mine = makeUnit(game.registry, game.map, game.state.nextUnitId++, { type: cfg.unit, owner: unit.owner, x: at.x, y: at.y });
   game.state.units.push(mine);
-  return [{ type: 'lay', unit: snapshotUnit(unit), at: { x: at.x, y: at.y }, mineId: mine.id, cost: def.cost }];
+  return [{ type: 'lay', unit: snapshotUnit(unit), at: { x: at.x, y: at.y }, mineId: mine.id }];
 }

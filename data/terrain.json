@@ -23,7 +23,7 @@
   "rough": {
     "name": "Rough",
     "defense": 0,
-    "moveCost": { "foot": 2, "wheels": null, "tread": 1, "air": 1, "naval": null, "amphibious": 2, "bike": 4, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "moveCost": { "foot": 1, "wheels": null, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 4, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {},
     "render": { "decor": "rough", "mini": "#9a8559" }
   },
@@ -91,7 +91,7 @@
     "name": "Shipyard",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": 1, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval"] }, "resupply": { "range": 1, "categories": ["naval"] }, "blocksLineOfSight": 1 },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval"] }, "noEntry": ["naval"], "resupply": { "range": 1, "categories": ["naval"] }, "blocksLineOfSight": 1 },
     "render": { "building": "shipyard" }
   }
 }

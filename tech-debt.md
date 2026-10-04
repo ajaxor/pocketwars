@@ -98,3 +98,9 @@
 ## Skirmish colours
 - **Colour and leader are still two settings.** Picking a leader now sets the team's colour to the leader's nation (and a random leader brings theirs when rolled), but the nation lives only in `campaign.json`, so `applySkirmish` takes a `nationOf` map from the launcher. Putting the nation on the loadout (or in the registry) would remove that plumbing.
 - **Four sea maps were missing barracks** (nothing checked for it); a test now requires one per player on every shipped map.
+
+## Rules pass (infantry, docks, ammo)
+- **`noEntry` on the shipyard** keeps its naval move cost at 1 only so validation lets ships be built there; the info card and `moveCostAt` special-case it. A property-level "build tile" separate from the move cost would be cleaner.
+- **Dock repair is a special case in `economy.startTurn`** (adjacent owned `noEntry` property); resupply already works by range, repair does not.
+- **`moveFirePenalty` is now unused** by any shipped unit (the motorcycle lost it); the attribute and its combat code remain.
+- **`ammo.cost` was removed**: replacing rounds is free except for rounds that stand for a unit (`deploy`, `layMines`), derived in `roundCost`.

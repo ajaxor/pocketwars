@@ -24,7 +24,7 @@
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
 // hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
-import { ammoLevel, canResupplyAt, resupplyCost, roundCost } from './ammo.js';
+import { ammoOf, ammoLevel, canResupplyAt, resupplyCost, roundCost } from './ammo.js';
 import { AI_CONDITIONS } from './ai-conditions.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { canCapture } from './capture.js';
@@ -177,12 +177,12 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
   return { unitId: unit.id, to: { x: best.x, y: best.y }, action };
 }
 
-/** A Lay order for a mine layer standing on `best`: the free tile in range nearest the enemy, while it can pay and has fewer than `maxMines` out; null otherwise. */
+/** A Lay order for a mine layer standing on `best`: the free tile in range nearest the enemy, while it has a mine left and fewer than `maxMines` out; null otherwise. */
 function layOrder(game, unit, best, goals, w) {
   const cfg = layConfig(game, unit);
   if (!cfg) return null;
   const out = game.state.units.filter((u) => u.owner === unit.owner && isMine(game, u)).length;
-  if (out >= (w.maxMines ?? 4) || game.state.funds[unit.owner] < game.registry.unit(cfg.unit).cost * 2) return null;
+  if (out >= (w.maxMines ?? 4) || (ammoOf(game, unit) ?? 1) < 1) return null;
   let pick = null;
   for (const t of layTiles(game, unit, best.x, best.y)) {
     const d = Math.min(...goals.map(([gx, gy]) => distance(t.x, t.y, gx, gy)));

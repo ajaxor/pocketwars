@@ -14,7 +14,10 @@ import { passesOverMines } from './mines.js';
 import { moveOf } from './submerge.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
-export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveCost[moveClass];
+export function moveCostAt(game, moveClass, x, y) {
+  const t = terrainAt(game, x, y);
+  return t.attributes.noEntry?.includes(moveClass) ? null : t.moveCost[moveClass];   // a dock can be built on but not moved onto
+}
 
 /**
  * Result of a reachability search. `cost` holds the tiles the unit can END its move on (in discovery order);

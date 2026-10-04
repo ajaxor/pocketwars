@@ -61,7 +61,7 @@ export const UNIT_ATTRIBUTES = {
   supply: {
     label: 'Supplies',
     help: (v) => `Supply order (after moving, instead of Wait): refills the ammo of friendly ${v.categories.join(', ')} units next to it${v.repair ? ` and repairs them ${v.repair} HP` : ''}, paying the usual price per round.`,
-    doc: 'A support order. Config: { categories, repair? }. After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round (ammo.js roundCost), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
+    doc: 'A support order. Config: { categories, repair? }. After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round that stands for a unit (ammo.js roundCost; plain ammunition is free), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "categories": ["aircraft"], "repair": 2 }');
       if (!Array.isArray(v.categories) || !v.categories.length || v.categories.some((c) => typeof c !== 'string' || !c)) fail('categories must be a non-empty array of unit category names');
@@ -79,12 +79,13 @@ export const UNIT_ATTRIBUTES = {
   },
   layMines: {
     label: 'Lays mines',
-    help: (v, registry) => `Lay order (after moving, instead of Wait): puts a hidden ${registry?.units?.[v.unit]?.name ?? v.unit} on any empty sea tile within ${v.range} tiles, for ${(registry?.units?.[v.unit]?.cost ?? 0).toLocaleString('en-US')} credits.`,
-    doc: 'Config: { unit, range }. A `lay` order (after moving, ends the unit\'s turn) puts a new unit of type `unit` (which needs the `mine` attribute) on an empty tile within `range` tiles that its move class can enter, paid for from the owner\'s funds at that unit\'s price. See mines.js.',
+    help: (v, registry) => `Lay order (after moving, instead of Wait): puts a hidden ${registry?.units?.[v.unit]?.name ?? v.unit} on any empty sea tile within ${v.range} tiles. Each mine uses one round of ammo; Resupply next to a shipyard buys more (${(registry?.units?.[v.unit]?.cost ?? 0).toLocaleString('en-US')} credits each).`,
+    doc: 'Config: { unit, range }. A `lay` order (after moving, ends the unit\'s turn) puts a new unit of type `unit` (which needs the `mine` attribute) on an empty tile within `range` tiles that its move class can enter, costing one round of the layer\'s ammo (so it needs the `ammo` attribute); a round is bought back at that unit\'s price (ammo.js roundCost). See mines.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "unit": "sea_mine", "range": 2 }');
       if (typeof v.unit !== 'string' || !v.unit) fail('unit must name a unit from units.json');
       if (!Number.isInteger(v.range) || v.range < 1) fail('range must be a positive whole number of tiles');
+      if (!e.attributes || !e.attributes.ammo) fail('requires the ammo attribute (each mine costs a round)');
     },
   },
   mine: {
@@ -111,12 +112,11 @@ export const UNIT_ATTRIBUTES = {
   },
   ammo: {
     label: (v) => `Ammo ${v.max}`,
-    help: (v) => `Carries up to ${v.max} rounds. When it is down to ${v.low} or fewer a bullet flashes on its tile, and at 0 the bullet stays red. It is refilled, for a price, by choosing Resupply (in place of Wait, and it ends the turn) next to a friendly property that resupplies it (an airfield, for aircraft).`,
-    doc: 'A limited supply. Config: { max, low, cost? } (`cost`: what replacing one round costs; a unit with `deploy` defaults to the price of the unit each round stands for, otherwise 0). The unit starts full (`unit.ammo`). Weapons with an `ammo` cost spend it per shot and cannot fire without enough; the `deploy` attribute spends it too. It is shown on the tile as a bullet: flashing when ammo <= `low` (and above 0), steady red at 0. It is refilled by a terrain with the `resupply` attribute: see ammo.js.',
+    help: (v) => `Carries up to ${v.max} rounds. When it is down to ${v.low} or fewer a bullet flashes on its tile, and at 0 the bullet stays red. It is refilled by choosing Resupply (free, except for rounds that are soldiers or mines) (in place of Wait, and it ends the turn) next to a friendly property that resupplies it (an airfield, for aircraft).`,
+    doc: 'A limited supply. Config: { max, low }. Refilling is free, except that a round standing for a unit (`deploy`, `layMines`) costs the price of that unit. The unit starts full (`unit.ammo`). Weapons with an `ammo` cost spend it per shot and cannot fire without enough; the `deploy` attribute spends it too. It is shown on the tile as a bullet: flashing when ammo <= `low` (and above 0), steady red at 0. It is refilled by a terrain with the `resupply` attribute: see ammo.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "max": 3, "low": 1 }');
       if (!Number.isInteger(v.max) || v.max < 1) fail('max must be a positive whole number');
-      if (v.cost !== undefined && (!Number.isInteger(v.cost) || v.cost < 0)) fail('cost (what one round costs to replace) must be a non-negative whole number');
       if (!Number.isInteger(v.low) || v.low < 0 || (Number.isInteger(v.max) && v.low >= v.max)) fail('low must be a whole number from 0 up to (not including) max');
     },
   },
@@ -211,6 +211,12 @@ export const TERRAIN_ATTRIBUTES = {
     help: 'Blocks direct fire passing over it, so units behind it cannot be hit from the far side.',
     doc: 'An obstacle: direct fire cannot pass over this tile. The number is its height (forest 1, mountain and buildings 2); a firer standing on a tile whose `vantage` is higher shoots over it. The tiles at either end of a shot never block it, and units never block.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
+  },
+  noEntry: {
+    label: 'Dock',
+    help: (v) => `${v.join(' and ')} units are built here but cannot move onto it. They are resupplied and repaired from the water next to it.`,
+    doc: 'A list of move classes that cannot move onto this tile (the shipyard: ships are built on it and sail away, but cannot come back onto it). The tile keeps a normal moveCost for those classes, so units can still be built there. A unit of such a class next to an owned property with this attribute is repaired at turn start like a unit standing on it (economy.js).',
+    check: (v, e, fail) => { if (!Array.isArray(v) || !v.length || v.some((c) => typeof c !== 'string' || !c)) fail('must be a non-empty array of move class names'); },
   },
   vantage: {
     label: 'High ground',

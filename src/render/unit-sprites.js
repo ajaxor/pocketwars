@@ -28,7 +28,7 @@ const ART = { SPRITES, SHADOWS };
  * @param {number} o.face      1 faces right (the way sprites are drawn), -1 mirrors the unit to face left
  * @param {boolean} o.onWater  the unit is on a water tile: a unit with render.waterSprite draws that instead (the marine's dinghy)
  * @param {null|'low'|'empty'} o.ammo  ammo warning bullet on the tile's bottom right (see drawAmmo): flashes when low, steady red when empty
- * @param {boolean} o.exposed  a hidden unit an enemy can see right now: its eye turns white (see detection.js isExposed)
+ * @param {boolean} o.exposed  a hidden unit an enemy can see right now: it loses its eye (see detection.js isExposed)
  * @param {boolean} o.hidden    the unit is hidden from other players (submerged, or any other hidden layer): an eye on its corner
  * @param {boolean} o.submerged a dived unit: its sprite draws itself low in the water (see the submarine in unit-art.js)
  */
@@ -42,7 +42,7 @@ export function drawUnit(g, unit, o) {
   drawOutlined(g, ART, onWater && def.render.waterSprite ? def.render.waterSprite : def.render.sprite, { s, c: colors.color, dk: colors.dark, alt: def.render.altitude || 0, w, ph, run, moving: !!moving, submerged, face },
     { r: Math.max(1, s * OUTLINE_THIN), color: colors.dark, tint: run ? null : DISABLED_TINT, alpha, skipBlack: true });
   g.restore();
-  if (hidden) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha, exposed);
+  if (hidden && !exposed) drawEye(g, px + s * .2, py + s * .2, s * .15, alpha);   // only a unit nobody can see wears the eye: once an enemy notices it the badge goes
   const dh = Math.ceil(unit.hp - 1e-9);
   const digit = showHp && dh < 10 && dh > 0;
   if (ammo === 'low' || ammo === 'empty') drawAmmo(g, px + s * .84, py + (digit ? s * .54 : s * .8), s, ammo, now, alpha);
@@ -75,13 +75,12 @@ export function drawAmmo(g, x, y, s, level, now, alpha = 1) {
 }
 
 /** The "hidden" marker: a white almond-shaped eye with a dark pupil on a dark round badge, centred on (x, y), r = badge radius. */
-function drawEye(g, x, y, r, alpha = 1, exposed = false) {
+function drawEye(g, x, y, r, alpha = 1) {
   g.save(); g.globalAlpha = alpha;
-  g.fillStyle = exposed ? '#fff' : 'rgba(16,24,40,.82)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();     // seen by the enemy: a white badge
-  if (exposed) { g.strokeStyle = 'rgba(16,24,40,.55)'; g.lineWidth = Math.max(1, r * .12); g.stroke(); }
-  g.fillStyle = exposed ? '#1b2740' : '#fff'; g.beginPath();
+  g.fillStyle = 'rgba(16,24,40,.82)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+  g.fillStyle = '#fff'; g.beginPath();
   g.moveTo(x - r * .72, y); g.quadraticCurveTo(x, y - r * .78, x + r * .72, y); g.quadraticCurveTo(x, y + r * .78, x - r * .72, y); g.closePath(); g.fill();
-  g.fillStyle = exposed ? '#5aa9e6' : '#2a6fd0'; g.beginPath(); g.arc(x, y, r * .3, 0, 7); g.fill();
+  g.fillStyle = '#2a6fd0'; g.beginPath(); g.arc(x, y, r * .3, 0, 7); g.fill();
   g.fillStyle = '#0b1320'; g.beginPath(); g.arc(x, y, r * .15, 0, 7); g.fill();
   g.restore();
 }

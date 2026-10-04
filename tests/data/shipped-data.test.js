@@ -37,7 +37,8 @@ test('every property terrain has a building drawing; decor names exist', () => {
 
 test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
-  assert.deepEqual(withAttr('capture'), ['conscript', 'marine', 'mech', 'motorcycle', 'rpg_trooper', 'sniper', 'soldier', 'spy']);
+  assert.deepEqual(withAttr('capture'), ['commando', 'conscript', 'diver', 'marine', 'mech', 'mechanic', 'medic', 'mortar', 'motorcycle', 'rpg_trooper', 'sniper', 'soldier', 'spy']);
+  for (const id of registry.unitIds) if (['infantry', 'amphibious'].includes(registry.unit(id).category)) assert.ok(hasAttribute(registry.unit(id), 'capture'), `${id}: all infantry capture`);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando', 'conscript']);
   assert.deepEqual(withAttr('indirect'), ['artillery', 'mortar', 'rocket_launcher', 'sniper']);
   assert.deepEqual(withAttr('submerge'), ['diver', 'missile_sub', 'submarine']);
@@ -47,7 +48,7 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(withAttr('ammo'), ['apc', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
+  assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);
   assert.deepEqual(withAttr('reloads'), ['sam_launcher']);

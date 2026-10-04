@@ -1,7 +1,7 @@
 // Turn income, repair, resupply and unit production, all driven by the terrain `property` attribute.
 
 import { healAtTurnStart } from './heal.js';
-import { propertiesOwnedBy, propertyAt, ownerAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
+import { inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -12,6 +12,21 @@ export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduc
  * (a unit built last turn is no longer `fresh`). Every property may build again. Units that rested then heal
  * (heal.js).
  */
+/** The property of `player` that repairs `unit` now: the one it stands on, or an owned dock (`noEntry` for its move class) right next to it. */
+function repairingProperty(game, unit, player) {
+  const here = propertyAt(game, unit.x, unit.y);
+  if (here && ownerAt(game, unit.x, unit.y) === player) return here;
+  const moveClass = unitDef(game, unit).moveClass;
+  for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    const x = unit.x + dx;
+    const y = unit.y + dy;
+    if (!inBounds(game.map, x, y)) continue;
+    const p = propertyAt(game, x, y);
+    if (p && ownerAt(game, x, y) === player && terrainAt(game, x, y).attributes.noEntry?.includes(moveClass)) return p;
+  }
+  return null;
+}
+
 export function startTurn(game, player) {
   const { state, registry } = game;
   const income = incomeFor(game, player);
@@ -26,8 +41,8 @@ export function startTurn(game, player) {
     delete u.fresh;
     delete u.deployed;
     delete u.carriedBy;
-    const property = propertyAt(game, u.x, u.y);
-    if (property && ownerAt(game, u.x, u.y) === player && u.hp < registry.rules.maxHp) {
+    const property = repairingProperty(game, u, player);
+    if (property && u.hp < registry.rules.maxHp) {
       const from = u.hp;
       u.hp = Math.min(registry.rules.maxHp, round1(u.hp + property.repair));
       if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });

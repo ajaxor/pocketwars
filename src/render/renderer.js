@@ -10,7 +10,7 @@
 //   showTargets: boolean
 //   pendingTargetId: number|null  enemy awaiting attack confirmation
 //   cursor: {x,y}|null            tile the player last tapped (outlined while nothing is selected)
-//   sonar: Set<number>|null       tiles covered by the selected unit's sonar (a cyan wash)
+//   sonar: Set<number>|null       tiles covered by the selected unit's sonar (drawn as a small sonar mark on each empty deep-water tile)
 //   layTiles: {x,y}[]|null        tiles a mine layer may drop its mine on (a pulsing outline)
 // }
 //
@@ -23,7 +23,8 @@ import { canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { isMine } from '../engine/mines.js';
-import { facingAlong, tileIndex, unitById } from '../engine/queries.js';
+import { hasAttribute } from '../engine/attributes.js';
+import { facingAlong, terrainAt, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { font } from './font.js';
 import { BUBBLE_COUNTER, BUBBLE_HIT, drawBubble } from './bubble.js';
@@ -242,18 +243,17 @@ export class Renderer {
       }
       g.fill();
     }
-    if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a cool wash over the water it listens to, with a ring at its edge
-      g.save(); g.fillStyle = 'rgba(70,200,255,.16)'; g.strokeStyle = `rgba(120,225,255,${.55 + .2 * Math.sin(now / 300)})`; g.lineWidth = 2.5; g.lineCap = 'square';
+    if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a small sonar mark on every empty stretch of deep water it listens to
+      g.save(); g.lineCap = 'round';
+      const pulse = .55 + .25 * Math.sin(now / 350);
       for (const k of view.sonar) {
         const x = k % map.width, y = Math.floor(k / map.width);
-        g.fillRect(x * S, y * S, S, S);
-        const l = x * S + 1, t = y * S + 1, r = l + S - 2, b = t + S - 2;
-        g.beginPath();
-        if (!view.sonar.has(tileIndex(map, x, y - 1)) || y === 0) { g.moveTo(l, t); g.lineTo(r, t); }
-        if (!view.sonar.has(tileIndex(map, x, y + 1)) || y === map.height - 1) { g.moveTo(l, b); g.lineTo(r, b); }
-        if (!view.sonar.has(tileIndex(map, x - 1, y)) || x === 0) { g.moveTo(l, t); g.lineTo(l, b); }
-        if (!view.sonar.has(tileIndex(map, x + 1, y)) || x === map.width - 1) { g.moveTo(r, t); g.lineTo(r, b); }
-        g.stroke();
+        if (!hasAttribute(terrainAt(this.game, x, y), 'submergible') || this.game.state.units.some((u) => u.x === x && u.y === y && this.isShown(u))) continue;
+        const cx = x * S + S / 2, cy = y * S + S / 2, u = S * .1;
+        g.strokeStyle = `rgba(150,235,255,${pulse})`; g.fillStyle = g.strokeStyle; g.lineWidth = Math.max(1.5, S * .035);
+        g.beginPath(); g.arc(cx, cy + u * .6, u * .55, 0, 7); g.fill();               // the source dot, with two sound arcs above it
+        g.beginPath(); g.arc(cx, cy + u * .6, u * 1.7, Math.PI * 1.2, Math.PI * 1.8); g.stroke();
+        g.beginPath(); g.arc(cx, cy + u * .6, u * 2.9, Math.PI * 1.2, Math.PI * 1.8); g.stroke();
       }
       g.restore();
     }

@@ -81,14 +81,15 @@ test('motorcycle: fast on open ground and roads, nearly stuck in forest and roug
 
 const strikeOf = (g, to, targetN = 1) => g.act({ unitId: g.state.units[0].id, to, action: { type: 'attack', targetId: g.state.units[targetN].id } }).events.find((e) => e.type === 'strike' && !e.counter).damage;
 
-test('motorcycle: half damage when it moved before firing, full damage when it stayed put', () => {
+test('motorcycle: no penalty for moving first, and a harder hit than a rifle', () => {
   const still = strikeOf(game(['.....', '.....', 'H...h'], [['motorcycle', 0, 2, 0], ['soldier', 1, 3, 0]]), { x: 2, y: 0 });
   const moved = strikeOf(game(['.....', '.....', 'H...h'], [['motorcycle', 0, 1, 0], ['soldier', 1, 3, 0]]), { x: 2, y: 0 });
-  assert.ok(still > 0 && moved > 0);
-  assert.ok(moved < still && Math.abs(2 * moved - still) <= 1, `${moved} against ${still}: about half`);
+  assert.equal(moved, still);
+  const rifle = strikeOf(game(['.....', '.....', 'H...h'], [['soldier', 0, 2, 0], ['soldier', 1, 3, 0]]), { x: 2, y: 0 });
+  assert.ok(still > rifle, `${still} against a soldier's ${rifle}`);
 });
 
-test('motorcycle: the forecast agrees, and a counterattack is never halved', () => {
+test('motorcycle: the forecast agrees, and a counterattack is the same either way', () => {
   const g = game(['.....', '.....', 'H...h'], [['motorcycle', 0, 1, 0], ['soldier', 1, 3, 0]]);
   const [bike, soldier] = g.state.units;
   assert.equal(forecastAttack(g, bike, soldier, { x: 2, y: 0 }).damage, calcDamage(g, bike, soldier, { x: 2, y: 0 }));

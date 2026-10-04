@@ -33,7 +33,7 @@ export function describeEvents(game, events) {
       const n = ev.supplied.length, cost = ev.supplied.reduce((a, s) => a + s.cost, 0);
       text = `${name(ev.unit)} supplies ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');
     } else if (ev.type === 'lay') {
-      text = `${name(ev.unit)} lays a mine for ${ev.cost.toLocaleString('en-US')}`;
+      text = `${name(ev.unit)} lays a mine`;
     } else if (ev.type === 'heal') {
       const n = ev.healed.length, cost = ev.healed.reduce((a, h) => a + h.cost, 0);
       text = `${name(ev.unit)} heals ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');

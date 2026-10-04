@@ -1,7 +1,8 @@
 // Hidden units and who can see them.
 //
 // A layer marked `hidden` in rules.json (the one a submerged unit is on) is invisible to every player except its owner, with two
-// exceptions: any unit standing NEXT to it notices it, and a unit with the `sonar` attribute notices it up to that many tiles away.
+// exceptions: any unit standing NEXT to it notices it, and a unit with the `sonar` attribute notices it up to that many tiles away (a sea mine
+// is the exception to the exception: only a unit next to it finds it).
 // A unit with the `cloak: true` attribute is hidden the same way wherever it is (`cloak: { terrain }`: only on that terrain; a unit that fired is revealed for a turn) (it keeps its own layer, so what can shoot it does not
 // change), and is noticed by an adjacent unit or by a `radar` in range. Sonar finds submerged units, radar finds cloaked ones.
 // "Invisible" means three things, all enforced here and in the modules that call canSee:
@@ -14,7 +15,7 @@
 // Sight is a property of the current state. There is no memory: a hidden unit that stops being noticed is hidden again.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
-import { distance, inBounds, layerIdOf, tileIndex, unitDef } from './queries.js';
+import { distance, inBounds, layerIdOf, ownerAt, tileIndex, unitDef } from './queries.js';
 
 /** Does a unit lift its cloak when it fires (`cloak: { revealedByFiring }`)? */
 export const revealsWhenFiring = (game, unit) => attributeConfig(unitDef(game, unit), 'cloak')?.revealedByFiring === true;
@@ -26,11 +27,14 @@ export const ADJACENT = 1;
 export const isSubmerged = (game, unit) => game.registry.rules.layers[layerIdOf(game, unit)].hidden === true;
 /**
  * Is `unit` cloaked right now? `cloak: true` always; `cloak: { terrain }` only on those terrains; a unit that fired and has
- * `revealedByFiring` is not (`unit.revealed`, cleared when its owner's next turn starts).
+ * `revealedByFiring` is not (`unit.revealed`, cleared when its owner's next turn starts). Nothing hides on an enemy's building: a spy or
+ * stealth unit standing on a property another player owns is in plain sight.
  */
 export function isCloaked(game, unit) {
   const cfg = attributeConfig(unitDef(game, unit), 'cloak');
   if (!cfg || unit.revealed) return false;
+  const owner = ownerAt(game, unit.x, unit.y);
+  if (owner !== null && owner !== undefined && owner !== unit.owner) return false;
   return cfg === true || cfg.terrain.includes(game.map.terrain[unit.y][unit.x]);
 }
 /** Is `unit` hidden (submerged or cloaked)? Says nothing about who can see it: see canSee. */
@@ -41,7 +45,7 @@ const notices = (game, observer, unit) => {
   const d = distance(observer.x, observer.y, unit.x, unit.y);
   if (d <= ADJACENT) return true;
   const def = unitDef(game, observer);
-  const sonar = isSubmerged(game, unit) ? attributeConfig(def, 'sonar') : undefined;
+  const sonar = isSubmerged(game, unit) && !hasAttribute(unitDef(game, unit), 'mine') ? attributeConfig(def, 'sonar') : undefined;   // sonar hears ships, not mines
   const radar = isCloaked(game, unit) ? attributeConfig(def, 'radar') : undefined;
   return (sonar !== undefined && d <= sonar) || (radar !== undefined && d <= radar);
 };
@@ -69,11 +73,11 @@ export function hiddenFrom(game, player) {
 
 /**
  * The tiles a unit's sonar covers from (x, y): every tile within its `sonar` range except its own, as a Set of tile indexes. null when the
- * unit has no sonar. The board draws it as an overlay while such a unit is selected.
+ * unit has no sonar, or only the 1 tile every unit senses. The board draws it as an overlay while such a unit is selected.
  */
 export function sonarTiles(game, unit, x = unit.x, y = unit.y) {
   const range = attributeConfig(unitDef(game, unit), 'sonar');
-  if (range === undefined) return null;
+  if (range === undefined || range <= ADJACENT) return null;   // sensing only the next tile is what every unit does anyway: nothing to show
   const out = new Set();
   for (let dy = -range; dy <= range; dy++) {
     for (let dx = -range; dx <= range; dx++) {

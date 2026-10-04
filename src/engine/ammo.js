@@ -8,10 +8,9 @@
 // WHEN A UNIT IS RESUPPLIED. Only when it ends an order with the Resupply action (game.js act; offered in place of Wait when it is short
 // on ammo and next to such a property). Resupply is an order like Wait: it ends the unit's turn. Nothing is refilled automatically.
 //
-// RESUPPLY COSTS MONEY, like building the rounds: `resupplyCost` is the missing rounds times the price of a round, which is the unit's
-// `ammo.cost` or, for a carrier, the price of the unit each round stands for (a transport copter pays for the soldiers it takes on).
-// The owner pays it from their funds; without enough, nothing is refilled (the UI says "Not enough credits" and the order is a Wait).
-// A cost of 0 (the default for units that carry plain ammunition) is free.
+// RESUPPLY IS FREE, except for rounds that stand for a unit: `resupplyCost` is the missing rounds times the price of a round, which is 0 for plain
+// ammunition and, for a carrier, the price of the unit each round stands for (a transport copter pays for the soldiers it takes on, a mine layer
+// for its mines). The owner pays it from their funds; without enough, nothing is refilled (the order is a Wait).
 //
 // A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say.
 
@@ -45,13 +44,17 @@ export function ammoLevel(game, unit) {
   return n <= 0 ? 'empty' : n <= cfg.low ? 'low' : 'ok';
 }
 
-/** What one round of `unit`'s ammo costs to replace: its `ammo.cost`, else the price of the unit each round of a carrier stands for, else 0. */
+/**
+ * What one round of `unit`'s ammo costs to replace. Plain ammunition is free. Only a round that stands for a unit costs money: the price of the
+ * unit a carrier deploys (a transport copter's soldiers) or that a mine layer lays (its mines).
+ */
 export function roundCost(game, unit) {
-  const cfg = ammoConfig(game, unit);
-  if (!cfg) return 0;
-  if (cfg.cost != null) return cfg.cost;
-  const drop = attributeConfig(unitDef(game, unit), 'deploy');
-  return drop ? Math.round(game.registry.unit(drop.unit).cost / (drop.ammo ?? 1)) : 0;
+  const def = unitDef(game, unit);
+  if (!ammoConfigOf(def)) return 0;
+  const drop = attributeConfig(def, 'deploy');
+  if (drop) return Math.round(game.registry.unit(drop.unit).cost / (drop.ammo ?? 1));
+  const lay = attributeConfig(def, 'layMines');
+  return lay ? game.registry.unit(lay.unit).cost : 0;
 }
 /** The price of filling `unit` up from where it is. */
 export const resupplyCost = (game, unit) => (usesAmmo(game, unit) ? Math.max(0, ammoConfig(game, unit).max - ammoOf(game, unit)) * roundCost(game, unit) : 0);

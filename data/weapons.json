@@ -1,5 +1,6 @@
 {
   "rifle":         { "name": "Rifle",         "damage": 45,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air"] },
+  "bike_rifle":    { "name": "Bike rifle",    "damage": 60,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "marine_rifle":  { "name": "Marine rifle", "damage": 50, "armorPiercing": 0, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "commando_rifle": { "name": "Commando rifle", "damage": 60, "armorPiercing": 0, "range": [1, 1], "targets": ["direct_ground", "low_air"] },
   "bazooka":       { "name": "Bazooka",       "damage": 70,  "armorPiercing": 1,   "range": [1, 1], "targets": ["direct_ground"] },

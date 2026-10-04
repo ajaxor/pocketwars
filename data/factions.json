@@ -1,8 +1,8 @@
 {
   "ashmark": {
     "name": "Ashmark",
-    "color": "#8b5a2b",
-    "dark": "#4e2f12"
+    "color": "#d1a21d",
+    "dark": "#8a6a0a"
   },
   "vantor_reach": {
     "name": "Vantor Reach",
@@ -16,8 +16,8 @@
   },
   "solace": {
     "name": "Solace",
-    "color": "#f4f4f0",
-    "dark": "#a9adb5"
+    "color": "#b9bdc4",
+    "dark": "#6d727c"
   },
   "tidehaven": {
     "name": "Tidehaven",

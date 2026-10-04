@@ -13,8 +13,8 @@
 // knowing anything about drawing.
 //
 // BUILDING AND THE FREE MOVE. A unit is built on the property itself and is ready at once, but `fresh` (see state.js): its one order
-// can only be a move followed by Wait ('just-built' otherwise), so it drives off the factory (swims off the shipyard, flies off the
-// airfield) without attacking, capturing or diving. A property builds one unit per turn (economy.js).
+// can only be a move followed by Wait or, for a submarine, Submerge ('just-built' otherwise), so it drives off the factory (swims off the
+// shipyard, flies off the airfield) without attacking or capturing. A property builds one unit per turn (economy.js).
 //
 // RESUPPLY. A unit with ammo that is short, and ends an order next to a friendly property that resupplies it, can Resupply instead of
 // Wait (the 'resupply' action; the UI offers it in place of Wait). It is refilled for a price (ammo.js) and its turn ends like any order.
@@ -77,7 +77,7 @@ export class Game {
     const moved = hasMovedAlready(unit) || to.x !== unit.x || to.y !== unit.y;
     const action = order.action || { type: 'wait' };
     if (unit.carriedBy && !moved) return fail('tile-occupied');   // a unit that was just deployed shares its carrier's tile and has to leave it
-    if (unit.fresh && action.type !== 'wait') return fail('just-built');   // a freshly built unit only gets its free move
+    if (unit.fresh && action.type !== 'wait' && action.type !== 'submerge') return fail('just-built');   // a freshly built unit only gets its free move (and may dive at the end of it)
     if (action.type === 'wait') return { ok: true, unit, reach };
     if (action.type === 'capture') {
       return canCapture(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-capture');
@@ -204,7 +204,6 @@ export class Game {
     if (!unit) return fail('no-such-unit');
     if (unit.owner !== this.state.turn) return fail('not-your-turn');
     if (unit.done) return fail('unit-already-acted');
-    if (unit.fresh) return fail('just-built');
     if (unit.halted) return fail('unit-already-moved');
     if (submerged ? !canSubmergeAt(this, unit) : !canSurface(this, unit)) return fail(submerged ? 'cannot-submerge' : 'cannot-surface');
     this.undoSnapshot = this.controllerOf(this.state.turn) === 'human' ? snapshotState(this.state) : null;

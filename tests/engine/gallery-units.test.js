@@ -9,7 +9,7 @@ import { parseMap } from '../../src/data/map-format.js';
 import { rawMap } from '../helpers/fixtures.js';
 import { Game } from '../../src/engine/game.js';
 import { computeReach } from '../../src/engine/movement.js';
-import { canResupplyAt, ammoOf } from '../../src/engine/ammo.js';
+import { canResupplyAt, ammoOf, resupplyCost } from '../../src/engine/ammo.js';
 import { canSee, sonarTiles } from '../../src/engine/detection.js';
 import { canTarget, calcDamage } from '../../src/engine/combat.js';
 import { canDeploy, deployReach } from '../../src/engine/deploy.js';
@@ -152,7 +152,7 @@ test('sonarTiles covers the tiles within the sonar range of a unit with sonar an
 
 const harbour = (extra = []) => world(['H~~~~~~~~~~h', '.o~~~~~~~~..'], [['mine_layer', 0, 4, 0], ['recon', 1, 11, 1], ...extra]);
 
-test('a mine layer lays a mine on any free sea tile within 2, paying for it', () => {
+test('a mine layer lays a mine on any free sea tile within 2, using a round of ammo', () => {
   const g = harbour();
   const layer = first(g, 'mine_layer');
   const tiles = layTiles(g, layer);
@@ -161,7 +161,8 @@ test('a mine layer lays a mine on any free sea tile within 2, paying for it', ()
   assert.ok(!tiles.some((t) => t.x === 1 && t.y === 1), 'shoals are not sea');
   const before = g.state.funds[0];
   assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 6, y: 0 } } }).ok, true);
-  assert.equal(g.state.funds[0], before - registry.unit('sea_mine').cost);
+  assert.equal(g.state.funds[0], before, 'laying costs no money');
+  assert.equal(layer.ammo, registry.unit('mine_layer').attributes.ammo.max - 1);
   const mine = unitAt(g, 6, 0);
   assert.equal(mine.type, 'sea_mine');
   assert.equal(mine.owner, 0);
@@ -170,15 +171,15 @@ test('a mine layer lays a mine on any free sea tile within 2, paying for it', ()
   assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 5, y: 0 } } }).error, 'unit-already-acted');
 });
 
-test('a mine cannot be laid on land, on a unit, out of range, or without the money', () => {
+test('a mine cannot be laid on land, on a unit, out of range, or without mines left', () => {
   const g = harbour([['destroyer', 0, 5, 0]]);
   const layer = first(g, 'mine_layer');
   const lay = (at) => g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at } }).error;
   assert.equal(lay({ x: 5, y: 0 }), 'bad-lay-tile', 'a unit is there');
   assert.equal(lay({ x: 10, y: 0 }), 'bad-lay-tile', 'out of range');
   assert.equal(lay({ x: 4, y: 0 }), 'bad-lay-tile', 'not its own tile');
-  g.state.funds[0] = 100;
-  assert.equal(lay({ x: 6, y: 0 }), 'not-enough-funds');
+  layer.ammo = 0;
+  assert.equal(lay({ x: 6, y: 0 }), 'out-of-mines');
 });
 
 test('a mine is hidden from the enemy until one of their units is next to it, and survives the owner\'s next turn start unspent', () => {
@@ -277,7 +278,7 @@ test('the mine layer\'s own side pass through its mines but cannot stop on them'
 
 // ---- supply and reload -------------------------------------------------------------------------------------------------------
 
-test('a supply truck refills the ammo of friends next to it for the usual price, and nobody else', () => {
+test('a supply truck refills the ammo of friends next to it for free, and nobody else', () => {
   const g = world(['H.....h'], [['supply_truck', 0, 2, 0], ['rocket_buggy', 0, 3, 0], ['rocket_buggy', 1, 6, 0], ['tank', 0, 1, 0]]);
   const truck = first(g, 'supply_truck');
   const buggy = first(g, 'rocket_buggy');
@@ -288,7 +289,7 @@ test('a supply truck refills the ammo of friends next to it for the usual price,
   const res = g.act({ unitId: truck.id, to: { x: 2, y: 0 }, action: { type: 'supply' } });
   assert.equal(res.ok, true);
   assert.equal(buggy.ammo, registry.unit('rocket_buggy').attributes.ammo.max);
-  assert.equal(before - g.state.funds[0], 3 * registry.unit('rocket_buggy').attributes.ammo.cost);
+  assert.equal(before, g.state.funds[0], 'plain ammunition costs nothing');
   assert.equal(enemy.ammo, 0, 'an enemy is not supplied');
   assert.equal(truck.done, true);
 });
@@ -376,4 +377,15 @@ test('the dreadnought has a weak weapon for close range, and nothing against air
   const [main, side] = dread.weapons.map((w) => registry.weapon(w));
   assert.ok(main.range[0] >= 2 && side.range[0] === 1 && side.damage < main.damage);
   assert.equal(main.indirect, true);
+});
+
+test('a mine layer pays for the mines it takes on at a shipyard, and plain ammunition is free', () => {
+  const g = world(['H~~~~~~~~~~h', '.Y~~~~~~~~..'], [['mine_layer', 0, 2, 1], ['recon', 1, 11, 1]]);
+  const layer = first(g, 'mine_layer');
+  layer.ammo = 0;
+  const before = g.state.funds[0];
+  assert.equal(resupplyCost(g, layer), 3 * registry.unit('sea_mine').cost);
+  assert.equal(g.act({ unitId: layer.id, to: { x: 2, y: 1 }, action: { type: 'resupply' } }).ok, true);
+  assert.equal(layer.ammo, 3);
+  assert.equal(before - g.state.funds[0], 3 * registry.unit('sea_mine').cost);
 });
