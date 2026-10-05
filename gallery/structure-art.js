@@ -141,7 +141,7 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
   const col = { body: '#646b78', hole: '#16181c', out: '#1f2228' };           // a cracked pipe is the same colour as a sound one
-  const dark = shade('#646b78', -.14), SHD = .13;                               // the shaded side's colour; how far the lit part is shifted up and left: the width of the shade
+  const dark = shade('#646b78', -.14), SHD = .13, SHADOW = [.1, .17];                               // the shaded side's colour; how far the lit part is shifted up and left: the width of the shade
   const OW = .03, RC = .13, FR = .08;                                           // the dark outline's width; the radius of rounded corners; of the fillets in inner corners
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
@@ -153,16 +153,6 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   if (!straightH && !straightV) { cracked = false; broken = false; }              // cracks and breaks exist only on straight pieces: a corner, junction or end is always whole
   const riser = !straightH && !straightV && !endH && !endN && !endS;          // corners, branches and a lone wall: an upright pipe
   const dir = e ? 1 : -1, pv = dir > 0 ? .62 : .38;                            // an elbow's pivot on the ground
-  // shadows: below the lying pipes and to the right of the upright ones
-  g.fillStyle = 'rgba(0,0,0,.2)';
-  if (broken && straightH) { g.fillRect(X(0), Y(GY), .18 * S, .05 * S); g.fillRect(X(.82), Y(GY), .18 * S, .05 * S); }   // a destroyed pipe shades only its two halves, not the gap
-  else if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
-  if (broken && straightV) { g.fillRect(X(CX + R), Y(0), .06 * S, .16 * S); g.fillRect(X(CX + R), Y(.84), .06 * S, .16 * S); }
-  else if (n || s) {                                                            // beside an upright pipe, stopping short of its rounded ends
-    const y0 = n ? 0 : CY - .1 + .2, y1 = s ? 1 : GY - .2;
-    g.fillRect(X(CX + R), Y(y0), .06 * S, (y1 - y0) * S);
-  }
-  if (lone) ell(CX + .07, GY + .02, R + .1, .07, 'rgba(0,0,0,.2)');
   // The pipe is drawn three times: first every part grown by the outline width (`gr`) in the outline colour (pass 0), then every part in the shaded
   // colour (pass 1), then every part again in the body colour, shifted up and left by SHD and clipped to the pipe's own shape (pass 2). What the
   // shifted copy no longer covers is a crescent along every lower and right edge, which curves round every bend and corner by itself: light from the
@@ -227,14 +217,19 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
       if (s && w) fillet(CX - R, GY, -1, 1);
     }
   };
-  paint(0); paint(1);
-  // the pipe's whole silhouette as one path (the real context gathers it: shapes are added, not filled), then the lit copy drawn inside it
+  // the pipe's whole silhouette as one path (the real context gathers it: shapes are added, not filled)
   const real = g;
   const rec = {
     set fillStyle(_v) {}, beginPath() {}, fill() {}, closePath: () => real.closePath(), moveTo: (x, y) => real.moveTo(x, y), lineTo: (x, y) => real.lineTo(x, y),
     arc: (...a) => real.arc(...a), roundRect: (...a) => real.roundRect(...a), fillRect: (x, y, w2, h) => real.rect(x, y, w2, h),
     ellipse: (x, y, rx, ry, rot, a0, a1) => { real.moveTo(x + rx * Math.cos(a0), y + ry * Math.sin(a0)); real.ellipse(x, y, rx, ry, rot, a0, a1); },
   };
+  // the drop shadow: the whole pipe pushed down and to the right (out over the neighbouring tiles; walls are drawn row by row from the top, so a neighbour's pipe
+  // is drawn over it), before anything else
+  real.save(); real.translate(SHADOW[0] * S, SHADOW[1] * S); real.beginPath(); g = rec; paint(1); g = real;
+  real.fillStyle = 'rgba(0,0,0,.3)'; real.fill();
+  real.restore();
+  paint(0); paint(1);
   real.save(); real.beginPath(); g = rec; paint(1); g = real; real.clip();
   real.translate(-SHD * S, -SHD * S); paint(2);
   real.translate(SHD * S, SHD * S);
