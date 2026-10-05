@@ -8,7 +8,7 @@ import { Game } from '../../src/engine/game.js';
 import { canSee } from '../../src/engine/detection.js';
 import { fogActive, isFogged, rememberedStructures, tileExplored, tileVisible, visionOf } from '../../src/engine/fog.js';
 import { computeReach } from '../../src/engine/movement.js';
-import { chooseOrder } from '../../src/engine/ai.js';
+import { chooseOrder } from '../../src/ai/greedy.js';
 import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);

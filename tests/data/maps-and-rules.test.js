@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../../src/data/loader.js';
 import { Game } from '../../src/engine/game.js';
-import { playTurn } from '../../src/engine/ai.js';
+import { playTurn } from '../../src/ai/runner.js';
 import { allProperties, tileIndex } from '../../src/engine/queries.js';
 import { distanceField } from '../../src/engine/movement.js';
 import { parseMap, serializeMap } from '../../src/data/map-format.js';

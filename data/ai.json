@@ -1,79 +1,238 @@
 {
-  "weights": {
-    "distanceToGoal": 2,
-    "unreachableDistance": 60,
-    "terrainDefense": 0.4,
-    "attackBase": 60,
-    "killBonus": 4,
-    "captureBase": 50,
-    "victoryCaptureBonus": 100,
-    "costUnit": 1000,
-    "blockCapture": 6,
-    "crowFlies": 0.1,
-    "deployRange": 8,
-    "healValue": 2,
-    "maxMines": 4,
-    "breakWall": 12
-  },
-  "build": {
-    "infantry": [
-      { "unit": "mech",    "max": 2 },
-      { "unit": "commando", "max": 2 },
-      { "unit": "sniper",  "max": 1 },
-      { "unit": "mortar",  "max": 1 },
-      { "unit": "medic",   "max": 1 },
-      { "unit": "mechanic", "max": 1 },
-      { "unit": "spy",     "max": 1 },
-      { "unit": "rpg_trooper", "max": 1 },
-      { "unit": "diver",   "max": 1, "when": "enemyHasNaval" },
-      { "unit": "motorcycle", "max": 2 },
-      { "unit": "soldier", "max": 5 },
-      { "unit": "conscript", "max": 4 }
-    ],
-    "aircraft": [
-      { "unit": "stealth_bomber", "max": 1 },
-      { "unit": "bomber",  "max": 1 },
-      { "unit": "stealth_fighter", "max": 1 },
-      { "unit": "stealth_copter", "max": 1 },
-      { "unit": "fighter", "max": 1 },
-      { "unit": "vintage_bomber", "max": 2 },
-      { "unit": "vintage_fighter", "max": 2 },
-      { "unit": "copter",  "max": 2 },
-      { "unit": "torpedo_bomber", "max": 1, "when": "enemyHasNaval" },
-      { "unit": "radar_plane", "max": 1 },
-      { "unit": "transport_copter", "max": 1 }
-    ],
-    "amphibious": [
-      { "unit": "marine",  "max": 2 }
-    ],
-    "naval": [
-      { "unit": "dreadnought", "max": 1 },
-      { "unit": "hunter_sub", "max": 2, "when": "enemyHasSub" },
-      { "unit": "missile_sub", "max": 1 },
-      { "unit": "mine_layer", "max": 1 },
-      { "unit": "gun_boat",   "max": 2 },
-      { "unit": "cruiser",    "max": 2, "when": "enemyHasAirborne" },
-      { "unit": "destroyer",  "max": 2 },
-      { "unit": "submarine",  "max": 2 },
-      { "unit": "cruiser",    "max": 1 },
-      { "unit": "battleship", "max": 1 },
-      { "unit": "aircraft_carrier", "max": 1 },
-      { "unit": "troop_transport", "max": 1 }
-    ],
-    "vehicle": [
-      { "unit": "sam_launcher", "max": 2, "when": "enemyHasAirborne" },
-      { "unit": "flak",       "max": 2, "when": "enemyHasAirborne" },
-      { "unit": "hover_tank", "max": 2 },
-      { "unit": "amphibious_tank", "max": 2 },
-      { "unit": "heavy_tank", "max": 2 },
-      { "unit": "tank",       "max": 3 },
-      { "unit": "rocket_buggy", "max": 2 },
-      { "unit": "artillery",  "max": 2 },
-      { "unit": "stealth_tank", "max": 1 },
-      { "unit": "rocket_launcher", "max": 1 },
-      { "unit": "apc", "max": 1 },
-      { "unit": "supply_truck", "max": 1 },
-      { "unit": "recon",      "max": 1 }
-    ]
+  "default": "greedy",
+  "engines": {
+    "greedy": {
+      "weights": {
+        "distanceToGoal": 2,
+        "unreachableDistance": 60,
+        "terrainDefense": 0.4,
+        "attackBase": 60,
+        "killBonus": 4,
+        "captureBase": 50,
+        "victoryCaptureBonus": 100,
+        "costUnit": 1000,
+        "blockCapture": 6,
+        "crowFlies": 0.1,
+        "deployRange": 8,
+        "healValue": 2,
+        "maxMines": 4,
+        "breakWall": 12
+      },
+      "build": {
+        "infantry": [
+          {
+            "unit": "mech",
+            "max": 2
+          },
+          {
+            "unit": "commando",
+            "max": 2
+          },
+          {
+            "unit": "sniper",
+            "max": 1
+          },
+          {
+            "unit": "mortar",
+            "max": 1
+          },
+          {
+            "unit": "medic",
+            "max": 1
+          },
+          {
+            "unit": "mechanic",
+            "max": 1
+          },
+          {
+            "unit": "spy",
+            "max": 1
+          },
+          {
+            "unit": "rpg_trooper",
+            "max": 1
+          },
+          {
+            "unit": "diver",
+            "max": 1,
+            "when": "enemyHasNaval"
+          },
+          {
+            "unit": "motorcycle",
+            "max": 2
+          },
+          {
+            "unit": "soldier",
+            "max": 5
+          },
+          {
+            "unit": "conscript",
+            "max": 4
+          }
+        ],
+        "aircraft": [
+          {
+            "unit": "stealth_bomber",
+            "max": 1
+          },
+          {
+            "unit": "bomber",
+            "max": 1
+          },
+          {
+            "unit": "stealth_fighter",
+            "max": 1
+          },
+          {
+            "unit": "stealth_copter",
+            "max": 1
+          },
+          {
+            "unit": "fighter",
+            "max": 1
+          },
+          {
+            "unit": "vintage_bomber",
+            "max": 2
+          },
+          {
+            "unit": "vintage_fighter",
+            "max": 2
+          },
+          {
+            "unit": "copter",
+            "max": 2
+          },
+          {
+            "unit": "torpedo_bomber",
+            "max": 1,
+            "when": "enemyHasNaval"
+          },
+          {
+            "unit": "radar_plane",
+            "max": 1
+          },
+          {
+            "unit": "transport_copter",
+            "max": 1
+          }
+        ],
+        "amphibious": [
+          {
+            "unit": "marine",
+            "max": 2
+          }
+        ],
+        "naval": [
+          {
+            "unit": "dreadnought",
+            "max": 1
+          },
+          {
+            "unit": "hunter_sub",
+            "max": 2,
+            "when": "enemyHasSub"
+          },
+          {
+            "unit": "missile_sub",
+            "max": 1
+          },
+          {
+            "unit": "mine_layer",
+            "max": 1
+          },
+          {
+            "unit": "gun_boat",
+            "max": 2
+          },
+          {
+            "unit": "cruiser",
+            "max": 2,
+            "when": "enemyHasAirborne"
+          },
+          {
+            "unit": "destroyer",
+            "max": 2
+          },
+          {
+            "unit": "submarine",
+            "max": 2
+          },
+          {
+            "unit": "cruiser",
+            "max": 1
+          },
+          {
+            "unit": "battleship",
+            "max": 1
+          },
+          {
+            "unit": "aircraft_carrier",
+            "max": 1
+          },
+          {
+            "unit": "troop_transport",
+            "max": 1
+          }
+        ],
+        "vehicle": [
+          {
+            "unit": "sam_launcher",
+            "max": 2,
+            "when": "enemyHasAirborne"
+          },
+          {
+            "unit": "flak",
+            "max": 2,
+            "when": "enemyHasAirborne"
+          },
+          {
+            "unit": "hover_tank",
+            "max": 2
+          },
+          {
+            "unit": "amphibious_tank",
+            "max": 2
+          },
+          {
+            "unit": "heavy_tank",
+            "max": 2
+          },
+          {
+            "unit": "tank",
+            "max": 3
+          },
+          {
+            "unit": "rocket_buggy",
+            "max": 2
+          },
+          {
+            "unit": "artillery",
+            "max": 2
+          },
+          {
+            "unit": "stealth_tank",
+            "max": 1
+          },
+          {
+            "unit": "rocket_launcher",
+            "max": 1
+          },
+          {
+            "unit": "apc",
+            "max": 1
+          },
+          {
+            "unit": "supply_truck",
+            "max": 1
+          },
+          {
+            "unit": "recon",
+            "max": 1
+          }
+        ]
+      }
+    },
+    "strategist": {}
   }
 }

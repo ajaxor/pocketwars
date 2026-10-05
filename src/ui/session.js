@@ -1,7 +1,8 @@
 // Session: owns one running game (Game + Renderer + HUD + Controller) and drives the frame loop,
 // the End-turn button and the AI's turns with their pacing delays.
 
-import { buildPhase, chooseOrder, surfaceToTravel, tryDeploy, wantsOrder } from '../engine/ai.js';
+import { isStructure } from '../engine/structures.js';
+import { applyStep, startTurn } from '../ai/runner.js';
 import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
 import { isFogged, tileVisible } from '../engine/fog.js';
@@ -316,7 +317,7 @@ export class Session {
     const { game, hud } = this;
     if (game.isOver || this.busy || this.effects.isLocked(this.#now())) return;
     // Units that have not acted yet: the first press shows one and asks; a second press ends the turn anyway.
-    const idle = this.#humanTurn() ? game.state.units.filter((u) => u.owner === game.currentPlayer && !u.done && wantsOrder(game, u)) : [];   // turrets and jammers take no orders
+    const idle = this.#humanTurn() ? game.state.units.filter((u) => u.owner === game.currentPlayer && !u.done && !isStructure(game, u)) : [];   // turrets and jammers take no orders
     if (idle.length && !this.endArmed) {
       this.endArmed = true;
       this.controller.cancelAll();
@@ -383,68 +384,59 @@ export class Session {
     });
   }
 
+  /** The computer's turn: its engine (src/ai/engines.js) hands out steps one at a time, and each is shown before the next is asked for. */
   async #playAiTurn() {
     const { game } = this;
-    const player = game.currentPlayer;
-    for (const unit of game.state.units.filter((u) => u.owner === player)) {
+    const turn = startTurn(game);
+    let result;
+    for (let step = turn.next(); step; step = turn.next(result)) {
       if (game.isOver || this.disposed) return;
-      if (!game.state.units.includes(unit) || !wantsOrder(game, unit)) continue;   // turrets fire by themselves at the end of the turn
-      await this.#playAiUnit(unit);
-      const drop = tryDeploy(game, unit);   // a carrier drops its troops after its own move; they are then ordered like any unit
-      if (drop) {
-        const viewer = this.#viewer();
-        const events = this.#visibleTo(viewer, drop.events, canSee(game, viewer, unit));
-        this.presenter.present(events, { now: this.#now() });
-        this.#handleEvents(drop.events);
-        await this.#playAiUnit(drop.dropped);
-      }
-    }
-    if (game.isOver || this.disposed) return;
-    buildPhase(game);
-    // the units just built use their free move (they come out of the factory and drive off it)
-    for (const unit of game.state.units.filter((u) => u.owner === player && u.fresh)) {
-      if (game.isOver || this.disposed) return;
-      await this.#playAiUnit(unit);
+      result = await this.#playAiStep(step);
     }
   }
 
-  async #playAiUnit(unit) {
+  async #playAiStep(step) {
     const { game, hud, animator, effects, presenter } = this;
     const viewer = this.#viewer();
     animator.arrow = null;
-    let shown = false;   // did the human get to see this unit act?
-    if (!unit.fresh) {   // a submarine that is not threatened comes up to travel at the surface speed
-      const wasVisible = canSee(game, viewer, unit);
-      const up = surfaceToTravel(game, unit);
-      if (up.length) { presenter.present(this.#visibleTo(viewer, up, wasVisible), { now: this.#now() }); shown = wasVisible; }
+    if (step.type === 'build') return applyStep(game, step);   // the new unit simply appears; its free move is shown like any order
+    if (step.type === 'surface') {   // a submarine that is not threatened comes up to travel at the surface speed
+      const wasVisible = canSee(game, viewer, unitById(game, step.unitId));
+      const res = applyStep(game, step);
+      presenter.present(this.#visibleTo(viewer, res.events, wasVisible), { now: this.#now() });
+      return res;
     }
-    // An order can be cut short by a hidden unit; the unit then gets another order.
-    for (let step = 0; step < 2 && game.state.units.includes(unit) && !unit.done; step++) {
-      const order = chooseOrder(game, unit);
-      // on a map bigger than the screen, bring the unit, where it is going and what it shoots at into view first
-      // (not for a submarine the human cannot see: the camera would point at it)
-      const visible = canSee(game, viewer, unit);
-      const target = order.action.targetId ? unitById(game, order.action.targetId) : null;
-      if (visible) {
-        // only what the human can see: the camera never pans into the fog of war after a unit
-        const points = [[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])].filter(([x, y]) => this.#seesTile(x, y));
-        if (points.length) this.renderer.reveal(points);
-        if (this.renderer.camera.glide) await this.#pause(350);
-      }
-      if (game.isOver || this.disposed) return;
-      const res = game.act(order);
-      if (!res.ok) throw new Error(`AI produced an invalid order: ${res.error}`);
-      const events = this.#visibleTo(viewer, res.events, visible);
-      shown = shown || visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);
-      presenter.present(events, { now: this.#now() });
-      this.#comment(this.commentator?.react(events, this.#now(), unit.owner));
-      const text = describeEvents(game, events);
-      if (text) hud.message(text);
+    if (step.type === 'deploy') {   // a carrier drops its troops; they are then ordered like any unit
+      const wasVisible = canSee(game, viewer, unitById(game, step.unitId));
+      const res = applyStep(game, step);
+      presenter.present(this.#visibleTo(viewer, res.events, wasVisible), { now: this.#now() });
       this.#handleEvents(res.events);
-      if (!res.interrupted) break;
-      await this.#pause(Math.max(animator.active ? animator.current.d + 500 : 400, effects.lockUntil - this.#now() + 250));
+      return res;
     }
-    // no waiting around for a unit the human could not see do anything (a pause would also give it away)
-    await this.#pause(!shown ? 0 : Math.max(animator.active ? animator.current.d + 450 : 250, effects.lockUntil - this.#now() + 250));
+    const { order } = step;
+    const unit = unitById(game, order.unitId);
+    // on a map bigger than the screen, bring the unit, where it is going and what it shoots at into view first
+    // (not for a submarine the human cannot see: the camera would point at it)
+    const visible = canSee(game, viewer, unit);
+    const target = order.action?.targetId ? unitById(game, order.action.targetId) : null;
+    if (visible) {
+      // only what the human can see: the camera never pans into the fog of war after a unit
+      const points = [[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])].filter(([x, y]) => this.#seesTile(x, y));
+      if (points.length) this.renderer.reveal(points);
+      if (this.renderer.camera.glide) await this.#pause(350);
+    }
+    const res = applyStep(game, step);
+    const events = this.#visibleTo(viewer, res.events, visible);
+    const shown = visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);   // did the human get to see it act?
+    presenter.present(events, { now: this.#now() });
+    this.#comment(this.commentator?.react(events, this.#now(), unit.owner));
+    const text = describeEvents(game, events);
+    if (text) hud.message(text);
+    this.#handleEvents(res.events);
+    // An order can be cut short by a hidden unit; the unit then gets another order. No waiting around for a unit the human could not
+    // see do anything (a pause would also give it away).
+    if (res.interrupted) await this.#pause(Math.max(animator.active ? animator.current.d + 500 : 400, effects.lockUntil - this.#now() + 250));
+    else await this.#pause(!shown ? 0 : Math.max(animator.active ? animator.current.d + 450 : 250, effects.lockUntil - this.#now() + 250));
+    return res;
   }
 }

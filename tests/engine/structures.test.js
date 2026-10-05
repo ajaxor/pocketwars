@@ -10,7 +10,8 @@ import { computeReach } from '../../src/engine/movement.js';
 import { forecastAttack, canAttackFrom, calcDamage } from '../../src/engine/combat.js';
 import { hasLineOfSight } from '../../src/engine/sight.js';
 import { isDefeated } from '../../src/engine/victory.js';
-import { playTurn, wantsOrder, chooseOrder } from '../../src/engine/ai.js';
+import { wantsOrder, chooseOrder } from '../../src/ai/greedy.js';
+import { playTurn } from '../../src/ai/runner.js';
 import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);

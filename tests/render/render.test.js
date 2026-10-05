@@ -12,7 +12,7 @@ import { Presenter } from '../../src/ui/presenter.js';
 import { describeEvents } from '../../src/ui/messages.js';
 import { drawBubble } from '../../src/render/bubble.js';
 import { AMMO_BLINK_MS, drawUnit } from '../../src/render/unit-sprites.js';
-import { playTurn } from '../../src/engine/ai.js';
+import { playTurn } from '../../src/ai/runner.js';
 
 const registry = await loadRegistry(readData);
 const classic = await loadMap(readData, registry, 'classic');

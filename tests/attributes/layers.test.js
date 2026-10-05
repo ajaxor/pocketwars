@@ -79,7 +79,7 @@ test('data validation: a weapon may only list known target modes, and a unit onl
 });
 
 test('rules.layers[*].airborne marks which layers count as air (used by the AI condition enemyHasAirborne)', async () => {
-  const { AI_CONDITIONS } = await import('../../src/engine/ai-conditions.js');
+  const { AI_CONDITIONS } = await import('../../src/ai/conditions.js');
   const game = makeGame({ units: { soldier: {}, jet: { ...AIR, targets: GROUND_AND_AIR } }, rows: ['..'], unitsOnMap: [['soldier', 0, 0, 0], ['jet', 1, 1, 0]] });
   assert.equal(AI_CONDITIONS.enemyHasAirborne(game, 0), true, 'player 0 sees an enemy jet');
   assert.equal(AI_CONDITIONS.enemyHasAirborne(game, 1), false, 'player 1 only sees a soldier');

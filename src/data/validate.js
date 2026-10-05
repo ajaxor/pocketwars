@@ -2,7 +2,7 @@
 // Pure functions: no DOM, no fs, so they run in the browser, in Node tests and in tools/validate-data.mjs.
 
 import { UNIT_ATTRIBUTES, TERRAIN_ATTRIBUTES, checkAttributes } from '../engine/attributes.js';
-import { AI_CONDITIONS } from '../engine/ai-conditions.js';
+import { ENGINES } from '../ai/engines.js';
 
 export class DataError extends Error {
   constructor(problems) {
@@ -208,27 +208,18 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
   }
 }
 
-export function validateAi(ai, units, problems) {
+/**
+ * ai.json: { default: "<engine id>", engines: { "<engine id>": profile, ... } }. Each engine checks its own profile
+ * (validateProfile in its module, see src/ai/engines.js); raw is the whole data bundle, for checks against units and the like.
+ */
+export function validateAi(ai, raw, problems) {
   if (!isObj(ai)) return problems.push('ai.json must be an object');
-  const weightKeys = ['distanceToGoal', 'unreachableDistance', 'terrainDefense', 'attackBase', 'killBonus', 'captureBase', 'victoryCaptureBonus', 'costUnit'];
-  if (!isObj(ai.weights)) problems.push('ai: weights must be an object');
-  else {
-    for (const k of weightKeys) if (!isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
-    if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push('ai: weights.blockCapture must be a number');
-    if (ai.weights.crowFlies !== undefined && !isNum(ai.weights.crowFlies)) problems.push('ai: weights.crowFlies must be a number');
-    if (ai.weights.deployRange !== undefined && !isNum(ai.weights.deployRange)) problems.push('ai: weights.deployRange must be a number');
-    for (const k of ['healValue', 'maxMines', 'breakWall']) if (ai.weights[k] !== undefined && !isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
-  }
-  if (!isObj(ai.build)) return problems.push('ai: build must be an object keyed by unit category');
-  for (const [category, rules] of Object.entries(ai.build)) {
-    if (!Array.isArray(rules)) { problems.push(`ai: build.${category} must be an array`); continue; }
-    rules.forEach((r, i) => {
-      const where = `ai: build.${category}[${i}]`;
-      if (!isObj(units) || !units[r.unit]) problems.push(`${where}: unknown unit "${r.unit}"`);
-      else if (units[r.unit].category !== category) problems.push(`${where}: unit "${r.unit}" is in category "${units[r.unit].category}", not "${category}"`);
-      if (!Number.isInteger(r.max) || r.max < 1) problems.push(`${where}: max must be a positive integer`);
-      if (r.when !== undefined && !AI_CONDITIONS[r.when]) problems.push(`${where}: unknown condition "${r.when}" (known: ${Object.keys(AI_CONDITIONS).join(', ')})`);
-    });
+  if (!isObj(ai.engines)) return problems.push('ai: engines must be an object keyed by engine id');
+  if (typeof ai.default !== 'string' || !ENGINES[ai.default]) problems.push(`ai: default must name an engine (known: ${Object.keys(ENGINES).join(', ')})`);
+  for (const [id, profile] of Object.entries(ai.engines)) {
+    if (!ENGINES[id]) { problems.push(`ai: engines.${id}: no such engine (known: ${Object.keys(ENGINES).join(', ')})`); continue; }
+    if (!isObj(profile)) { problems.push(`ai: engines.${id} must be an object`); continue; }
+    ENGINES[id].validateProfile?.(profile, raw, problems, `ai: engines.${id}`);
   }
 }
 
@@ -330,7 +321,7 @@ export function validateData(raw) {
   validateWeapons(raw.weapons, rules, problems);
   if (isObj(raw.weapons) && isObj(raw.terrain)) for (const [id, w] of Object.entries(raw.weapons)) for (const t of Array.isArray(w?.fromTerrain) ? w.fromTerrain : []) if (!raw.terrain[t]) problems.push(`weapon "${id}": fromTerrain names unknown terrain "${t}"`);
   validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);
-  validateAi(raw.ai, raw.units, problems);
+  validateAi(raw.ai, raw, problems);
   validateLoadouts(raw.loadouts, raw.units, raw.terrain, problems);
   return problems;
 }

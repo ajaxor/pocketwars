@@ -1,9 +1,10 @@
-// Computer-controlled player. Tuning (weights, build lists) lives in data/ai.json; this file only holds the logic.
+// The "greedy" engine: the first computer opponent, kept as it was so newer engines can be scored against it (tools/ai/arena.mjs).
+// Each unit in turn takes the order that scores best right now, by hand-set weights; production follows fixed lists. Its tuning lives
+// in data/ai.json under engines.greedy (weights, build lists); this file only holds the logic. See src/ai/engines.js for the interface.
 //
-//   chooseOrder(game, unit)  -> an order for game.act()   (one unit at a time so the UI can animate between them)
+//   chooseOrder(game, unit)  -> an order for game.act()
 //   planBuild(game, x, y)    -> unit type id to build on that property, or null
-//   buildPhase(game)         -> builds everything the profile wants; returns the events
-//   playTurn(game)           -> whole turn synchronously (used by tests and headless simulation)
+//   turn(game)               -> the engine's turn, as steps (src/ai/runner.js plays them)
 //
 // A turn goes: every unit moves, then production, then the units just built use their free move (they are `fresh`: a move and a
 // Wait only, see game.js) so they leave the properties that built them.
@@ -27,22 +28,25 @@
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
 // hidden one. It does not play in fog of war, though: fog only ever hides things from human players (fog.js). When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
-import { ammoOf, ammoLevel, canResupplyAt, resupplyCost, roundCost } from './ammo.js';
-import { AI_CONDITIONS } from './ai-conditions.js';
-import { attributeConfig, hasAttribute } from './attributes.js';
-import { canCapture } from './capture.js';
-import { fuelHomes, fuelOf, usesFuel } from './fuel.js';
-import { canHealAt } from './heal.js';
-import { canSupplyAt, supplyConfig, supplyPlan } from './supply.js';
-import { isMine, layConfig, layTiles } from './mines.js';
-import { attacksPerTurn, calcDamage, canAttackFrom, canTarget } from './combat.js';
-import { canSee } from './detection.js';
-import { canDeploy, deployConfig, deployReach } from './deploy.js';
-import { buildProblem, menuFor } from './economy.js';
-import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
-import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
-import { canSubmergeAt, canSurface } from './submerge.js';
-import { isNeutral, isStructure } from './structures.js';
+import { ammoOf, ammoLevel, canResupplyAt, resupplyCost, roundCost } from '../engine/ammo.js';
+import { AI_CONDITIONS } from './conditions.js';
+import { attributeConfig, hasAttribute } from '../engine/attributes.js';
+import { canCapture } from '../engine/capture.js';
+import { fuelHomes, fuelOf, usesFuel } from '../engine/fuel.js';
+import { canHealAt } from '../engine/heal.js';
+import { canSupplyAt, supplyConfig, supplyPlan } from '../engine/supply.js';
+import { isMine, layConfig, layTiles } from '../engine/mines.js';
+import { attacksPerTurn, calcDamage, canAttackFrom, canTarget } from '../engine/combat.js';
+import { canSee } from '../engine/detection.js';
+import { canDeploy, deployConfig, deployReach } from '../engine/deploy.js';
+import { buildProblem, menuFor } from '../engine/economy.js';
+import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from '../engine/movement.js';
+import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from '../engine/queries.js';
+import { canSubmergeAt, canSurface } from '../engine/submerge.js';
+import { isNeutral, isStructure } from '../engine/structures.js';
+
+/** The greedy profile in data/ai.json (engines.greedy): { weights, build }. */
+export const profileOf = (game) => game.registry.ai.engines.greedy;
 
 /** The friendly units `unit` (a healer) could heal, by the categories of its `heal` attribute. */
 function healable(game, unit) {
@@ -131,7 +135,7 @@ function goalTiles(game, unit) {
   return [[Math.floor(map.width / 2), Math.floor(map.height / 2)]];
 }
 
-export function chooseOrder(game, unit, ai = game.registry.ai) {
+export function chooseOrder(game, unit, ai = profileOf(game)) {
   const { map, state } = game;
   const w = ai.weights;
   const def = unitDef(game, unit);
@@ -208,23 +212,17 @@ function layOrder(game, unit, best, goals, w) {
   return pick ? { type: 'lay', at: pick.t } : null;
 }
 
-/**
- * A submerged submarine comes up before it moves unless an enemy it can see is close: on the surface it travels faster (see `submerge.move`), and it
- * dives again at the end of its move. Returns the events (empty when nothing happens).
- */
-export function surfaceToTravel(game, unit) {
-  if (game.isOver || unit.done || unit.halted || !canSurface(game, unit)) return [];
-  const near = game.state.units.some((e) => e.owner !== unit.owner && canSee(game, unit.owner, e) && distance(unit.x, unit.y, e.x, e.y) <= 6);
-  if (near) return [];
-  const res = game.setSubmerged({ unitId: unit.id, submerged: false });
-  return res.ok ? res.events : [];
+/** Does a submerged submarine come up before it moves? Yes, unless an enemy it can see is close: on the surface it travels faster (see `submerge.move`), and it dives again at the end of its move. */
+export function wantsSurface(game, unit) {
+  if (game.isOver || unit.done || unit.halted || !canSurface(game, unit)) return false;
+  return !game.state.units.some((e) => e.owner !== unit.owner && canSee(game, unit.owner, e) && distance(unit.x, unit.y, e.x, e.y) <= 6);
 }
 
 /**
  * Which unit (if any) the profile wants built on the property at (x, y) for the current player. The profile (ai.json) ranks units
  * by category; a unit the player's leader cannot build here is skipped (buildProblem), and a leader's extra categories come last.
  */
-export function planBuild(game, x, y, ai = game.registry.ai) {
+export function planBuild(game, x, y, ai = profileOf(game)) {
   const { state } = game;
   const player = state.turn;
   const property = terrainAt(game, x, y).attributes.property;
@@ -243,8 +241,13 @@ export function planBuild(game, x, y, ai = game.registry.ai) {
   return null;
 }
 
-/** Build on every free property the current player owns, in row-major order. */
-export function buildPhase(game, ai = game.registry.ai) {
+/** Headless helpers for tests: surface now if the engine would (returns the events), and build everything it wants (returns the events). */
+export function surfaceToTravel(game, unit) {
+  if (!wantsSurface(game, unit)) return [];
+  const res = game.setSubmerged({ unitId: unit.id, submerged: false });
+  return res.ok ? res.events : [];
+}
+export function buildPhase(game, ai = profileOf(game)) {
   const events = [];
   for (const p of allProperties(game)) {
     if (p.owner !== game.state.turn || !p.property.builds.length) continue;
@@ -254,27 +257,20 @@ export function buildPhase(game, ai = game.registry.ai) {
   return events;
 }
 
-/**
- * A carrier that has moved drops its troops once it is within `deployRange` tiles of something to capture or fight. Returns
- * `{ events, dropped }` (the dropped unit still has to be ordered), or null when it does not deploy.
- */
-export function tryDeploy(game, unit, ai = game.registry.ai) {
-  if (game.isOver || !game.state.units.includes(unit) || !canDeploy(game, unit)) return null;
+/** Does a carrier that has moved drop its troops? Once it is within `deployRange` tiles of something to capture or fight. */
+export function wantsDeploy(game, unit, ai = profileOf(game)) {
+  if (game.isOver || !game.state.units.includes(unit) || !canDeploy(game, unit)) return false;
   const range = ai.weights.deployRange ?? 8;
-  if (Math.min(...goalTiles(game, unit).map(([gx, gy]) => distance(unit.x, unit.y, gx, gy))) > range) return null;
-  if (!deployReach(game, unit).tiles.length) return null;
-  const res = game.deploy({ unitId: unit.id });
-  return res.ok ? { events: res.events, dropped: game.state.units.find((u) => u.id === res.deployed.unitId) } : null;
+  if (Math.min(...goalTiles(game, unit).map(([gx, gy]) => distance(unit.x, unit.y, gx, gy))) > range) return false;
+  return deployReach(game, unit).tiles.length > 0;
 }
 
-/** Give `unit` its order(s): a second one when the first was cut short by a hidden unit. */
-function orderUnit(game, unit, events) {
-  if (!unit.fresh) events.push(...surfaceToTravel(game, unit));
+/** The steps that give `unit` its order(s): coming up first (a submarine), then a second order when the first was cut short by a hidden unit. */
+function* orderSteps(game, unit) {
+  if (!unit.fresh && wantsSurface(game, unit)) yield { type: 'surface', unitId: unit.id };
   const steps = 1 + Math.max(1, attacksPerTurn(game, unit));   // an interrupted move needs a second order; so does each further attack
   for (let step = 0; step < steps && game.state.units.includes(unit) && !unit.done && !game.isOver; step++) {
-    const result = game.act(chooseOrder(game, unit));
-    if (!result.ok) throw new Error(`AI produced an invalid order: ${result.error}`);
-    events.push(...result.events);
+    const result = yield { type: 'order', order: chooseOrder(game, unit) };
     if (!result.interrupted && unit.done) break;
   }
 }
@@ -282,17 +278,58 @@ function orderUnit(game, unit, events) {
 /** Does `unit` get an order this turn? Everything but a structure: turrets fire by themselves, jammers and walls never act. */
 export const wantsOrder = (game, unit) => !isStructure(game, unit);   // turrets fire by themselves when the turn ends (structures.js)
 
-/** Play the current player's whole turn (every unit, then production, then the new units' free moves) and return all events. */
-export function playTurn(game) {
+/** The whole turn as steps (every unit, then production, then the new units' free moves); src/ai/runner.js carries them out. */
+export function* turn(game) {
   const player = game.state.turn;
-  const events = [];
   for (const unit of game.state.units.filter((u) => u.owner === player && wantsOrder(game, u))) {
-    orderUnit(game, unit, events);
-    const drop = tryDeploy(game, unit);
-    if (drop) { events.push(...drop.events); orderUnit(game, drop.dropped, events); }
+    yield* orderSteps(game, unit);
+    if (wantsDeploy(game, unit)) {
+      const res = yield { type: 'deploy', unitId: unit.id };
+      if (res.ok) yield* orderSteps(game, game.state.units.find((u) => u.id === res.deployed.unitId));
+    }
   }
-  if (game.isOver) return events;
-  events.push(...buildPhase(game));
-  for (const unit of game.state.units.filter((u) => u.owner === player && u.fresh)) orderUnit(game, unit, events);
-  return events;
+  if (game.isOver) return;
+  for (const p of allProperties(game)) {   // build on every free property, in row-major order
+    if (p.owner !== player || !p.property.builds.length) continue;
+    const type = planBuild(game, p.x, p.y);
+    if (type) yield { type: 'build', x: p.x, y: p.y, unit: type };
+  }
+  for (const unit of game.state.units.filter((u) => u.owner === player && u.fresh)) yield* orderSteps(game, unit);
 }
+
+
+const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
+const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+/** Check the greedy profile (data/ai.json engines.greedy). */
+export function validateProfile(ai, raw, problems, at = 'ai: engines.greedy') {
+  const units = raw.units;
+  const weightKeys = ['distanceToGoal', 'unreachableDistance', 'terrainDefense', 'attackBase', 'killBonus', 'captureBase', 'victoryCaptureBonus', 'costUnit'];
+  if (!isObj(ai.weights)) problems.push(`${at}: weights must be an object`);
+  else {
+    for (const k of weightKeys) if (!isNum(ai.weights[k])) problems.push(`${at}: weights.${k} must be a number`);
+    if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push(`${at}: weights.blockCapture must be a number`);
+    if (ai.weights.crowFlies !== undefined && !isNum(ai.weights.crowFlies)) problems.push(`${at}: weights.crowFlies must be a number`);
+    if (ai.weights.deployRange !== undefined && !isNum(ai.weights.deployRange)) problems.push(`${at}: weights.deployRange must be a number`);
+    for (const k of ['healValue', 'maxMines', 'breakWall']) if (ai.weights[k] !== undefined && !isNum(ai.weights[k])) problems.push(`${at}: weights.${k} must be a number`);
+  }
+  if (!isObj(ai.build)) return problems.push(`${at}: build must be an object keyed by unit category`);
+  for (const [category, rules] of Object.entries(ai.build)) {
+    if (!Array.isArray(rules)) { problems.push(`${at}: build.${category} must be an array`); continue; }
+    rules.forEach((r, i) => {
+      const where = `${at}: build.${category}[${i}]`;
+      if (!isObj(units) || !units[r.unit]) problems.push(`${where}: unknown unit "${r.unit}"`);
+      else if (units[r.unit].category !== category) problems.push(`${where}: unit "${r.unit}" is in category "${units[r.unit].category}", not "${category}"`);
+      if (!Number.isInteger(r.max) || r.max < 1) problems.push(`${where}: max must be a positive integer`);
+      if (r.when !== undefined && !AI_CONDITIONS[r.when]) problems.push(`${where}: unknown condition "${r.when}" (known: ${Object.keys(AI_CONDITIONS).join(', ')})`);
+    });
+  }
+}
+
+export const greedy = {
+  id: 'greedy',
+  name: 'Greedy',
+  description: 'The first computer opponent: every unit takes its best-looking order by fixed weights, and production follows fixed lists.',
+  turn,
+  validateProfile,
+};

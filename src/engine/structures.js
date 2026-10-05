@@ -58,9 +58,12 @@ export function structureFire(game, player) {
 }
 
 /** `gun` fires at the unit passing `ok` that it would hurt most, if any. Returns the strike events, marked `auto`. */
+// A turret's aim: damage x price, plus a bonus for a kill (the same sums the first computer opponent used; turrets belong to no AI engine).
+const costUnit = 1000;
+const killBonus = 4;
+
 function fire(game, gun, ok) {
   if (!game.state.units.includes(gun) || game.state.winner !== null) return [];   // knocked out by an earlier counterattack, or the game is over
-  const { costUnit = 1000, killBonus = 4 } = game.registry.ai?.weights ?? {};
   let best = null;
   for (const e of game.state.units) {
     if (e === gun || !ok(e) || !canAttackFrom(game, gun, e, gun.x, gun.y)) continue;

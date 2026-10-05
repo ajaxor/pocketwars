@@ -74,11 +74,13 @@ test('terrain: blocksLineOfSight and vantage must be positive numbers', () => {
 });
 
 test('ai profile: unknown unit, wrong category, unknown condition, bad max', () => {
-  const build = (rule) => (d) => { d.ai.build = { ground: [rule] }; };
+  const build = (rule) => (d) => { d.ai.engines.greedy.build = { ground: [rule] }; };
   has(problemsOf(build({ unit: 'ghost', max: 1 })), /unknown unit "ghost"/);
   has(problemsOf(build({ unit: 'a', max: 0 })), /max/);
   has(problemsOf(build({ unit: 'a', max: 1, when: 'moonIsFull' })), /unknown condition "moonIsFull"/);
-  has(problemsOf((d) => { d.ai.build = { sky: [{ unit: 'a', max: 1 }] }; }), /category "ground", not "sky"/);
+  has(problemsOf((d) => { d.ai.engines.greedy.build = { sky: [{ unit: 'a', max: 1 }] }; }), /category "ground", not "sky"/);
+  has(problemsOf((d) => { d.ai.default = 'oracle'; }), /default must name an engine/);
+  has(problemsOf((d) => { d.ai.engines.oracle = {}; }), /engines.oracle: no such engine/);
 });
 
 test('every problem is reported at once, not just the first', () => {

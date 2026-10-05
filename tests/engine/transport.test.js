@@ -9,7 +9,8 @@ import { Game } from '../../src/engine/game.js';
 import { computeReach } from '../../src/engine/movement.js';
 import { ammoLevel, resupplyCost } from '../../src/engine/ammo.js';
 import { canDeploy, deployReach } from '../../src/engine/deploy.js';
-import { chooseOrder, playTurn } from '../../src/engine/ai.js';
+import { chooseOrder } from '../../src/ai/greedy.js';
+import { playTurn } from '../../src/ai/runner.js';
 import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);

@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeGame } from '../helpers/fixtures.js';
-import { chooseOrder, planBuild, buildPhase, playTurn } from '../../src/engine/ai.js';
+import { chooseOrder, planBuild, buildPhase } from '../../src/ai/greedy.js';
+import { playTurn } from '../../src/ai/runner.js';
 import { readData } from '../helpers/node-io.js';
 import { loadRegistry, loadMap } from '../../src/data/loader.js';
 import { Game } from '../../src/engine/game.js';

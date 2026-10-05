@@ -10,7 +10,7 @@ import { canSee } from '../../src/engine/detection.js';
 import { computeReach } from '../../src/engine/movement.js';
 import { calcDamage, forecastAttack } from '../../src/engine/combat.js';
 import { canSubmergeAt, canSurface } from '../../src/engine/submerge.js';
-import { chooseOrder } from '../../src/engine/ai.js';
+import { chooseOrder } from '../../src/ai/greedy.js';
 
 const registry = await loadRegistry(readData);
 const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' }, F: { terrain: 'forest' }, R: { terrain: 'rough' }, M: { terrain: 'mountain' }, r: { terrain: 'road' }, c: { terrain: 'city' },

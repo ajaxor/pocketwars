@@ -10,7 +10,7 @@ import { rawMap } from '../helpers/fixtures.js';
 import { canSee, hiddenFrom, isExposed } from '../../src/engine/detection.js';
 import { computeReach, targetsFrom } from '../../src/engine/movement.js';
 import { calcDamage, weaponFor } from '../../src/engine/combat.js';
-import { chooseOrder } from '../../src/engine/ai.js';
+import { chooseOrder } from '../../src/ai/greedy.js';
 import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);

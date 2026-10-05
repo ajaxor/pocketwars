@@ -69,10 +69,11 @@ export function makeData({ units = { a: {}, b: {} }, terrain = {}, ai, rules, we
     terrain: { ...structuredClone(BASE_TERRAIN), ...structuredClone(terrain) },
     weapons: { ...weapons, ...structuredClone(extraWeapons) },
     units: merged,
-    ai: ai || {
+    // `ai` may be a whole ai.json ({ default, engines }) or just a greedy profile ({ weights, build }), which plays by default
+    ai: ai?.engines ? ai : { default: 'greedy', engines: { greedy: ai || {
       weights: { distanceToGoal: 2, unreachableDistance: 60, terrainDefense: 0.4, attackBase: 60, killBonus: 4, captureBase: 50, victoryCaptureBonus: 100, costUnit: 1000 },
       build: {},
-    },
+    } } },
     ...(loadouts && { loadouts }),
   };
 }

@@ -17,7 +17,7 @@ import { triggersMine } from '../../src/engine/mines.js';
 import { startTurn } from '../../src/engine/economy.js';
 import { layTiles } from '../../src/engine/mines.js';
 import { canSupplyAt } from '../../src/engine/supply.js';
-import { chooseOrder, surfaceToTravel } from '../../src/engine/ai.js';
+import { chooseOrder, surfaceToTravel } from '../../src/ai/greedy.js';
 import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);

@@ -128,7 +128,7 @@ test('heal and rest: the config must be right', () => {
 });
 
 test('AI: a healer with a wounded friend in reach walks to it and gives the Heal order', async () => {
-  const { chooseOrder } = await import('../../src/engine/ai.js');
+  const { chooseOrder } = await import('../../src/ai/greedy.js');
   const g = makeGame({ units: { medic: { ...footHealer(), hits: 15 }, walker: { category: 'foot', cost: 2000 }, foe: {} }, rows: ['.........'],
     unitsOnMap: [['medic', 1, 0, 0], ['walker', 1, 3, 0, 4], ['foe', 0, 8, 0]] });
   g.state.turn = 1;
