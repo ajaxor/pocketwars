@@ -3,7 +3,7 @@
 // bigger sample of games. Prints the response curve (value -> score against the current profile) so you can see how much it matters.
 //
 //   npm run ai:sweep -- --param params.attack [--write]
-//   npm run ai:sweep -- --param unitBias.tank
+//   npm run ai:sweep -- --param strategyWeight.air_rush
 //   npm run ai:sweep -- --list                 every dimension that can be swept
 //   options: --points 7        values in the coarse pass (spread over the whole range; log scale for strategy weights)
 //            --passes 3        coarse pass + this many minus one narrowing passes

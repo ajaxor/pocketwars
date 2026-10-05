@@ -84,7 +84,7 @@ test('ai.json: the default must be a known engine, every profile must belong to 
   assert.ok(problems((d) => { d.ai.engines.oracle = {}; }).some((p) => /engines.oracle: no such engine/.test(p)));
   assert.ok(problems((d) => { d.ai.engines.strategist = { params: { distance: 'far' } }; }).some((p) => /params.distance must be a number/.test(p)));
   assert.ok(problems((d) => { d.ai.engines.strategist = { params: { teleport: 1 } }; }).some((p) => /params.teleport: unknown parameter/.test(p)));
-  assert.ok(problems((d) => { d.ai.engines.strategist = { unitBias: { ghost: 1 } }; }).some((p) => /unitBias.ghost: unknown unit/.test(p)));
+  assert.ok(problems((d) => { d.ai.engines.strategist = { unitBias: { tank: 1 } }; }).some((p) => /unitBias no longer exists/.test(p)));
   const withStrategies = (mutate) => problems((d) => { d['ai-strategies'] = { strategies: [{ id: 'rush', name: 'Rush' }] }; mutate(d); });
   assert.ok(withStrategies((d) => { d.ai.engines.strategist = { strategyWeight: { siege: 2 } }; }).some((p) => /strategyWeight.siege: unknown strategy/.test(p)));
   assert.deepEqual(withStrategies((d) => { d.ai.engines.strategist = { strategyWeight: { rush: 2 } }; }), []);

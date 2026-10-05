@@ -10,3 +10,6 @@ tools/sprite-lab/out/
 
 # AI tuner output (logs, candidate profiles)
 tools/ai/out/
+
+# balance tool output (reports, CSVs)
+tools/balance/out/

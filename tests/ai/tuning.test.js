@@ -44,16 +44,15 @@ test('a match is repeatable from its seed', async () => {
   assert.deepEqual({ ...a, msPerTurn: 0 }, { ...b, msPerTurn: 0 });
 });
 
-test('the search space follows the data: every parameter, every buildable unit, every strategy', () => {
+test('the search space follows the data: every parameter and every strategy, and nothing per unit', () => {
   const dims = searchSpace(registry);
   const keys = new Set(dims.map((d) => d.key));
   for (const k of Object.keys(PARAMS)) assert.ok(keys.has(`params.${k}`));
-  assert.ok(keys.has('unitBias.tank') && keys.has('unitBias.marine'));
-  assert.ok(!keys.has('unitBias.jammer'), 'structures are never built');
+  assert.ok(![...keys].some((k) => k.startsWith('unitBias')), 'the AI is unit-agnostic');
   for (const s of registry.aiStrategies) assert.ok(keys.has(`strategyWeight.${s.id}`));
-  // a unit added to the data joins the search with no other change
+  // a new unit needs no entry anywhere: the search space is the same
   const data = makeData({ units: { grunt: {}, walker_mk2: { cost: 4000 } } });
-  assert.ok(searchSpace(createRegistry(data)).some((d) => d.key === 'unitBias.walker_mk2'));
+  assert.equal(searchSpace(createRegistry(data)).length, dims.length - registry.aiStrategies.length + createRegistry(data).aiStrategies.length);
 });
 
 test('mutations stay inside each dimension\'s range, and compact profiles keep only what differs', () => {
@@ -62,9 +61,9 @@ test('mutations stay inside each dimension\'s range, and compact profiles keep o
   const rng = seeded(5);
   for (let i = 0; i < 300; i++) p = mutate(p, dims, rng, 0.4).profile;
   for (const d of dims) { const v = getValue(p, d); assert.ok(v >= d.min && v <= d.max, `${d.key} = ${v}`); }
-  const c = compactProfile(fullProfile({ unitBias: { tank: 0.5 } }, dims), dims);
-  assert.equal(c.unitBias.tank, 0.5);
-  assert.equal(c.unitBias.soldier, undefined);
+  const c = compactProfile(fullProfile({ strategyWeight: { turtle: 2.5 } }, dims), dims);
+  assert.equal(c.strategyWeight.turtle, 2.5);
+  assert.equal(Object.keys(c.strategyWeight).length, 1, 'only what differs');
   assert.equal(Object.keys(c.params).length, Object.keys(PARAMS).length, 'parameters are always written out');
 });
 

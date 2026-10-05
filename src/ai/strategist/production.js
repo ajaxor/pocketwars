@@ -7,7 +7,8 @@
 //             that factory (a tank on an island reaches nobody across the water) and that can get at it
 //   roles     a capturer for properties it could still take on its landmass, a carrier for land worth taking that walkers cannot reach
 //             (an island), a healer, supplier or radar for the units it would look after
-// times the strategy's taste for it (strategies.js), the tuned bias for the type (unitBias) and `sameType` for each one already owned.
+// times the strategy's taste for it (strategies.js) and `sameType` for each one already owned. There is no preference for any unit by name:
+// a type is worth what it does for its price, worked out from the data.
 // Builds go to whichever (factory, type) pair is worth most for its price (worth / cost^costExponent), until the money or the
 // worthwhile choices run out.
 
@@ -91,8 +92,7 @@ export function typeWorth(sit, type, x, y, ctx) {
   if (r.layer && sit.army.some((e) => unitDef(game, e).moveClass === mc)) role += params.support;
   const owned = sit.mine.filter((u) => u.type === type).length;
   const taste = buildTaste(sit.strategy, def, r);
-  const bias = Math.exp(sit.profile?.unitBias?.[type] ?? 0);
-  return (Math.max(0, combat) + role) * taste * bias * params.sameType ** owned;
+  return (Math.max(0, combat) + role) * taste * params.sameType ** owned;
 }
 
 /** The builds to make this turn, best first: [{ x, y, unit }]. Each is checked again (and the money re-counted) as it is made. */

@@ -11,7 +11,7 @@ to the old ones and **scored against them** in the arena before it becomes the d
 `data/ai.json` holds one profile per engine and says which is the default:
 
 ```json
-{ "default": "strategist", "engines": { "greedy": { "weights": {...}, "build": {...} }, "strategist": { "params": {...}, "unitBias": {...}, "strategyWeight": {...}, "tuned": {...} } } }
+{ "default": "strategist", "engines": { "greedy": { "weights": {...}, "build": {...} }, "strategist": { "params": {...}, "strategyWeight": {...}, "tuned": {...} } } }
 ```
 
 ## How a computer turn runs
@@ -107,7 +107,8 @@ A strategy is data. To add one, add an entry; `npm run validate` checks it.
 ## Tuning (`npm run ai:tune`)
 
 Every number the strategist plays by is in `src/ai/strategist/params.js`, with the range the tuner may move it in. The tuned values live
-in `data/ai.json` (`engines.strategist`): `params`, a `unitBias` per unit type (0 = none) and a `strategyWeight` per plan (1 = as written).
+in `data/ai.json` (`engines.strategist`): `params` and a `strategyWeight` per plan (1 = as written). There is nothing per unit type on purpose: the AI judges a unit by what it
+does and what it costs, worked out from the weapon and unit data, so new and rebalanced units need no tuning entry.
 
 `tools/ai/tune.mjs` runs a (1+λ) evolution strategy: each round a few variants of the current champion (one to four numbers nudged)
 play the champion on a few screening maps (both seat orders, same seeds). Only the best variant, if it scored well, plays a larger
@@ -148,7 +149,7 @@ if it passes the gate (53% overall, 50% in the mid and late games). More cores m
 
 ## Tuning one number (`npm run ai:sweep`)
 
-`npm run ai:sweep -- --param params.threat` (`--list` shows everything that can be swept: `params.*`, `unitBias.<unit>`,
+`npm run ai:sweep -- --param params.threat` (`--list` shows everything that can be swept: `params.*` and
 `strategyWeight.<id>`) tries a spread of values across the number's whole range, then narrows around the best in two more passes, each on
 a bigger sample, and checks the winner against the current profile on a fresh sample before it will keep it (`--write`). Every value in
 a pass plays the same games, and the response curve is printed, so it shows how much the number matters at all. About 2 minutes on two

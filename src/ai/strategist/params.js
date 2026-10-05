@@ -1,7 +1,7 @@
 // Every number the strategist plays by, with the range the tuner (tools/ai/tune.mjs) may move it in. data/ai.json engines.strategist
-// holds the tuned values (`params`), a bias per unit type (`unitBias`, 0 = none; a unit that is not listed has none, so a new unit
-// starts neutral and its worth comes from its stats) and a weight per strategy (`strategyWeight`, 1 = as written). Anything missing
-// takes the default below, so the profile can be empty.
+// holds the tuned values (`params`) and a weight per strategy (`strategyWeight`, 1 = as written). Anything missing takes the default
+// below, so the profile can be empty. There is deliberately nothing per unit type: the AI judges a unit by what it can do and what it
+// costs (knowledge.js), so a new or rebalanced unit is understood from its data alone.
 
 export const PARAMS = {
   // ---- moving and fighting (tactics.js) ----
@@ -49,15 +49,12 @@ export function paramsOf(profile) {
 export function validateParams(profile, units, strategies, problems, at) {
   const isObj = (v) => v !== null && typeof v === 'object' && !Array.isArray(v);
   const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
-  for (const key of ['params', 'unitBias', 'strategyWeight']) if (profile[key] !== undefined && !isObj(profile[key])) problems.push(`${at}: ${key} must be an object`);
+  for (const key of ['params', 'strategyWeight']) if (profile[key] !== undefined && !isObj(profile[key])) problems.push(`${at}: ${key} must be an object`);
   for (const [k, v] of Object.entries(profile.params ?? {})) {
     if (!PARAMS[k]) problems.push(`${at}: params.${k}: unknown parameter`);
     else if (!isNum(v)) problems.push(`${at}: params.${k} must be a number`);
   }
-  for (const [k, v] of Object.entries(profile.unitBias ?? {})) {
-    if (!units?.[k]) problems.push(`${at}: unitBias.${k}: unknown unit`);
-    else if (!isNum(v)) problems.push(`${at}: unitBias.${k} must be a number`);
-  }
+  if (profile.unitBias !== undefined) problems.push(`${at}: unitBias no longer exists: the AI judges units by what they do, not by name`);
   const ids = strategies ? new Set(strategies.map((s) => s.id)) : null;   // without the strategy file, names cannot be checked
   for (const [k, v] of Object.entries(profile.strategyWeight ?? {})) {
     if (ids && !ids.has(k)) problems.push(`${at}: strategyWeight.${k}: unknown strategy`);

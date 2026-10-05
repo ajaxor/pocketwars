@@ -1,8 +1,7 @@
 // Self-tuning for the strategist: a (1+λ) evolution strategy over its profile, scored by playing games.
 //
-// The search space is built from the data every time, so it follows the game as it changes:
+// The search space is built from the data every time, so it follows the game as it changes (nothing per unit: the AI is unit-agnostic):
 //   params.<name>          every number in src/ai/strategist/params.js, within its min..max
-//   unitBias.<unit>        a bias for every buildable unit type (-1.5..1.5, 0 = none): a new unit joins the search automatically
 //   strategyWeight.<id>    how often each strategy in data/ai-strategies.json is chosen (0.2..4, searched on a log scale)
 //
 // Each round, λ variants of the champion (a few dimensions nudged at random) play the champion on the same sample of games (graded.mjs:
@@ -19,11 +18,6 @@ import { LATE_FLOOR, gradedDuel, makeSample } from './graded.mjs';
 export function searchSpace(registry) {
   const dims = [];
   for (const [k, spec] of Object.entries(PARAMS)) dims.push({ key: `params.${k}`, min: spec.min, max: spec.max, def: spec.def, log: false });
-  for (const id of registry.unitIds) {
-    const def = registry.unit(id);
-    if (def.attributes?.structure || def.attributes?.mine) continue;
-    dims.push({ key: `unitBias.${id}`, min: -1.5, max: 1.5, def: 0, log: false });
-  }
   for (const s of registry.aiStrategies) dims.push({ key: `strategyWeight.${s.id}`, min: 0.2, max: 4, def: 1, log: true });
   return dims;
 }

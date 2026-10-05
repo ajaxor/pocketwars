@@ -188,3 +188,6 @@ The review's points and where they stand, then what the new system leaves open. 
   for the same drift); the final pick among three means is made on one 22-game sample, so it is slightly optimistic. Validate a result
   on a bigger independent sample before shipping, and run it for hours before expecting more than a few points. Also, with 97 numbers
   and little signal, many of them random-walk: a pass that pulls irrelevant numbers back toward their defaults would be cleaner.
+- **Leader balance (AI-played) shows real spread.** First run: vex 67%, ludwig 57% against rex 40%, ada 43% (each ±4 over 160 games). Part of it
+  may be how well the strategist uses each kit rather than the kit itself; the unit trade report (`docs/balance.md`) is the check on the numbers.
+  The `unreachable` engine error seen in tuning also turned up once in this run (archipelago).
