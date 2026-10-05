@@ -119,16 +119,14 @@ strategy a weight. `data/ai.json` records a hash of what it was tuned on (units,
 strategist's code); `npm run ai:tune -- --check` says whether that is stale.
 
 ```
-npm run ai:ratchet -- --sessions 6 --minutes 10 --commit --push   short sessions, each shipped on its own (what CI runs)
+npm run ai:ratchet -- --sessions 6 --minutes 10 --commit --push   short sessions, each shipped on its own
 npm run ai:tune -- --minutes 10 --write          one session; write data/ai.json if the result passes the gate
 npm run ai:tune -- --check                        is the tuning stale? (exit 2 when it is)
-npm run ai:ratchet -- --sessions 1 --minutes 15 --if-stale --commit --push   only when stale (CI on a push)
+npm run ai:ratchet -- --sessions 1 --minutes 15 --if-stale --commit --push   only when stale
 ```
 
-**Automatically:** `.github/workflows/ai-tune.yml` runs on every push to main that touches units, weapons, leaders, rules, terrain,
-strategies, maps or the strategist's code (when the tuning is stale), every Monday (to keep improving) and by hand from the Actions tab.
-It runs short sessions (`tools/ai/ratchet.mjs`): each starts from the profile now shipped and commits `data/ai.json` only when it beat that profile at the gate and the tests pass, so a late failure never loses earlier gains. Then it starts the Pages deploy.
-The tuning log is kept as a workflow artifact.
+Tuning is run by hand, on purpose: there is no workflow for it. Run it after changing units, strategies, maps or the AI's code (`--check`
+says when it is stale), commit the resulting `data/ai.json`, and push.
 
 ## The arena (`npm run ai:arena`)
 

@@ -122,11 +122,10 @@ export async function tune({ pool, registry, start, maps, budget, lambda = 4, ba
     const screen = pick(screenMaps);
     const variants = Array.from({ length: lambda }, () => mutate(champion, dims, rng, sigma));
     const champ = { label: 'champion', engine: 'strategist', profile: champion };
+    // all the variants at once, so that many cores stay busy even though each screen is only a handful of games
+    const screens = await Promise.all(variants.map((v, i) => duel(pool, { label: `v${i}`, engine: 'strategist', profile: v.profile }, champ, { maps: screen, seeds: seedsPerMap, seedBase, maxDays })));
     let best = null;
-    for (const [i, v] of variants.entries()) {
-      const s = await duel(pool, { label: `v${i}`, engine: 'strategist', profile: v.profile }, champ, { maps: screen, seeds: seedsPerMap, seedBase, maxDays });
-      if (!best || s.score > best.s.score) best = { v, s };
-    }
+    for (const [i, s] of screens.entries()) if (!best || s.score > best.s.score) best = { v: variants[i], s };
     seedBase += 100;
     let accepted = false;
     let confirmScore = null;

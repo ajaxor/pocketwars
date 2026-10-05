@@ -177,8 +177,6 @@ The review's points and where they stand, then what the new system leaves open. 
   save. The campaign will want it in its save data.
 - **Training maps sit outside the game** (`tools/ai/maps/`): Archipelago has HQs that cannot reach each other on foot, which the shipped-map
   tests forbid. Shipping a true islands map would mean relaxing that rule on purpose.
-- **The tuning workflow commits to `main` as a bot** and then starts the Pages deploy itself (a bot commit does not trigger it). It only
-  commits when the tuned profile beat the shipped one over every map and the tests pass.
 - **Tools import a test helper** (`tests/helpers/node-io.js` for reading data in Node), as the existing tools already did.
 - **Rare `unreachable` engine error.** A few games in a long tuning run (about 3 in 100 rounds, on island_chain, twin_fleets and
   harbor_front) end with the strategist giving an order the engine rejects as `unreachable`, probably a plan whose path was blocked
