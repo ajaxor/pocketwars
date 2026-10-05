@@ -33,10 +33,6 @@ import { font } from './font.js';
 import { BUBBLE_COUNTER, BUBBLE_HIT, drawBubble } from './bubble.js';
 import { drawUnit } from './unit-sprites.js';
 
-/** Fog masks are painted at this many pixels a tile and blurred by FOG_BLUR of those pixels (about a quarter of a tile), see drawFog. */
-const FOG_RES = 8;
-const FOG_BLUR = 2.2;
-
 export class Renderer {
   constructor(canvas, game, effects, animator) {
     this.cv = canvas;
@@ -214,72 +210,49 @@ export class Renderer {
   /**
    * Fog of war for the viewer (fog.js), over the terrain and the units: tiles never seen are black, tiles seen before but out of sight now are
    * greyed out (their colour drained, then darkened). Nothing is drawn when the viewer is not in fog. `seen` is the camera's tile range.
-   *
-   * The edges are soft: the fog is first painted into small masks (FOG_RES pixels a tile, one for "out of sight" and one for "never seen"),
-   * blurred, and then stretched over the board with smoothing, so sight fades out over about half a tile instead of stopping at the tile edge.
-   * Tiles off the map copy their nearest map tile, so the fog does not fade at the map's border. The masks are rebuilt only when what the
-   * viewer sees, or the part of the map on screen, changes.
+   * Each kind of fog is one solid shape with rounded corners, like the merged terrain tiles: an outer corner of the fog is rounded, and an inner
+   * corner (where sight pokes into the fog) gets a fillet, so the edge of sight reads as one smooth line. The map's own border stays square.
    */
   drawFog(seen) {
-    const { g, S, game, viewer } = this;
+    const { g, game, viewer } = this;
     if (viewer === null || !isFogged(game, viewer)) return;
-    const masks = this.fogMasks(seen);
-    const x0 = seen.x0 - 1, y0 = seen.y0 - 1, w = (seen.x1 - seen.x0 + 3) * S, h = (seen.y1 - seen.y0 + 3) * S;
+    const hidden = (x, y) => !tileVisible(game, viewer, x, y);
+    const unknown = (x, y) => !tileExplored(game, viewer, x, y);
+    const grey = this.fogShape(seen, hidden), black = this.fogShape(seen, unknown);
     g.save();
-    g.beginPath(); g.rect(0, 0, game.map.width * S, game.map.height * S); g.clip();
-    g.imageSmoothingEnabled = true;
-    if (masks) {
-      g.globalCompositeOperation = 'saturation'; g.drawImage(masks.drain, x0 * S, y0 * S, w, h);   // a grey source drains the colour out of what is under it
-      g.globalCompositeOperation = 'source-over'; g.drawImage(masks.dim, x0 * S, y0 * S, w, h);
-      g.drawImage(masks.black, x0 * S, y0 * S, w, h);
-    } else {   // no offscreen canvas (an old browser): hard-edged tiles
-      for (let y = seen.y0; y <= seen.y1; y++) {
-        for (let x = seen.x0; x <= seen.x1; x++) {
-          if (tileVisible(game, viewer, x, y)) continue;
-          g.fillStyle = tileExplored(game, viewer, x, y) ? 'rgba(14,18,28,.55)' : '#07090d';
-          g.fillRect(x * S, y * S, S, S);
-        }
-      }
-    }
+    g.globalCompositeOperation = 'saturation'; g.fillStyle = '#808080'; g.fill(grey);   // a grey source drains the colour out of what is under it
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(14,18,28,.45)'; g.fill(grey);
+    g.fillStyle = '#07090d'; g.fill(black);
     g.restore();
   }
 
-  /** The three blurred fog masks for the tiles in `seen` plus a one-tile margin (see drawFog), or null without an offscreen canvas. Cached. */
-  fogMasks(seen) {
-    const { game, viewer } = this;
-    const key = `${game.revision}|${viewer}|${seen.x0},${seen.y0},${seen.x1},${seen.y1}`;
-    if (this.fogCache?.key === key) return this.fogCache.masks;
-    const make = (w, h) => {
-      if (typeof OffscreenCanvas === 'function') return new OffscreenCanvas(w, h);
-      const c = this.cv.ownerDocument?.createElement?.('canvas');
-      if (c) { c.width = w; c.height = h; }
-      return c?.getContext ? c : null;
-    };
-    const R = FOG_RES, cols = seen.x1 - seen.x0 + 3, rows = seen.y1 - seen.y0 + 3;
-    const { width: mw, height: mh } = game.map;
-    const state = (x, y) => {   // 0 in sight, 1 seen before, 2 never seen; off the map: the nearest map tile
-      const cx = Math.min(mw - 1, Math.max(0, x)), cy = Math.min(mh - 1, Math.max(0, y));
-      return tileVisible(game, viewer, cx, cy) ? 0 : tileExplored(game, viewer, cx, cy) ? 1 : 2;
-    };
-    const flat = make(cols * R, rows * R);
-    if (!flat) { this.fogCache = { key, masks: null }; return null; }
-    const layer = (color, test) => {
-      const f = flat.getContext('2d');
-      f.clearRect(0, 0, cols * R, rows * R);
-      f.fillStyle = color;
-      for (let j = 0; j < rows; j++) for (let i = 0; i < cols; i++) if (test(state(seen.x0 - 1 + i, seen.y0 - 1 + j))) f.fillRect(i * R, j * R, R, R);
-      const out = make(cols * R, rows * R), o = out.getContext('2d');
-      o.filter = `blur(${FOG_BLUR}px)`;   // where canvas filters are not supported this does nothing: the stretch still softens the edge a little
-      o.drawImage(flat, 0, 0);
-      return out;
-    };
-    const masks = {
-      drain: layer('#808080', (v) => v > 0),
-      dim: layer('rgba(14,18,28,.45)', (v) => v > 0),
-      black: layer('#07090d', (v) => v === 2),
-    };
-    this.fogCache = { key, masks };
-    return masks;
+  /** One fog shape: every tile in `seen` for which `inFog(x, y)` holds, merged, outer corners rounded and inner corners filleted. A Path2D. */
+  fogShape(seen, inFog) {
+    const { S, game } = this;
+    const { width: W, height: H } = game.map;
+    const r = this.face(0, 0)[4];
+    const on = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? null : inFog(x, y));   // null: off the map
+    const path = new Path2D();
+    const CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];   // roundRect's order: top-left, top-right, bottom-right, bottom-left
+    for (let y = Math.max(0, seen.y0 - 1); y <= Math.min(H - 1, seen.y1 + 1); y++) {
+      for (let x = Math.max(0, seen.x0 - 1); x <= Math.min(W - 1, seen.x1 + 1); x++) {
+        if (on(x, y)) {
+          // an outer corner is rounded when neither neighbour beside it is fog (the map's edge counts as fog, so the border stays square)
+          path.roundRect(x * S, y * S, S, S, CORNERS.map(([dx, dy]) => (on(x + dx, y) === false && on(x, y + dy) === false ? r : 0)));
+          continue;
+        }
+        // a tile in sight whose two neighbours at a corner are both fog: fill that corner in, all but a quarter circle (an inner fillet)
+        for (const [dx, dy] of CORNERS) {
+          if (!on(x + dx, y) || !on(x, y + dy)) continue;
+          const qx = (x + (dx > 0 ? 1 : 0)) * S, qy = (y + (dy > 0 ? 1 : 0)) * S;   // the corner
+          const cx = qx - dx * r, cy = qy - dy * r;                                   // the fillet's centre, inside the tile
+          const a0 = Math.atan2(dy, 0), a1 = Math.atan2(0, dx);
+          let d = a1 - a0; while (d <= -Math.PI) d += 2 * Math.PI; while (d > Math.PI) d -= 2 * Math.PI;
+          path.moveTo(qx, qy); path.lineTo(cx, qy); path.arc(cx, cy, r, a0, a1, d < 0); path.closePath();
+        }
+      }
+    }
+    return path;
   }
 
   drawArrow(now) {

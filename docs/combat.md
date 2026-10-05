@@ -74,8 +74,9 @@ ones highlighted.
 Buildings are still terrain (`property`), which is why they carry `blocksLineOfSight`. Walls are terrain too (`wall`: impassable to every
 unit, height 1 for line of sight). The destructible structures (cannon, SAM and artillery turrets, the jammer, the cracked wall) are units
 with the `structure` attribute on the `ground` layer, so every anti-ground weapon can hit them and they answer back like any unit
-(`src/engine/structures.js`). A neutral one (`owner: null`) is hostile to everyone; armed ones fire at the end of each player's turn at that
-player's units. The `structure` layer and target mode are still unused.
+(`src/engine/structures.js`). A neutral one (`owner: null`) is hostile to everyone. Turrets are never ordered: at the end of each player's turn that
+player's turrets fire at the enemy they would hurt most (only at what the player can see), then the neutral turrets fire at that player's
+units. The `structure` layer and target mode are still unused.
 
 | Structure | Weapon | Notes |
 |---|---|---|
