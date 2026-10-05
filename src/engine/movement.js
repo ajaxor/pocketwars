@@ -12,6 +12,7 @@ import { canAttackFrom, isIndirect, weaponsOf } from './combat.js';
 import { canSee } from './detection.js';
 import { passesOverMines } from './mines.js';
 import { moveOf } from './submerge.js';
+import { PathHeap } from './heap.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
 export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveCost[moveClass];
@@ -59,10 +60,10 @@ export function computeReach(game, unit) {
   const start = tileIndex(map, unit.x, unit.y);
   cost.set(start, 0);
   if (unit.halted) return new ReachMap(map.width, [unit.x, unit.y], cost, prev);   // stopped by a hidden unit: no more moving this turn
-  const queue = [[unit.x, unit.y, 0]];
+  const queue = new PathHeap();
+  queue.push(unit.x, unit.y, 0);
   while (queue.length) {
-    queue.sort((a, b) => a[2] - b[2]);
-    const [x, y, c] = queue.shift();
+    const [x, y, c] = queue.pop();
     if (c > cost.get(tileIndex(map, x, y))) continue; // stale queue entry
     for (const [dx, dy] of DIRS) {
       const nx = x + dx;
@@ -78,7 +79,7 @@ export function computeReach(game, unit) {
       if (!cost.has(k) || nc < cost.get(k)) {
         cost.set(k, nc);
         prev.set(k, tileIndex(map, x, y));
-        queue.push([nx, ny, nc]);
+        queue.push(nx, ny, nc);
       }
     }
   }
@@ -97,10 +98,10 @@ export function computeReach(game, unit) {
 export function distanceField(game, moveClass, goals) {
   const { map } = game;
   const field = new Map();
-  const queue = goals.map(([x, y]) => { field.set(tileIndex(map, x, y), 0); return [x, y, 0]; });
+  const queue = new PathHeap();
+  for (const [x, y] of goals) { field.set(tileIndex(map, x, y), 0); queue.push(x, y, 0); }
   while (queue.length) {
-    queue.sort((a, b) => a[2] - b[2]);
-    const [x, y, c] = queue.shift();
+    const [x, y, c] = queue.pop();
     if (c > field.get(tileIndex(map, x, y))) continue;
     for (const [dx, dy] of DIRS) {
       const nx = x + dx;
@@ -112,7 +113,7 @@ export function distanceField(game, moveClass, goals) {
       const k = tileIndex(map, nx, ny);
       if (!field.has(k) || nc < field.get(k)) {
         field.set(k, nc);
-        queue.push([nx, ny, nc]);
+        queue.push(nx, ny, nc);
       }
     }
   }

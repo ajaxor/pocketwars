@@ -24,6 +24,7 @@
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { tilesBetween } from './sight.js';
 import { inBounds, layerInfo, terrainAt, tileIndex, unitAt, unitDef } from './queries.js';
+import { PathHeap } from './heap.js';
 
 const cache = new WeakMap();   // game -> { revision, active, tiles: Map<player, Uint8Array> }
 
@@ -89,10 +90,10 @@ function reachable(game, out, unit) {
   const def = unitDef(game, unit);
   if (!def.move) return;
   const best = new Map([[tileIndex(map, unit.x, unit.y), 0]]);
-  const queue = [[unit.x, unit.y, 0]];
+  const queue = new PathHeap();
+  queue.push(unit.x, unit.y, 0);
   while (queue.length) {
-    queue.sort((a, b) => a[2] - b[2]);
-    const [x, y, c] = queue.shift();
+    const [x, y, c] = queue.pop();
     out[tileIndex(map, x, y)] = 1;
     for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
       const nx = x + dx, ny = y + dy;
@@ -102,7 +103,7 @@ function reachable(game, out, unit) {
       const k = tileIndex(map, nx, ny);
       if (best.has(k) && best.get(k) <= c + step) continue;
       best.set(k, c + step);
-      queue.push([nx, ny, c + step]);
+      queue.push(nx, ny, c + step);
     }
   }
 }
