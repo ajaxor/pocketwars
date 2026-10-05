@@ -25,7 +25,7 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 export function createWallLab(ctx, root) {
   const section = el('section', 'wall-lab');
   const head = el('div', 'wl-head');
-  head.append(el('h3', null, 'Wall builder'), el('p', 'legend', 'Tap a tile to place a wall, again for a cracked wall (breakable), again for a destroyed wall (rubble with a gap), again to clear it. Walls link to their neighbours.'));
+  head.append(el('h3', null, 'Wall builder'), el('p', 'legend', 'Tap a tile to place a wall, again for a cracked wall (breakable), again for a destroyed wall (rubble with a gap), again to clear it. Only straight pieces can be cracked or destroyed. Walls link to their neighbours.'));
   const canvas = el('canvas', 'wl-canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', 'A small base ringed by linked walls');
   const btns = el('div', 'chips');
   const mk = (label, fn) => { const b = el('button', 'chip', label); b.type = 'button'; b.addEventListener('click', fn); btns.append(b); };
@@ -33,6 +33,8 @@ export function createWallLab(ctx, root) {
   root.prepend(section);
 
   let walls = fortLayout();
+  const isWall = (x, y) => walls.has(`${x},${y}`);
+  const straight = (x, y) => { const l = wallLinks(isWall, x, y); return (l.e && l.w && !l.n && !l.s) || (l.n && l.s && !l.e && !l.w); };
   const faction = () => ctx.factions[0];
   const TILE = () => Math.max(28, Math.min(52, Math.floor((Math.min(root.clientWidth || 360, 560) - 8) / COLS)));
   function draw() {
@@ -42,7 +44,7 @@ export function createWallLab(ctx, root) {
     const g = canvas.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0);
     g.fillStyle = ctx.terrain.plain; g.fillRect(0, 0, COLS * S, ROWS * S);
     const road = ctx.terrain.road; g.fillStyle = road; g.fillRect(5 * S, 5 * S, S, 2 * S);               // a road out of the gate
-    const f = faction(), isWall = (x, y) => walls.has(`${x},${y}`);
+    const f = faction();
     for (const [k, id] of Object.entries(FORT_BUILDINGS)) { const [x, y] = k.split(',').map(Number); ctx.buildings.game[id]?.(g, x * S, y * S, S, f.color); }
     for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
       const kind = walls.get(`${x},${y}`);
@@ -53,12 +55,14 @@ export function createWallLab(ctx, root) {
     const r = canvas.getBoundingClientRect(), S = r.width / COLS;
     const x = Math.floor((e.clientX - r.left) / S), y = Math.floor((e.clientY - r.top) / S), k = `${x},${y}`;
     if (x < 0 || y < 0 || x >= COLS || y >= ROWS || FORT_BUILDINGS[k]) return;
-    const next = cycle(walls.get(k)); if (next) walls.set(k, next); else walls.delete(k);
+    let next = cycle(walls.get(k));
+    if (next && next !== 'wall' && !straight(x, y)) next = undefined;                                  // only a straight piece can be cracked or destroyed
+    if (next) walls.set(k, next); else walls.delete(k);
     draw();
   });
   mk('Reset base', () => { walls = fortLayout(); draw(); });
   mk('Clear', () => { walls = new Map(); draw(); });
-  mk('All cracked', () => { for (const k of walls.keys()) walls.set(k, 'cracked'); draw(); });
+  mk('All cracked', () => { for (const k of walls.keys()) { const [x, y] = k.split(',').map(Number); if (straight(x, y)) walls.set(k, 'cracked'); } draw(); });
   addEventListener('resize', draw);
   return { el: section, draw, set hidden(v) { section.hidden = v; if (!v) draw(); } };
 }

@@ -135,7 +135,8 @@ export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall
  *  on an upright end. No gradients, highlights or stripes. Cracked walls are the breakable variant: the same shapes in rusty brown with a hole torn
  *  in the pipe. `owner` is unused (walls are neutral) and kept so the call matches the buildings'. Draw walls row by row from the top: a riser or
  *  elbow reaches a little into the tile above. */
-export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false, broken = false } = {}) {
+export function drawWall(gIn, px, py, S, _owner, opts = {}) {
+  let { links = {}, cracked = false, broken = false } = opts;
   let g = gIn;                                                                  // swapped for a recorder while the pipe's outline is gathered as one clip path
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
@@ -149,6 +150,7 @@ export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false, 
   const straightH = w && e && !n && !s, straightV = n && s && !w && !e;
   const endH = count === 1 && (e || w), endN = count === 1 && n, endS = count === 1 && s;
   const lone = count === 0;
+  if (!straightH && !straightV) { cracked = false; broken = false; }              // cracks and breaks exist only on straight pieces: a corner, junction or end is always whole
   const riser = !straightH && !straightV && !endH && !endN && !endS;          // corners, branches and a lone wall: an upright pipe
   const dir = e ? 1 : -1, pv = dir > 0 ? .62 : .38;                            // an elbow's pivot on the ground
   // shadows: below the lying pipes and to the right of the upright ones
@@ -244,12 +246,12 @@ export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false, 
     // the same pipe, with a crack that starts at its edge and runs part of the way in
     const ink = col.out, lw = Math.max(1.2, .026 * S);
     const crack = (pts) => { g.strokeStyle = ink; g.lineWidth = lw; g.lineJoin = 'round'; g.lineCap = 'round'; g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)))); g.stroke(); };
-    if ((n || s) && !w && !e) {                                                  // a pipe lying north-south is cracked in from its left side
-      const y = endS ? .75 : .45;
+    if (straightV) {                                                             // a pipe lying north-south is cracked in from its left side
+      const y = .45;
       crack([[CX - R + .01, y - .02], [CX - .17, y + .04], [CX - .09, y - .01], [CX - .01, y + .05]]);
       crack([[CX - .09, y - .01], [CX - .06, y - .09]]);
     } else {
-      const x = riser ? CX : endH ? (e ? .82 : .18) : w && !e ? .3 : .7;
+      const x = .7;
       crack([[x - .02, CY - R + .01], [x + .05, CY - .2], [x - .02, CY - .12], [x + .04, CY - .03]]);
       crack([[x - .02, CY - .12], [x - .11, CY - .09]]);
     }
