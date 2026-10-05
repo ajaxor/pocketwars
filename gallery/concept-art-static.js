@@ -105,9 +105,10 @@ const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   box(g, s, -.28, -.02, .56, .05, 2, dk);
   const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.02, ca = Math.cos(ang), sa = Math.sin(ang), L = .46 - rec;
   g.fillStyle = c; g.beginPath(); g.arc(0, cy * s, .2 * s, Math.PI, 0); g.closePath(); g.fill();       // the mount: a half circle with a flat bottom, like a desk clock
-  g.fillStyle = mix(c, '#ffffff', .18); g.beginPath(); g.arc(0, cy * s, .12 * s, Math.PI, 0); g.closePath(); g.fill();
   stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel, swinging like the hand of the clock
   stroke(g, s, ca * (L - .07), cy + sa * (L - .07), ca * L, cy + sa * L, thick * 1.45, INK);         // its muzzle brake
+  const hw = Math.max(.05, thick / s * 1.5), from = -.06, to = .17, nx = -sa, ny = ca;                // the breech: a rectangular block on the barrel's base that turns with it
+  poly(g, s, [[ca * from + nx * hw, cy + sa * from + ny * hw], [ca * to + nx * hw, cy + sa * to + ny * hw], [ca * to - nx * hw, cy + sa * to - ny * hw], [ca * from - nx * hw, cy + sa * from - ny * hw]], dk);
   disc(g, s, 0, cy, .04, INK);                                                                       // the pivot
 };
 
