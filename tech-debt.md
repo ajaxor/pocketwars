@@ -149,8 +149,34 @@
 - **Remembered structures are only pictures.** A turret out of sight is drawn as last seen but cannot be tapped for its info card or targeted (artillery cannot shell a remembered turret in the fog any more).
 - **Siege is a flag on weapons** (`siege: true`), and structures' damage skips armor, toughness and cover entirely; `rules.structureDamage` holds the two multipliers. Durability values and the 1.5 / 0.25 split are first guesses with no damage-baseline cases.
 
-## Computer opponent (October 2026 review)
-- **No turn-level plan.** `chooseOrder` scores one unit at a time in a fixed order against the board as it stands, so focus fire, "attack with the weak unit first, finish with the strong one", screening artillery and blocking chokepoints only happen by accident. It is also shaped by the UI's need to animate one unit at a time; a planner that decides the whole turn up front and then hands orders out one by one would serve both.
-- **No benchmark harness.** There is no tool to play AI against AI over many maps and report win rates, so a change to `data/ai.json` cannot be measured. Two things make one necessary: the engine is fully deterministic, so a mirror match always replays the same game (on `classic`, 28 of 28 identical games went to player 1), and on the larger maps (`four_corners`, `island_chain`) AI-vs-AI games often had no winner after 30 days.
-- **Turn speed limits search.** A full computer turn takes roughly 3 ms on `classic` but 20 to 40 ms on the larger maps (most of it movement ranges and distance fields recomputed per unit). Any look-ahead (trying several orderings, or simulating the reply) needs cheaper move generation or caching of reachable tiles per turn.
-- **Build lists are global** (`data/ai.json` `build`, with fixed `max` counts), not driven by what the enemy fields; the campaign will need them per leader anyway.
+## Computer opponent (October 2026)
+The review's points and where they stand, then what the new system leaves open. See docs/ai.md.
+- **Addressed:** no turn-level plan (the strategist plans the turn: focus fire, kills first, re-plans around each fight); no benchmark
+  harness (`npm run ai:arena`, seeded and repeatable, both seat orders); build lists ignoring the enemy (the strategist values each menu's
+  units from their stats against what the enemy fields, so per-leader menus need no AI lists). The greedy engine is kept as it was, as a
+  baseline to score against.
+- **Turn speed** is better (a heap in the path searches, an occupant index in `computeReach`: identical results, verified on the greedy
+  engine) but the strategist still takes 20-40 ms per turn on the big maps, mostly distance fields and reach searches. Deeper look-ahead
+  needs cheaper move generation first (reachable tiles cached per unit and invalidated by position changes).
+- **Look-ahead is one ply and approximate.** The threat map is where each enemy could move and fire next turn, worked out once per
+  turn from the board at its start; it does not simulate the enemy's actual reply, re-plan the enemy's routes as our units block them, or
+  search over orderings of our units. A real reply search (clone the state, play the enemy's best few answers to our top plans) is the
+  next big step in strength, once turns are cheap enough.
+- **Plans made earlier in a turn are trusted** when nothing fought near them (`stillGood` in strategist/index.js): in our own turn enemies
+  only die or come to light, never move. If the rules ever let units react in the other side's turn, this assumption has to go.
+- **Landings avoid defended shores rather than open them.** Carriers keep out of the threat map, so a well-guarded coast is never
+  assaulted; there is no coordinated "bombard, then land, then escort" operation. Stalemates on island maps are judged at the day limit.
+- **Tuning is noisy.** Each round plays a few dozen games; many are judged on worth at day 30 rather than finished, four-player maps are
+  left out of the tuning pool by default, and in a free-for-all any seat of an engine winning counts for it. Longer CI runs help; a
+  cheaper engine would help more.
+- **The AI still ignores fog of war** (as before): the strategist honours cloaking and submarines (what it cannot see it does not plan
+  around) but sees through jammer fog.
+- **Engine choice is not in the UI.** The game plays the data's default engine; a skirmish option to pick an opponent (or difficulty,
+  for example a less-tuned profile) would be a small addition through `game.aiSetup`.
+- **What the AI learns about the player lives in one browser** (`localStorage`), per engine rather than per player profile or campaign
+  save. The campaign will want it in its save data.
+- **Training maps sit outside the game** (`tools/ai/maps/`): Archipelago has HQs that cannot reach each other on foot, which the shipped-map
+  tests forbid. Shipping a true islands map would mean relaxing that rule on purpose.
+- **The tuning workflow commits to `main` as a bot** and then starts the Pages deploy itself (a bot commit does not trigger it). It only
+  commits when the tuned profile beat the shipped one over every map and the tests pass.
+- **Tools import a test helper** (`tests/helpers/node-io.js` for reading data in Node), as the existing tools already did.

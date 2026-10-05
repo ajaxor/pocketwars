@@ -30,6 +30,8 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 npm start          # dev server at http://localhost:8080  (?map=<id> picks a map)
 npm test           # node --test, Node 22+
 npm run validate   # validates data/*.json and every map
+npm run ai:arena   # plays the AI engines against each other on every map and reports who wins
+npm run ai:tune    # tunes the strategist AI by self-play (--write to keep a result that beats the shipped one)
 ```
 
 ES modules and `fetch` need a web server; opening `index.html` from `file://` does not work.
@@ -39,6 +41,8 @@ ES modules and `fetch` need a web server; opening `index.html` from `file://` do
 - **Combat is stats.** Toughness and armor on units, damage and armor piercing on weapons, target modes and line of sight:
   [docs/combat.md](docs/combat.md).
 - **Maps are files.** `data/maps/*.map.json`: [docs/map-format.md](docs/map-format.md).
+- **The computer opponent** is a set of AI engines scored against each other, with a strategist that plans from the data and tunes
+  itself: [docs/ai.md](docs/ai.md).
 - **Code layout and deploy:** [docs/architecture.md](docs/architecture.md).
 - **Where the game is going:** the campaign vision (leaders, per-leader factories, labs, final boss) is in [docs/campaign-design.md](docs/campaign-design.md).
 

@@ -336,7 +336,7 @@ These are the engine and UI changes, in the repo's own terms. None exist yet.
    `leaders` section in the registry and validation in `src/data/validate.js`.
 2. **Per-player build menus.** `buildProblem` (`src/engine/economy.js`) currently asks `property.builds.includes(def.category)`. It
    should ask the player's leader for the building's unit list instead. A building would carry a *kind* (barracks, factory, airfield,
-   shipyard), not a category list, and the leader maps kind to units. The AI's `data/ai.json` build rules would become per leader.
+   shipyard), not a category list, and the leader maps kind to units. The strategist AI already builds from whatever menu its leader has (it values units from their stats, see docs/ai.md).
 3. **Labs as properties** with their own unit list, owned by the map (`terrain.json` property `builds` already supports a list of
    categories; labs can name specific units).
 4. **Missions as data**: a map plus the opposing leader plus conditions (default: capture the HQ). `data/maps/*.map.json` already
@@ -364,7 +364,8 @@ A suggested path that always leaves the game playable:
 
 - **Balance** grows with every leader × stage pairing. Mitigation: keep leaders close to a baseline kit, and give each a clear weak
   spot, not an overall bonus. A small headless AI-vs-AI test across leader pairs can flag outliers.
-- **AI** has to play every leader's menu well enough. Today it picks from `data/ai.json` build lists; per-leader lists are the minimum.
+- **AI** has to play every leader's menu well enough. The strategist (docs/ai.md) values each menu's units from their stats and picks a
+  game plan that suits the leader's factories, so new menus need no AI lists; `npm run ai:arena -- --leaders a,b` checks a pairing.
   Labs and the new unit mechanics (stealth, deploy, gliders) all need AI support; the plan is "uses every unit sensibly", not "plays well".
 - **Content volume**: eight leaders, eight to ten maps, a script for each. The roster can ship in slices (see the build order).
 - **New mechanics in the concept units** (cloaking, mines, orbital strikes, a new air layer) are real engine work. Pick labs for the

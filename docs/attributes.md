@@ -56,7 +56,7 @@ wrong kind of entity, fail validation.
 
 Terrain `moveCost` per move class (`null` = impassable); unit `layer`, `weapons`, `toughness` and `armor`, and the weapons table
 (damage, armor piercing, range, target modes, and `onlyTags`: the weapon can only hit units carrying one of those unit `tags`, the hunter sub's torpedoes vs `sub`): see [combat.md](combat.md); `layers`/`targetModes`/`moveClasses`/`maxHp` in
-`rules.json`; AI weights and build rules in `ai.json`. Layer and target-mode rules are covered by `tests/attributes/layers.test.js`.
+`rules.json`; AI tuning in `ai.json` (one profile per engine, see docs/ai.md). Layer and target-mode rules are covered by `tests/attributes/layers.test.js`.
 
 ## Adding an attribute
 

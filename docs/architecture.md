@@ -3,10 +3,12 @@
 Plain ES modules, no bundler, no runtime dependencies. Node 22+ is only needed for tests and tools.
 
 ```
-data/            game content as JSON (units, weapons, terrain, factions, rules, ai) and data/maps/*.map.json
+data/            game content as JSON (units, weapons, terrain, factions, rules, ai, ai-strategies) and data/maps/*.map.json
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
-src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, sight (line of sight), capture, economy, victory, ai,
+src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, sight (line of sight), capture, economy, victory,
                  structures (turrets, jammer, cracked walls; neutral fire), fog (fog of war)
+src/ai/          computer opponents side by side (docs/ai.md): engines.js (registry), runner.js (plays an engine's steps), greedy.js,
+                 strategist/ (the default), evaluate.js (who is ahead), history.js (what it learned about the player)
 src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, buildings.js, color.js,
                  terrain-art.js (trees, mountains, sea), terrain-layer.js (rounded merged tiles), effects, move animator, arrivals (reinforcements)
 src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/windows/chips), info + build-menu (facts as plain data),
