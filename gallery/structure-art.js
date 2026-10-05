@@ -141,7 +141,7 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
   const col = { body: '#646b78', hole: '#16181c', out: '#1f2228' };           // a cracked pipe is the same colour as a sound one
-  const dark = shade('#646b78', -.14), SHD = .13, SHADOW = [.1, .17];                               // the shaded side's colour; how far the lit part is shifted up and left: the width of the shade
+  const dark = shade('#646b78', -.14), SHD = .13, SHADOW = [.06, .1];                               // the shaded side's colour; how far the lit part is shifted up and left: the width of the shade
   const OW = .03, RC = .13, FR = .08;                                           // the dark outline's width; the radius of rounded corners; of the fillets in inner corners
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
