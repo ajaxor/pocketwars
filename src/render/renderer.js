@@ -332,7 +332,9 @@ export class Renderer {
         if (ctx(x, y)) continue;
         // a tile outside this fog whose two neighbours at a corner are fog: fill that corner in, all but a quarter circle (an inner fillet)
         for (const [dx, dy] of CORNERS) {
-          if (!inMap(x + dx, y) || !inMap(x, y + dy) || !ctx(x + dx, y) || !ctx(x, y + dy)) continue;
+          // a real inner corner only: both neighbours AND the tile across the corner are fog (two fog tiles that only touch at a corner, a
+          // checkerboard step, keep their own rounded corners and get no fillet)
+          if (!inMap(x + dx, y) || !inMap(x, y + dy) || !ctx(x + dx, y) || !ctx(x, y + dy) || !ctx(x + dx, y + dy)) continue;
           if (elsewhere && elsewhere(k(x + dx, y)) && elsewhere(k(x, y + dy))) continue;
           if (!elsewhere && !(member(k(x + dx, y)) || member(k(x, y + dy)))) continue;
           if (elsewhere && !(member(k(x + dx, y)) || member(k(x, y + dy)))) continue;
