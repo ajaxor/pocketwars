@@ -100,6 +100,7 @@ const classic = await loadMap(readData, registry, 'classic');
 
 function simulate(days) {
   const game = new Game(registry, classic);
+  game.aiSetup = [{ engine: 'greedy' }, { engine: 'greedy' }];   // these tests are about the greedy engine (the default is the strategist)
   const seen = [];
   for (let i = 0; i < days * 2 && !game.isOver; i++) {
     playTurn(game);

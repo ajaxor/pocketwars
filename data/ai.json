@@ -1,5 +1,5 @@
 {
-  "default": "greedy",
+  "default": "strategist",
   "engines": {
     "greedy": {
       "weights": {

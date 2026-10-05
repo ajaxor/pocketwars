@@ -19,7 +19,11 @@ const legend = {
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, B: { terrain: 'barracks', owner: 0 }, A: { terrain: 'airfield', owner: 0 },
 };
 const players = [{ faction: 'ashmark', controller: 'human', funds: 20000 }, { faction: 'vantor_reach', controller: 'human', funds: 20000 }];
-const world = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
+const world = (rows, unitsOnMap) => {
+  const g = new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
+  g.aiSetup = [{ engine: 'greedy' }, { engine: 'greedy' }];   // the AI checks here are about the greedy engine (see tests/ai for the strategist)
+  return g;
+};
 
 test('a marine walks on land, crosses shoals and sea, and captures like a soldier', () => {
   const g = world(['H.o~~h'], [['marine', 0, 1, 0]]);
