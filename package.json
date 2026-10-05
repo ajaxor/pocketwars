@@ -4,11 +4,15 @@
   "private": true,
   "description": "Pocket Wars: a turn-based tactics game for your phone browser.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node tools/serve.mjs",
     "test": "node --test",
     "validate": "node tools/validate-data.mjs",
-    "lab": "node tools/sprite-lab/lab.mjs"
+    "lab": "node tools/sprite-lab/lab.mjs",
+    "ai:arena": "node tools/ai/arena.mjs",
+    "ai:tune": "node tools/ai/tune.mjs"
   }
 }

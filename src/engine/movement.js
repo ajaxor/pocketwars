@@ -93,13 +93,18 @@ export function computeReach(game, unit) {
 
 /**
  * Cheapest-path cost from any goal to every tile a move class can enter, ignoring units.
- * Used by the AI as a "how far is the objective" gradient. Map<tileIndex, cost>.
+ * Used by the AI as a "how far is the objective" gradient. Map<tileIndex, cost>. A goal is [x, y] or [x, y, startCost].
  */
 export function distanceField(game, moveClass, goals) {
   const { map } = game;
   const field = new Map();
   const queue = new PathHeap();
-  for (const [x, y] of goals) { field.set(tileIndex(map, x, y), 0); queue.push(x, y, 0); }
+  for (const [x, y, start = 0] of goals) {   // a goal may carry a head start (a cost of its own): the AI uses it to prefer some goals
+    const k = tileIndex(map, x, y);
+    if (field.has(k) && field.get(k) <= start) continue;
+    field.set(k, start);
+    queue.push(x, y, start);
+  }
   while (queue.length) {
     const [x, y, c] = queue.pop();
     if (c > field.get(tileIndex(map, x, y))) continue;

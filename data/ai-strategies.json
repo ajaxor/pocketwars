@@ -1,0 +1,159 @@
+{
+  "about": "Game plans for the strategist AI (src/ai/strategist). Add a strategy by adding an entry; docs/ai.md explains every field. 'when' lists conditions that must all hold ('!' negates; 'canBuild:<unit id|category|tag|moveClass|role|attribute>' with '|' for any of several). 'build' multiplies how much the AI wants a unit type: by unit id, category, moveClass, tag, role (capture, carrier, healer, supplier, layer, radar, indirect, combat), attribute, or fast (move 6+), heavy (cost 10000+), cheap (cost 3000 or less). 'tactics.target' is what the army marches on: army, hq, properties or balanced; aggression and caution scale attacking and avoiding danger; capture scales the wish to capture; mass holds the army back until it has that many fighting units; landing scales carrier landings; retreat scales the HP at which units go home for repairs.",
+  "strategies": [
+    {
+      "id": "combined_arms",
+      "name": "Combined arms",
+      "summary": "A bit of everything, sent where it hurts most.",
+      "weight": 2,
+      "build": {},
+      "tactics": { "target": "balanced" }
+    },
+    {
+      "id": "tank_assault",
+      "name": "Tank assault",
+      "summary": "Mass tracked armour and roll over the front.",
+      "when": ["groundRoute", "canBuild:tread"],
+      "build": { "moveClass": { "tread": 1.7 }, "category": { "aircraft": 0.6, "naval": 0.7 }, "role": { "capture": 0.8 } },
+      "tactics": { "target": "army", "aggression": 1.25, "caution": 0.8, "mass": 4 }
+    },
+    {
+      "id": "heavy_armour",
+      "name": "Heavy armour",
+      "summary": "Few, expensive, hard to kill units that grind forward.",
+      "when": ["groundRoute", "canBuild:tread"],
+      "build": { "heavy": 2, "fast": 0.6 },
+      "tactics": { "target": "army", "aggression": 1.1, "mass": 3 }
+    },
+    {
+      "id": "blitz",
+      "name": "Blitz",
+      "summary": "Fast units straight at the enemy HQ before they are ready.",
+      "when": ["groundRoute"],
+      "build": { "fast": 1.8, "heavy": 0.6, "role": { "capture": 1.2 } },
+      "tactics": { "target": "hq", "aggression": 1.3, "caution": 0.6, "capture": 1.2 }
+    },
+    {
+      "id": "hq_rush",
+      "name": "HQ rush",
+      "summary": "Everything goes for the enemy HQ, capturers first.",
+      "when": ["groundRoute"],
+      "weight": 0.7,
+      "build": { "role": { "capture": 1.3 }, "fast": 1.3 },
+      "tactics": { "target": "hq", "aggression": 1.4, "caution": 0.6, "capture": 1.3 }
+    },
+    {
+      "id": "artillery_siege",
+      "name": "Artillery siege",
+      "summary": "A wall of guns behind a screen, shelling anything that comes close.",
+      "when": ["canBuild:indirect"],
+      "build": { "role": { "indirect": 2.2 }, "moveClass": { "tread": 1.2 }, "fast": 0.7 },
+      "tactics": { "target": "army", "aggression": 0.9, "caution": 1.4, "mass": 5 }
+    },
+    {
+      "id": "turtle",
+      "name": "Turtle and counter",
+      "summary": "Dig in, build up, then strike with a big army.",
+      "weight": 0.6,
+      "build": { "heavy": 1.4, "role": { "indirect": 1.5 }, "fast": 0.7 },
+      "tactics": { "target": "army", "mass": 8, "caution": 1.5, "aggression": 0.9, "retreat": 1.3 }
+    },
+    {
+      "id": "attrition",
+      "name": "Attrition",
+      "summary": "Keep units alive: medics, supply and pulling back to repair.",
+      "weight": 0.8,
+      "build": { "role": { "healer": 2, "supplier": 1.6 }, "heavy": 1.2 },
+      "tactics": { "target": "army", "caution": 1.3, "retreat": 1.4 }
+    },
+    {
+      "id": "land_grab",
+      "name": "Land grab",
+      "summary": "Out-earn the enemy: capture everything first, fight later.",
+      "when": ["manyNeutrals"],
+      "build": { "role": { "capture": 1.8 }, "cheap": 1.3, "heavy": 0.7 },
+      "tactics": { "target": "properties", "capture": 1.4, "caution": 1.1 }
+    },
+    {
+      "id": "mechanized_infantry",
+      "name": "Mechanized infantry",
+      "summary": "Infantry in numbers, with carriers to move them.",
+      "when": ["canBuild:infantry"],
+      "build": { "category": { "infantry": 1.6 }, "role": { "carrier": 1.3 }, "heavy": 0.7 },
+      "tactics": { "target": "balanced", "capture": 1.2 }
+    },
+    {
+      "id": "air_rush",
+      "name": "Air rush",
+      "summary": "Own the sky and strike from it.",
+      "when": ["canBuild:aircraft"],
+      "build": { "category": { "aircraft": 2.2, "vehicle": 0.6 }, "role": { "capture": 0.9 } },
+      "tactics": { "target": "army", "aggression": 1.2 }
+    },
+    {
+      "id": "air_cavalry",
+      "name": "Air cavalry",
+      "summary": "Helicopters and troop drops behind the lines.",
+      "when": ["canBuild:helicopter"],
+      "build": { "tag": { "helicopter": 2.2 }, "role": { "carrier": 1.6 } },
+      "tactics": { "target": "properties", "aggression": 1.1, "capture": 1.2, "landing": 1.3 }
+    },
+    {
+      "id": "flak_screen",
+      "name": "Flak screen",
+      "summary": "Answer an air force with anti-air and fighters.",
+      "when": ["enemyAir"],
+      "build": { "unit": { "flak": 2, "sam_launcher": 2, "fighter": 1.5 } },
+      "tactics": { "target": "army", "caution": 1.2 }
+    },
+    {
+      "id": "naval_supremacy",
+      "name": "Naval supremacy",
+      "summary": "Win the sea, then shell the coast.",
+      "when": ["canBuild:naval"],
+      "build": { "category": { "naval": 2.2 }, "role": { "carrier": 1.2 } },
+      "tactics": { "target": "army", "aggression": 1.1 }
+    },
+    {
+      "id": "silent_service",
+      "name": "Silent service",
+      "summary": "Submarines strike from below.",
+      "when": ["canBuild:sub"],
+      "build": { "tag": { "sub": 2.4 }, "category": { "naval": 1.3 } },
+      "tactics": { "target": "army", "aggression": 1.2 }
+    },
+    {
+      "id": "island_hopping",
+      "name": "Island hopping",
+      "summary": "Carry troops across the water and take the islands one by one.",
+      "when": ["islands", "canBuild:carrier|amphibious|amphibious_tread|hover"],
+      "weight": 2.5,
+      "build": { "role": { "carrier": 2.4, "capture": 1.2 }, "moveClass": { "amphibious": 1.8, "amphibious_tread": 1.6, "hover": 1.6 }, "category": { "naval": 1.3 } },
+      "tactics": { "target": "properties", "landing": 1.5, "capture": 1.3 }
+    },
+    {
+      "id": "amphibious_assault",
+      "name": "Amphibious assault",
+      "summary": "Units that swim and drive come out of the sea where they are least expected.",
+      "when": ["canBuild:amphibious|amphibious_tread|hover"],
+      "build": { "moveClass": { "amphibious": 1.9, "amphibious_tread": 1.9, "hover": 1.9 } },
+      "tactics": { "target": "hq", "aggression": 1.2 }
+    },
+    {
+      "id": "coastal_bombardment",
+      "name": "Coastal bombardment",
+      "summary": "Across the water, ships and planes wear the enemy down before anyone lands.",
+      "when": ["islands", "canBuild:naval|aircraft"],
+      "build": { "category": { "naval": 1.8, "aircraft": 1.4 }, "role": { "indirect": 1.3 } },
+      "tactics": { "target": "army", "aggression": 1.1 }
+    },
+    {
+      "id": "stealth_raid",
+      "name": "Stealth raid",
+      "summary": "Cloaked units hit what the enemy cannot see coming.",
+      "when": ["canBuild:cloak"],
+      "build": { "attribute": { "cloak": 2.2 } },
+      "tactics": { "target": "properties", "aggression": 1.3, "caution": 0.8 }
+    }
+  ]
+}

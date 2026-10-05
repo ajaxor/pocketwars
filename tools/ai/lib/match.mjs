@@ -1,0 +1,62 @@
+// One headless game between AI engines, the way a skirmish is set up (random leaders, the map's funds), but every seat played by the
+// computer. Used by the arena and the tuner, in worker threads (pool.mjs) or directly.
+//
+//   playMatch(registry, map, { seats, seed, maxDays, fog, margin }) -> { winner, seatWinner, days, adjudicated, shares, strategies }
+//     seats    one { engine, profile? } per player slot on the map
+//     seed     makes the match repeatable: leaders are rolled from it and engines' random choices start from it. The same seed with the
+//              seats swapped gives the same leaders to the same slots, so a pair of games is a fair test of the engines alone
+//     maxDays  a game still going after this many days is judged on worth (src/ai/evaluate.js): the leader wins if their share is at
+//              least `margin`, otherwise it is a draw
+//     fog      false takes the jammers off (default: the map as it is)
+
+import { Game } from '../../../src/engine/game.js';
+import { applySkirmish } from '../../../src/data/skirmish.js';
+import { playTurn } from '../../../src/ai/runner.js';
+import { leader, standings } from '../../../src/ai/evaluate.js';
+
+export const DEFAULT_MAX_DAYS = 30;
+export const DEFAULT_MARGIN = 0.6;
+
+/** A seeded random function (mulberry32). */
+export function seeded(seed) {
+  let s = typeof seed === 'number' ? seed >>> 0 : [...String(seed)].reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619), 2166136261) >>> 0;
+  return () => {
+    s = (s + 0x6d2b79f5) >>> 0;
+    let t = s;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function setupMatch(registry, map, { seats, seed = 1, fog = true, leaders = true }) {
+  if (seats.length !== map.players.length) throw new Error(`map "${map.id}" has ${map.players.length} slots, got ${seats.length} seats`);
+  const settings = {
+    mapId: map.id, funds: null, fog,
+    players: map.players.map((p) => ({ faction: p.faction, controller: 'ai', leader: leaders && registry.leaderIds.length ? 'random' : null })),
+  };
+  const game = new Game(registry, applySkirmish(map, settings, registry, seeded(`${seed}:leaders`)));
+  game.aiSeed = seed;
+  game.aiSetup = seats.map((s) => ({ engine: s.engine, profile: s.profile, history: s.history ?? null }));
+  return game;
+}
+
+export function playMatch(registry, map, { seats, seed = 1, maxDays = DEFAULT_MAX_DAYS, fog = true, margin = DEFAULT_MARGIN, leaders = true }) {
+  const game = setupMatch(registry, map, { seats, seed, fog, leaders });
+  const t0 = performance.now();
+  let turns = 0;
+  while (!game.isOver && game.state.day <= maxDays) {
+    playTurn(game);
+    turns++;
+    if (!game.isOver) game.endTurn();
+  }
+  const adjudicated = !game.isOver;
+  const winner = adjudicated ? leader(game, margin) : (game.state.winner === 'draw' ? null : game.state.winner);
+  return {
+    map: map.id, seed, winner, adjudicated, days: game.state.day, turns,
+    msPerTurn: (performance.now() - t0) / Math.max(1, turns),
+    shares: Object.fromEntries(standings(game).map((s) => [s.player, s.share])),
+    leaders: game.map.players.map((p) => p.leader ?? null),
+    strategies: game.map.players.map((_, i) => game.state.ai?.[i]?.strategy?.id ?? null),
+  };
+}

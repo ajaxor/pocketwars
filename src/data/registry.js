@@ -39,6 +39,7 @@ export function createRegistry(raw) {
   const weapons = deepFreeze(Object.fromEntries(Object.entries(structuredClone(raw.weapons)).map(([id, w]) => [id, { armorPiercing: 0, ...w, id }])));
   const ground = deepFreeze(withIds(structuredClone(raw.ground || {})));
   const ai = deepFreeze(structuredClone(raw.ai));
+  const aiStrategies = deepFreeze(structuredClone(raw['ai-strategies']?.strategies ?? []));   // the strategist's game plans (optional)
   const unitIds = Object.keys(units); // JSON order = build-menu order
   const terrainIds = Object.keys(terrain);
   const groundIds = Object.keys(ground);
@@ -47,7 +48,7 @@ export function createRegistry(raw) {
   const leaderIds = Object.keys(loadouts.leaders); // JSON order = the order leaders are offered in
 
   return Object.freeze({
-    rules, factions, terrain, ground, units, weapons, ai, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds,
+    rules, factions, terrain, ground, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds,
     /** The kit a leader brings: { build, start } (see resolveLoadouts). No leader (null) gets the default kit. */
     loadoutFor: (leaderId) => {
       if (leaderId == null) return loadouts.default;

@@ -3,6 +3,7 @@
 
 import { UNIT_ATTRIBUTES, TERRAIN_ATTRIBUTES, checkAttributes } from '../engine/attributes.js';
 import { ENGINES } from '../ai/engines.js';
+import { validateStrategies } from '../ai/strategist/index.js';
 
 export class DataError extends Error {
   constructor(problems) {
@@ -310,7 +311,7 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
   }
 }
 
-/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground` and `loadouts`. */
+/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`, `loadouts` and `ai-strategies`. */
 export function validateData(raw) {
   const problems = [];
   validateRules(raw.rules, problems);
@@ -322,6 +323,7 @@ export function validateData(raw) {
   if (isObj(raw.weapons) && isObj(raw.terrain)) for (const [id, w] of Object.entries(raw.weapons)) for (const t of Array.isArray(w?.fromTerrain) ? w.fromTerrain : []) if (!raw.terrain[t]) problems.push(`weapon "${id}": fromTerrain names unknown terrain "${t}"`);
   validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);
   validateAi(raw.ai, raw, problems);
+  validateStrategies(raw['ai-strategies'], raw.units, problems);
   validateLoadouts(raw.loadouts, raw.units, raw.terrain, problems);
   return problems;
 }
