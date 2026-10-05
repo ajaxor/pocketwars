@@ -23,8 +23,9 @@ export const STATES = { idle: { run: 1, speed: 1, alpha: 1 }, moving: { run: 1, 
 export const OUTLINES = { off: 0, thin: OUTLINE_THIN, medium: .024, thick: .038 };   // radius as a fraction of the tile
 export const OUTLINE_COLORS = { navy: '#161a26', black: '#000000', faction: null };            // null: the faction's dark colour
 
-export function paintTile(g, { unit, faction, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'plain', make }) {
+export function paintTile(g, { unit, faction: team, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'plain', make }) {
   const st = STATES[state] || STATES.idle;
+  const faction = unit.fixedColors ? { ...team, color: unit.fixedColors.color, dark: unit.fixedColors.dark } : team;   // a unit that is always one colour (the tank trap) ignores the team
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
   if (unit.kind === 'building' || unit.kind === 'wall') {                       // structures are drawn like the game's buildings, not as unit sprites

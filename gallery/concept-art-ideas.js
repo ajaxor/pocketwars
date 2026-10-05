@@ -264,8 +264,7 @@ const barrageBalloon = (g, { s, c, dk, w, ph, run }) => {
 };
 
 // Tank trap: three steel "hedgehogs" of crossed beams in plain grey (no owner, like the walls): vehicles cannot pass, infantry climb through.
-const tankTrap = (g, { s }) => {
-  const c = '#646b78', dk = '#464b55';   // plain steel, the colour of the pipe walls: it belongs to nobody
+const tankTrap = (g, { s, c, dk }) => {   // drawn in whatever colours it is given; the game and the gallery give it a fixed dark grey (render.fixedColors)
   const hog = (x, y, r) => {
     const t = Math.max(3, s * .06);
     stroke(g, s, x - r, y, x + r * .7, y - r * 1.6, t, dk);                                                     // the far beam

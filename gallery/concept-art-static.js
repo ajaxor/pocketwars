@@ -65,8 +65,9 @@ export function aim(g, s, mx, my, len, phi, el, thick, col = INK, ext = 0, from 
 // Gun turret: a squat bunker under a dark dome, with a machine gun out of the dome that sweeps round, through facing us.
 const gunTurret = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.3, .3);
-  box(g, s, -.26, -.03, .52, .24, 4, c);                                                            // the bunker
-  g.fillStyle = dk; g.beginPath(); g.arc(-.02 * s, -.02 * s, .17 * s, Math.PI, 0); g.fill();         // the dome
+  box(g, s, -.26, -.03, .52, .24, 4, c);                                                            // the bunker, with a dark roof band like the jammer's hut
+  box(g, s, -.26, -.03, .52, .05, 2, dk);
+  g.fillStyle = c; g.beginPath(); g.arc(-.02 * s, -.02 * s, .17 * s, Math.PI, 0); g.fill();           // the dome, in the team colour
   box(g, s, -.17, .05, .3, .045, 1, INK);                                                           // a firing slit
   aim(g, s, -.02, -.07, .3, sweep(w, ph, run, .55), 0, Math.max(3, s * .05));                       // the gun
 };
@@ -76,8 +77,8 @@ const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.36, .36);
   const rec = run ? Math.max(0, Math.sin(w * 1.3 + ph)) ** 8 * .035 : 0;
   box(g, s, -.32, -.07, .64, .27, 4, c);                                                            // the block
-  box(g, s, -.32, -.07, .64, .05, 2, mix(c, '#ffffff', .2));                                        // a lighter roof edge
-  box(g, s, -.17, -.24, .34, .17, 3, dk);                                                           // the turret
+  box(g, s, -.32, -.07, .64, .05, 2, dk);                                                           // a dark roof band, like the jammer's hut
+  box(g, s, -.17, -.24, .34, .17, 3, c);                                                            // the turret, in the team colour
   aim(g, s, 0, -.155, .4, sweep(w, ph, run, .42), 0, Math.max(3.5, s * .06), INK, -rec);            // the cannon
 };
 
@@ -88,7 +89,8 @@ const hand = (w, ph, run, rate) => -(.12 * Math.PI + .76 * sweep(w, ph, run, rat
 const samSite = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.32, .32);
   box(g, s, -.28, -.02, .56, .23, 4, c);
-  box(g, s, -.12, -.09, .24, .08, 2, dk);                                                           // the turntable
+  box(g, s, -.28, -.02, .56, .05, 2, dk);                                                           // a dark roof band, like the jammer's hut
+  box(g, s, -.12, -.09, .24, .08, 2, c);                                                            // the turntable, in the team colour
   const ang = hand(w, ph, run, .4), px = 0, py = -.1, nx = -Math.sin(ang), ny = Math.cos(ang);       // (nx, ny): across the missiles
   missile(g, s, px - nx * .035, py - ny * .035, ang, .44, .075, mix('#e8e4d8', '#000000', .3), '#3f434c');   // one behind
   missile(g, s, px + nx * .035, py + ny * .035, ang, .44, .08);                                      // and one in front
@@ -102,7 +104,7 @@ const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   box(g, s, -.22, .02, .44, .2, 4, c);                                                              // the pedestal
   box(g, s, -.22, .02, .44, .05, 2, dk);
   const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.07, ca = Math.cos(ang), sa = Math.sin(ang), L = .46 - rec;
-  disc(g, s, 0, cy, .15, INK); disc(g, s, 0, cy, .125, dk); disc(g, s, 0, cy, .07, mix(dk, '#ffffff', .18));   // the round mount it pivots in
+  disc(g, s, 0, cy, .15, INK); disc(g, s, 0, cy, .125, c); disc(g, s, 0, cy, .07, mix(c, '#ffffff', .18));   // the round mount it pivots in
   stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel
   stroke(g, s, ca * (L - .07), cy + sa * (L - .07), ca * L, cy + sa * L, thick * 1.45, INK);         // its muzzle brake
   stroke(g, s, 0, cy, ca * .13, cy + sa * .13, thick * 1.5, INK);                                    // the barrel's root over the mount
@@ -118,10 +120,9 @@ const jammer = (g, { s, c, dk, w, ph, run }) => {
   g.save(); g.beginPath(); g.rect((cx - .5) * s, (cy - .2) * s, s, .4 * s); g.clip();               // the dish is cut off flat above and below
   oval(g, s, cx - nx * .03, cy, rx, r, c);
   g.restore();
-  stroke(g, s, cx, cy, cx + nx * .17, cy - .01, Math.max(2, s * .03), INK); disc(g, s, cx + nx * .17, cy - .01, .03, RED);   // the feed on its arm
+  stroke(g, s, cx, cy, cx + nx * .17, cy - .01, Math.max(2, s * .03), INK); disc(g, s, cx + nx * .17, cy - .01, .03, c);   // the feed on its arm, tipped in the team colour
   box(g, s, -.2, .0, .4, .21, 4, c);                                                                // the hut
   box(g, s, -.2, .0, .4, .05, 2, dk);                                                               // its roof
-  box(g, s, -.12, .08, .1, .12, 1, INK);                                                            // a door
 };
 
 // Automated factory: a plain shed with a dark sawtooth roof, a door with a crate coming out, and a smoking chimney.

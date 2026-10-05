@@ -25,7 +25,7 @@ list.forEach((u, i) => {
     const water = !!u.water;
     paintTile(g, arg.bg ? bg : water ? 'sea' : 'plain', x, y, S);
     g.save(); g.translate(x + S / 2, y + S / 2);
-    drawFrameAlpha(g, mod, u.sprite, { s: S, c: f.color, dk: f.dark, alt: u.altitude || 0, w: t, ph: i * .9, run: 1, moving: !!arg.moving, make }, 1);
+    drawFrameAlpha(g, mod, u.sprite, { s: S, c: u.fixedColors?.color || f.color, dk: u.fixedColors?.dark || f.dark, alt: u.altitude || 0, w: t, ph: i * .9, run: 1, moving: !!arg.moving, make }, 1);
     g.restore();
   });
 });

@@ -66,7 +66,7 @@ export function buildCatalog({ registry, concepts, planned = {}, status }) {
     out.push({
       id: c.id, name: c.name, group: c.group, stage: stageOf(c.id, 'idea'), inGame: false, sprite: c.sprite, art: 'concept',
       altitude: c.altitude || 0, water: !!c.water, cost: c.cost, move: c.move, range: null, role: c.role, facility: facilities[c.facility]?.name || c.facility,
-      kind: c.kind || 'unit', section: c.section || null, cracked: !!c.cracked, waterSprite: c.waterSprite || null,
+      kind: c.kind || 'unit', section: c.section || null, cracked: !!c.cracked, waterSprite: c.waterSprite || null, fixedColors: c.fixedColors || null,
       mechanic: c.mechanic, overlaps: c.overlaps, tags: [],
     });
   }

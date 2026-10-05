@@ -854,6 +854,7 @@
    "section": "Defences",
    "kind": "unit",
    "sprite": "tank_trap",
+   "fixedColors": { "color": "#646b78", "dark": "#464b55" },
    "altitude": 0,
    "cost": 800,
    "move": 0,

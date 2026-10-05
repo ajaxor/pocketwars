@@ -6,7 +6,6 @@
 // The rule (docs/unit-art-lessons.md): few shapes, one idea per building, no windows or small fittings.
 import { kit } from '../src/render/buildings.js';
 import { shade } from '../src/render/color.js';
-import { FOOTING } from './concept-art-static.js';
 
 const DIRT = '#7a6a4a', STEEL = '#8d93a0', DARK = '#2b2d33', GLASSY = '#bfe0f2', WHITE = '#f1f1ec', RED = '#d4442e';
 const disc = (g, x, y, r, col) => { g.fillStyle = col; g.beginPath(); g.arc(x, y, Math.max(.5, r), 0, 7); g.fill(); };
@@ -136,11 +135,12 @@ export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall
  *  on an upright end. No gradients, highlights or stripes. Cracked walls are the breakable variant: the same shapes in rusty brown with a hole torn
  *  in the pipe. `owner` is unused (walls are neutral) and kept so the call matches the buildings'. Draw walls row by row from the top: a riser or
  *  elbow reaches a little into the tile above. */
-export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } = {}) {
+export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false } = {}) {
+  let g = gIn;                                                                  // swapped for a recorder while the pipe's outline is gathered as one clip path
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
   const col = { body: '#646b78', hole: '#16181c', out: '#1f2228' };           // a cracked pipe is the same colour as a sound one
-  const dark = shade('#646b78', -.14);
+  const dark = shade('#646b78', -.14), SHD = .13;                               // the shaded side's colour; how far the lit part is shifted up and left: the width of the shade
   const OW = .03, RC = .13, FR = .08;                                           // the dark outline's width; the radius of rounded corners; of the fillets in inner corners
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
@@ -154,30 +154,25 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
   // shadows: below the lying pipes and to the right of the upright ones
   g.fillStyle = 'rgba(0,0,0,.2)';
   if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
-  if (n || s) g.fillRect(X(CX + R), Y(n ? 0 : CY - .1), .06 * S, ((n && s) ? 1 : n ? GY : 1 - CY + .1) * S);
+  if (n || s) {                                                                 // beside an upright pipe, stopping short of its rounded ends
+    const y0 = n ? 0 : CY - .1 + .2, y1 = s ? 1 : GY - .2;
+    g.fillRect(X(CX + R), Y(y0), .06 * S, (y1 - y0) * S);
+  }
   if (lone) ell(CX + .07, GY + .02, R + .1, .07, 'rgba(0,0,0,.2)');
-  // Where a pipe goes into the ground: the same foundation as the defences (a dark slab with grass over its edge), under the pipe's rounded foot.
-  const slab = (cx) => { const x0 = Math.max(0, cx - R - .15), x1 = Math.min(1, cx + R + .15); g.fillStyle = FOOTING; g.beginPath(); g.roundRect(X(x0), Y(GY - .02), (x1 - x0) * S, .12 * S, 4); g.fill(); };
-  if (endH) slab(dir > 0 ? pv - R : pv + R); else if (endN || lone) slab(CX);
-  // The pipe is drawn twice: first every part grown by the outline width in dark (`gr`), then every part in the body colour on top. Parts that
-  // run off a tile edge are not grown there, so neighbouring pipes join with no line between them. Every free corner is rounded.
-  for (const pass of [0, 1]) {
-    const gr = pass ? 0 : OW, c = pass ? col.body : col.out;
+  // The pipe is drawn three times: first every part grown by the outline width (`gr`) in the outline colour (pass 0), then every part in the shaded
+  // colour (pass 1), then every part again in the body colour, shifted up and left by SHD and clipped to the pipe's own shape (pass 2). What the
+  // shifted copy no longer covers is a crescent along every lower and right edge, which curves round every bend and corner by itself: light from the
+  // upper left. Parts that run off a tile edge are not grown there (and in pass 2 run on past it), so neighbouring pipes join with no line between
+  // them. Every free corner is rounded.
+  const paint = (pass) => {
+    const gr = pass ? 0 : OW, c = pass === 0 ? col.out : pass === 1 ? dark : col.body, ext = pass === 2 ? SHD : 0;
     // `round` = [top-left, top-right, bottom-right, bottom-left]: which corners of the part are free (not joined to another part or the tile edge)
-    // `sh` = [right, bottom]: draw a strip a shade darker along the part's right / lower edge (only where that edge is free, not joined to another pipe),
-    // so the pipe reads as round, lit from the upper left
-    const box = (x0, y0, x1, y1, round = [0, 0, 0, 0], rc = RC, sh = [0, 0]) => {
-      const a = x0 <= 0 ? 0 : x0 - gr, b = y0 <= 0 ? 0 : y0 - gr, d = x1 >= 1 ? 1 : x1 + gr, f = y1 >= 1 ? 1 : y1 + gr;
+    const box = (x0, y0, x1, y1, round = [0, 0, 0, 0], rc = RC) => {
+      const a = x0 <= 0 ? 0 : x0 - gr, b = y0 <= 0 ? 0 : y0 - gr, d = x1 >= 1 ? 1 + ext : x1 + gr, f = y1 >= 1 ? 1 + ext : y1 + gr;
       g.fillStyle = c; g.beginPath(); g.roundRect(X(a), Y(b), (d - a) * S, (f - b) * S, round.map((r) => (r ? (rc + gr) * S : 0))); g.fill();
-      if (pass && (sh[0] || sh[1])) {
-        g.save(); g.clip();
-        if (sh[0]) rect(x1 - R * .6, y0, R * .6, y1 - y0, dark);
-        if (sh[1]) rect(x0, y1 - R * .6, x1 - x0, R * .6, dark);
-        g.restore();
-      }
     };
-    const lieH = (xa, xb) => box(xa, CY - R, xb, CY + R, [0, 0, 0, 0], RC, [0, 1]);                      // a pipe lying east-west from xa to xb
-    const lieV = (ya, yb) => box(CX - R, ya, CX + R, yb, [0, 0, 0, 0], RC, [1, 0]);                      // a pipe lying north-south from ya to yb
+    const lieH = (xa, xb) => box(xa, CY - R, xb, CY + R);                      // a pipe lying east-west from xa to xb
+    const lieV = (ya, yb) => box(CX - R, ya, CX + R, yb);                      // a pipe lying north-south from ya to yb
     const foot = (cx) => ell(cx, GY, R + gr, .05 + gr, c, 0, Math.PI);         // the rounded bottom of a pipe that stands in the ground
     // a rounded inner corner at P: fills the notch between two arms with a quarter-round fillet (a, b = which way the empty corner lies)
     const fillet = (Px, Py, a, b) => {
@@ -189,34 +184,33 @@ export function drawWall(g, px, py, S, _owner, { links = {}, cracked = false } =
     else if (endH) {                                                              // an elbow: the pipe rises from the ground beside the run and bends over into it
       const a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0;
       g.fillStyle = c; g.beginPath(); g.moveTo(X(pv), Y(GY)); g.arc(X(pv), Y(GY), (2 * R + gr) * S, a0, a1); g.closePath(); g.fill();
-      if (pass) {                                                                // the shading follows the bend: on the inside where the pipe lies flat or stands, on the outside across the bend's diagonal
-        for (const side of [-1, 1]) {
-          const pts = [], pts2 = [];
-          for (let k = 0; k <= 24; k++) {
-            const th = a0 + (a1 - a0) * k / 24, v = (Math.cos(th) + Math.sin(th)) * side;
-            if (v <= 0) continue;
-            const wd = R * .6 * Math.min(1, v), r0 = side < 0 ? 0 : 2 * R - wd, r1 = side < 0 ? wd : 2 * R;
-            pts.push([pv + Math.cos(th) * r0, GY + Math.sin(th) * r0]); pts2.push([pv + Math.cos(th) * r1, GY + Math.sin(th) * r1]);
-          }
-          if (pts.length > 1) { g.fillStyle = dark; g.beginPath(); [...pts, ...pts2.reverse()].forEach(([x, y], i) => (i ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)))); g.closePath(); g.fill(); }
-        }
-      }
       if (dir > 0) lieH(pv - .03, 1); else lieH(0, pv + .03);                    // overlaps the bend a little so no seam shows
       foot(dir > 0 ? pv - R : pv + R);
-    } else if (endN) box(CX - R, 0, CX + R, GY + .03, [0, 0, 1, 1], .27, [1, 0]);                                  // runs toward us, then goes into the ground, like the sideways ends
+    } else if (endN) box(CX - R, 0, CX + R, GY + .03, [0, 0, 1, 1], .27);                                  // runs toward us, then goes into the ground, like the sideways ends
     else if (endS) {                                                              // comes out of the ground at the back and runs toward us
-      box(CX - R, CY - .1, CX + R, 1, [1, 1, 0, 0], .24, [1, 0]);                         // a well-rounded top, sunk into the hole behind
-    } else if (lone) box(CX - R, CY - R, CX + R, GY + .03, [1, 1, 1, 1], .25, [1, 0]);   // a standing stump
+      box(CX - R, CY - .1, CX + R, 1, [1, 1, 0, 0], .24);                         // a well-rounded top, sunk into the hole behind
+    } else if (lone) box(CX - R, CY - R, CX + R, GY + .03, [1, 1, 1, 1], .25);   // a standing stump
     else {
       if (n) lieV(0, CY); if (s) lieV(CY, 1);
       if (w) lieH(0, CX); if (e) lieH(CX, 1);
-      box(CX - R, CY - R, CX + R, GY, [!n && !w, !n && !e, !s && !e, !s && !w], RC, [!e, !s]);   // the junction block: free corners rounded
+      box(CX - R, CY - R, CX + R, GY, [!n && !w, !n && !e, !s && !e, !s && !w], RC);   // the junction block: free corners rounded
       if (n && w) fillet(CX - R, CY - R, -1, -1);                                  // and the inner corners between two arms
       if (n && e) fillet(CX + R, CY - R, 1, -1);
       if (s && e) fillet(CX + R, GY, 1, 1);
       if (s && w) fillet(CX - R, GY, -1, 1);
     }
-  }
+  };
+  paint(0); paint(1);
+  // the pipe's whole silhouette as one path (the real context gathers it: shapes are added, not filled), then the lit copy drawn inside it
+  const real = g;
+  const rec = {
+    set fillStyle(_v) {}, beginPath() {}, fill() {}, closePath: () => real.closePath(), moveTo: (x, y) => real.moveTo(x, y), lineTo: (x, y) => real.lineTo(x, y),
+    arc: (...a) => real.arc(...a), roundRect: (...a) => real.roundRect(...a), fillRect: (x, y, w2, h) => real.rect(x, y, w2, h),
+    ellipse: (x, y, rx, ry, rot, a0, a1) => { real.moveTo(x + rx * Math.cos(a0), y + ry * Math.sin(a0)); real.ellipse(x, y, rx, ry, rot, a0, a1); },
+  };
+  real.save(); real.beginPath(); g = rec; paint(1); g = real; real.clip();
+  real.translate(-SHD * S, -SHD * S); paint(2);
+  real.restore();
   if (cracked) {
     // the same pipe, with a crack that starts at its edge and runs part of the way in
     const ink = col.out, lw = Math.max(1.2, .026 * S);

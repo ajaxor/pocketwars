@@ -34,7 +34,8 @@ const ART = { SPRITES, SHADOWS };
  * @param {boolean} o.submerged a dived unit: its sprite draws itself low in the water (see the submarine in unit-art.js)
  */
 export function drawUnit(g, unit, o) {
-  const { def, colors, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false, face = 1, onWater = false, ammo = null, fuel = null } = o;
+  const { def, px, py, size: s, now, animate, moving, alpha = 1, showHp, submerged = false, hidden = false, exposed = false, face = 1, onWater = false, ammo = null, fuel = null } = o;
+  const colors = def.render.fixedColors || o.colors;   // a unit that is always one colour (the tank trap) ignores its owner's
   const run = animate ? 1 : 0;
   const w = now / 1000 * (moving ? 2 : 1);
   const ph = unit.x * .9 + unit.y * 1.7;
