@@ -4,7 +4,7 @@
 //   SHADOWS[name](g, { s, alt, w, ph, run })
 import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, hoverTubes, sheen, bubbles, GLOW } from '../src/render/parts.js';
 import * as INFANTRY from '../src/render/art-infantry.js';
-import * as STATIC from './concept-art-static.js';
+import * as STATIC from '../src/render/art-defences.js';
 import * as AIR from '../src/render/art-air.js';
 import * as SHIPS from '../src/render/art-ships.js';
 import * as VEHICLES from '../src/render/art-vehicles.js';

@@ -69,6 +69,33 @@ export const UNIT_ATTRIBUTES = {
       if (v.fuelTags !== undefined && (!Array.isArray(v.fuelTags) || !v.fuelTags.length || v.fuelTags.some((t) => typeof t !== 'string' || !t))) fail('fuelTags must be a non-empty array of unit tags (only units with one of them are refuelled; without it every unit of the categories is)');
     },
   },
+  structure: {
+    label: 'Structure',
+    help: 'A fixed structure: it never moves, cannot be captured, carried, healed or built, and it does not keep its owner in the game. A neutral one (dark grey) belongs to nobody and is hostile to everyone.',
+    doc: 'A fixed defence or a breakable wall section, placed by the map (structures.js). It never moves (move 0), is never built (keep it `exclusive` and out of every menu), cannot be captured, carried, healed or supplied, and does not count as a unit when deciding whether its owner is defeated. Leader formations keep it. A map may give it no owner (`owner: null`): a neutral structure is an enemy of every player, and an armed one fires at the units of each player at the end of that player\'s turn. When its owner is knocked out it turns neutral.',
+    check: (v, e, fail) => {
+      if (!isFlag(v)) fail('must be true');
+      if (e.move !== 0) fail('requires move 0 (a structure never moves)');
+    },
+  },
+  fragile: {
+    label: 'Breaks on any hit',
+    help: 'Any attack that reaches it destroys it outright.',
+    doc: 'Any weapon that can hit it destroys it, whatever the damage (the cracked wall). The forecast shows a knock-out.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+  },
+  jammer: {
+    label: 'Jammer',
+    help: 'While any jammer stands on the map, human players fight in fog of war. Destroy every jammer to lift it.',
+    doc: 'Fog of war (fog.js): while at least one unit with this attribute is on the board, every human player only sees what their units and properties see. Computer players are never fogged. Who owns the jammer does not matter.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+  },
+  blocksLineOfSight: {
+    label: 'Blocks line of sight',
+    help: 'Blocks direct fire and sight passing over it, like a wall.',
+    doc: 'The unit is an obstacle for line of sight while it stands, with this height, exactly like the terrain attribute of the same name (sight.js). Meant for structures such as the cracked wall.',
+    check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
+  },
   reloads: {
     label: 'Reloads',
     help: 'If it does not move during a turn it is fully reloaded at the start of the next.',
@@ -235,6 +262,21 @@ export const TERRAIN_ATTRIBUTES = {
     help: 'High ground: a direct-fire unit standing here can shoot over obstacles lower than this.',
     doc: 'A high position: a direct-fire unit standing here is not blocked by obstacles (blocksLineOfSight) lower than this number.',
     check: (v, e, fail) => { if (typeof v !== 'number' || !Number.isFinite(v) || v <= 0) fail('must be a positive number'); },
+  },
+  wall: {
+    label: (v) => (v === true ? 'Wall' : 'Breakable wall'),
+    help: (v) => (v === true ? 'A wall: nothing can cross it.' : 'Where a cracked wall stands. Once the cracked wall is destroyed, units can cross the rubble.'),
+    doc: 'A wall tile, drawn as linked pipes (render/walls.js); walls link to every neighbouring tile with this attribute. `true`: a solid wall (give it null move costs). `{ structure: <unit id> }`: a breakable section: when the game starts a neutral unit of that type (a structure, e.g. the cracked wall) is placed on it unless the map already put a unit there; while it stands it blocks the tile, and once it is destroyed the tile is open rubble with this terrain\'s own move costs.',
+    check: (v, e, fail) => {
+      if (v === true) return;
+      if (!v || typeof v !== 'object' || Array.isArray(v) || typeof v.structure !== 'string' || !v.structure) fail('must be true or { "structure": "<unit id>" }');
+    },
+  },
+  visionBonus: {
+    label: (v) => `Sight +${v}`,
+    help: (v) => `In fog of war, a ground unit standing here sees ${v} tiles further.`,
+    doc: 'Fog of war (fog.js): a unit that is not airborne sees this many tiles further from this tile (mountains).',
+    check: (v, e, fail) => { if (!Number.isInteger(v) || v < 1) fail('must be a positive whole number'); },
   },
   submergible: {
     label: 'Deep water',

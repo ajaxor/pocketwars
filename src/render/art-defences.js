@@ -1,11 +1,13 @@
-// Experimental concept units, Engineer Works group: immobile static defences, drawn in the SAME flat style as the units (unit-art.js):
+// Static defences (cannon, SAM and artillery turrets, the jammer; in the game since October 2026) and a few concept ones still in the gallery
+// (gun turret, automated factory, land mine), drawn in the SAME flat style as the units (unit-art.js):
 // side-on, flat rounded blocks in the team colour, the upper part (turret, roof) in the team's dark colour like a tank's turret, the weapon in
 // near-black, and a slanted ground shadow like the buildings' (to the lower right, sliding a little sideways). Where a unit has treads or wheels, a
 // defence has a FOOTING: a dark slab the same size and place as a tread, sunk into the ground with tufts of grass over its edge, so it reads as "a
 // unit that is bolted down" and never as one that drives.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
-import { missile } from '../src/render/art-vehicles.js';
-import { box, disc, oval, poly, stroke, mix, tubes, plume, INK, STEEL, RED } from '../src/render/parts.js';
+import { missile } from './art-vehicles.js';
+import { box, disc, oval, poly, stroke, mix, tubes, plume, INK, STEEL, RED } from './parts.js';
+import { drawWall } from './walls.js';
 
 export const FOOTING = '#4a4843';
 const BLADES = ['#6f9f48', '#86b95c', '#5d8c3c'];          // the terrain's grass green, a lighter and a darker blade
@@ -144,7 +146,12 @@ const landMine = (g, { s, c, w, ph, run }) => {
   disc(g, s, .06, .17, .022, run && Math.sin(w * 6 + ph) < -.2 ? '#6b2a22' : RED);
 };
 
+// Cracked wall: the wall layer (walls.js) draws it in the game, linked to the walls beside it; this sprite is a lone straight cracked piece for the
+// gallery and the editor's palette.
+const crackedWall = (g, { s }) => drawWall(g, -s / 2, -s / 2, s, null, { links: { e: true, w: true }, cracked: true });
+
 export const SPRITES = {
+  cracked_wall: crackedWall,
   gun_turret: gunTurret, cannon_turret: cannonTurret, sam_site: samSite, artillery_emplacement: artilleryEmplacement,
   jammer, auto_factory: autoFactory,
   land_mine: (g, o) => { g.save(); g.translate(0, -.05 * o.s); g.scale(1.25, 1.25); landMine(g, o); g.restore(); },
@@ -153,6 +160,7 @@ export const SPRITES = {
 // ---- shadows: the buildings' slanted band under the footing ----------------------------------------------------------------------
 export const ground = (rx, ry = .05, y = .3, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
+  cracked_wall: () => {},   // the pipe draws its own drop shadow
   gun_turret: footShadow(-.3, .3), cannon_turret: footShadow(-.36, .36), sam_site: footShadow(-.32, .32), artillery_emplacement: footShadow(-.4, .4, .05),
   jammer: footShadow(-.24, .24), auto_factory: footShadow(-.4, .4, .05), land_mine: ground(.27),
 };

@@ -5,7 +5,7 @@
 //   day: number             starts at 1, increments each time play returns to player 0
 //   funds: number[]         per player
 //   owners: (number|null)[][]   owner of each tile ([y][x]); null = neutral / not a property
-//   units: Unit[]           Unit = { id, type, owner, x, y, hp, done, capture, submerged, halted, facing, fresh?, ammo? }
+//   units: Unit[]           Unit = { id, type, owner (null: a neutral structure), x, y, hp, done, capture, submerged, halted, facing, fresh?, ammo? }
 //                           facing: 1 right / -1 left, the way it last moved (see game.act), toward the map centre at first (drawing only);
 //                           submerged: diving (see submerge.js); halted: null, or { moved } after a move was interrupted by a hidden
 //                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped);
@@ -25,6 +25,7 @@
 import { initialAmmo } from './ammo.js';
 import { initialFuel } from './fuel.js';
 import { facingToCentre } from './queries.js';
+import { wallStructures } from './structures.js';
 
 /**
  * A unit as it is stored in `state.units`. `hp` defaults to full; `done` is true for a unit that cannot act this turn (a dropped
@@ -50,7 +51,7 @@ export function createState(map, registry) {
     day: 1,
     funds: map.players.map((p) => p.funds),
     owners: map.owners.map((row) => [...row]),
-    units: map.units.map((u) => makeUnit(registry, map, nextUnitId++, u)),
+    units: [...map.units, ...wallStructures(map, registry)].map((u) => makeUnit(registry, map, nextUnitId++, u)),   // and a cracked wall on every breakable wall tile
     defeated: map.players.map(() => false),
     winner: null,
     nextUnitId,

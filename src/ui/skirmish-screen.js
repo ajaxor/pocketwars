@@ -15,7 +15,7 @@
 
 import { drawPortrait } from '../render/portrait-art.js';
 import { drawMinimap, miniTile } from '../render/minimap.js';
-import { FUNDS_CHOICES, defaultSkirmish, skirmishProblems, swapFaction } from '../data/skirmish.js';
+import { FUNDS_CHOICES, defaultSkirmish, hasJammers, skirmishProblems, swapFaction } from '../data/skirmish.js';
 import { button, h, toggle } from './kit.js';
 
 const fmtFunds = (n) => (n === null ? 'Map default' : Number(n).toLocaleString('en-US'));
@@ -89,9 +89,9 @@ export class SkirmishScreen {
   pick(mapId) {
     const map = this.maps.find((m) => m.id === mapId);
     if (!map || map === this.map) return;
-    const { funds } = this.settings;
+    const { funds, fog } = this.settings;
     this.map = map;
-    this.settings = { ...this.#defaults(map), funds };
+    this.settings = { ...this.#defaults(map), funds, fog };
     this.quotes.clear();
     this.#render();
   }
@@ -104,6 +104,8 @@ export class SkirmishScreen {
     this.#render();
   }
   setFunds(funds) { this.settings.funds = funds; this.#render(); }
+  /** Fog of war on (the map's jammers stay) or off (they are taken off the map). */
+  setFog(on) { this.settings.fog = on; this.#render(); }
 
   get problems() { return skirmishProblems(this.map, this.registry, this.settings); }
 
@@ -261,6 +263,13 @@ export class SkirmishScreen {
     const funds = h(doc, 'div', 'sk-rule');
     funds.append(h(doc, 'span', 'sk-rule-name', 'Starting funds'), this.#segmented(FUNDS_CHOICES.map((f) => [f, fmtFunds(f)]), settings.funds, (v) => this.setFunds(v), 'Starting funds'));
     this.el.rules.append(funds);
+    const fog = h(doc, 'div', 'sk-rule');
+    const jammed = hasJammers(map, registry);
+    fog.append(h(doc, 'span', 'sk-rule-name', 'Fog of war'));
+    if (jammed) fog.append(this.#segmented([[true, 'On'], [false, 'Off']], settings.fog !== false, (v) => this.setFog(v), 'Fog of war'),
+      h(doc, 'span', 'sk-rule-note', settings.fog !== false ? 'Jammers on this map hide what your units cannot see. Destroy them all to lift it.' : 'The jammers are taken off the map.'));
+    else fog.append(h(doc, 'span', 'sk-rule-note', 'None: this map has no jammers.'));
+    this.el.rules.append(fog);
 
     const problems = this.problems;
     this.go.disabled = problems.length > 0;

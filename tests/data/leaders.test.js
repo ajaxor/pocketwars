@@ -300,7 +300,7 @@ test('a leader\'s units fit every shipped map: nobody skipped, none on a propert
   for (const id of Object.keys(index.maps)) {
     const map = await loadMap(readData, registry, id);
     const out = withLeaders(map, registry, map.players.map(() => registry.leaderIds[0]));
-    const each = (o) => out.units.filter((u) => u.owner === o);
+    const each = (o) => out.units.filter((u) => u.owner === o && !registry.unit(u.type).attributes.structure);   // the map's own turrets stay as well
     map.players.forEach((_, o) => assert.equal(each(o).length, setsFor(map, o), `${id}: team ${o + 1} has all its sets`));
     assert.equal(new Set(out.units.map((u) => `${u.x},${u.y}`)).size, out.units.length, `${id}: one unit per tile`);
     for (const u of out.units) {

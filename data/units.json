@@ -26,6 +26,7 @@
     "render": { "sprite": "mech", "facing": false, "attackFx": "shot" }
   },
   "sniper": {
+    "vision": 3,
     "name": "Sniper",
     "category": "infantry",
     "cost": 2500,
@@ -53,6 +54,7 @@
     "render": { "sprite": "marine", "waterSprite": "dinghy", "facing": false, "attackFx": "shot" }
   },
   "recon": {
+    "vision": 5,
     "name": "Recon",
     "category": "vehicle",
     "cost": 4000,
@@ -251,6 +253,7 @@
     "render": { "sprite": "battleship", "attackFx": "arc" }
   },
   "spy": {
+    "vision": 3,
     "name": "Spy",
     "category": "infantry",
     "cost": 1500,
@@ -377,6 +380,7 @@
     "render": { "sprite": "torpedo_bomber", "attackFx": "torpedo", "altitude": 0.07 }
   },
   "radar_plane": {
+    "vision": 6,
     "name": "Radar Plane",
     "category": "aircraft",
     "cost": 11000,
@@ -476,6 +480,7 @@
     "render": { "sprite": "diver", "waterSprite": "diver_swim", "facing": false, "attackFx": "shot" }
   },
   "motorcycle": {
+    "vision": 3,
     "name": "Motorcycle Infantry",
     "category": "infantry",
     "cost": 2000,
@@ -672,5 +677,76 @@
     "attributes": {"sonar": 3},
     "exclusive": true,
     "render": {"sprite": "hunter_sub", "attackFx": "torpedo"}
+  },
+  "cannon_turret": {
+    "name": "Cannon Turret",
+    "category": "structure",
+    "cost": 6000,
+    "move": 0,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["turret_cannon"],
+    "toughness": 1.8,
+    "armor": 0.9,
+    "attributes": {"structure": true},
+    "exclusive": true,
+    "render": {"sprite": "cannon_turret", "facing": false, "attackFx": "shot"}
+  },
+  "sam_turret": {
+    "name": "SAM Turret",
+    "category": "structure",
+    "cost": 5000,
+    "move": 0,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["turret_sam"],
+    "toughness": 1.2,
+    "armor": 0.5,
+    "attributes": {"structure": true},
+    "exclusive": true,
+    "render": {"sprite": "sam_site", "facing": false, "attackFx": "arc"}
+  },
+  "artillery_turret": {
+    "name": "Artillery Turret",
+    "category": "structure",
+    "cost": 7000,
+    "move": 0,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["turret_howitzer"],
+    "toughness": 1.4,
+    "armor": 0.6,
+    "attributes": {"structure": true, "indirect": true},
+    "exclusive": true,
+    "render": {"sprite": "artillery_emplacement", "facing": false, "attackFx": "arc"}
+  },
+  "jammer": {
+    "vision": 3,
+    "name": "Jammer",
+    "category": "structure",
+    "cost": 8000,
+    "move": 0,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": [],
+    "toughness": 1,
+    "armor": 0.65,
+    "attributes": {"structure": true, "jammer": true},
+    "exclusive": true,
+    "render": {"sprite": "jammer", "facing": false, "attackFx": "shot"}
+  },
+  "cracked_wall": {
+    "name": "Cracked Wall",
+    "category": "structure",
+    "cost": 400,
+    "move": 0,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": [],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": {"structure": true, "fragile": true, "blocksLineOfSight": 1},
+    "exclusive": true,
+    "render": {"sprite": "cracked_wall", "facing": false, "inWall": true, "attackFx": "shot"}
   }
 }

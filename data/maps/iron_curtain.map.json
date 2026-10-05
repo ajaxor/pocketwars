@@ -1,0 +1,214 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "iron_curtain",
+  "name": "Iron Curtain",
+  "description": "Two walled forts and a sealed bunker in the middle. The bunker's jammers fill the field with fog of war until they are destroyed; its cannons and the neutral guns in the open fire on anyone who ends a turn in reach. Break the cracked walls or shell the bunker from outside.",
+  "players": [
+    {
+      "faction": "ashmark",
+      "controller": "human",
+      "funds": 6000
+    },
+    {
+      "faction": "vantor_reach",
+      "controller": "ai",
+      "funds": 6000
+    }
+  ],
+  "legend": {
+    ".": {
+      "terrain": "plain"
+    },
+    "F": {
+      "terrain": "forest"
+    },
+    "M": {
+      "terrain": "mountain"
+    },
+    "r": {
+      "terrain": "road"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "W": {
+      "terrain": "wall"
+    },
+    "X": {
+      "terrain": "wall_breach"
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "o": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "k": {
+      "terrain": "barracks",
+      "owner": 0
+    },
+    "v": {
+      "terrain": "airfield",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "b": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "K": {
+      "terrain": "barracks",
+      "owner": 1
+    },
+    "V": {
+      "terrain": "airfield",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "MM..FF...c......FF....MM",
+    "M.WWWXWW...............M",
+    "..W....X.F........c.....",
+    "..W.k..W.F.c........FF..",
+    "c.W.Orrrrrrr..MM........",
+    "..W.o..W......MM.....c..",
+    "..W....X..WWXW....FF....",
+    "M.WWXWWW..W..W....V...MM",
+    "MM...v....W..W..WWWXWW.M",
+    "....FF....WXWW..X....W..",
+    "..c.....MM......W..b.W..",
+    "........MM..rrrrrrrB.W.c",
+    "..FF........c.F.W..K.W..",
+    ".....c........F.X....W..",
+    "M...............WWXWWW.M",
+    "MM....FF......c...FF..MM"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 20,
+      "y": 11
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 5,
+      "y": 6
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 18,
+      "y": 9
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 6,
+      "y": 4
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 17,
+      "y": 11
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 3,
+      "y": 6
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 20,
+      "y": 9
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 8,
+      "y": 5
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 15,
+      "y": 10
+    },
+    {
+      "type": "cannon_turret",
+      "owner": 0,
+      "x": 8,
+      "y": 3
+    },
+    {
+      "type": "cannon_turret",
+      "owner": 1,
+      "x": 15,
+      "y": 12
+    },
+    {
+      "type": "sam_turret",
+      "owner": 0,
+      "x": 5,
+      "y": 2
+    },
+    {
+      "type": "sam_turret",
+      "owner": 1,
+      "x": 18,
+      "y": 13
+    },
+    {
+      "type": "cannon_turret",
+      "owner": null,
+      "x": 11,
+      "y": 7
+    },
+    {
+      "type": "cannon_turret",
+      "owner": null,
+      "x": 12,
+      "y": 8
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 11,
+      "y": 8
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 12,
+      "y": 7
+    },
+    {
+      "type": "artillery_turret",
+      "owner": null,
+      "x": 8,
+      "y": 12
+    },
+    {
+      "type": "artillery_turret",
+      "owner": null,
+      "x": 15,
+      "y": 3
+    }
+  ]
+}

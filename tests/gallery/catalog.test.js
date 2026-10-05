@@ -20,7 +20,7 @@ test('the catalogue has no problems: stages and groups are known, game units are
 });
 
 test('every unit in the game, every concept and every planned unit is in the catalogue exactly once', () => {
-  assert.equal(catalog.length, registry.unitIds.length + catalog.filter((u) => u.kind === 'building' && u.inGame).length + concepts.units.length + Object.keys(planned).length);
+  assert.equal(catalog.length, registry.unitIds.length + catalog.filter((u) => (u.kind === 'building' || u.id.startsWith('terrain_')) && u.inGame).length + concepts.units.length + Object.keys(planned).length);
   for (const id of registry.unitIds) assert.ok(catalog.find((u) => u.id === id && u.inGame), id);
 });
 
@@ -39,7 +39,7 @@ test('every entry names a sprite that exists and sits in a known group', () => {
 });
 
 test('catalogProblems reports a game unit marked idea, an idea marked solid and a stray status', () => {
-  const bad = catalog.map((u) => (u.id === 'tank' ? { ...u, stage: 'idea' } : u.id === 'jammer' ? { ...u, stage: 'solid' } : u));
+  const bad = catalog.map((u) => (u.id === 'tank' ? { ...u, stage: 'idea' } : u.id === 'gun_turret' ? { ...u, stage: 'solid' } : u));
   const problems = catalogProblems(bad, { ...status, units: { ...status.units, ghost: 'draft' } });
   assert.equal(problems.length, 3);
 });

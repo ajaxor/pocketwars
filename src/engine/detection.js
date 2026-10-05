@@ -13,9 +13,11 @@
 // None of this is ever computed from a move that is only being previewed: the engine has not moved anything yet.
 //
 // Sight is a property of the current state. There is no memory: a hidden unit that stops being noticed is hidden again.
+// Fog of war (fog.js) adds a second rule on top: in fog a player cannot see what is out of their units' sight at all.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { distance, inBounds, layerIdOf, ownerAt, tileIndex, unitDef } from './queries.js';
+import { isFogged, tileExplored, tileVisible } from './fog.js';
 
 /** Does a unit lift its cloak when it fires (`cloak: { revealedByFiring }`)? */
 export const revealsWhenFiring = (game, unit) => attributeConfig(unitDef(game, unit), 'cloak')?.revealedByFiring === true;
@@ -60,9 +62,17 @@ export const isDetectedBy = (game, unit, player) => game.state.units.some((u) =>
 export const isExposed = (game, unit, viewer = null) => game.state.units.some((u) =>
   u.owner !== unit.owner && (viewer === null || canSee(game, viewer, u)) && notices(game, u, unit));
 
-/** Can `player` see `unit`? Their own units and everything that is not hidden: always. A hidden enemy: only when detected. */
+/**
+ * Can `player` see `unit`? Their own units: always. In fog of war (fog.js; human players only, while a jammer stands) nothing on a tile out of
+ * their sight, except a structure on a tile they have explored (it cannot have moved). Then everything that is not hidden, and a hidden enemy
+ * only when detected.
+ */
 export function canSee(game, player, unit) {
-  if (unit.owner === player || !isHidden(game, unit)) return true;
+  if (unit.owner === player) return true;
+  if (isFogged(game, player) && !tileVisible(game, player, unit.x, unit.y)) {
+    if (!(hasAttribute(unitDef(game, unit), 'structure') && tileExplored(game, player, unit.x, unit.y))) return false;
+  }
+  if (!isHidden(game, unit)) return true;
   return isDetectedBy(game, unit, player);
 }
 

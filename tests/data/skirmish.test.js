@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../../src/data/loader.js';
-import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction } from '../../src/data/skirmish.js';
+import { RANDOM_LEADER, defaultSkirmish, skirmishProblems, applySkirmish, resolveLeaders, swapFaction, hasJammers } from '../../src/data/skirmish.js';
 import { placeStart } from '../../src/data/formation.js';
 import { loadCampaign } from '../../src/data/campaign.js';
 import { SkirmishScreen } from '../../src/ui/skirmish-screen.js';
@@ -168,12 +168,22 @@ test('applying settings without leaders keeps the map\'s own units, exactly as b
   assert.throws(() => applySkirmish(classic, some), /needs the registry/);
 });
 
+test('fog of war off takes the jammers off the map; on keeps them', () => {
+  const m = maps.find((x) => x.id === 'iron_curtain');
+  assert.ok(hasJammers(m, registry));
+  const off = applySkirmish(m, { ...defaultSkirmish(m), fog: false }, registry);
+  assert.equal(hasJammers(off, registry), false);
+  assert.equal(off.units.length, m.units.length - 2, 'only the two jammers go');
+  assert.ok(hasJammers(applySkirmish(m, defaultSkirmish(m), registry), registry));
+  assert.equal(hasJammers(classic, registry), false);
+});
+
 test('every map plays with every leader pairing the shipped kits allow (no unit left unplaced)', () => {
   for (const m of maps) {
     const s = defaultSkirmish(m, ids);
     s.players.forEach((p, i) => { p.leader = ids[i % ids.length]; });
     const applied = applySkirmish(m, s, registry);
-    assert.equal(applied.units.length, m.players.reduce((n, _, o) => n + armyOf(m, o, ids[o % ids.length]).length, 0), m.id);
+    assert.equal(applied.units.filter((u) => !registry.unit(u.type).attributes.structure).length, m.players.reduce((n, _, o) => n + armyOf(m, o, ids[o % ids.length]).length, 0), m.id);
     for (const a of m.players.map((_, o) => placeStart(m, registry, o, registry.loadoutFor(null).start))) assert.deepEqual(a.skipped, [], m.id);
   }
 });

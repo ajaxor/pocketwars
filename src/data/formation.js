@@ -160,8 +160,9 @@ export function placeStart(map, registry, owner, start, taken = new Set()) {
  */
 export function withLeaders(map, registry, leaders) {
   const placeable = leaders.map((id, owner) => (id && hqOf(map, registry, owner) ? id : null));
-  const kept = map.units.filter((u) => !placeable[u.owner]).map((u) => ({ ...u }));
+  const kept = map.units.filter((u) => u.owner === null || !placeable[u.owner] || registry.unit(u.type).attributes?.structure).map((u) => ({ ...u }));   // structures (turrets, jammers) stay where the map put them
   const taken = new Set(kept.map((u) => key(u.x, u.y)));
+  map.terrain.forEach((row, y) => row.forEach((t, x) => { if (registry.terrainDef(t).attributes?.wall?.structure) taken.add(key(x, y)); }));   // a cracked wall goes there
   const units = [...kept];
   placeable.forEach((id, owner) => {
     if (id) units.push(...placeStart(map, registry, owner, registry.loadoutFor(id).start, taken).units);

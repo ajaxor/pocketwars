@@ -17,7 +17,7 @@
     "name": "Mountain",
     "defense": 4,
     "moveCost": { "foot": 2, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": 2, "bike": null, "diver": null, "hover": null, "amphibious_tread": null },
-    "attributes": { "blocksLineOfSight": 2, "vantage": 2 },
+    "attributes": { "blocksLineOfSight": 2, "vantage": 2, "visionBonus": 2 },
     "render": { "decor": "mountain", "mini": "#8f877a" }
   },
   "rough": {
@@ -93,5 +93,19 @@
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
     "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["naval"] }, "resupply": { "range": 1, "categories": ["naval"] }, "blocksLineOfSight": 1 },
     "render": { "building": "shipyard" }
+  },
+  "wall": {
+    "name": "Wall",
+    "defense": 0,
+    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": null, "naval": null, "amphibious": null, "bike": null, "diver": null, "hover": null, "amphibious_tread": null },
+    "attributes": { "wall": true, "blocksLineOfSight": 1 },
+    "render": { "wall": true, "mini": "#5d636e" }
+  },
+  "wall_breach": {
+    "name": "Wall Breach",
+    "defense": 1,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 2, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": { "wall": { "structure": "cracked_wall" } },
+    "render": { "wall": true, "mini": "#8a7d6a" }
   }
 }

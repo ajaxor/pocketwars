@@ -21,8 +21,11 @@
 // the carrier's own move; the dropped unit is then ordered like any other), and go back to an airfield for more when empty and the owner
 // can pay for it. Resupply is only chosen when the unit is low or empty and the money is there.
 
+// Structures: a turret the computer owns only gets an order when something is in its reach (`wantsOrder`); neutral turrets and walls are never
+// goals to march on, and a cracked wall is only shot at when nothing better is in reach (it opens the way: `breakWall`).
+
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
-// hidden one. When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
+// hidden one. It does not play in fog of war, though: fog only ever hides things from human players (fog.js). When act() reports that, the unit is asked again (chooseOrder on a halted unit plans from where it stopped).
 
 import { ammoOf, ammoLevel, canResupplyAt, resupplyCost, roundCost } from './ammo.js';
 import { AI_CONDITIONS } from './ai-conditions.js';
@@ -39,6 +42,8 @@ import { buildProblem, menuFor } from './economy.js';
 import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from './movement.js';
 import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
 import { canSubmergeAt, canSurface } from './submerge.js';
+import { isNeutral, isStructure } from './structures.js';
+import { targetsFrom } from './movement.js';
 
 /** The friendly units `unit` (a healer) could heal, by the categories of its `heal` attribute. */
 function healable(game, unit) {
@@ -109,7 +114,7 @@ function goalTiles(game, unit) {
     if (chosen.length) return chosen.map((u) => [u.x, u.y]);
   }
   if (def.weapons.length && !deployConfig(game, unit)) {   // armed, but nothing it can see is a target (SAM with no aircraft about): it keeps to the army
-    const visible = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e));
+    const visible = state.units.filter((e) => e.owner !== unit.owner && !isNeutral(e) && canSee(game, unit.owner, e));
     if (visible.length && !visible.some((e) => canTarget(game, unit, e))) {
       const army = state.units.filter((u) => u !== unit && u.owner === unit.owner && !isMine(game, u));
       if (army.length) return army.map((u) => [u.x, u.y]);
@@ -119,7 +124,7 @@ function goalTiles(game, unit) {
     const props = allProperties(game).filter((p) => p.owner !== unit.owner).map((p) => [p.x, p.y]);
     if (props.length) return props;
   }
-  const seen = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e));
+  const seen = state.units.filter((e) => e.owner !== unit.owner && !isNeutral(e) && canSee(game, unit.owner, e));   // neutral turrets and walls are not worth a march
   const hunted = def.weapons.length ? seen.filter((e) => canTarget(game, unit, e)) : seen;   // a hunter sub only chases submarines
   if (hunted.length) return hunted.map((e) => [e.x, e.y]);
   const hqs = allProperties(game).filter((p) => p.owner !== unit.owner && hasAttribute(p.terrain, 'victoryOnCapture')).map((p) => [p.x, p.y]);
@@ -158,11 +163,15 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
         if (!canAttackFrom(game, unit, e, x, y)) continue;
         const dmg = calcDamage(game, unit, e, { x, y });
         if (dmg <= 0) continue;
-        const value = (dmg * game.registry.unit(e.type).cost) / w.costUnit + (dmg >= e.hp ? w.killBonus : 0);
-        if (!target || value > target.value) target = { e, value };
+        // a neutral wall section is only worth a shot when there is nothing better: breaking it opens the way (the goal field already runs through it)
+        const wall = isNeutral(e) && hasAttribute(unitDef(game, e), 'fragile');
+        const value = wall ? 0 : (dmg * game.registry.unit(e.type).cost) / w.costUnit + (dmg >= e.hp ? w.killBonus : 0);
+        if (!target || (target.wall && !wall) || (target.wall === wall && value > target.value)) target = { e, value, wall };
       }
     }
-    if (target) {
+    if (target?.wall) {
+      score += w.breakWall ?? 12;
+    } else if (target) {
       score = w.attackBase + target.value + defense;
     } else if (mayAct && canCapture(game, unit, x, y)) {
       capture = true;
@@ -271,11 +280,14 @@ function orderUnit(game, unit, events) {
   }
 }
 
+/** Does the computer give `unit` an order this turn? Everything but a structure with nothing in its reach (a turret never moves, a jammer never acts). */
+export const wantsOrder = (game, unit) => !isStructure(game, unit) || targetsFrom(game, unit).length > 0;
+
 /** Play the current player's whole turn (every unit, then production, then the new units' free moves) and return all events. */
 export function playTurn(game) {
   const player = game.state.turn;
   const events = [];
-  for (const unit of game.state.units.filter((u) => u.owner === player)) {
+  for (const unit of game.state.units.filter((u) => u.owner === player && wantsOrder(game, u))) {
     orderUnit(game, unit, events);
     const drop = tryDeploy(game, unit);
     if (drop) { events.push(...drop.events); orderUnit(game, drop.dropped, events); }

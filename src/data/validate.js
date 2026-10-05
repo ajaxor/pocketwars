@@ -22,8 +22,10 @@ export function validateRules(rules, problems) {
   if (!Number.isInteger(rules.maxHp) || rules.maxHp < 1) problems.push('rules: maxHp must be a positive integer');
   if (rules.ambushMultiplier !== undefined && !(typeof rules.ambushMultiplier === 'number' && rules.ambushMultiplier >= 1)) problems.push('rules: ambushMultiplier (the damage bonus of a unit that starts its turn hidden) must be a number of at least 1');
   if (!isColor(rules.neutralColor)) problems.push('rules: neutralColor must be a hex color');
+  if (rules.neutralUnitColors !== undefined && !(isObj(rules.neutralUnitColors) && isColor(rules.neutralUnitColors.color) && isColor(rules.neutralUnitColors.dark))) problems.push('rules: neutralUnitColors (the colours of a structure nobody owns) must be { color, dark } hex colors');
   if (!Array.isArray(rules.moveClasses) || !rules.moveClasses.length || new Set(rules.moveClasses).size !== rules.moveClasses.length
     || rules.moveClasses.some((m) => !isStr(m))) problems.push('rules: moveClasses must be a non-empty array of unique names');
+  if (rules.vision !== undefined && (!isObj(rules.vision) || Object.values(rules.vision).some((v) => !Number.isInteger(v) || v < 0))) problems.push('rules: vision (fog of war: how far each unit category sees, plus "default" and "property") must map names to whole numbers of tiles');
   if (!isObj(rules.layers) || !Object.keys(rules.layers).length) problems.push('rules: layers must be a non-empty object');
   else {
     for (const [id, l] of Object.entries(rules.layers)) {
@@ -141,12 +143,14 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     if (u.toughness !== undefined && !(isNum(u.toughness) && u.toughness > 0)) problems.push(`unit "${id}": toughness must be a positive number (1 = no bonus)`);
     if (u.armor !== undefined && !(isNum(u.armor) && u.armor >= 0 && u.armor <= 1)) problems.push(`unit "${id}": armor must be a number from 0 to 1`);
     if (u.tags !== undefined && (!Array.isArray(u.tags) || u.tags.some((t) => !isStr(t)))) problems.push(`unit "${id}": tags must be a list of names (weapons with onlyTags can only hit units that carry one)`);
+    if (u.vision !== undefined && !(Number.isInteger(u.vision) && u.vision >= 0)) problems.push(`unit "${id}": vision (how far it sees in fog of war) must be a whole number of tiles`);
     if (u.exclusive !== undefined && typeof u.exclusive !== 'boolean') problems.push(`unit "${id}": exclusive must be true or false (true: only a leader's loadout can put it on a build menu)`);
     if (u.attributes && u.attributes.indirect && Array.isArray(u.weapons) && isObj(weapons)) {
       for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
     }
     if (!isObj(u.render) || !isStr(u.render.sprite)) problems.push(`unit "${id}": render.sprite is required`);
     else if (u.render.facing !== undefined && typeof u.render.facing !== 'boolean') problems.push(`unit "${id}": render.facing must be true or false (false: the unit never turns to face left or right)`);
+    else if (u.render.inWall !== undefined && typeof u.render.inWall !== 'boolean') problems.push(`unit "${id}": render.inWall must be true or false (true: the unit is drawn by the wall layer, not as a sprite)`);
     else if (u.render.waterSprite !== undefined && !isStr(u.render.waterSprite)) problems.push(`unit "${id}": render.waterSprite (the sprite used on terrain with render.water) must be a name`);
     const supply = u.attributes && u.attributes.ammo;
     if (Array.isArray(u.weapons) && isObj(weapons)) {
@@ -190,6 +194,13 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     if (Array.isArray(builds)) {
       for (const c of builds) if (!categories.has(c)) problems.push(`terrain "${id}": builds unknown unit category "${c}"`);
     }
+    const wall = t && t.attributes && t.attributes.wall;
+    if (isObj(wall) && isStr(wall.structure)) {
+      const u = units[wall.structure];
+      if (!isObj(u)) problems.push(`terrain "${id}": attribute "wall" names unknown unit "${wall.structure}"`);
+      else if (!isObj(u.attributes) || u.attributes.structure !== true) problems.push(`terrain "${id}": attribute "wall" names "${wall.structure}", which is not a structure (it needs the "structure" attribute)`);
+      else if (isObj(t.moveCost) && t.moveCost[u.moveClass] == null) problems.push(`terrain "${id}": the "${wall.structure}" placed on it must be able to stand on it (moveCost.${u.moveClass})`);
+    }
     const supplies = t && t.attributes && t.attributes.resupply && t.attributes.resupply.categories;
     if (Array.isArray(supplies)) for (const c of supplies) if (!categories.has(c)) problems.push(`terrain "${id}": resupplies unknown unit category "${c}"`);
   }
@@ -204,7 +215,7 @@ export function validateAi(ai, units, problems) {
     if (ai.weights.blockCapture !== undefined && !isNum(ai.weights.blockCapture)) problems.push('ai: weights.blockCapture must be a number');
     if (ai.weights.crowFlies !== undefined && !isNum(ai.weights.crowFlies)) problems.push('ai: weights.crowFlies must be a number');
     if (ai.weights.deployRange !== undefined && !isNum(ai.weights.deployRange)) problems.push('ai: weights.deployRange must be a number');
-    for (const k of ['healValue', 'maxMines']) if (ai.weights[k] !== undefined && !isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
+    for (const k of ['healValue', 'maxMines', 'breakWall']) if (ai.weights[k] !== undefined && !isNum(ai.weights[k])) problems.push(`ai: weights.${k} must be a number`);
   }
   if (!isObj(ai.build)) return problems.push('ai: build must be an object keyed by unit category');
   for (const [category, rules] of Object.entries(ai.build)) {

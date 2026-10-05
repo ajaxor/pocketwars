@@ -9,7 +9,8 @@
 //   game.undo()
 //
 // Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, detonate, dive, surface, strike,
-// capture, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver) so the presentation layer can animate it without the engine
+// capture, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver; endTurn may start with the 'strike' events of neutral
+// structures firing, marked `neutral: true`) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
 //
 // BUILDING AND THE FREE MOVE. A unit is built on the property itself and is ready at once, but `fresh` (see state.js): its one order
@@ -45,6 +46,8 @@ import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries
 import { createState, restoreState, snapshotState } from './state.js';
 import { canDive, canSubmergeAt, canSurface, divesByItself, submergibleAt, surfacesToFire } from './submerge.js';
 import { evaluateVictory } from './victory.js';
+import { neutralFire } from './structures.js';
+import { explore, isFogged, revealsNew, visibleTiles } from './fog.js';
 
 const fail = (error) => ({ ok: false, error, events: [] });
 
@@ -54,6 +57,17 @@ export class Game {
     this.map = map;
     this.state = createState(map, registry);
     this.undoSnapshot = null;
+    this.revision = 0;   // bumped on every change (touch): what fog.js caches its sight on
+    this.touch();
+  }
+
+  /**
+   * Note that the state changed: drop cached sight (fog.js) and add what fogged players can now see to what they have seen. Every method below
+   * calls it; code that edits `state` directly (tests, a campaign script) must call it too.
+   */
+  touch() {
+    this.revision++;
+    explore(this);
   }
 
   get currentPlayer() { return this.state.turn; }
@@ -120,12 +134,21 @@ export class Game {
   act(order) {
     const v = this.validateOrder(order);
     if (!v.ok) return v;
-    const { unit, reach, target } = v;
-    const { to } = order;
-    const action = order.action || { type: 'wait' };
+    const { unit } = v;
     const events = [];
     const hiddenBefore = hiddenFrom(this, unit.owner);
+    const sightBefore = isFogged(this, unit.owner) ? visibleTiles(this, unit.owner) : null;
     this.undoSnapshot = this.controllerOf(this.state.turn) === 'human' ? snapshotState(this.state) : null;
+    const result = this.#act(order, v, events, hiddenBefore);
+    this.touch();
+    // In fog of war, an order that brings any tile into sight cannot be taken back either: undoing it would be free scouting.
+    if (sightBefore && revealsNew(sightBefore, visibleTiles(this, unit.owner))) this.undoSnapshot = null;
+    return result;
+  }
+
+  #act(order, { unit, reach, target }, events, hiddenBefore) {
+    const { to } = order;
+    const action = order.action || { type: 'wait' };
 
     if (to.x !== unit.x || to.y !== unit.y) {
       // Walk the path. A friend's tile can be crossed but not stopped on; an enemy on the way can only be a hidden one (the
@@ -147,6 +170,7 @@ export class Game {
         unit.capture = 0; // leaving a tile abandons capture progress
         unit.facing = facingAlong(path.slice(0, last + 1), unit.facing);   // faces the way it last moved sideways
         events.push({ type: 'move', unitId: unit.id, path: path.slice(0, last + 1) });
+        this.touch();   // it stands somewhere else now: what it sees has changed
       }
       if (unit.submerged && canDive(this, unit) && !submergibleAt(this, unit.x, unit.y)) {   // a submarine that ends its move outside deep water comes up
         unit.submerged = false;
@@ -215,6 +239,7 @@ export class Game {
     if (submerged ? !canSubmergeAt(this, unit) : !canSurface(this, unit)) return fail(submerged ? 'cannot-submerge' : 'cannot-surface');
     this.undoSnapshot = this.controllerOf(this.state.turn) === 'human' ? snapshotState(this.state) : null;
     unit.submerged = submerged;
+    this.touch();
     return { ok: true, events: [{ type: submerged ? 'dive' : 'surface', unit: snapshotUnit(unit), forced: false }] };
   }
 
@@ -231,6 +256,7 @@ export class Game {
     if (problem) return fail(problem);
     this.undoSnapshot = null;   // the ammo is spent
     const events = resolveDeploy(this, carrier);
+    this.touch();
     return { ok: true, events, deployed: { unitId: events[0].dropped.id } };
   }
 
@@ -239,6 +265,7 @@ export class Game {
     const unit = unitById(this, unitId);
     if (!unit) return fail('no-such-unit');
     const events = undoDeploy(this, unit);
+    if (events) this.touch();
     return events ? { ok: true, events } : fail('cannot-cancel-deploy');
   }
 
@@ -246,7 +273,7 @@ export class Game {
   build(x, y, unitType) {
     if (this.isOver) return fail('game-over');
     const result = buildUnit(this, this.state.turn, x, y, unitType);
-    if (result.ok) this.undoSnapshot = null; // spending funds can't be undone
+    if (result.ok) { this.undoSnapshot = null; this.touch(); } // spending funds can't be undone
     return result;
   }
 
@@ -259,7 +286,9 @@ export class Game {
     const { state, map } = this;
     this.undoSnapshot = null;
     const events = crashEmpty(this, state.turn);   // a flyer that began the turn on an empty tank and is still dry falls out of the sky
-    if (events.length) { events.push(...evaluateVictory(this)); if (this.isOver) return { ok: true, events }; }
+    events.push(...neutralFire(this, state.turn));   // neutral turrets fire at whoever ends their turn in their reach (structures.js)
+    this.touch();
+    if (events.length) { events.push(...evaluateVictory(this)); if (this.isOver) { this.touch(); return { ok: true, events }; } }
     burnFuel(this, state.turn);   // every flyer burns a turn of fuel, flown or not
     for (let tries = 0; tries < map.players.length; tries++) {
       let next = state.turn;
@@ -272,18 +301,20 @@ export class Game {
       events.push(...evaluateVictory(this));
       if (this.isOver || !state.defeated[next]) break;
     }
+    this.touch();
     return { ok: true, events };
   }
 
   // UNDO (single level): a snapshot is taken just before each human order and cleared on build / end of turn.
   // HIDDEN UNITS: a move could show the player something they did not know (it bumps into a hidden submarine, or ends next to one),
   // and undoing it would make that free scouting. So an order that reveals a hidden unit, or is interrupted by one, clears the
-  // snapshot (see act) and the Undo button goes dark. A move that finds nothing can still be taken back. If real fog of war is ever
-  // added (units hidden just for being far away), undo has to go entirely.
+  // snapshot (see act) and the Undo button goes dark. A move that finds nothing can still be taken back. In fog of war (fog.js) the same
+  // goes for any order that brings a tile into sight that was out of sight before.
   undo() {
     if (!this.canUndo) return false;
     restoreState(this.state, this.undoSnapshot);
     this.undoSnapshot = null;
+    this.touch();
     return true;
   }
 }

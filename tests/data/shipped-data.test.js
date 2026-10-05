@@ -40,7 +40,7 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('capture'), ['commando', 'conscript', 'diver', 'marine', 'mech', 'mechanic', 'medic', 'mortar', 'motorcycle', 'rpg_trooper', 'sniper', 'soldier', 'spy']);
   for (const id of registry.unitIds) if (['infantry', 'amphibious'].includes(registry.unit(id).category)) assert.ok(hasAttribute(registry.unit(id), 'capture'), `${id}: all infantry capture`);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando', 'conscript']);
-  assert.deepEqual(withAttr('indirect'), ['artillery', 'mortar', 'rocket_launcher', 'sniper']);
+  assert.deepEqual(withAttr('indirect'), ['artillery', 'artillery_turret', 'mortar', 'rocket_launcher', 'sniper']);
   assert.deepEqual(withAttr('submerge'), ['diver', 'missile_sub', 'submarine']);
   assert.deepEqual(withAttr('sonar'), ['destroyer', 'hunter_sub', 'radar_plane']);
   assert.deepEqual(withAttr('radar'), ['radar_plane']);
@@ -58,15 +58,19 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('mine'), ['sea_mine']);
   assert.deepEqual(withAttr('ignoresMines'), ['hover_tank']);
   assert.deepEqual(withAttr('surfacesToFire'), ['missile_sub']);
+  assert.deepEqual(withAttr('structure'), ['artillery_turret', 'cannon_turret', 'cracked_wall', 'jammer', 'sam_turret']);
+  assert.deepEqual(withAttr('fragile'), ['cracked_wall']);
+  assert.deepEqual(withAttr('jammer'), ['jammer']);
+  for (const id of withAttr('structure')) assert.equal(registry.unit(id).category, 'structure', `${id} is in the structure category`);
 });
 
 test('exclusive units are on no standard menu, and every one of them is on some leader\'s menu', () => {
   const exclusive = registry.unitIds.filter((id) => registry.unit(id).exclusive).sort();
-  assert.equal(exclusive.length, 31, 'the seventeen drafted units, the thirteen gallery units (supply truck to hunter sub) and the marine');
+  assert.equal(exclusive.length, 36, 'the seventeen drafted units, the thirteen gallery units (supply truck to hunter sub), the marine and the five structures');
   const standard = new Set(Object.values(registry.loadouts.default.build).flat());
   for (const id of exclusive) {
     assert.ok(!standard.has(id), `${id} is not on the standard menu`);
-    if (registry.unit(id).category === 'mine') continue;   // a mine is laid by a mine layer, never built
+    if (['mine', 'structure'].includes(registry.unit(id).category)) continue;   // a mine is laid by a mine layer and a structure placed by the map: never built
     const owners = registry.leaderIds.filter((l) => Object.values(registry.loadoutFor(l).build).flat().includes(id));
     assert.ok(owners.length >= 1, `${id} is on at least one leader's menu`);
   }

@@ -71,8 +71,27 @@ ones highlighted.
 
 ## Structures
 
-Buildings are still terrain (`property`), which is why they carry `blocksLineOfSight`. The `structure` layer and target mode
-are reserved for when structures become their own entities that can be damaged, repaired and built; nothing targets them yet.
+Buildings are still terrain (`property`), which is why they carry `blocksLineOfSight`. Walls are terrain too (`wall`: impassable to every
+unit, height 1 for line of sight). The destructible structures (cannon, SAM and artillery turrets, the jammer, the cracked wall) are units
+with the `structure` attribute on the `ground` layer, so every anti-ground weapon can hit them and they answer back like any unit
+(`src/engine/structures.js`). A neutral one (`owner: null`) is hostile to everyone; armed ones fire at the end of each player's turn at that
+player's units. The `structure` layer and target mode are still unused.
+
+| Structure | Weapon | Notes |
+|---|---|---|
+| Cannon turret | turret cannon, range 1-3, direct, ground and ships | toughness 1.8, armor .9 |
+| SAM turret | SAM battery, range 1-4, aircraft only | toughness 1.2, armor .5 |
+| Artillery turret | fixed howitzer, range 2-5, indirect, ground and ships | toughness 1.4, armor .6 |
+| Jammer | none | fog of war while it stands (`fog.js`); vision 3 |
+| Cracked wall | none | `fragile`: any hit destroys it; blocks line of sight; leaves rubble |
+
+## Fog of war
+
+`src/engine/fog.js`. While a jammer is on the board, human players see only what is within their units' `vision` (unit `vision`, else
+`rules.vision[category]`; a mountain adds `visionBonus`) along a clear line (the direct-fire rules above; aircraft see over everything), plus
+`rules.vision.property` tiles round their properties. `canSee` hides every enemy unit outside that (a structure stays known on explored
+tiles), so planning, targeting, interrupts and the AI-turn animations all follow. The computer is never fogged. Explored tiles are remembered
+(`state.explored`) and drawn greyed out; unexplored ones are black. An order that brings a new tile into sight cannot be undone.
 
 ## Retuning
 

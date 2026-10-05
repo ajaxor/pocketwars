@@ -138,6 +138,7 @@ function rawDamage(game, weapon, attacker, defender, moved = false) {
 
 /** The damage formula alone: HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands (whole HP, or one decimal below 1). */
 export function weaponDamage(game, weapon, attacker, defender, moved = false) {
+  if (hasAttribute(unitDef(game, defender), 'fragile')) return defender.hp;   // a cracked wall: any hit that reaches it brings it down
   const v = rawDamage(game, weapon, attacker, defender, moved);
   return v < 1 ? round1(v) : Math.round(v);
 }

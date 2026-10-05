@@ -12,7 +12,8 @@
     "crowFlies": 0.1,
     "deployRange": 8,
     "healValue": 2,
-    "maxMines": 4
+    "maxMines": 4,
+    "breakWall": 12
   },
   "build": {
     "infantry": [

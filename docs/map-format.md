@@ -31,14 +31,19 @@ reports every problem at once.
 - `ground` + `groundLegend` (both optional): a second grid of row strings under the terrain, using its own legend of glyph -> id from
   `data/ground.json` (`grass`, `dirt`). Tiles it does not cover use `rules.json -> defaultGround`. Ground is only a surface: terrain
   (rough, mountain, forest, city...) is drawn on top of it and there is no functional difference between grass and dirt yet.
-- `units`: `type` from `data/units.json`, player `owner`, `x`/`y`, optional `hp` (default max). A unit cannot start on
+- `units`: `type` from `data/units.json`, player `owner` (or `null` for a neutral structure: a turret or jammer nobody owns, hostile to
+  everyone), `x`/`y`, optional `hp` (default max). A unit cannot start on
   terrain impassable to its move class or on an occupied tile.
 - `id` must be a lowercase slug and match its key in `index.json`.
 
-`serializeMap(map)` is the inverse of `parseMap` (for a future editor). To add a map: drop the file in `data/maps/`, add it
+`serializeMap(map)` is the inverse of `parseMap`; the map editor (`editor/`) uses both. To add a map: drop the file in `data/maps/`, add it
 to `index.json`, run `npm run validate`.
 
 ## Terrain notes
+
+- Walls: `wall` is impassable to everything (aircraft too) and blocks line of sight; `wall_breach` gets a neutral cracked wall on it when
+  the game starts (one hit breaks it, leaving passable rubble). Wall tiles of either kind link up into continuous pipes; put cracked walls on
+  straight runs (a corner or an end is drawn whole). A map with a `jammer` unit is played in fog of war (the skirmish page can turn it off).
 
 - Move classes are `foot`, `wheels`, `tread`, `air` and `naval`. Roads cost wheels 0.5; forests cost treads 2 and block wheels; rough ground blocks wheels and costs treads 1; mountains admit only foot (and air). Water (`sea`) admits only `naval` (and air). `shoals` are little islets in the sea: impassable to every ground and naval unit today (so no unit can use them yet) but they give cover (defense 2) for whatever unit gets to traverse them. A shipyard is a land tile that ships cannot move onto (they are repaired from the water beside it); ships are built on the yard itself, whatever its terrain, and sail off with their free move, so put each shipyard on the shore with sea next to it. The `amphibious` move class (marines) uses foot costs on land and 1 on sea and shoals. No transports exist yet, so every map needs a land route between HQs (tests enforce it).
   wheels and costs treads 1; mountains admit only foot (and air).

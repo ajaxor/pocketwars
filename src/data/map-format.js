@@ -26,7 +26,7 @@ const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
 
 /**
  * @typedef {{faction:string, controller:'human'|'ai', funds:number, leader?:string}} PlayerSetup
- * @typedef {{type:string, owner:number, x:number, y:number, hp?:number}} UnitSetup
+ * @typedef {{type:string, owner:number|null, x:number, y:number, hp?:number}} UnitSetup   owner null: a neutral structure
  * @typedef {{id:string,name:string,description:string,width:number,height:number,
  *   terrain:string[][], ground:(string|null)[][], owners:(number|null)[][], players:PlayerSetup[], units:UnitSetup[],
  *   legend:Object<string,{terrain:string,owner?:number}>}} GameMap
@@ -141,7 +141,9 @@ export function parseMap(raw, registry) {
       if (!isObj(u)) return err(`${w} must be an object`);
       const def = registry.units[u.type];
       if (!def) err(`${w}: unknown unit type "${u.type}"`);
-      if (!Number.isInteger(u.owner) || u.owner < 0 || u.owner >= playerCount) err(`${w}: owner must be a player index (0..${playerCount - 1})`);
+      const neutral = u.owner === null;   // only a structure (a turret, a cracked wall) may belong to nobody
+      if (neutral) { if (def && !hasAttribute(def, 'structure')) err(`${w}: only a structure can have no owner (owner null); ${def.name} needs a player index`); }
+      else if (!Number.isInteger(u.owner) || u.owner < 0 || u.owner >= playerCount) err(`${w}: owner must be a player index (0..${playerCount - 1}), or null for a neutral structure`);
       const inBounds = Number.isInteger(u.x) && Number.isInteger(u.y) && u.x >= 0 && u.y >= 0 && u.x < width && u.y < height;
       if (!inBounds) err(`${w}: position (${u.x}, ${u.y}) is outside the ${width}x${height} map`);
       if (u.hp !== undefined && !(Number.isInteger(u.hp) && u.hp >= 1 && u.hp <= registry.rules.maxHp)) err(`${w}: hp must be an integer 1..${registry.rules.maxHp}`);

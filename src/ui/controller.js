@@ -32,6 +32,11 @@ import { canCapture } from '../engine/capture.js';
 import { canHealAt, healPlan } from '../engine/heal.js';
 import { canTarget, forecastAttack } from '../engine/combat.js';
 import { canSee, sonarTiles } from '../engine/detection.js';
+import { isStructure } from '../engine/structures.js';
+import { tileExplored } from '../engine/fog.js';
+
+/** A structure with no weapons (a jammer) has no orders at all: tapping it only shows what it is. */
+const isIdleStructure = (game, u) => isStructure(game, u) && !game.registry.unit(u.type).weapons.length;
 import { layConfig, layTiles } from '../engine/mines.js';
 import { canSupplyAt, supplyPlan } from '../engine/supply.js';
 import { ammoOf, canResupplyAt, resupplyCost } from '../engine/ammo.js';
@@ -132,7 +137,7 @@ export class Controller {
     if (this.mode === 'idle') {
       this.cursor = { x, y };
       this.preview = null;
-      if (u && u.owner === game.currentPlayer && !u.done) this.#select(u);
+      if (u && u.owner === game.currentPlayer && !u.done && !isIdleStructure(game, u)) this.#select(u);
       else if (u && u.owner === game.currentPlayer && canDeploy(game, u)) this.#offerDeploy(x, y, u);   // it has acted, but can still put a unit down
       else if (u) this.#show(x, y, u);
       else {
@@ -183,8 +188,9 @@ export class Controller {
   #show(x, y, unit) {
     if (unit) this.preview = this.#threat(unit);
     this.hud.focus({ x, y });
-    this.hud.info({ unit: unit ? unitInfo(this.game, unit) : null, terrain: terrainInfo(this.game, x, y) });
-    this.hud.message(null);
+    const known = tileExplored(this.game, this.game.currentPlayer, x, y);   // in fog of war a tile never seen tells nothing, not even its terrain
+    this.hud.info({ unit: unit ? unitInfo(this.game, unit) : null, terrain: known ? terrainInfo(this.game, x, y) : null });
+    this.hud.message(known ? null : 'Unexplored. Move a unit closer to see it.');
   }
 
   /** The ground a unit that is not being ordered could cover next turn: where it can move, and every tile it could then hit. */

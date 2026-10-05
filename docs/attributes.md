@@ -34,6 +34,10 @@ wrong kind of entity, fail validation.
 | `layMines` | `{unit, range}`: a Lay order (after moving) puts a `mine` unit on a free tile within `range` (range 1 = the four orthogonal neighbours; the mine layer uses 1) that the mine could enter, for its price (`mines.js`). | `gallery-units.test.js` |
 | `mine` | `{damage, triggers}`: never acts; hidden; when an enemy move is interrupted by it and the mover's category is in `triggers` it detonates (damage can kill), vanishes, and cancels the rest of that move. Infantry only bump into it; aircraft and `ignoresMines` units pass over. | `gallery-units.test.js` |
 | `ignoresMines` | Mines never go off under this unit (hover tank). | `gallery-units.test.js` |
+| `structure` | A fixed defence or wall section placed by the map (turrets, jammer, cracked wall; `move` must be 0). Never built, captured, carried or healed; does not keep its owner in the game; kept by leader formations; may be neutral (`owner: null` in the map file, drawn dark grey), an enemy of everyone. An armed neutral structure fires once at the end of each player's turn at that player's unit it would hurt most (`structures.js`). When its owner is knocked out it turns neutral. | `tests/engine/structures.test.js` |
+| `fragile` | Any hit that reaches it destroys it (cracked wall). | `structures.test.js` |
+| `jammer` | While any unit with it is on the board, human players are in fog of war (`fog.js`); the computer never is. Lifted when the last jammer is destroyed. | `tests/engine/fog.test.js` |
+| `blocksLineOfSight` | Like the terrain attribute: the unit is an obstacle for direct fire and for sight in fog, of this height, while it stands (cracked wall). | `structures.test.js` |
 
 ## Terrain attributes
 
@@ -44,6 +48,8 @@ wrong kind of entity, fail validation.
 | `blocksLineOfSight` | Obstacle for direct fire; the number is its height (forest 1, mountain and buildings 2). | `sight.test.js` |
 | `vantage` | A firer standing here shoots over obstacles lower than this number (mountain 2). | `sight.test.js` |
 | `submergible` | Deep water: `submerge` units can dive here. | `tests/engine/naval.test.js` |
+| `wall` | A wall tile, drawn as linked pipes (`render/walls.js`). `true`: solid (give it null move costs: nothing crosses, aircraft included). `{ structure }`: a breakable section: a neutral unit of that type (the cracked wall) is put on it when the game starts; once destroyed the tile is rubble with its own move costs. | `structures.test.js` |
+| `visionBonus` | Fog of war: a ground unit standing here sees this many tiles further (mountain 2). | `fog.test.js` |
 | `victoryOnCapture` | Capturing it knocks its owner out of the game (HQ): their units leave the board and their properties go neutral. The last player left wins. Requires `property`. | `capture.test.js`, `turns.test.js` |
 
 ## Other data-driven stats (not attributes)

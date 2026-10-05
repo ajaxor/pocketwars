@@ -26,6 +26,9 @@ import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { isMine } from '../engine/mines.js';
 import { facingAlong, terrainAt, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
+import { drawWalls } from './walls.js';
+import { isFogged, tileExplored, tileVisible } from '../engine/fog.js';
+import { attributeConfig } from '../engine/attributes.js';
 import { font } from './font.js';
 import { BUBBLE_COUNTER, BUBBLE_HIT, drawBubble } from './bubble.js';
 import { drawUnit } from './unit-sprites.js';
@@ -66,6 +69,23 @@ export class Renderer {
   colorsOf(owner) {
     const { registry, map } = this.game;
     return owner === null ? { color: registry.rules.neutralColor, dark: registry.rules.neutralColor } : registry.faction(map.players[owner].faction);
+  }
+
+  /** The colours a unit is drawn in: its owner's, or the dark grey of a neutral structure (rules.neutralUnitColors). */
+  unitColorsOf(owner) {
+    return owner == null ? this.game.registry.rules.neutralUnitColors ?? { color: '#3e4045', dark: '#1b1c1f' } : this.colorsOf(owner);
+  }
+
+  /**
+   * What the wall layer draws on (x, y): null, 'wall', 'cracked' (a breakable section whose structure still stands) or 'broken' (its rubble).
+   * Terrain with the `wall` attribute is a wall; one that names a structure is cracked while a unit of that type stands on it.
+   */
+  wallAt(x, y) {
+    const { game } = this;
+    const cfg = attributeConfig(game.registry.terrainDef(game.map.terrain[y][x]), 'wall');
+    if (!cfg) return null;
+    if (cfg === true) return 'wall';
+    return game.state.units.some((u) => u.x === x && u.y === y && u.type === cfg.structure) ? 'cracked' : 'broken';
   }
 
   /**
@@ -150,6 +170,7 @@ export class Renderer {
 
   drawUnitAt(g, u, view, now, { dying = false, alpha = 1, dive = u.submerged ? 1 : 0 } = {}) {
     const { S, game, animator, effects } = this;
+    if (game.registry.unit(u.type).render.inWall) return;   // a cracked wall is part of the wall layer (wallAt), not a sprite
     const lp = dying ? u : this.logicalPos(u, view);
     const arriving = !dying && !!this.arrivals?.has(u.id);
     const moving = arriving || (animator.current !== null && animator.current.unitId === u.id);
@@ -161,7 +182,7 @@ export class Renderer {
     if (arriving) { g.save(); g.beginPath(); g.rect(0, 0, game.map.width * S, game.map.height * S); g.clip(); }   // a unit driving in from off the map is cut off at the map's edge
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: dying ? u.hp : effects.displayHp(u, now) }, {
       face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
-      def: game.registry.unit(u.type), colors: this.colorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
+      def: game.registry.unit(u.type), colors: this.unitColorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
       size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(game.map.terrain[u.y][u.x]).render.water),
       ammo: dying ? null : ammoLevel(game, u),
       fuel: dying ? null : fuelLevel(game, u),   // drawUnit only draws it for 'low' and 'empty'
@@ -184,6 +205,27 @@ export class Renderer {
       if (u.owner !== null && state.owners[y][x] === u.owner && game.registry.terrainDef(map.terrain[y][x]).attributes.property) out.add(tileIndex(map, x, y));
     }
     return out;
+  }
+
+  /**
+   * Fog of war for the viewer (fog.js), over the terrain and the units: tiles never seen are black, tiles seen before but out of sight now are
+   * greyed out (their colour drained, then darkened). Nothing is drawn when the viewer is not in fog. `seen` is the camera's tile range.
+   */
+  drawFog(seen) {
+    const { g, S, game, viewer } = this;
+    if (viewer === null || !isFogged(game, viewer)) return;
+    const grey = new Path2D(), black = new Path2D();
+    for (let y = seen.y0; y <= seen.y1; y++) {
+      for (let x = seen.x0; x <= seen.x1; x++) {
+        if (tileVisible(game, viewer, x, y)) continue;
+        (tileExplored(game, viewer, x, y) ? grey : black).rect(x * S, y * S, S, S);
+      }
+    }
+    g.save();
+    g.globalCompositeOperation = 'saturation'; g.fillStyle = '#808080'; g.fill(grey);   // a grey source drains the colour out of what is under it
+    g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(14,18,28,.45)'; g.fill(grey);
+    g.fillStyle = '#07090d'; g.fill(black);
+    g.restore();
   }
 
   drawArrow(now) {
@@ -232,6 +274,7 @@ export class Renderer {
       groundAt: (x, y) => game.registry.groundDef(map.ground?.[y]?.[x]),
       view: seen,
     });
+    drawWalls(g, { width: map.width, height: map.height, S, wallAt: (x, y) => this.wallAt(x, y), view: seen });
     if (view.reach) {
       g.fillStyle = 'rgba(255,255,255,.38)'; g.beginPath();
       const tiles = [...view.reach.tiles()];
@@ -275,6 +318,7 @@ export class Renderer {
     }
     this.motionAt = now;
     if (this.motion.size > state.units.length + 8) for (const id of [...this.motion.keys()]) if (!unitById(game, id)) this.motion.delete(id);
+    this.drawFog(seen);
     this.drawArrow(now);
 
     const atk = view.attackTiles;

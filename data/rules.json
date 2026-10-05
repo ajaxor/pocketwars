@@ -2,7 +2,9 @@
   "maxHp": 10,
   "ambushMultiplier": 1.5,
   "neutralColor": "#b9b9b9",
+  "neutralUnitColors": { "color": "#3e4045", "dark": "#1b1c1f" },
   "defaultGround": "grass",
+  "vision": { "default": 2, "infantry": 2, "amphibious": 2, "vehicle": 2, "aircraft": 3, "naval": 3, "structure": 2, "mine": 0, "property": 1 },
   "moveClasses": ["foot", "wheels", "tread", "air", "naval", "amphibious", "bike", "diver", "hover", "amphibious_tread"],
   "layers": {
     "ground":     { "label": null },

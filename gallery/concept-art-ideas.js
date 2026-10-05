@@ -3,10 +3,10 @@
 // wrecks, liberating assimilated units, ...). NOT in the game. Same conventions as concept-art.js:
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 // Infantry follow the training-ground rule (art-infantry.js): the plain soldier plus ONE thing. Vehicles are the game's flat blocks.
-// The new static defences use the units' flat style and the footing from concept-art-static.js.
+// The new static defences use the units' flat style and the footing from src/render/art-defences.js.
 import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hullPath, propeller, propDisc, legs, torso, head, dome, INK, STEEL, GLASS, RED } from '../src/render/parts.js';
 import { shade } from '../src/render/color.js';
-import { footing, footShadow } from './concept-art-static.js';
+import { footing, footShadow } from '../src/render/art-defences.js';
 const WOOD = '#7a4e2a', HAZARD = '#ffc531', RUST = '#9a5a2e', FLAME = '#ff9a2e', FLAME_HOT = '#ffe36b', ARC = '#9fe8ff';
 
 // ---- infantry ------------------------------------------------------------------------------------------------------------------
@@ -240,7 +240,7 @@ const qShip = (g, { s, c, dk, w, ph, run, b }) => {
   });
 };
 
-// ---- static defences (the units' flat style, bolted to a footing: concept-art-static.js) --------------------------------------------
+// ---- static defences (the units' flat style, bolted to a footing: src/render/art-defences.js) --------------------------------------------
 // Coastal battery: a heavy casemate with a dark roof and a long naval gun; it fires out to sea.
 const coastalBattery = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.38, .38);

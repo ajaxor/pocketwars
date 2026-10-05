@@ -21,7 +21,7 @@ export const GROUPS = [
 /** Buildings the game already has (terrain render.building), shown in the Structures tab. */
 const GAME_BUILDING_NAME = { hq: 'HQ', city: 'City', factory: 'Factory', barracks: 'Barracks', airfield: 'Airfield', shipyard: 'Shipyard' };
 
-const CATEGORY_GROUP = { infantry: 'infantry', amphibious: 'infantry', vehicle: 'vehicle', aircraft: 'air', naval: 'naval', mine: 'naval' };
+const CATEGORY_GROUP = { infantry: 'infantry', amphibious: 'infantry', vehicle: 'vehicle', aircraft: 'air', naval: 'naval', mine: 'naval', structure: 'structure' };
 
 /** "range 2-3" from the unit's longest-reaching weapon, or "unarmed". */
 export function rangeNote(def, weapons) {
@@ -40,9 +40,11 @@ export function buildCatalog({ registry, concepts, planned = {}, status }) {
   const stageOf = (id, fallback) => status.units[id] || fallback;
   for (const id of registry.unitIds) {
     const def = registry.unit(id);
+    const wall = !!def.render.inWall;   // the cracked wall: drawn as a wall piece
     out.push({
       id, name: def.name, group: CATEGORY_GROUP[def.category] || 'vehicle', stage: stageOf(id, 'draft'), inGame: true,
-      sprite: def.render.sprite, waterSprite: def.render.waterSprite || null, kind: 'unit', section: null, art: 'game', altitude: def.render.altitude || 0, water: def.moveClass === 'naval',
+      sprite: def.render.sprite, waterSprite: def.render.waterSprite || null, kind: wall ? 'wall' : 'unit', cracked: wall,
+      section: def.category === 'structure' ? (wall ? 'Walls' : 'Defences') : null, art: 'game', altitude: def.render.altitude || 0, water: def.moveClass === 'naval',
       cost: def.cost, move: def.move, range: rangeNote(def, registry.weapons), weapons: (def.weapons || []).map((w) => registry.weapons[w]).filter(Boolean),
       tags: Object.keys(def.attributes || {}),
     });
@@ -60,6 +62,14 @@ export function buildCatalog({ registry, concepts, planned = {}, status }) {
     if (!b) continue;
     out.push({ id: `building_${id}`, name: GAME_BUILDING_NAME[id] || registry.terrain[id].name || id, group: 'structure', section: 'Game buildings', kind: 'building', stage: stageOf(`building_${id}`, 'draft'), inGame: true,
       sprite: b, art: 'game', altitude: 0, water: false, cost: null, move: 0, range: null, weapons: [], tags: [], mechanic: registry.terrain[id].attributes?.property?.builds?.length ? `Builds: ${registry.terrain[id].attributes.property.builds.join(', ')}.` : null });
+  }
+  for (const id of registry.terrainIds || Object.keys(registry.terrain || {})) {   // wall terrain: the wall itself, and the rubble a cracked wall leaves
+    const t = registry.terrain[id];
+    if (!t?.render?.wall) continue;
+    const solid = t.attributes?.wall === true;
+    out.push({ id: `terrain_${id}`, name: solid ? t.name : 'Destroyed Wall', group: 'structure', section: 'Walls', kind: 'wall', broken: !solid, stage: stageOf(`terrain_${id}`, 'draft'), inGame: true,
+      sprite: 'wall', art: 'game', altitude: 0, water: false, cost: null, move: 0, range: null, weapons: [], tags: [],
+      mechanic: solid ? 'Terrain. Nothing can cross it, not even aircraft, and it blocks line of sight. Walls link to the walls beside them.' : 'Terrain under a cracked wall: once the cracked wall is destroyed, the rubble is open ground (wheels pay 2).' });
   }
   const facilities = Object.fromEntries(concepts.facilities.map((f) => [f.id, f]));
   for (const c of concepts.units) {

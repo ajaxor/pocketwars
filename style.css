@@ -275,6 +275,7 @@ canvas.unit-icon { display: block; flex: none; }
 .sk-rules { display: flex; flex-direction: column; gap: 10px; }
 .sk-rule { display: flex; flex-direction: column; gap: 6px; }
 .sk-rule-name { font-weight: 700; font-size: 14px; }
+.sk-rule-note { color: var(--dim); font-size: 12px; line-height: 1.35; }
 .sk-seg { display: inline-flex; flex-wrap: wrap; border-radius: 10px; overflow: hidden; border: 3px solid var(--edge); background: rgba(0, 0, 0, .3); align-self: flex-start; }
 .sk-opt { font: 700 13px/1 var(--font); color: var(--dim); background: none; border: 0; padding: 11px 12px; min-height: 40px; cursor: pointer; touch-action: manipulation; }
 .sk-opt + .sk-opt { border-left: 2px solid var(--edge); }

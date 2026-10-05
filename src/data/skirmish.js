@@ -1,7 +1,8 @@
 // Skirmish setup: the choices a player makes on the skirmish page, checked and applied to a map. Pure data in, data out (no
 // DOM), so the rules live in one tested place and the page only has to show them.
 //
-//   settings = { mapId, funds, players: [{ faction, controller, leader }, ...] }   one player entry per slot on the map
+//   settings = { mapId, funds, fog, players: [{ faction, controller, leader }, ...] }   one player entry per slot on the map
+//     fog     false takes every jammer off the map, so there is no fog of war (fog.js); true (the default) keeps the map as it is
 //     funds   null to keep each player's own starting funds from the map file, or a number every player starts with
 //     players the colour (faction) and who plays it ('human' or 'ai'); slots keep the map's order, so slot 0 moves first
 //     leader  the leader the team fights with: a leader id (data/loadouts.json), 'random' (picked when the battle starts), or
@@ -12,6 +13,7 @@
 //   resolveLeaders(players, pool, random)       the leader id (or null) each slot fights with, with every 'random' rolled
 //   applySkirmish(map, s, registry, random)     a copy of the map (frozen, like every GameMap) with the settings in place
 //   swapFaction(players, slot, faction)         give a slot a colour; if another slot had it, that slot gets the old colour
+//   hasJammers(map, registry)                   does the map have fog of war (a jammer on it)?
 
 import { withLeaders } from './formation.js';
 import { RANDOM_LEADER } from './validate.js';
@@ -27,6 +29,7 @@ export const FUNDS_CHOICES = [null, 5000, 10000, 15000, 20000];
 export const defaultSkirmish = (map, leaderIds = [], starter = leaderIds[0] ?? null) => ({
   mapId: map.id,
   funds: null,
+  fog: true,
   players: map.players.map((p) => ({
     faction: p.faction,
     controller: p.controller,
@@ -52,6 +55,7 @@ export function skirmishProblems(map, registry, s) {
   });
   if (!s.players.some((p) => p.controller === 'human')) problems.push('at least one player must be human');
   if (s.funds !== null && !(Number.isInteger(s.funds) && s.funds >= 0)) problems.push('starting funds must be a whole number or the map default');
+  if (s.fog !== undefined && typeof s.fog !== 'boolean') problems.push('fog of war must be on or off');
   return problems;
 }
 
@@ -87,12 +91,18 @@ export function applySkirmish(map, s, registry, random = Math.random) {
   const wanted = s.players.some((p) => p.leader);
   if (wanted && !registry) throw new Error('applySkirmish needs the registry to give teams their leaders');
   const leaders = wanted ? resolveLeaders(s.players, registry.leaderIds, random) : s.players.map(() => null);
+  if (s.fog === false && !registry) throw new Error('applySkirmish needs the registry to take the jammers off');
   const set = {
     ...map,
     players: map.players.map((p, i) => ({ faction: s.players[i].faction, controller: s.players[i].controller, funds: s.funds ?? p.funds })),
+    units: s.fog === false ? map.units.filter((u) => !isJammer(registry, u)) : map.units,   // no jammer, no fog
   };
   return leaders.some(Boolean) ? withLeaders(set, registry, leaders) : deepFreeze(set);
 }
+
+const isJammer = (registry, u) => !!registry.unit(u.type).attributes?.jammer;
+/** Does `map` start with fog of war (a jammer on it)? */
+export const hasJammers = (map, registry) => map.units.some((u) => isJammer(registry, u));
 
 /** A new players list in which slot `slot` has colour `faction`; a slot that already had it takes the colour slot gave up. */
 export function swapFaction(players, slot, faction) {

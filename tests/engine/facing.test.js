@@ -33,10 +33,11 @@ test('a unit turns to the way it last moved sideways; a vertical move keeps its 
   assert.equal(tank.facing, 1, 'the last sideways step was to the right');
 });
 
-test('infantry do not turn (render.facing is false in the data); everything else does', () => {
+test('infantry and structures do not turn (render.facing is false in the data); everything else does', () => {
   for (const id of registry.unitIds) {
     const infantry = ['infantry', 'amphibious'].includes(registry.unit(id).category);   // foot soldiers, marines included
     const turns = id === 'motorcycle';   // the one foot-soldier with a front end: a bike
-    assert.equal(registry.unit(id).render.facing === false, infantry && !turns, id);
+    const fixed = registry.unit(id).category === 'structure';   // turrets turn their guns in the sprite, never the whole thing
+    assert.equal(registry.unit(id).render.facing === false, (infantry && !turns) || fixed, id);
   }
 });

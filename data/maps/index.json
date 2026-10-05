@@ -11,6 +11,7 @@
     "twin_fleets": "twin_fleets.map.json",
     "island_chain": "island_chain.map.json",
     "sky_strait": "sky_strait.map.json",
-    "four_seas": "four_seas.map.json"
+    "four_seas": "four_seas.map.json",
+    "iron_curtain": "iron_curtain.map.json"
   }
 }
