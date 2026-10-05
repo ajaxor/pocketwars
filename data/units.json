@@ -156,7 +156,7 @@
     "weapons": [],
     "toughness": 1.5,
     "armor": 0,
-    "attributes": { "fuel": { "max": 8, "low": 2 }, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
+    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
     "render": { "sprite": "transport_copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "copter": {
@@ -170,7 +170,7 @@
     "weapons": ["rocket_pods"],
     "toughness": 1.8,
     "armor": 0,
-    "attributes": { "fuel": { "max": 8, "low": 2 }, "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true },
     "render": { "sprite": "copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "fighter": {
@@ -183,7 +183,7 @@
     "weapons": ["air_missiles"],
     "toughness": 1,
     "armor": 0.5,
-    "attributes": { "fuel": { "max": 9, "low": 2 }, "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 5, "low": 2}, "ignoresTerrainDefense": true },
     "render": { "sprite": "fighter", "attackFx": "shot", "altitude": 0.13 }
   },
   "bomber": {
@@ -196,7 +196,7 @@
     "weapons": ["bombs"],
     "toughness": 1,
     "armor": 0.3,
-    "attributes": { "fuel": { "max": 7, "low": 2 }, "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true },
     "render": { "sprite": "bomber", "attackFx": "drop", "altitude": 0.13 }
   },
   "destroyer": {
@@ -347,7 +347,7 @@
     "weapons": ["wing_guns"],
     "toughness": 1,
     "armor": 0.2,
-    "attributes": { "fuel": { "max": 7, "low": 2 }, "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true },
     "exclusive": true,
     "render": { "sprite": "vintage_fighter", "attackFx": "shot", "altitude": 0.1 }
   },
@@ -361,7 +361,7 @@
     "weapons": ["light_bombs"],
     "toughness": 1,
     "armor": 0.1,
-    "attributes": { "fuel": { "max": 6, "low": 2 }, "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 3, "low": 1}, "ignoresTerrainDefense": true },
     "exclusive": true,
     "render": { "sprite": "vintage_bomber", "attackFx": "drop", "altitude": 0.1 }
   },
@@ -375,7 +375,7 @@
     "weapons": ["aerial_torpedo"],
     "toughness": 1,
     "armor": 0.1,
-    "attributes": { "fuel": { "max": 7, "low": 2 }, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 } },
+    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 } },
     "exclusive": true,
     "render": { "sprite": "torpedo_bomber", "attackFx": "torpedo", "altitude": 0.07 }
   },
@@ -390,7 +390,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "fuel": { "max": 5, "low": 1 }, "ignoresTerrainDefense": true, "radar": 3, "sonar": 3 },
+    "attributes": { "fuel": {"max": 3, "low": 1}, "ignoresTerrainDefense": true, "radar": 3, "sonar": 3 },
     "exclusive": true,
     "render": { "sprite": "radar_plane", "attackFx": "shot", "altitude": 0.1 }
   },
@@ -404,7 +404,7 @@
     "weapons": ["stealth_missiles"],
     "toughness": 1,
     "armor": 0.25,
-    "attributes": { "fuel": { "max": 7, "low": 2 }, "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 4, "low": 1 } },
+    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 4, "low": 1 } },
     "exclusive": true,
     "render": { "sprite": "stealth_fighter", "attackFx": "shot", "altitude": 0.16 }
   },
@@ -418,7 +418,7 @@
     "weapons": ["stealth_bombs"],
     "toughness": 1,
     "armor": 0.4,
-    "attributes": { "fuel": { "max": 6, "low": 2 }, "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 3, "low": 1 } },
+    "attributes": { "fuel": {"max": 3, "low": 1}, "ignoresTerrainDefense": true, "cloak": true, "ammo": { "max": 3, "low": 1 } },
     "exclusive": true,
     "render": { "sprite": "stealth_bomber", "attackFx": "drop", "altitude": 0.13 }
   },
@@ -433,7 +433,7 @@
     "weapons": ["rocket_pods"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "fuel": { "max": 6, "low": 2 }, "ignoresTerrainDefense": true, "cloak": true },
+    "attributes": { "fuel": {"max": 3, "low": 1}, "ignoresTerrainDefense": true, "cloak": true },
     "exclusive": true,
     "render": { "sprite": "stealth_copter", "attackFx": "shot", "altitude": 0.07 }
   },
