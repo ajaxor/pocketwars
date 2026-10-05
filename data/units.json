@@ -597,7 +597,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0.3,
-    "attributes": {"ammo": {"max": 3, "low": 1}, "layMines": {"unit": "sea_mine", "range": 2}},
+    "attributes": {"ammo": {"max": 3, "low": 1}, "layMines": {"unit": "sea_mine", "range": 1}},
     "exclusive": true,
     "render": {"sprite": "mine_layer", "attackFx": "shot"}
   },

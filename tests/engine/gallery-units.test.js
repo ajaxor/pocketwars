@@ -152,23 +152,21 @@ test('sonarTiles covers the tiles within the sonar range of a unit with sonar an
 
 const harbour = (extra = []) => world(['H~~~~~~~~~~h', '.o~~~~~~~~..'], [['mine_layer', 0, 4, 0], ['recon', 1, 11, 1], ...extra]);
 
-test('a mine layer lays a mine on any free sea tile within 2, using a round of ammo', () => {
+test('a mine layer lays a mine on any free sea tile next to it (up and down, left and right, not diagonally), using a round of ammo', () => {
   const g = harbour();
   const layer = first(g, 'mine_layer');
   const tiles = layTiles(g, layer);
-  assert.ok(tiles.some((t) => t.x === 6 && t.y === 0) && tiles.some((t) => t.x === 3 && t.y === 1), 'two tiles away is fine');
-  assert.ok(!tiles.some((t) => t.x === 7 && t.y === 0), 'three is too far');
-  assert.ok(!tiles.some((t) => t.x === 1 && t.y === 1), 'shoals are not sea');
+  assert.deepEqual(tiles.map((t) => `${t.x},${t.y}`).sort(), ['3,0', '4,1', '5,0'], 'only the orthogonal neighbours: nothing diagonal, nothing two away');
   const before = g.state.funds[0];
-  assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 6, y: 0 } } }).ok, true);
+  assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 5, y: 0 } } }).ok, true);
   assert.equal(g.state.funds[0], before, 'laying costs no money');
   assert.equal(layer.ammo, registry.unit('mine_layer').attributes.ammo.max - 1);
-  const mine = unitAt(g, 6, 0);
+  const mine = unitAt(g, 5, 0);
   assert.equal(mine.type, 'sea_mine');
   assert.equal(mine.owner, 0);
   assert.equal(mine.done, true, 'a mine never acts');
   assert.equal(layer.done, true);
-  assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 5, y: 0 } } }).error, 'unit-already-acted');
+  assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 3, y: 0 } } }).error, 'unit-already-acted');
 });
 
 test('a mine cannot be laid on land, on a unit, out of range, or without mines left', () => {
@@ -176,16 +174,17 @@ test('a mine cannot be laid on land, on a unit, out of range, or without mines l
   const layer = first(g, 'mine_layer');
   const lay = (at) => g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at } }).error;
   assert.equal(lay({ x: 5, y: 0 }), 'bad-lay-tile', 'a unit is there');
-  assert.equal(lay({ x: 10, y: 0 }), 'bad-lay-tile', 'out of range');
+  assert.equal(lay({ x: 6, y: 0 }), 'bad-lay-tile', 'two away is out of range');
+  assert.equal(lay({ x: 5, y: 1 }), 'bad-lay-tile', 'a diagonal is out of range');
   assert.equal(lay({ x: 4, y: 0 }), 'bad-lay-tile', 'not its own tile');
   layer.ammo = 0;
-  assert.equal(lay({ x: 6, y: 0 }), 'out-of-mines');
+  assert.equal(lay({ x: 3, y: 0 }), 'out-of-mines');
 });
 
 test('a mine is hidden from the enemy until one of their units is next to it, and survives the owner\'s next turn start unspent', () => {
   const g = harbour([['cruiser', 1, 10, 0]]);
-  g.act({ unitId: first(g, 'mine_layer').id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 6, y: 0 } } });
-  const mine = unitAt(g, 6, 0);
+  g.act({ unitId: first(g, 'mine_layer').id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 5, y: 0 } } });
+  const mine = unitAt(g, 5, 0);
   assert.equal(canSee(g, 1, mine), false);
   assert.equal(canSee(g, 0, mine), true);
   startTurn(g, 0);

@@ -31,7 +31,7 @@ wrong kind of entity, fail validation.
 | `surfacesToFire` | A submerged unit that attacks is brought up by it and stays exposed until it dives again (missile sub). Requires `submerge`. | `tests/engine/gallery-units.test.js` |
 | `supply` | `{categories, repair?, fuelTags?}`: a Supply order (after moving) refills the ammo of adjacent friendly units of those categories at the usual price per round, and repairs them `repair` HP for free (truck: no repair; carrier: aircraft, 2 HP). | `gallery-units.test.js` |
 | `reloads` | A unit that did not move last turn is fully reloaded for free at the start of its next turn (SAM launcher). Requires `ammo`. | `gallery-units.test.js` |
-| `layMines` | `{unit, range}`: a Lay order (after moving) puts a `mine` unit on a free tile within `range` that the mine could enter, for its price (`mines.js`). | `gallery-units.test.js` |
+| `layMines` | `{unit, range}`: a Lay order (after moving) puts a `mine` unit on a free tile within `range` (range 1 = the four orthogonal neighbours; the mine layer uses 1) that the mine could enter, for its price (`mines.js`). | `gallery-units.test.js` |
 | `mine` | `{damage, triggers}`: never acts; hidden; when an enemy move is interrupted by it and the mover's category is in `triggers` it detonates (damage can kill), vanishes, and cancels the rest of that move. Infantry only bump into it; aircraft and `ignoresMines` units pass over. | `gallery-units.test.js` |
 | `ignoresMines` | Mines never go off under this unit (hover tank). | `gallery-units.test.js` |
 
