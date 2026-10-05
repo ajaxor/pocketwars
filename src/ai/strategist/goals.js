@@ -53,6 +53,18 @@ function ring(game, mc, ids, x, y, lo, hi, start = 0, out = []) {
   return out;
 }
 
+/**
+ * How far from a refuelling spot a flier can go and still get back: half its fuel (in turns, plus the turn it gets on an empty tank)
+ * times its move. Infinity for a unit without fuel. `homes` are the [x, y] of its refuelling spots (fuel.js fuelHomes).
+ */
+export function roundTrip(game, def) {
+  const cfg = attributeConfig(def, 'fuel');
+  return cfg ? Math.floor((cfg.max + 1) / 2) * def.move : Infinity;
+}
+
+/** The refuelling spots of a type for a player: their properties that resupply its category (for a type with no unit yet). */
+export const fuelSpots = (sit, def) => sit.properties.filter((p) => p.owner === sit.player && p.terrain.attributes.resupply?.categories.includes(def.category)).map((p) => [p.x, p.y]);
+
 const propertyValue = (sit, p) => p.property.income / 1000 + (p.property.builds?.length ? 1.5 : 0) + (isHq(p) && p.owner !== null ? 4 : 0);
 
 /** Give every capturer its own property to take this turn (sit.captureTargets: unitId -> property). */
@@ -139,6 +151,10 @@ export function landingTiles(sit, unit) {
   const top = best[0].value;
   const out = [];
   const reachIn = cargo.move + 1;
+  // a flier only goes where it can drop its troops and still get back to refuel
+  const range = roundTrip(game, def);
+  const homes = range < Infinity ? fuelHomes(game, unit) : [];
+  const inRange = (x, y) => range === Infinity || homes.some(([hx, hy]) => distance(x, y, hx, hy) <= range);
   for (const t of best) {
     const gap = gapTo(game, cargo.moveClass, t.area);
     for (let dy = -reachIn; dy <= reachIn; dy++) {
@@ -146,13 +162,13 @@ export function landingTiles(sit, unit) {
         const x = t.p.x + dx;
         const y = t.p.y + dy;
         if (Math.abs(dx) + Math.abs(dy) > reachIn || !passable(game, mc, x, y) || !ids.has(areaAt(game, mc, x, y))) continue;
-        if (gap[y * W(game) + x] > 1) continue;
+        if (gap[y * W(game) + x] > 1 || !inRange(x, y)) continue;
         out.push([x, y, Math.max(0, (top - t.value) * 1.5)]);
       }
     }
   }
   sit.landing ??= new Map();
-  sit.landing.set(unit.id, best);
+  sit.landing.set(unit.id, range === Infinity ? best : best.filter((t) => homes.some(([hx, hy]) => distance(t.p.x, t.p.y, hx, hy) <= range + reachIn)));
   return out;
 }
 
@@ -220,12 +236,20 @@ export function goalsFor(sit, unit) {
   const r = roles(def);
   const result = (kind, tiles) => ({ kind, tiles });
 
-  // a flier low on fuel turns home in time
+  // a flier low on fuel turns home in time (fuel is in turns, and an empty tank still gets one to reach a refill), unless it is a carrier
+  // that can make its drop this turn and still get home from there
   if (usesFuel(game, unit)) {
     const homes = fuelHomes(game, unit);
     if (homes.length) {
-      const away = Math.min(...homes.map(([hx, hy]) => distance(unit.x, unit.y, hx, hy)));
-      if (away > 0 && fuelOf(game, unit) <= Math.ceil(away / def.move) + 1) return result('refuel', homes);
+      const homeFrom = (x, y) => Math.min(...homes.map(([hx, hy]) => distance(x, y, hx, hy)));
+      const away = homeFrom(unit.x, unit.y);
+      const fuel = fuelOf(game, unit);
+      if (away > 0 && fuel <= Math.ceil(away / def.move)) {
+        const land = r.carrier && (ammoOf(game, unit) ?? 1) >= deployCost(deployConfig(game, unit)) ? landingTiles(sit, unit) : [];
+        const drop = land.filter(([x, y]) => distance(unit.x, unit.y, x, y) <= def.move && Math.ceil(homeFrom(x, y) / def.move) <= fuel);
+        if (drop.length) return result('land', drop);
+        return result('refuel', homes);
+      }
     }
   }
   // out of ammo (a carrier with no troops left), with the money to refill: back to where it is refilled

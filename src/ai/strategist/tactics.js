@@ -54,7 +54,7 @@ export function bestOrder(sit, unit) {
   const mayAct = !unit.fresh;
   const mayFire = (moved) => mayAct && (!(moved || movedAlready) || canFireAfterMoving(game, unit));
   const aggression = tactics.aggression ?? 1;
-  const caution = (tactics.caution ?? 1) / aggression;
+  const caution = (tactics.caution ?? 1) / aggression * Math.min(2, Math.max(0.35, 1 / sit.strength) ** params.balance);
   const value = def.cost / 1000;
   const { max: range } = reachOf(game.registry, def);
   const fallback = (x, y) => params.unreachable + Math.min(...goal.tiles.map(([gx, gy]) => distance(x, y, gx, gy))) * 0.1;

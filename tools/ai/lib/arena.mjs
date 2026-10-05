@@ -30,14 +30,14 @@ export function parseContender(spec, registry) {
 /** Seats for one game on a map with `slots` players: a and b alternate, starting with `first`. */
 const seatsFor = (slots, first, second) => Array.from({ length: slots }, (_, i) => (i % 2 === 0 ? first : second));
 
-export function duelJobs(a, b, { maps, seeds = 4, seedBase = 1, maxDays, fog = true, margin }) {
+export function duelJobs(a, b, { maps, seeds = 4, seedBase = 1, maxDays, fog = true, margin, leaders = true }) {
   const jobs = [];
   for (const { id, slots } of maps) {
     for (let s = 0; s < seeds; s++) {
       const seed = seedBase + s;
       for (const [first, second] of [[a, b], [b, a]]) {
         jobs.push({
-          mapId: id, seed, maxDays, fog, margin,
+          mapId: id, seed, maxDays, fog, margin, leaders,
           seats: seatsFor(slots, first, second).map((c) => ({ engine: c.engine, profile: c.profile })),
           labels: seatsFor(slots, first, second).map((c) => c.label),
         });

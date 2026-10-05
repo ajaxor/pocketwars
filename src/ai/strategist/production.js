@@ -14,10 +14,10 @@
 import { attributeConfig } from '../../engine/attributes.js';
 import { buildProblem, menuFor } from '../../engine/economy.js';
 import { builtThisTurn } from '../../engine/economy.js';
-import { deployedType, unitAt, unitDef } from '../../engine/queries.js';
+import { deployedType, distance, unitAt, unitDef } from '../../engine/queries.js';
 import { isStructure } from '../../engine/structures.js';
 import { areaAt } from './analysis.js';
-import { areasAround } from './goals.js';
+import { areasAround, fuelSpots, roundTrip } from './goals.js';
 import { inRangeOf } from './analysis.js';
 import { matchup, reachOf, roles } from './knowledge.js';
 import { buildTaste } from './strategies.js';
@@ -73,8 +73,11 @@ export function typeWorth(sit, type, x, y, ctx) {
       // land worth taking that no walker of ours can get to: across the water from everything we hold
       const home = new Set();
       for (const p of sit.properties) if (p.owner === player) for (const a of areasAround(game, cargo.moveClass, p.x, p.y)) home.add(a);
+      const range = roundTrip(game, def);   // a flier must get there and back on its fuel
+      const spots = range < Infinity ? fuelSpots(sit, def) : [];
       const islands = sit.properties.filter((p) => p.owner !== player && !home.has(areaAt(game, cargo.moveClass, p.x, p.y))
-        && (mc === 'air' || canGet(game, mc, ids, p.x, p.y, cargo.move + 1))).length;
+        && canGet(game, mc, ids, p.x, p.y, cargo.move + 1)
+        && (range === Infinity || spots.some(([hx, hy]) => distance(p.x, p.y, hx, hy) <= range + cargo.move + 1))).length;
       const carriers = sit.mine.filter((u) => roles(unitDef(game, u)).carrier).length;
       role += params.carrierNeed * Math.min(4, islands) / (1 + carriers);
     }

@@ -36,6 +36,10 @@ export class Situation {
     this.mine = game.state.units.filter((u) => u.owner === player);
     this.enemies = game.state.units.filter((e) => e.owner !== player && (e.owner !== null || isStructure(game, e)) && canSee(game, player, e));
     this.army = this.enemies.filter((e) => !isNeutral(e) && !isStructure(game, e) && !hasAttribute(unitDef(game, e), 'mine'));
+    // the balance of forces: our army's worth over the enemy's (both at their HP). Stronger, we press on; weaker, we are careful
+    const worth = (list) => list.reduce((a, u) => a + (unitDef(game, u).weapons.length ? unitDef(game, u).cost * u.hp / game.registry.rules.maxHp : 0), 0);
+    const ours = worth(this.mine.filter((u) => !isStructure(game, u) && !hasAttribute(unitDef(game, u), 'mine')));
+    this.strength = ours / Math.max(1000, worth(this.army));
   }
 
   threatAt(unit, x, y) {

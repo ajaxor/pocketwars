@@ -6,6 +6,7 @@
 //   npm run ai:arena -- strategist=candidate.json strategist    a profile from a file against the shipped one
 //   options: --maps all|2p|id,id   --seeds 4 (games per map and seat order)   --days 30 (then judged on worth)
 //            --workers N (default: one per CPU)   --fog off   --seed-base 1   --json results.json   --quiet
+//            --leaders harlan,ada (one per slot; default random from the seed)   --no-leaders
 //
 // Every map is played with both seat orders for each seed (same leaders per slot), so neither engine gains from moving first.
 
@@ -39,6 +40,7 @@ async function main() {
   const jobs = duelJobs(a, b, {
     maps, seeds: Number(opts.seeds ?? 4), seedBase: Number(opts['seed-base'] ?? 1),
     maxDays: Number(opts.days ?? DEFAULT_MAX_DAYS), fog: opts.fog !== 'off',
+    leaders: opts['no-leaders'] ? false : typeof opts.leaders === 'string' ? opts.leaders.split(',') : true,
   });
   const pool = await createPool(opts.workers ? { workers: Number(opts.workers) } : {});
   const t0 = Date.now();

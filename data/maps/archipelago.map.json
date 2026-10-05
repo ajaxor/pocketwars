@@ -1,0 +1,203 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "archipelago",
+  "name": "Archipelago",
+  "description": "Two home islands and three islets between them, with no land in common: whatever cannot swim or fly stays home. Win the water and the air, then land troops on the islets and on the enemy shore.",
+  "players": [
+    {
+      "faction": "ashmark",
+      "controller": "human",
+      "funds": 14000
+    },
+    {
+      "faction": "vantor_reach",
+      "controller": "ai",
+      "funds": 14000
+    }
+  ],
+  "legend": {
+    ".": {
+      "terrain": "plain"
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "s": {
+      "terrain": "shoals"
+    },
+    "F": {
+      "terrain": "forest"
+    },
+    "M": {
+      "terrain": "mountain"
+    },
+    "r": {
+      "terrain": "road"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "a": {
+      "terrain": "airfield"
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "f": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "g": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "k": {
+      "terrain": "barracks",
+      "owner": 0
+    },
+    "K": {
+      "terrain": "barracks",
+      "owner": 1
+    },
+    "v": {
+      "terrain": "airfield",
+      "owner": 0
+    },
+    "V": {
+      "terrain": "airfield",
+      "owner": 1
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~s....s~~~~~~~~~~~~s....s~~~",
+    "~~s.c..F.s~~~s..s~~~s.F..c.s~~",
+    "~s..rrrr..s~~.cc.~~s..rrrr..s~",
+    "~.v.r..M..Y~~s..s~~Z..M..r.V.~",
+    "~..cr.....~~~~~~~~~~.....rc..~",
+    "s...r..F..s~~~~~~~~s..F..r...s",
+    "~.k.r.....c~~s..s~~c.....r.K.~",
+    "~..Or..f..Y~s.aa.s~Z..g..rB..~",
+    "~.F.r.....c~~.cc.~~c.....r.F.~",
+    "~...r..F..s~~s..s~~s..F..r...~",
+    "s.c.r.....~~~~~~~~~~.....r.c.s",
+    "~...rrrr.M~~~~~~~~~~M.rrrr...~",
+    "~s.v..F..s~~~s..s~~~s..F..V.s~",
+    "~~s..c...~~~~.cc.~~~~...c..s~~",
+    "~~~s....s~~~~s..s~~~~s....s~~~",
+    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~",
+    "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 8
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 27,
+      "y": 8
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 9
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 26,
+      "y": 9
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 5,
+      "y": 8
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 24,
+      "y": 8
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 6,
+      "y": 9
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 23,
+      "y": 9
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 5,
+      "y": 7
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 24,
+      "y": 7
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 4,
+      "y": 10
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 25,
+      "y": 10
+    },
+    {
+      "type": "destroyer",
+      "owner": 0,
+      "x": 11,
+      "y": 8
+    },
+    {
+      "type": "destroyer",
+      "owner": 1,
+      "x": 18,
+      "y": 8
+    },
+    {
+      "type": "copter",
+      "owner": 0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "copter",
+      "owner": 1,
+      "x": 27,
+      "y": 4
+    }
+  ]
+}

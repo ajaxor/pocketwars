@@ -60,6 +60,24 @@ function invalidate(game, cache, units, tiles) {
   }
 }
 
+/** Drop a carrier's troops and give them their order (they have to leave the carrier's tile). */
+function* drop(sit, carrier, wants) {
+  const { game } = sit;
+  const res = yield { type: 'deploy', unitId: carrier.id };
+  if (!res.ok) return;
+  const dropped = game.state.units.find((u) => u.id === res.deployed.unitId);
+  if (!dropped) return;
+  sit.refresh();
+  sit.remaining = [dropped];
+  planCaptures(sit);
+  for (let i = 0; i < 2 && wants(dropped); i++) {
+    const d = bestOrder(sit, dropped);
+    if (!d) break;
+    const r = yield { type: 'order', order: d.order };
+    if (!r.interrupted) break;
+  }
+}
+
 export function* turn(game, ctx) {
   const { player } = ctx;
   const params = paramsOf(ctx.profile);
@@ -95,6 +113,12 @@ export function* turn(game, ctx) {
       cache.delete(unit.id);
       continue;   // plan again with the surface speed
     }
+    // a carrier already where it wants to be drops its troops before it moves (then it can head home)
+    if (roles(unitDef(game, unit)).carrier && c.goal?.kind === 'land' && !unit.fresh && wantsDeploy(sit, unit)) {
+      yield* drop(sit, unit, wants);
+      cache.delete(unit.id);
+      continue;
+    }
     const from = [unit.x, unit.y];
     const target = c.order.action.targetId != null ? game.state.units.find((e) => e.id === c.order.action.targetId) : null;
     const at = target ? [target.x, target.y] : null;
@@ -102,23 +126,7 @@ export function* turn(game, ctx) {
     cache.delete(unit.id);
     invalidate(game, cache, pending, [from, [c.order.to.x, c.order.to.y], ...(at ? [at] : [])]);
     if (res.interrupted) continue;   // stopped by a hidden unit: it is planned again from where it stands
-    if (roles(unitDef(game, unit)).carrier && wantsDeploy(sit, unit)) {
-      const drop = yield { type: 'deploy', unitId: unit.id };
-      if (drop.ok) {
-        const dropped = game.state.units.find((u) => u.id === drop.deployed.unitId);
-        if (dropped) {
-          sit.refresh();
-          sit.remaining = [dropped];
-          planCaptures(sit);
-          for (let i = 0; i < 2 && wants(dropped); i++) {
-            const d = bestOrder(sit, dropped);
-            if (!d) break;
-            const r = yield { type: 'order', order: d.order };
-            if (!r.interrupted) break;
-          }
-        }
-      }
-    }
+    if (roles(unitDef(game, unit)).carrier && wantsDeploy(sit, unit)) yield* drop(sit, unit, wants);
   }
   if (game.isOver) return;
 

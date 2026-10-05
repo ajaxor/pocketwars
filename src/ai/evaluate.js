@@ -1,5 +1,5 @@
-// How well each player is doing, in money: what their army is worth now (price x HP left) plus what their properties will earn over
-// the next `incomeDays` days. Used to judge a game that hit the arena's day limit, and by engines to tell whether a plan is working.
+// How well each player is doing, in money: what their army is worth now (price x HP left), what their properties will earn over the
+// next `incomeDays` days, and some of the money they have (see worth). Used to judge a game that hit the arena's day limit, and by engines to tell whether a plan is working.
 //
 //   worth(game, player)          one player's worth
 //   standings(game)              [{ player, worth, share }] for every player still in it (share of the total worth, 0..1)
@@ -26,7 +26,9 @@ export function worth(game, player, { incomeDays = INCOME_DAYS } = {}) {
     const capturer = game.state.units.find((u) => u.x === p.x && u.y === p.y && u.owner !== player && u.owner !== null && u.capture > 0);
     if (capturer) threat += (army + incomeFor(game, player) * incomeDays) * 0.5 * Math.min(1, capturer.capture / p.property.capturePoints);
   }
-  return Math.max(0, army + incomeFor(game, player) * incomeDays + game.state.funds[player] * 0.5 - threat);
+  // money in the bank counts at half, and only up to three days' income: a hoard there is no time or factory to spend is no threat
+  const income = incomeFor(game, player);
+  return Math.max(0, army + income * incomeDays + Math.min(game.state.funds[player], income * 3) * 0.5 - threat);
 }
 
 export function standings(game) {
