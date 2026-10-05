@@ -142,7 +142,7 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
   const col = { body: '#646b78', hole: '#16181c', out: '#1f2228' };           // a cracked pipe is the same colour as a sound one
   const dark = shade('#646b78', -.14), SHD = .13, SHADOW = [.06, .1];                               // the shaded side's colour; how far the lit part is shifted up and left: the width of the shade
-  const OW = .03, RC = .13, FR = .08;                                           // the dark outline's width; the radius of rounded corners; of the fillets in inner corners
+  const OW = .03, RC = .13, FR = .19;                                           // the dark outline's width; the radius of rounded corners; of the fillets in inner corners
   const X = (a) => px + a * S, Y = (b) => py + b * S;
   const rect = (x, y, w2, h, c) => { g.fillStyle = c; g.fillRect(X(x), Y(y), w2 * S, h * S); };
   const ell = (x, y, rx, ry, c, a0 = 0, a1 = 7) => { g.fillStyle = c; g.beginPath(); g.ellipse(X(x), Y(y), rx * S, ry * S, 0, a0, a1); g.fill(); };
@@ -210,7 +210,7 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
     else {
       if (n) lieV(0, CY); if (s) lieV(CY, 1);
       if (w) lieH(0, CX); if (e) lieH(CX, 1);
-      box(CX - R, CY - R, CX + R, GY, [!n && !w, !n && !e, !s && !e, !s && !w], RC);   // the junction block: free corners rounded
+      box(CX - R, CY - R, CX + R, GY, [!n && !w, !n && !e, !s && !e, !s && !w], .3);   // as round as a pipe's own bend   // the junction block: free corners rounded
       if (n && w) fillet(CX - R, CY - R, -1, -1);                                  // and the inner corners between two arms
       if (n && e) fillet(CX + R, CY - R, 1, -1);
       if (s && e) fillet(CX + R, GY, 1, 1);
