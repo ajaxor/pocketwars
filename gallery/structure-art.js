@@ -183,7 +183,7 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
     };
     if (broken && (straightH || straightV)) {                                    // a destroyed straight pipe: two halves, each ending in a jagged break
       const zig = (side) => {                                                    // [position along the pipe, -1..1 across it] of one piece's break
-        const e0 = side < 0 ? .3 : .7, dirn = side < 0 ? 1 : -1;
+        const e0 = side < 0 ? .15 : .85, dirn = side < 0 ? 1 : -1;
         const offs = side < 0 ? [0, .09, -.04, .11, -.01, .08, -.05] : [-.02, .08, -.06, .05, .12, -.03, .07];
         return offs.map((o, i) => [e0 + dirn * o, (i / (offs.length - 1)) * 2 - 1]);
       };
