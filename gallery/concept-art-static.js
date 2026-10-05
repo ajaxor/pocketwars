@@ -101,14 +101,14 @@ const samSite = (g, { s, c, dk, w, ph, run }) => {
 const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.4, .4);
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
-  box(g, s, -.22, .02, .44, .2, 4, c);                                                              // the pedestal
-  box(g, s, -.22, .02, .44, .05, 2, dk);
-  const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.07, ca = Math.cos(ang), sa = Math.sin(ang), L = .46 - rec;
-  disc(g, s, 0, cy, .15, INK); disc(g, s, 0, cy, .125, c); disc(g, s, 0, cy, .07, mix(c, '#ffffff', .18));   // the round mount it pivots in
-  stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel
+  box(g, s, -.28, -.02, .56, .23, 4, c);                                                            // the base, as wide as the SAM site's, with the same dark roof band
+  box(g, s, -.28, -.02, .56, .05, 2, dk);
+  const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.02, ca = Math.cos(ang), sa = Math.sin(ang), L = .46 - rec;
+  g.fillStyle = c; g.beginPath(); g.arc(0, cy * s, .2 * s, Math.PI, 0); g.closePath(); g.fill();       // the mount: a half circle with a flat bottom, like a desk clock
+  g.fillStyle = mix(c, '#ffffff', .18); g.beginPath(); g.arc(0, cy * s, .12 * s, Math.PI, 0); g.closePath(); g.fill();
+  stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel, swinging like the hand of the clock
   stroke(g, s, ca * (L - .07), cy + sa * (L - .07), ca * L, cy + sa * L, thick * 1.45, INK);         // its muzzle brake
-  stroke(g, s, 0, cy, ca * .13, cy + sa * .13, thick * 1.5, INK);                                    // the barrel's root over the mount
-  disc(g, s, 0, cy, .035, INK);                                                                      // the trunnion
+  disc(g, s, 0, cy, .04, INK);                                                                       // the pivot
 };
 
 // Jammer: a hut with a mast and a big dish, a single flat colour cut off flat at the top and bottom, that turns from facing right, through facing us, to facing left and back.
@@ -120,7 +120,7 @@ const jammer = (g, { s, c, dk, w, ph, run }) => {
   g.save(); g.beginPath(); g.rect((cx - .5) * s, (cy - .2) * s, s, .4 * s); g.clip();               // the dish is cut off flat above and below
   oval(g, s, cx - nx * .03, cy, rx, r, c);
   g.restore();
-  stroke(g, s, cx, cy, cx + nx * .17, cy - .01, Math.max(2, s * .03), INK); disc(g, s, cx + nx * .17, cy - .01, .03, c);   // the feed on its arm, tipped in the team colour
+  stroke(g, s, cx, cy, cx + nx * .17, cy - .01, Math.max(2, s * .03), INK); disc(g, s, cx + nx * .17, cy - .01, .042, INK); disc(g, s, cx + nx * .17, cy - .01, .03, c);   // the feed on its arm, tipped in the team colour with its own black border so it shows against the dish
   box(g, s, -.2, .0, .4, .21, 4, c);                                                                // the hut
   box(g, s, -.2, .0, .4, .05, 2, dk);                                                               // its roof
 };

@@ -210,6 +210,13 @@ export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false }
   };
   real.save(); real.beginPath(); g = rec; paint(1); g = real; real.clip();
   real.translate(-SHD * S, -SHD * S); paint(2);
+  real.translate(SHD * S, SHD * S);
+  // the two inner corners that face away from the light (up-right, down-left) have no shade of their own, so the shade is carried round them: the band
+  // along the arm runs on to the corner and ends in a round patch centred on it
+  g.fillStyle = dark;
+  const patch = (Px, Py, bx, by, bw, bh) => { real.fillRect(X(bx), Y(by), bw * S, bh * S); real.beginPath(); real.arc(X(Px), Y(Py), SHD * S, 0, 7); real.fill(); };
+  if (n && e && !(straightH || straightV)) patch(CX + R, CY - R, CX + R - SHD, 0, SHD, CY - R);
+  if (s && w && !(straightH || straightV)) patch(CX - R, GY, 0, GY - SHD, CX - R, SHD);
   real.restore();
   if (cracked) {
     // the same pipe, with a crack that starts at its edge and runs part of the way in
