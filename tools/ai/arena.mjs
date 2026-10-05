@@ -4,7 +4,7 @@
 //
 //   npm run ai:arena -- strategist greedy                      the two engines' profiles from data/ai.json
 //   npm run ai:arena -- strategist=candidate.json strategist    a profile from a file against the shipped one
-//   options: --maps all|2p|id,id   --seeds 4 (games per map and seat order)   --days 30 (then judged on worth)
+//   options: --maps all|2p|shipped|id,id (all and 2p include the training maps in tools/ai/maps)   --seeds 4 (games per map and seat order)   --days 30 (then judged on worth)
 //            --workers N (default: one per CPU)   --fog off   --seed-base 1   --json results.json   --quiet
 //            --leaders harlan,ada (one per slot; default random from the seed)   --no-leaders
 //

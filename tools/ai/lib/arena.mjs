@@ -4,16 +4,15 @@
 //   scoreDuel(results, a, b)                   { a, b, games, wins, losses, draws, adjudicated, score, ci, byMap }
 //     score is a's share of the points (win 1, draw 0.5); ci the half-width of its 95% confidence interval
 //   parseContender(spec, registry)            "greedy", "strategist", "strategist=path/to/profile.json" -> contender
-//   mapList(index, registry, which)           'all', '2p', or a comma list of map ids
+//   mapList(readData, registry, index, which)  'all', '2p' (shipped maps and training maps), 'shipped', or a comma list of map ids
 
 import { readFileSync } from 'node:fs';
-import { loadMap } from '../../../src/data/loader.js';
+import { loadAnyMap, poolIds } from './maps.mjs';
 
 export async function mapList(readData, registry, index, which = 'all') {
-  const ids = which === 'all' || which === '2p' ? Object.keys(index.maps) : which.split(',').map((s) => s.trim());
   const maps = [];
-  for (const id of ids) {
-    const map = await loadMap(readData, registry, id);
+  for (const id of await poolIds(readData, which)) {
+    const map = await loadAnyMap(readData, registry, id);
     if (which === '2p' && map.players.length !== 2) continue;
     maps.push({ id, slots: map.players.length });
   }

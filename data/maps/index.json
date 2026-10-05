@@ -12,7 +12,6 @@
     "island_chain": "island_chain.map.json",
     "sky_strait": "sky_strait.map.json",
     "four_seas": "four_seas.map.json",
-    "iron_curtain": "iron_curtain.map.json",
-    "archipelago": "archipelago.map.json"
+    "iron_curtain": "iron_curtain.map.json"
   }
 }

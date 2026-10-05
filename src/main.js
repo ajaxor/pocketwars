@@ -14,6 +14,7 @@ import { fetchReader, loadMap, loadMapIndex, loadRegistry } from './data/loader.
 import { loadCampaign } from './data/campaign.js';
 import { parseMap } from './data/map-format.js';
 import { Game } from './engine/game.js';
+import { loadHistory } from './ai/history.js';
 import { Session } from './ui/session.js';
 import { Talker } from './campaign/speech.js';
 import { setFactions } from './render/portrait-art.js';
@@ -52,7 +53,11 @@ export async function boot({ onQuit } = {}) {
   const leaderName = (id) => campaign?.leaderById[id]?.name ?? null;   // for the line that says who leads whom
   const launch = () => {
     if (session) session.dispose();
-    session = new Session(new Game(registry, current), { canvas, doc: document, restart: launch, quit, leaderName, voices });
+    const game = new Game(registry, current);
+    // the computer players remember which of their game plans have worked against this player before (src/ai/history.js)
+    const history = loadHistory();
+    game.aiSetup = current.players.map((p) => (p.controller === 'ai' ? { history } : null));
+    session = new Session(game, { canvas, doc: document, restart: launch, quit, leaderName, voices });
     session.start();
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());

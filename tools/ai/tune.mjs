@@ -24,6 +24,7 @@ import { readData } from '../../tests/helpers/node-io.js';
 import { loadMapIndex, loadRegistry } from '../../src/data/loader.js';
 import { createPool } from './lib/pool.mjs';
 import { mapList } from './lib/arena.mjs';
+import { trainingMapIds } from './lib/maps.mjs';
 import { seeded } from './lib/match.mjs';
 import { compactProfile, dataHash, duel, tune } from './lib/tune.mjs';
 import { parseArgs } from './arena.mjs';
@@ -40,6 +41,7 @@ async function rawData() {
   const index = await loadMapIndex(readData);
   raw.maps = {};
   for (const [id, file] of Object.entries(index.maps)) raw.maps[id] = await readData(`maps/${file}`);
+  for (const id of trainingMapIds()) raw.maps[`training:${id}`] = readFileSync(`${ROOT}tools/ai/maps/${id}.map.json`, 'utf8');
   return raw;
 }
 

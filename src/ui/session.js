@@ -3,6 +3,7 @@
 
 import { isStructure } from '../engine/structures.js';
 import { applyStep, startTurn } from '../ai/runner.js';
+import { recordGame } from '../ai/history.js';
 import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
 import { isFogged, tileVisible } from '../engine/fog.js';
@@ -305,6 +306,7 @@ export class Session {
 
   #showGameOver() {
     const { game, hud } = this;
+    if (!this.recorded) { this.recorded = true; recordGame(game); }   // the computer learns from how this battle went (src/ai/history.js)
     const winner = game.state.winner;
     const faction = winner === 'draw' || winner === null ? null : factionOf(game, winner);
     hud.clear();
