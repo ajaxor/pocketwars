@@ -34,7 +34,8 @@ export async function createPool({ workers = availableParallelism() } = {}) {
             w.off('message', onMessage);
             if (m.error) { failed = true; return reject(new Error(m.error)); }
             results[index] = m.result;
-            onResult?.(m.result, ++done, jobs.length);
+            done++;
+            onResult?.(m.result, done, jobs.length);
             if (done === jobs.length) resolve(results);
             else feed(w);
           };

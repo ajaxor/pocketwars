@@ -79,13 +79,14 @@ export function typeWorth(sit, type, x, y, ctx) {
         && canGet(game, mc, ids, p.x, p.y, cargo.move + 1)
         && (range === Infinity || spots.some(([hx, hy]) => distance(p.x, p.y, hx, hy) <= range + cargo.move + 1))).length;
       const carriers = sit.mine.filter((u) => roles(unitDef(game, u)).carrier).length;
-      role += params.carrierNeed * Math.min(4, islands) / (1 + carriers);
+      role += params.carrierNeed * Math.min(4, islands) / (1 + carriers) ** 2;   // two or three carriers do the job; more just queue up
     }
   }
   if (r.healer || r.supplier || (r.radar && !r.combat)) {
     const cats = attributeConfig(def, 'heal')?.categories ?? attributeConfig(def, 'supply')?.categories ?? null;
     const served = sit.mine.filter((u) => !isStructure(game, u) && (!cats || cats.includes(unitDef(game, u).category))).length;
-    role += params.support * Math.min(8, served) / 4;
+    const same = sit.mine.filter((u) => { const o = roles(unitDef(game, u)); return (r.healer && o.healer) || (r.supplier && o.supplier) || (r.radar && o.radar); }).length;
+    role += params.support * Math.min(8, served) / 4 / (1 + same) ** 2;   // one or two look after an army
   }
   if (r.layer && sit.army.some((e) => unitDef(game, e).moveClass === mc)) role += params.support;
   const owned = sit.mine.filter((u) => u.type === type).length;

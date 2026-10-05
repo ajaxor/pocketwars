@@ -1,0 +1,72 @@
+name: Retune the computer opponent
+
+# The strategist AI's numbers (data/ai.json engines.strategist) are tuned by playing it against itself (tools/ai/tune.mjs).
+# After a change to the units, weapons, leaders, rules, strategies, maps or the AI's own code, the tuning is out of date: this
+# workflow tunes again, and commits the result only when it beats the profile already shipped over every map. It also runs every
+# week to keep improving, and can be started by hand (Actions > Retune the computer opponent > Run workflow).
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'data/units.json'
+      - 'data/weapons.json'
+      - 'data/loadouts.json'
+      - 'data/rules.json'
+      - 'data/terrain.json'
+      - 'data/ai-strategies.json'
+      - 'data/maps/**'
+      - 'src/ai/strategist/**'
+  schedule:
+    - cron: '17 9 * * 1'   # Mondays: keep improving
+  workflow_dispatch:
+    inputs:
+      minutes:
+        description: 'Minutes to search'
+        default: '120'
+
+permissions:
+  contents: write   # to commit data/ai.json
+  actions: write    # to start the Pages deploy afterwards (a bot commit does not trigger it by itself)
+
+concurrency:
+  group: ai-tune
+  cancel-in-progress: true
+
+jobs:
+  tune:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Tune
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            node tools/ai/tune.mjs --if-stale --minutes 90 --write
+          else
+            node tools/ai/tune.mjs --minutes "${{ inputs.minutes || 120 }}" --write
+          fi
+      - name: Keep the log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: tune-log
+          path: tools/ai/out/
+          if-no-files-found: ignore
+      - name: Commit and deploy
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet data/ai.json; then echo "data/ai.json unchanged"; exit 0; fi
+          npm run validate
+          npm test
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/ai.json
+          git commit -m "Retune the strategist AI on the current data"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          gh workflow run pages.yml --ref main
