@@ -57,7 +57,7 @@ export class Session {
       colorsOf: (owner) => this.renderer.colorsOf(owner), onEvents: (events) => this.#handleEvents(events), clock: () => this.pacer.now(),
     });
 
-    // Touch, mouse and trackpad on the map: a tap selects, a drag scrolls, a pinch (or ctrl + wheel) zooms. Scrolling and zooming
+    // Touch, mouse and trackpad on the map: a tap selects, a drag scrolls, a pinch (or the mouse wheel, or ctrl + wheel) zooms. Scrolling and zooming
     // work at any time (also while the computer moves); only taps are held back until it is a human's turn.
     this.gestures = new Gestures({
       onTap: (cx, cy) => {

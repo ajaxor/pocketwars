@@ -42,6 +42,16 @@ test('wheel pans, ctrl+wheel zooms', () => {
   assert.deepEqual(log[1].slice(2), [7, 8]);
 });
 
+test('a notched mouse wheel zooms, a smooth trackpad scroll pans', () => {
+  const { g, log } = make();
+  g.wheel({ deltaX: 0, deltaY: -120, deltaMode: 0, ctrlKey: false, clientX: 4, clientY: 5 });   // one notch up: zoom in
+  g.wheel({ deltaX: 0, deltaY: 3, deltaMode: 1, ctrlKey: false, clientX: 4, clientY: 5 });      // a line-mode notch down: zoom out
+  g.wheel({ deltaX: 0, deltaY: 7.5, deltaMode: 0, ctrlKey: false, clientX: 4, clientY: 5 });    // smooth scroll: pan
+  assert.equal(log[0][0], 'zoom'); assert.ok(log[0][1] > 1);
+  assert.equal(log[1][0], 'zoom'); assert.ok(log[1][1] < 1);
+  assert.deepEqual(log[2], ['pan', -0, -7.5]);
+});
+
 test('cancel clears the gesture', () => {
   const { g, log } = make();
   g.down(ev(1, 0, 0)); g.cancel(ev(1, 0, 0));

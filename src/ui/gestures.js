@@ -2,7 +2,7 @@
 //
 //   onTap(x, y)            a touch or click that did not move: a tap on the map
 //   onPan(dx, dy)          one finger (or the mouse) dragging: move the map by that many pixels
-//   onZoom(factor, x, y)   two fingers pinching, or a ctrl/cmd + wheel: scale by `factor` around a point
+//   onZoom(factor, x, y)   two fingers pinching, the mouse wheel, or a ctrl/cmd + wheel: scale by `factor` around a point
 //   onPan(dx, dy)          also fires for a plain wheel or trackpad scroll and for two fingers moving together
 //   onHold(on) -> bool     optional: a single finger has stayed down and still for holdMs (on = true), and then lifted or moved (false).
 //                          The handler returns true when it used the hold; the release then does not count as a tap.
@@ -89,9 +89,15 @@ export class Gestures {
     if (this.holding) { this.holding = false; this.onHold(false); }
   }
 
-  /** Mouse wheel and trackpad. ctrl/cmd (and trackpad pinch, which browsers report as ctrl + wheel) zooms; otherwise it scrolls. */
+  /**
+   * Mouse wheel and trackpad. A mouse wheel (notched: whole steps of a line or a big jump, no sideways movement) zooms; so does ctrl/cmd + wheel, which
+   * is also how browsers report a trackpad pinch. A trackpad's smooth two-finger scroll still pans.
+   */
   wheel(e) {
-    if (e.ctrlKey || e.metaKey) this.onZoom(Math.exp(-e.deltaY * .01), e.clientX, e.clientY);
+    const dy = e.deltaY * (e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? 100 : 1);
+    const notched = !e.deltaX && (e.deltaMode !== 0 || (Number.isInteger(e.deltaY) && Math.abs(e.deltaY) >= 40));
+    if (e.ctrlKey || e.metaKey) this.onZoom(Math.exp(-dy * .01), e.clientX, e.clientY);
+    else if (notched) this.onZoom(Math.exp(-dy * .0015), e.clientX, e.clientY);
     else this.onPan(-e.deltaX, -e.deltaY);
   }
 
