@@ -167,8 +167,8 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Landings avoid defended shores rather than open them.** Carriers keep out of the threat map, so a well-guarded coast is never
   assaulted; there is no coordinated "bombard, then land, then escort" operation. Stalemates on island maps are judged at the day limit.
 - **Tuning is noisy.** Each round plays a few dozen games; many are judged on worth at day 30 rather than finished, four-player maps are
-  left out of the tuning pool by default, and in a free-for-all any seat of an engine winning counts for it. Longer CI runs help; a
-  cheaper engine would help more.
+  left out of the tuning pool by default, and in a free-for-all any seat of an engine winning counts for it. Short ratcheting sessions
+  help; a cheaper engine would help more.
 - **The AI still ignores fog of war** (as before): the strategist honours cloaking and submarines (what it cannot see it does not plan
   around) but sees through jammer fog.
 - **Engine choice is not in the UI.** The game plays the data's default engine; a skirmish option to pick an opponent (or difficulty,
@@ -180,3 +180,6 @@ The review's points and where they stand, then what the new system leaves open. 
 - **The tuning workflow commits to `main` as a bot** and then starts the Pages deploy itself (a bot commit does not trigger it). It only
   commits when the tuned profile beat the shipped one over every map and the tests pass.
 - **Tools import a test helper** (`tests/helpers/node-io.js` for reading data in Node), as the existing tools already did.
+- **Rare `unreachable` engine error.** A few games in a long tuning run (about 3 in 100 rounds, on island_chain, twin_fleets and
+  harbor_front) end with the strategist giving an order the engine rejects as `unreachable`, probably a plan whose path was blocked
+  mid-turn. It counts as a loss and is logged by the arena/tuner; it wants a seeded repro and a `stillGood()` check for moves.

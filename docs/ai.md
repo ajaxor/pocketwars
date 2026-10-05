@@ -110,8 +110,8 @@ Every number the strategist plays by is in `src/ai/strategist/params.js`, with t
 in `data/ai.json` (`engines.strategist`): `params`, a `unitBias` per unit type (0 = none) and a `strategyWeight` per plan (1 = as written).
 
 `tools/ai/tune.mjs` runs a (1+λ) evolution strategy: each round a few variants of the current champion (one to four numbers nudged)
-play the champion on a sample of maps, both seat orders, same seeds. A variant that scores well enough plays a second, fresh batch; if it
-holds up it becomes the champion. At the end the champion has to beat the profile it started from over every map (the gate) before
+play the champion on a few screening maps (both seat orders, same seeds). Only the best variant, if it scored well, plays a larger
+fresh batch; if it holds up it becomes the champion. Rounds are cheap (about 12 s on two cores) and games stop at day 20 (judged on worth). At the end the champion has to beat the profile it started from over every map (the gate) before
 anything is written.
 
 **It follows the game as it changes.** The search space is built from the data each time: a new unit gets a bias to tune, a new
@@ -119,14 +119,15 @@ strategy a weight. `data/ai.json` records a hash of what it was tuned on (units,
 strategist's code); `npm run ai:tune -- --check` says whether that is stale.
 
 ```
-npm run ai:tune -- --minutes 60 --write          tune for an hour; write data/ai.json if the result passes the gate
+npm run ai:ratchet -- --sessions 6 --minutes 10 --commit --push   short sessions, each shipped on its own (what CI runs)
+npm run ai:tune -- --minutes 10 --write          one session; write data/ai.json if the result passes the gate
 npm run ai:tune -- --check                        is the tuning stale? (exit 2 when it is)
-npm run ai:tune -- --if-stale --minutes 90 --write   only when stale (what CI runs on a push)
+npm run ai:ratchet -- --sessions 1 --minutes 15 --if-stale --commit --push   only when stale (CI on a push)
 ```
 
 **Automatically:** `.github/workflows/ai-tune.yml` runs on every push to main that touches units, weapons, leaders, rules, terrain,
 strategies, maps or the strategist's code (when the tuning is stale), every Monday (to keep improving) and by hand from the Actions tab.
-It commits `data/ai.json` only when the tuned profile beat the shipped one and the tests pass, then starts the Pages deploy.
+It runs short sessions (`tools/ai/ratchet.mjs`): each starts from the profile now shipped and commits `data/ai.json` only when it beat that profile at the gate and the tests pass, so a late failure never loses earlier gains. Then it starts the Pages deploy.
 The tuning log is kept as a workflow artifact.
 
 ## The arena (`npm run ai:arena`)

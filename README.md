@@ -31,6 +31,7 @@ npm start          # dev server at http://localhost:8080  (?map=<id> picks a map
 npm test           # node --test, Node 22+
 npm run validate   # validates data/*.json and every map
 npm run ai:arena   # plays the AI engines against each other on every map and reports who wins
+npm run ai:ratchet # tunes in short shipped sessions (ai:tune: one session)
 npm run ai:tune    # tunes the strategist AI by self-play (--write to keep a result that beats the shipped one)
 ```
 

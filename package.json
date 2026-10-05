@@ -13,6 +13,7 @@
     "validate": "node tools/validate-data.mjs",
     "lab": "node tools/sprite-lab/lab.mjs",
     "ai:arena": "node tools/ai/arena.mjs",
-    "ai:tune": "node tools/ai/tune.mjs"
+    "ai:tune": "node tools/ai/tune.mjs",
+    "ai:ratchet": "node tools/ai/ratchet.mjs"
   }
 }

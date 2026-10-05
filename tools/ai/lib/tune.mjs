@@ -106,8 +106,8 @@ export async function duel(pool, a, b, { maps, seeds, seedBase, maxDays }) {
  *   lambda     variants per round; maps: { id, slots } list; batchMaps: maps per batch (sampled each round)
  *   onChampion called with each new champion (the CLI saves it, so an interrupted run can be resumed with --from)
  */
-export async function tune({ pool, registry, start, maps, budget, lambda = 4, batchMaps = 6, seedsPerMap = 1, maxDays = 30,
-  accept = 0.06, confirm = 0.53, sigma = 0.15, rng, log = () => {}, onChampion = () => {} }) {
+export async function tune({ pool, registry, start, maps, budget, lambda = 4, batchMaps = 6, screenMaps = 3, seedsPerMap = 1, maxDays = 20,
+  accept = 0.15, confirm = 0.56, sigma = 0.15, rng, log = () => {}, onChampion = () => {} }) {
   const dims = searchSpace(registry);
   let champion = fullProfile(start, dims);
   const t0 = Date.now();
@@ -116,23 +116,25 @@ export async function tune({ pool, registry, start, maps, budget, lambda = 4, ba
   for (let round = 1; ; round++) {
     if (budget.rounds && round > budget.rounds) break;
     if (budget.minutes && (Date.now() - t0) / 60000 >= budget.minutes) break;
-    const sample = [...maps].sort(() => rng() - 0.5).slice(0, batchMaps);
+    // Screen every variant on a few maps (cheap, noisy), then spend the real games only on the best one, on a fresh batch of maps:
+    // a variant that merely got lucky in the screen has to repeat it, so luck is not rewarded.
+    const pick = (n) => [...maps].sort(() => rng() - 0.5).slice(0, n);
+    const screen = pick(screenMaps);
     const variants = Array.from({ length: lambda }, () => mutate(champion, dims, rng, sigma));
     const champ = { label: 'champion', engine: 'strategist', profile: champion };
     let best = null;
     for (const [i, v] of variants.entries()) {
-      const s = await duel(pool, { label: `v${i}`, engine: 'strategist', profile: v.profile }, champ, { maps: sample, seeds: seedsPerMap, seedBase, maxDays });
+      const s = await duel(pool, { label: `v${i}`, engine: 'strategist', profile: v.profile }, champ, { maps: screen, seeds: seedsPerMap, seedBase, maxDays });
       if (!best || s.score > best.s.score) best = { v, s };
     }
     seedBase += 100;
     let accepted = false;
     let confirmScore = null;
     if (best.s.score >= 0.5 + accept) {
-      const again = [...maps].sort(() => rng() - 0.5).slice(0, batchMaps);
-      const c = await duel(pool, { label: 'best', engine: 'strategist', profile: best.v.profile }, champ, { maps: again, seeds: seedsPerMap, seedBase, maxDays });
+      const c = await duel(pool, { label: 'best', engine: 'strategist', profile: best.v.profile }, champ, { maps: pick(batchMaps), seeds: seedsPerMap, seedBase, maxDays });
       seedBase += 100;
       confirmScore = c.score;
-      if ((best.s.score + c.score) / 2 >= confirm && c.score >= 0.5) { champion = best.v.profile; accepted = true; onChampion(champion); }
+      if (c.score >= confirm) { champion = best.v.profile; accepted = true; onChampion(champion); }
     }
     // the step grows after a success and shrinks after a failure, but not below what a batch of games can tell apart from noise
     sigma = Math.min(0.4, Math.max(0.08, sigma * (accepted ? 1.25 : 0.96)));

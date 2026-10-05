@@ -4,15 +4,16 @@
 // new units and strategies are tuned along with everything else.
 //
 //   npm run ai:tune -- --minutes 60 --write
-//   options: --minutes N | --rounds N     how long to search (default 30 minutes)
-//            --lambda 4                   variants tried per round
+//   options: --minutes N | --rounds N     how long to search (default 10 minutes)
+//            --lambda 4                   variants tried per round, each screened on --screen-maps 3 maps; the best is confirmed on --batch-maps
 //            --batch-maps 6 --seeds 1     games per variant: maps sampled per round x seeds x 2 seat orders
 //            --maps 2p|all|id,id          the map pool (default 2p)
-//            --days 30                    day limit per game (then judged on worth)
+//            --days 20                    day limit per game (then judged on worth)
 //            --gate 0.52 --gate-seeds 2   the final check: the champion must score this much against the starting profile over the whole pool
 //            --write                      write data/ai.json when the gate is passed (otherwise only the --out file)
 //            --out file                   where the champion is saved, after every improvement (default tools/ai/out/strategist-tuned.json)
 //            --from file                  start from a saved champion (resume an interrupted run); the gate still compares with data/ai.json
+//            --vs-greedy                  also play the champion against greedy at the gate (for the record; slower)
 //            --if-stale                   do nothing when data/ai.json was tuned on the current data (for scheduled runs)
 //            --check                      only report whether the tuning is stale (exit 2 when it is)
 //            --workers N --seed N
@@ -64,15 +65,15 @@ async function main() {
   const maps = await mapList(readData, registry, await loadMapIndex(readData), opts.maps ?? '2p');
   const pool = await createPool(opts.workers ? { workers: Number(opts.workers) } : {});
   const rng = seeded(Number(opts.seed ?? Date.now()));
-  const budget = opts.rounds ? { rounds: Number(opts.rounds) } : { minutes: Number(opts.minutes ?? 30) };
-  const maxDays = Number(opts.days ?? 30);
+  const budget = opts.rounds ? { rounds: Number(opts.rounds) } : { minutes: Number(opts.minutes ?? 10) };
+  const maxDays = Number(opts.days ?? 20);
   console.log(`tuning the strategist on ${maps.length} maps with ${pool.size} workers, ${budget.rounds ? `${budget.rounds} rounds` : `${budget.minutes} minutes`}`);
   const logFile = `${OUT}tune-log.jsonl`;
   const outFile = opts.out ?? `${OUT}strategist-tuned.json`;
   const { champion, history, dims } = await tune({
     pool, registry, start: from, maps, budget, rng, maxDays,
     onChampion: (c) => writeFileSync(outFile, JSON.stringify(compactProfile({ ...c, tuned: { checkpoint: new Date().toISOString(), data: hash } }, searchSpace(registry)), null, 2) + '\n'),
-    lambda: Number(opts.lambda ?? 4), batchMaps: Math.min(maps.length, Number(opts['batch-maps'] ?? 6)), seedsPerMap: Number(opts.seeds ?? 1),
+    lambda: Number(opts.lambda ?? 4), batchMaps: Math.min(maps.length, Number(opts['batch-maps'] ?? 6)), screenMaps: Math.min(maps.length, Number(opts['screen-maps'] ?? 3)), seedsPerMap: Number(opts.seeds ?? 1),
     log: (e) => {
       appendFileSync(logFile, JSON.stringify({ at: new Date().toISOString(), ...e }) + '\n');
       console.log(`round ${e.round} (${e.minutes.toFixed(1)} min): best ${(e.best * 100).toFixed(0)}%${e.confirm != null ? `, confirm ${(e.confirm * 100).toFixed(0)}%` : ''}${e.accepted ? '  ACCEPTED' : ''}  σ=${e.sigma.toFixed(3)}  ${e.changed.join(', ')}`);
@@ -86,11 +87,11 @@ async function main() {
   const gateSeeds = Number(opts['gate-seeds'] ?? 2);
   const champ = { label: 'tuned', engine: 'strategist', profile: champion };
   const vsStart = accepted ? await duel(pool, champ, { label: 'before', engine: 'strategist', profile: start }, { maps, seeds: gateSeeds, seedBase: 1, maxDays }) : { score: 0.5 };
-  const vsGreedy = await duel(pool, champ, { label: 'greedy', engine: 'greedy', profile: ai.engines.greedy }, { maps, seeds: gateSeeds, seedBase: 1, maxDays });
+  const vsGreedy = opts['vs-greedy'] ? await duel(pool, champ, { label: 'greedy', engine: 'greedy', profile: ai.engines.greedy }, { maps, seeds: gateSeeds, seedBase: 1, maxDays }) : null;
   await pool.close();
-  console.log(`gate: ${(vsStart.score * 100).toFixed(0)}% against the starting profile, ${(vsGreedy.score * 100).toFixed(0)}% against greedy`);
+  console.log(`gate: ${(vsStart.score * 100).toFixed(0)}% against the starting profile, ${vsGreedy ? `${(vsGreedy.score * 100).toFixed(0)}%` : 'not played'} against greedy`);
 
-  const tuned = { date: new Date().toISOString().slice(0, 10), data: hash, rounds: history.length, accepted, vsBefore: round2(vsStart.score), vsGreedy: round2(vsGreedy.score) };
+  const tuned = { date: new Date().toISOString().slice(0, 10), data: hash, rounds: history.length, accepted, vsBefore: round2(vsStart.score), ...(vsGreedy ? { vsGreedy: round2(vsGreedy.score) } : start.tuned?.vsGreedy != null ? { vsGreedy: start.tuned.vsGreedy } : {}) };
   const passed = accepted && vsStart.score >= Number(opts.gate ?? 0.52);
   const result = compactProfile({ ...(passed ? champion : start), tuned: passed || !start.tuned ? tuned : { ...start.tuned, data: hash, checked: tuned.date } }, dims);
   writeFileSync(outFile, JSON.stringify(compactProfile({ ...champion, tuned }, dims), null, 2) + '\n');

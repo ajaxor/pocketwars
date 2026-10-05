@@ -233,6 +233,47 @@
         ]
       }
     },
-    "strategist": {}
+    "strategist": {
+      "params": {
+        "distance": 2,
+        "terrain": 0.5,
+        "attack": 10,
+        "counter": 0.8,
+        "kill": 8,
+        "focus": 6,
+        "threat": 4,
+        "balance": 1,
+        "capture": 40,
+        "captureIncome": 8,
+        "hqCapture": 120,
+        "blockCapture": 6,
+        "retreatHp": 3.5,
+        "heal": 2,
+        "guard": 1.5,
+        "land": 25,
+        "unreachable": 60,
+        "costExponent": 0.55,
+        "minUtility": 0.08,
+        "offense": 1,
+        "defense": 0.6,
+        "captureNeed": 1.2,
+        "carrierNeed": 1.5,
+        "support": 0.4,
+        "sameType": 0.8,
+        "potential": 0.35,
+        "reviewDays": 3,
+        "switchShare": 0.42,
+        "holdDays": 5,
+        "novelty": 0.6
+      },
+      "tuned": {
+        "date": "2026-10-05",
+        "data": "4d3cae1fe6f0fa7a",
+        "rounds": 60,
+        "accepted": 1,
+        "vsBefore": 0.52,
+        "vsGreedy": 0.82
+      }
+    }
   }
 }
