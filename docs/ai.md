@@ -114,6 +114,14 @@ play the champion on a few screening maps (both seat orders, same seeds). Only t
 fresh batch; if it holds up it becomes the champion. Rounds are cheap (about 12 s on two cores) and games stop at day 20 (judged on worth). At the end the champion has to beat the profile it started from over every map (the gate) before
 anything is written.
 
+**Scoring (`tools/ai/lib/graded.mjs`).** Games are not just won or lost: they are played to a time limit and scored on the material lead
+held when it runs out (a 75% share of both armies' worth counts as a full win). There are three windows, short (8 days), medium (14) and
+long (30), set with `--windows`. Short games are cheap, so more are played, but they carry the least weight (15%, against 40% and 45%):
+a short window pays for early captures and must not teach the AI to spam infantry at the cost of its mid game. A profile is also
+refused unless it is at least even in the medium and long games alone, however well it opens. A game that is actually won before the
+limit scores 1 plus an early bonus, one lost scores 0 minus the same, and the confirmation of every new champion includes a long game,
+so a profile that cannot finish games does not get through.
+
 **It follows the game as it changes.** The search space is built from the data each time: a new unit gets a bias to tune, a new
 strategy a weight. `data/ai.json` records a hash of what it was tuned on (units, weapons, leaders, rules, strategies, maps and the
 strategist's code); `npm run ai:tune -- --check` says whether that is stale.
@@ -127,6 +135,14 @@ npm run ai:ratchet -- --sessions 1 --minutes 15 --if-stale --commit --push   onl
 
 Tuning is run by hand, on purpose: there is no workflow for it. Run it after changing units, strategies, maps or the AI's code (`--check`
 says when it is stale), commit the resulting `data/ai.json`, and push.
+
+## Tuning one number (`npm run ai:sweep`)
+
+`npm run ai:sweep -- --param params.threat` (`--list` shows everything that can be swept: `params.*`, `unitBias.<unit>`,
+`strategyWeight.<id>`) tries a spread of values across the number's whole range, then narrows around the best in two more passes, each on
+a bigger sample, and checks the winner against the current profile on a fresh sample before it will keep it (`--write`). Every value in
+a pass plays the same games, and the response curve is printed, so it shows how much the number matters at all. About 2 minutes on two
+cores (`--plan`, `--passes`, `--points` change it).
 
 ## The arena (`npm run ai:arena`)
 

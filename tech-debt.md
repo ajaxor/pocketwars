@@ -181,3 +181,6 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Rare `unreachable` engine error.** A few games in a long tuning run (about 3 in 100 rounds, on island_chain, twin_fleets and
   harbor_front) end with the strategist giving an order the engine rejects as `unreachable`, probably a plan whose path was blocked
   mid-turn. It counts as a loss and is logged by the arena/tuner; it wants a seeded repro and a `stillGood()` check for moves.
+- **Short games are weak evidence.** At 8 days nearly every parameter value scores about 50%: an opening says little about the game.
+  They are kept for cheap noise reduction and given little weight; if tuning still drifts toward fast openers, lower their weight or drop
+  the short window (`--screen 0,5,0`).
