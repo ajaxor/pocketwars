@@ -155,8 +155,10 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   const dir = e ? 1 : -1, pv = dir > 0 ? .62 : .38;                            // an elbow's pivot on the ground
   // shadows: below the lying pipes and to the right of the upright ones
   g.fillStyle = 'rgba(0,0,0,.2)';
-  if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
-  if (n || s) {                                                                 // beside an upright pipe, stopping short of its rounded ends
+  if (broken && straightH) { g.fillRect(X(0), Y(GY), .22 * S, .05 * S); g.fillRect(X(.78), Y(GY), .22 * S, .05 * S); }   // a destroyed pipe shades only its two halves, not the gap
+  else if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
+  if (broken && straightV) { g.fillRect(X(CX + R), Y(0), .06 * S, .2 * S); g.fillRect(X(CX + R), Y(.8), .06 * S, .2 * S); }
+  else if (n || s) {                                                            // beside an upright pipe, stopping short of its rounded ends
     const y0 = n ? 0 : CY - .1 + .2, y1 = s ? 1 : GY - .2;
     g.fillRect(X(CX + R), Y(y0), .06 * S, (y1 - y0) * S);
   }
