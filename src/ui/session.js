@@ -307,7 +307,7 @@ export class Session {
     const { game, hud } = this;
     if (game.isOver || this.busy || this.effects.isLocked(this.#now())) return;
     // Units that have not acted yet: the first press shows one and asks; a second press ends the turn anyway.
-    const idle = this.#humanTurn() ? game.state.units.filter((u) => u.owner === game.currentPlayer && !u.done && wantsOrder(game, u)) : [];   // a turret with nothing in reach (or a jammer) has nothing to do
+    const idle = this.#humanTurn() ? game.state.units.filter((u) => u.owner === game.currentPlayer && !u.done && wantsOrder(game, u)) : [];   // turrets and jammers take no orders
     if (idle.length && !this.endArmed) {
       this.endArmed = true;
       this.controller.cancelAll();
@@ -336,7 +336,7 @@ export class Session {
       const res = game.endTurn();
       this.presenter.present(res.events, { now: this.#now() });   // income numbers float up from the properties
       this.#handleEvents(res.events);
-      const shots = res.events.filter((e) => e.neutral);   // neutral turrets fired at the units of the player whose turn ended: let it play out
+      const shots = res.events.filter((e) => e.auto);   // turrets fired by themselves as the turn ended: let it play out
       if (shots.length) {
         const text = describeEvents(game, shots);
         if (text) hud.message(text);
@@ -378,7 +378,7 @@ export class Session {
     const player = game.currentPlayer;
     for (const unit of game.state.units.filter((u) => u.owner === player)) {
       if (game.isOver || this.disposed) return;
-      if (!game.state.units.includes(unit) || !wantsOrder(game, unit)) continue;   // a turret with nothing in reach, a jammer
+      if (!game.state.units.includes(unit) || !wantsOrder(game, unit)) continue;   // turrets fire by themselves at the end of the turn
       await this.#playAiUnit(unit);
       const drop = tryDeploy(game, unit);   // a carrier drops its troops after its own move; they are then ordered like any unit
       if (drop) {

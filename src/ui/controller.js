@@ -35,8 +35,8 @@ import { canSee, sonarTiles } from '../engine/detection.js';
 import { isStructure } from '../engine/structures.js';
 import { tileExplored } from '../engine/fog.js';
 
-/** A structure with no weapons (a jammer) has no orders at all: tapping it only shows what it is. */
-const isIdleStructure = (game, u) => isStructure(game, u) && !game.registry.unit(u.type).weapons.length;
+/** Structures take no orders (turrets fire by themselves at the end of the turn): tapping one only shows what it is and what it covers. */
+const isIdleStructure = (game, u) => isStructure(game, u);
 import { layConfig, layTiles } from '../engine/mines.js';
 import { canSupplyAt, supplyPlan } from '../engine/supply.js';
 import { ammoOf, canResupplyAt, resupplyCost } from '../engine/ammo.js';

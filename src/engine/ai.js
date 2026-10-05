@@ -21,7 +21,7 @@
 // the carrier's own move; the dropped unit is then ordered like any other), and go back to an airfield for more when empty and the owner
 // can pay for it. Resupply is only chosen when the unit is low or empty and the money is there.
 
-// Structures: a turret the computer owns only gets an order when something is in its reach (`wantsOrder`); neutral turrets and walls are never
+// Structures: never get orders (`wantsOrder`), the game fires turrets at the end of a turn; neutral turrets and walls are never
 // goals to march on, and a cracked wall is only shot at when nothing better is in reach (it opens the way: `breakWall`).
 
 // The AI plays fair: it only plans around enemy units it can see (detection.js), and like a human it can have a move interrupted by a
@@ -43,7 +43,6 @@ import { computeReach, distanceField, canFireAfterMoving, hasMovedAlready } from
 import { allProperties, distance, ownerAt, propertyAt, terrainAt, tileIndex, unitDef } from './queries.js';
 import { canSubmergeAt, canSurface } from './submerge.js';
 import { isNeutral, isStructure } from './structures.js';
-import { targetsFrom } from './movement.js';
 
 /** The friendly units `unit` (a healer) could heal, by the categories of its `heal` attribute. */
 function healable(game, unit) {
@@ -280,8 +279,8 @@ function orderUnit(game, unit, events) {
   }
 }
 
-/** Does the computer give `unit` an order this turn? Everything but a structure with nothing in its reach (a turret never moves, a jammer never acts). */
-export const wantsOrder = (game, unit) => !isStructure(game, unit) || targetsFrom(game, unit).length > 0;
+/** Does `unit` get an order this turn? Everything but a structure: turrets fire by themselves, jammers and walls never act. */
+export const wantsOrder = (game, unit) => !isStructure(game, unit);   // turrets fire by themselves when the turn ends (structures.js)
 
 /** Play the current player's whole turn (every unit, then production, then the new units' free moves) and return all events. */
 export function playTurn(game) {

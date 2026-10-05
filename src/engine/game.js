@@ -10,7 +10,7 @@
 //
 // Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, detonate, dive, surface, strike,
 // capture, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver; endTurn may start with the 'strike' events of neutral
-// structures firing, marked `neutral: true`) so the presentation layer can animate it without the engine
+// turrets firing by themselves, marked `auto: true`) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
 //
 // BUILDING AND THE FREE MOVE. A unit is built on the property itself and is ready at once, but `fresh` (see state.js): its one order
@@ -46,7 +46,7 @@ import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries
 import { createState, restoreState, snapshotState } from './state.js';
 import { canDive, canSubmergeAt, canSurface, divesByItself, submergibleAt, surfacesToFire } from './submerge.js';
 import { evaluateVictory } from './victory.js';
-import { neutralFire } from './structures.js';
+import { isStructure, structureFire } from './structures.js';
 import { explore, isFogged, revealsNew, visibleTiles } from './fog.js';
 
 const fail = (error) => ({ ok: false, error, events: [] });
@@ -86,6 +86,7 @@ export class Game {
     if (!unit) return fail('no-such-unit');
     if (unit.owner !== state.turn) return fail('not-your-turn');
     if (unit.done) return fail('unit-already-acted');
+    if (isStructure(this, unit)) return fail('fires-by-itself');   // turrets take no orders: they fire when the turn ends (structureFire)
     const to = order.to;
     if (!to || !inBounds(map, to.x, to.y)) return fail('out-of-bounds');
     const reach = computeReach(this, unit);
@@ -286,7 +287,7 @@ export class Game {
     const { state, map } = this;
     this.undoSnapshot = null;
     const events = crashEmpty(this, state.turn);   // a flyer that began the turn on an empty tank and is still dry falls out of the sky
-    events.push(...neutralFire(this, state.turn));   // neutral turrets fire at whoever ends their turn in their reach (structures.js)
+    events.push(...structureFire(this, state.turn));   // the player's turrets fire by themselves, then neutral ones fire at the player's units (structures.js)
     this.touch();
     if (events.length) { events.push(...evaluateVictory(this)); if (this.isOver) { this.touch(); return { ok: true, events }; } }
     burnFuel(this, state.turn);   // every flyer burns a turn of fuel, flown or not

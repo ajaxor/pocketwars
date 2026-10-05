@@ -59,14 +59,25 @@ test('walls and standing cracked walls block line of sight; a wall that is broke
   assert.equal(hasLineOfSight(g, { x: 0, y: 2 }, { x: 4, y: 2 }), true, 'rubble');
 });
 
-test('a player-owned turret is ordered like a unit that cannot move; it can fire at range', () => {
-  const g = game(['A......B'], [u('cannon_turret', 0, 2, 0), u('tank', 1, 5, 0)]);
-  const [turret, tank] = g.state.units;
+test('a player-owned turret takes no orders: it fires by itself at the enemy it hurts most when its owner ends the turn', () => {
+  const g = game(['A......B'], [u('cannon_turret', 0, 2, 0), u('tank', 1, 5, 0), u('soldier', 1, 4, 0)]);
+  const [turret, tank, soldier] = g.state.units;
   assert.equal(computeReach(g, turret).size, 1, 'only its own tile');
-  assert.ok(canAttackFrom(g, turret, tank, 2, 0), 'range 1-3');
-  const res = g.act({ unitId: turret.id, to: { x: 2, y: 0 }, action: { type: 'attack', targetId: tank.id } });
-  assert.ok(res.ok, res.error);
+  assert.equal(g.act({ unitId: turret.id, to: { x: 2, y: 0 }, action: { type: 'attack', targetId: tank.id } }).error, 'fires-by-itself');
+  const res = g.endTurn();
+  const shots = res.events.filter((e) => e.type === 'strike' && e.auto && !e.counter);
+  assert.equal(shots.length, 1);
+  assert.equal(shots[0].defender.id, tank.id, 'the tank is worth more than the soldier');
+  assert.ok(!shots[0].neutral);
   assert.ok(tank.hp < 10);
+  assert.equal(soldier.hp, 10);
+  const res2 = g.endTurn();   // player 1's turn ends: player 0's turret does not fire then
+  assert.equal(res2.events.filter((e) => e.auto).length, 0);
+});
+
+test('an owned turret never shoots a neutral cracked wall', () => {
+  const g = game(['A.X.W..B'], [u('cannon_turret', 0, 1, 0), u('soldier', 1, 7, 0)]);
+  assert.equal(g.endTurn().events.filter((e) => e.auto).length, 0);
 });
 
 test('neutral turrets fire at the end of each player\'s turn at that player\'s units in reach, picking the one they hurt most', () => {
