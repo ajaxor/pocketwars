@@ -133,7 +133,8 @@ export async function tune({ pool, registry, start, maps, budget, lambda = 4, ba
       confirmScore = c.score;
       if ((best.s.score + c.score) / 2 >= confirm && c.score >= 0.5) { champion = best.v.profile; accepted = true; }
     }
-    sigma = Math.min(0.4, Math.max(0.03, sigma * (accepted ? 1.25 : 0.93)));
+    // the step grows after a success and shrinks after a failure, but not below what a batch of games can tell apart from noise
+    sigma = Math.min(0.4, Math.max(0.08, sigma * (accepted ? 1.25 : 0.96)));
     const entry = { round, minutes: (Date.now() - t0) / 60000, best: best.s.score, confirm: confirmScore, accepted, sigma, changed: best.v.changed, errors: errors.splice(0) };
     history.push(entry);
     log(entry);
