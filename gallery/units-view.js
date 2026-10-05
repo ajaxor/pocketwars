@@ -21,7 +21,7 @@ export function createUnitsView(ctx, root) {
 
   // one card per unit, built once and shown or hidden by tab and stage
   const cards = catalog.map((u, order) => {
-    const unit = { sprite: u.sprite, altitude: u.altitude, concept: u.art === 'concept', water: u.water, kind: u.kind, fixedColors: u.fixedColors, cracked: u.cracked, links: u.kind === 'wall' ? (u.cracked ? { e: true, w: true } : { e: true, w: true, s: true }) : null };
+    const unit = { sprite: u.sprite, altitude: u.altitude, concept: u.art === 'concept', water: u.water, kind: u.kind, fixedColors: u.fixedColors, cracked: u.cracked, broken: u.broken, links: u.kind === 'wall' ? (u.cracked || u.broken ? { e: true, w: true } : { e: true, w: true, s: true }) : null };
     const card = el('article', `card unit st-${u.stage}`);
     const top = el('div', 'top'); top.append(el('div', 'name', u.name));
     const badge = el('span', `badge st-${u.stage}`, stageInfo[u.stage].label); badge.title = stageInfo[u.stage].note; top.append(badge);

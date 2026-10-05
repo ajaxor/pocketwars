@@ -29,7 +29,7 @@ export function paintTile(g, { unit, faction: team, size, t, state, phase, bg, o
   g.clearRect(0, 0, size, size);
   g.fillStyle = bg; g.fillRect(0, 0, size, size);
   if (unit.kind === 'building' || unit.kind === 'wall') {                       // structures are drawn like the game's buildings, not as unit sprites
-    if (unit.kind === 'wall') drawWall(g, 0, 0, size, faction.color, { links: unit.links || { e: true, w: true }, cracked: !!unit.cracked });
+    if (unit.kind === 'wall') drawWall(g, 0, 0, size, faction.color, { links: unit.links || { e: true, w: true }, cracked: !!unit.cracked, broken: !!unit.broken });
     else (unit.concept ? BASES : BUILDINGS)[unit.sprite]?.(g, 0, 0, size, faction.color);
     if (state === 'done') { g.fillStyle = 'rgba(40,44,52,.55)'; g.fillRect(0, 0, size, size); }
     return;

@@ -335,7 +335,7 @@
   },
   {
    "id": "sam_site",
-   "name": "SAM Site",
+   "name": "SAM Turret",
    "sprite": "sam_site",
    "altitude": 0,
    "cost": 5000,
@@ -350,7 +350,7 @@
   },
   {
    "id": "artillery_emplacement",
-   "name": "Artillery Emplacement",
+   "name": "Artillery Turret",
    "sprite": "artillery_emplacement",
    "altitude": 0,
    "cost": 7000,
@@ -438,6 +438,22 @@
    "role": "Static, breakable barrier",
    "overlaps": "Wall",
    "mechanic": "A weakened wall: the same blocking and linking as a wall, but it has few hit points and is destroyed by one ordinary attack (or an engineer), opening a gap in the line. Cheap, so it makes a good gate or a trap."
+  },
+  {
+   "id": "destroyed_wall",
+   "name": "Destroyed Wall",
+   "kind": "wall",
+   "broken": true,
+   "section": "Walls",
+   "group": "structure",
+   "sprite": "wall",
+   "facility": "engineer_works",
+   "altitude": 0,
+   "cost": 0,
+   "move": 0,
+   "role": "Rubble, passable",
+   "overlaps": "Cracked wall",
+   "mechanic": "What a cracked wall leaves behind when it is destroyed: the two halves of the pipe, each ending in a jagged break, with a gap between them that units can walk through. An engineer can repair it into a whole wall."
   },
   {
    "id": "training_ground",
@@ -557,7 +573,7 @@
    "move": 0,
    "role": "Base",
    "overlaps": "",
-   "mechanic": "Builds the static defences: turrets, SAM sites, artillery, jammers, mines and walls."
+   "mechanic": "Builds the static defences: turrets, SAM turrets, artillery turrets, jammers, mines and walls."
   },
   {
    "id": "underwater_lab",
@@ -843,7 +859,7 @@
    "cost": 2500,
    "move": 0,
    "role": "Static, air denial",
-   "overlaps": "Flak, SAM site",
+   "overlaps": "Flak, SAM Turret",
    "mechanic": "Unarmed. Aircraft cannot end a move on its tile or the four tiles next to it, and any aircraft that flies through them takes 1 damage on the cable. Cheap air denial that shapes where planes can go instead of shooting them down."
   },
   {

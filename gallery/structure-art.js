@@ -1,7 +1,7 @@
 // Experimental structures (NOT in the game): bases and labs drawn like the game's buildings (src/render/buildings.js: flat-shaded, seen from
 // the front-left and above, a soft shadow to the lower right), and linkable walls.
 //   BASES[id](g, px, py, S, owner)               draws a building into the square (px, py, S), in the owner's colour
-//   drawWall(g, px, py, S, owner, { links, cracked })   one wall tile; `links` = { n, e, s, w }: which neighbours are also walls
+//   drawWall(g, px, py, S, owner, { links, cracked, broken })   one wall tile; `links` = { n, e, s, w }: which neighbours are also walls
 //   wallLinks(isWall, x, y)                      the links of cell (x, y), given a predicate for "is there a wall here"
 // The rule (docs/unit-art-lessons.md): few shapes, one idea per building, no windows or small fittings.
 import { kit } from '../src/render/buildings.js';
@@ -135,7 +135,7 @@ export const wallLinks = (isWall, x, y) => ({ n: !!isWall(x, y - 1), e: !!isWall
  *  on an upright end. No gradients, highlights or stripes. Cracked walls are the breakable variant: the same shapes in rusty brown with a hole torn
  *  in the pipe. `owner` is unused (walls are neutral) and kept so the call matches the buildings'. Draw walls row by row from the top: a riser or
  *  elbow reaches a little into the tile above. */
-export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false } = {}) {
+export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false, broken = false } = {}) {
   let g = gIn;                                                                  // swapped for a recorder while the pipe's outline is gathered as one clip path
   const { n, e, s, w } = links;
   const R = .3, CX = .5, CY = .6, GY = CY + R;                                  // pipe radius (it fills the tile), centre lines, the ground line under a run
@@ -179,7 +179,22 @@ export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false }
       const r = FR - gr, Cx = Px + a * FR, Cy = Py + b * FR, ccw = a * b > 0;
       g.fillStyle = c; g.beginPath(); g.moveTo(X(Px), Y(Py)); g.lineTo(X(Cx), Y(Cy - b * r)); g.arc(X(Cx), Y(Cy), r * S, -b * Math.PI / 2, a > 0 ? Math.PI : 0, ccw); g.closePath(); g.fill();
     };
-    if (straightH) lieH(0, 1);
+    if (broken && (straightH || straightV)) {                                    // a destroyed straight pipe: two halves, each ending in a jagged break
+      const zig = (side) => {
+        const e0 = side < 0 ? .34 : .66, dirn = side < 0 ? 1 : -1;
+        const offs = side < 0 ? [0, .09, -.04, .11, -.01, .08, -.05] : [-.02, .08, -.06, .05, .12, -.03, .07];
+        return offs.map((o, i) => [e0 + dirn * (o + gr), (i / (offs.length - 1)) * 2 - 1]);   // [position along the pipe, -1..1 across it]
+      };
+      const piece = (side) => {
+        const z = zig(side), outerAt = side < 0 ? 0 : 1 + ext;                    // the far end of the piece is the tile's edge
+        const P = (u, v) => (straightH ? [u, CY + v * (R + gr)] : [CX + v * (R + gr), u]);
+        g.fillStyle = c; g.beginPath();
+        const first = P(outerAt, -1); g.moveTo(X(first[0]), Y(first[1]));
+        for (const [u, v] of z) { const q = P(u, v); g.lineTo(X(q[0]), Y(q[1])); }
+        const last = P(outerAt, 1); g.lineTo(X(last[0]), Y(last[1])); g.closePath(); g.fill();
+      };
+      piece(-1); piece(1);
+    } else if (straightH) lieH(0, 1);
     else if (straightV) lieV(0, 1);
     else if (endH) {                                                              // an elbow: the pipe rises from the ground beside the run and bends over into it
       const a0 = dir > 0 ? Math.PI : -Math.PI / 2, a1 = dir > 0 ? Math.PI * 1.5 : 0;

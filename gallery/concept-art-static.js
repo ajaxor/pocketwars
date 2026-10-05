@@ -79,13 +79,13 @@ const cannonTurret = (g, { s, c, dk, w, ph, run }) => {
   box(g, s, -.32, -.07, .64, .27, 4, c);                                                            // the block
   box(g, s, -.32, -.07, .64, .05, 2, dk);                                                           // a dark roof band, like the jammer's hut
   box(g, s, -.17, -.24, .34, .17, 3, c);                                                            // the turret, in the team colour
-  aim(g, s, 0, -.155, .4, sweep(w, ph, run, .42), 0, Math.max(3.5, s * .06), INK, -rec);            // the cannon
+  aim(g, s, 0, -.155, .4, sweep(w, ph, run, .42), 0, Math.max(3.5, s * .06), INK, -rec, 0, null, false);   // the cannon: a plain barrel, no muzzle flare
 };
 
 /** The angle on the screen of a gun swung like a clock hand: it sweeps from pointing up-right, through straight up, to up-left and back (never toward the camera). */
 const hand = (w, ph, run, rate) => -(.12 * Math.PI + .76 * sweep(w, ph, run, rate));
 
-// SAM site: a block with a turntable, and two big anti-air missiles (like the SAM launcher's) that swing round like a clock hand.
+// SAM turret: a block with a turntable, and two big anti-air missiles (like the SAM launcher's) that swing round like a clock hand.
 const samSite = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.32, .32);
   box(g, s, -.28, -.02, .56, .23, 4, c);
@@ -97,19 +97,17 @@ const samSite = (g, { s, c, dk, w, ph, run }) => {
   disc(g, s, px, py, .035, INK);                                                                     // the pivot they swing on
 };
 
-// Artillery emplacement: a long gun barrel in a simple round mount (a ring on a pedestal) that swings round like a clock hand, and slides back when it fires.
+// Artillery turret: a long gun barrel coming out from behind a half-round mount on a wide base, that swings round like a clock hand, and slides back when it fires.
 const artilleryEmplacement = (g, { s, c, dk, w, ph, run }) => {
   footing(g, s, -.4, .4);
   const rec = run ? Math.max(0, Math.sin(w * 1.0 + ph)) ** 8 * .045 : 0;
   box(g, s, -.28, -.02, .56, .23, 4, c);                                                            // the base, as wide as the SAM site's, with the same dark roof band
   box(g, s, -.28, -.02, .56, .05, 2, dk);
   const ang = hand(w, ph, run, .36), thick = Math.max(3, s * .06), cy = -.02, ca = Math.cos(ang), sa = Math.sin(ang), L = .46 - rec;
-  g.fillStyle = c; g.beginPath(); g.arc(0, cy * s, .2 * s, Math.PI, 0); g.closePath(); g.fill();       // the mount: a half circle with a flat bottom, like a desk clock
-  stroke(g, s, 0, cy, ca * L, cy + sa * L, thick, INK);                                              // the barrel, swinging like the hand of the clock
-  stroke(g, s, ca * (L - .07), cy + sa * (L - .07), ca * L, cy + sa * L, thick * 1.45, INK);         // its muzzle brake
-  const hw = Math.max(.05, thick / s * 1.5), from = -.06, to = .17, nx = -sa, ny = ca;                // the breech: a rectangular block on the barrel's base that turns with it
-  poly(g, s, [[ca * from + nx * hw, cy + sa * from + ny * hw], [ca * to + nx * hw, cy + sa * to + ny * hw], [ca * to - nx * hw, cy + sa * to - ny * hw], [ca * from - nx * hw, cy + sa * from - ny * hw]], dk);
-  disc(g, s, 0, cy, .04, INK);                                                                       // the pivot
+  const by = cy - .035;                                                                                // the barrel pivots just inside the dome so its round end never peeps out below
+  stroke(g, s, 0, by, ca * L, by + sa * L, thick, INK);                                              // the barrel, swinging like the hand of the clock...
+  stroke(g, s, ca * (L - .07), by + sa * (L - .07), ca * L, by + sa * L, thick * 1.45, INK);         // ...with its muzzle brake
+  g.fillStyle = c; g.beginPath(); g.arc(0, cy * s, .2 * s, Math.PI, 0); g.closePath(); g.fill();       // the mount, drawn over the barrel's root: a half circle with a flat bottom, like a desk clock
 };
 
 // Jammer: a hut with a mast and a big dish, a single flat colour cut off flat at the top and bottom, that turns from facing right, through facing us, to facing left and back.
