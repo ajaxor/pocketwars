@@ -233,11 +233,20 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   real.save(); real.beginPath(); g = rec; paint(1); g = real; real.clip();
   real.translate(-SHD * S, -SHD * S); paint(2);
   real.translate(SHD * S, SHD * S);
-  // the two inner corners that face away from the light (up-right, down-left) have no shade of their own, so the band along the arm is run on to the
-  // inside corner and ends there
+  // the two inner corners that face away from the light (up-right, down-left) have no shade of their own, so the band along the arm is carried round the
+  // inner curve (the fillet), thinning to nothing where the curve meets the other arm
   g.fillStyle = dark;
-  if (n && e && !(straightH || straightV)) real.fillRect(X(CX + R - SHD), Y(0), SHD * S, CY - R > 0 ? (CY - R) * S : 0);
-  if (s && w && !(straightH || straightV)) real.fillRect(X(0), Y(GY - SHD), (CX - R) * S, SHD * S);
+  const NS = 14, poly2 = (pts) => { real.beginPath(); pts.forEach(([x, y], i) => (i ? real.lineTo(X(x), Y(y)) : real.moveTo(X(x), Y(y)))); real.closePath(); real.fill(); };
+  if (n && e && !(straightH || straightV)) {                                   // up-right: the band down the up arm's right side, round the fillet, ending on the right arm's top
+    const Cx = CX + R + FR, Cy = CY - R - FR, outer = [], inner = [];
+    for (let k = 0; k <= NS; k++) { const th = Math.PI - (Math.PI / 2) * k / NS, wd = SHD * -Math.cos(th); outer.push([Cx + FR * Math.cos(th), Cy + FR * Math.sin(th)]); inner.push([Cx + (FR + wd) * Math.cos(th), Cy + (FR + wd) * Math.sin(th)]); }
+    poly2([[CX + R - SHD, 0], [CX + R, 0], ...outer, ...inner.reverse(), [CX + R - SHD, Cy]]);
+  }
+  if (s && w && !(straightH || straightV)) {                                   // down-left: the band along the left arm's underside, round the fillet, ending on the down arm's left
+    const Cx = CX - R - FR, Cy = GY + FR, outer = [], inner = [];
+    for (let k = 0; k <= NS; k++) { const th = -Math.PI / 2 + (Math.PI / 2) * k / NS, wd = SHD * -Math.sin(th); outer.push([Cx + FR * Math.cos(th), Cy + FR * Math.sin(th)]); inner.push([Cx + (FR + wd) * Math.cos(th), Cy + (FR + wd) * Math.sin(th)]); }
+    poly2([[0, GY - SHD], [Cx, GY - SHD], ...inner, ...outer.reverse(), [0, GY]]);
+  }
   real.restore();
   if (cracked) {
     // the same pipe, with a crack that starts at its edge and runs part of the way in
