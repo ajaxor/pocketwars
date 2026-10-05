@@ -9,7 +9,10 @@ Every armed unit against every other unit, one attack each at full HP in the ope
 back (the reply, if the defender survives and can hit back directly), both in credits (HP x price / max HP), and the net. Also the damage
 bought per credit of the attacker's price. Writes `unit-trades.csv` (one row per pair), `unit-matrix.csv`, `unit-report.md` (each unit's
 average result, win share, best and worst targets, and the outliers: units far above or below the median for their price) and with
-`--html` a heat map. Movement, range, terrain, transport and capture are left out on purpose: this is the pure comparison of stat blocks, so
+`--html` a heat map. It also distils the matrix by category (`category-trades.csv`, and a table in the report): mean and median net for each attacking
+category against each defending one, and each unit against each category. A ranged unit is assumed to strike first and be answered second,
+unless the target is ranged too (in the game itself an indirect shot is never countered), so ranged units always score a little oddly.
+Movement, range, terrain, transport and capture are left out on purpose: this is the pure comparison of stat blocks, so
 a price or weapon change shows up here first.
 
 ## Leader balance: `npm run balance:leaders [-- --maps 2p --seeds 1 --days 20]`
