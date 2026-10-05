@@ -5,6 +5,8 @@
 
 import { applySkirmish } from './data/skirmish.js';
 import { SkirmishScreen } from './ui/skirmish-screen.js';
+import { EditorScreen } from './editor/editor-screen.js';
+import { customMaps } from './editor/storage.js';
 import { TitleScreen } from './ui/title-screen.js';
 import { IntroScreen } from './ui/intro-screen.js';
 import { WorldMapScreen } from './ui/world-map-screen.js';
@@ -60,7 +62,8 @@ export async function launch({
     };
     t.onSkirmish = () => openSkirmish(t);
     t.onCampaign = () => openCampaign(t);
-    if (ready) { t.setReady(); t.setSkirmish(canSkirmish()); t.setCampaign(canCampaign()); } else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
+    t.onEditor = () => openEditor(t);
+    if (ready) { t.setReady(); t.setSkirmish(canSkirmish()); t.setCampaign(canCampaign()); t.setEditor(canSkirmish()); } else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
     return t;
   };
   const canSkirmish = () => !!(game && game.maps && game.maps.length && game.play);
@@ -73,7 +76,7 @@ export async function launch({
     const leaders = game.campaign?.leaders || [];
     if (leaders.length) portraitColors();
     skirmish = new SkirmishScreen(doc, {
-      registry: game.registry, maps: game.maps, selectedId: game.defaultMapId,
+      registry: game.registry, maps: [...game.maps, ...customMaps(game.registry)], selectedId: game.defaultMapId,   // with the maps saved in the editor
       leaders, speech: game.campaign?.speech || {},
       onBack: () => { skirmish.remove(); skirmish = null; },
       onStart: (map, settings) => {
@@ -83,6 +86,18 @@ export async function launch({
       },
     });
     doc.body.append(skirmish.root);
+  };
+
+  // The map editor sits on top of the title screen like the skirmish page; Back removes it, Play starts the map being edited.
+  let editor = null;
+  const openEditor = (t) => {
+    if (!t.ready || !canSkirmish() || editor) return;
+    editor = new EditorScreen(doc, {
+      registry: game.registry, maps: game.maps,
+      onBack: () => { editor.remove(); editor = null; },
+      onPlay: (map) => { editor.remove(); editor = null; game.play(map); started = true; t.remove(); },
+    });
+    doc.body.append(editor.root);
   };
 
   // The campaign: the intro cutscene (skippable) and then the world map. Both sit on top of the title screen; Back on the map
@@ -121,6 +136,7 @@ export async function launch({
     title.setReady();
     title.setSkirmish(canSkirmish());
     title.setCampaign(canCampaign());
+    title.setEditor(canSkirmish());
   } catch (e) {
     console.error(e);
     failed = String(e.message || e).split('\n')[0].slice(0, 120);

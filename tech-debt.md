@@ -16,13 +16,13 @@
 - **Eye drawing is parametric but 2D-flat:** expressions (angry, shock) only change brow and lid openness, not each style's eye shape.
 - **Reinforcements are visual only.** `Session.reinforce` animates units that already exist; there is no engine-level spawn (event or order) yet, so a campaign script must add units to `game.state.units` itself, and an undo or save would not know about the arrival. Entrances also ignore terrain and other units on the way (a straight line from the window edge), and the entry point is chosen from the window, so on a zoomed map the units drive in over whatever is between.
 - **The rocket launcher is the first unit to need resupply outside the airfield.** Factories now resupply `vehicle` units, so every vehicle with an `ammo` attribute would use it; there is no supply truck yet (a concept). The AI builds at most one launcher and has no special logic to keep it fed. Damage baseline cases do not cover the rockets.
-- **Remaining concept units** (APC, mines, jammer fog, automated factory, carrier landing) are still prose/art only; the seventeen drafted units (incl. RPG trooper, stealth copter, conscript, diver and motorcycle) now ship; the spy lost its sabotage idea and is plain stealth infantry.
+- **Remaining concept units** (APC, mines, automated factory, carrier landing) are still prose/art only; the seventeen drafted units (incl. RPG trooper, stealth copter, conscript, diver and motorcycle) now ship; the spy lost its sabotage idea and is plain stealth infantry.
 - **Parts library is a first cut.** `src/render/parts.js` covers wheels, treads, legs, hover, hulls, propellers, turrets, tubes, dishes and effects, but the static defences' pads and sandbags, the ship deck `mount`, the hand-drawn radar dishes and the medic cross are still per-file (listed in `docs/render-parts.md`). The game sprites in `unit-art.js` still build some wheels/tracks by hand where they differ from `wheel`/`treads`.
 
 - **Gallery pipeline statuses are hand-edited** in `gallery/status.json`. The 17 original units were marked `solid` by assumption (rocket launcher `draft`); nothing checks that `balanced`/`ready` match the damage baselines or the interface.
 - **Gallery has no browser test.** It was checked once with a headless Chromium script (all tabs, dialogue tester, phone width); `tests/gallery/catalog.test.js` covers only the data. `portraits.html` is still a separate design lab, and the kit icons are static (not animated).
 - **Stealth tank still has no cloak.** The `cloak` attribute now exists (used by the stealth fighter/bomber); the stealth tank could adopt it with a data change, but it is untested for ground play.
-- **Structures are concept-only.** Walls (linking, cracked and destructible), labs, bunker, radar station, supply depot and the static defences exist only as gallery art plus prose; the engine has no wall tile, link rule, destructible terrain or capturable base types. The game's six buildings are shown there as drafts.
+- **Some structures are still concept-only.** Labs, bunker, radar station, supply depot, the gun turret, watchtower and tank traps exist only as gallery art plus prose. Walls, cracked walls, the cannon/SAM/artillery turrets and the jammer are in the game (October 2026).
 - **Gallery structure art is separate from the game's** `src/render/buildings.js` (`gallery/structure-art.js` borrows its `kit` helpers); if structures ship, merge them so there is one drawing path.
 - **APC** is art only; the APC reuses the transport's carry mechanic in prose, not in data.
 
@@ -32,7 +32,7 @@
 - **Only the sniper is revealed by firing.** The always-cloaked units (spy, stealth fighter/bomber/copter) stay hidden after they shoot unless an enemy is adjacent or has radar; `cloak.revealedByFiring` exists if that should change.
 - **The AI does not use the sniper's forest cloak:** it picks tiles by cover and distance, not by whether the tile hides it.
 - **A carried unit that was halted by a hidden enemy** used to crash the AI (no tile to choose); fixed with a size check, but `carriedBy` handling in `chooseOrder` is fragile.
-- **Radar adds no fog sight.** Radar only finds cloaked units; there is no fog-of-war vision bonus.
+- **Radar adds no fog sight.** Radar only finds cloaked units; the radar plane just has a long `vision` (6) in fog of war.
 - **Heal visuals were not verified in a browser** (the Heal button label and the +HP call-outs); only engine tests cover them.
 - **Sprites moved from `gallery/` to `src/render/art-*.js`** so the deploy build includes them; the gallery imports them back. Older gallery art files may still want the same treatment.
 - **No damage-baseline cases for the new units** (spy, medic pistol, RPG trooper, stealth copter); the baseline tool covers only the original units.
@@ -105,12 +105,12 @@
 - **`ammo.cost` was removed**: replacing rounds is free except for rounds that stand for a unit (`deploy`, `layMines`), derived in `roundCost`.
 
 ## Maps and skirmish (latest pass)
-- **The new water maps are generated, not drawn.** `island_chain`, `sky_strait` and `four_seas` came from a throwaway script (symmetry by mirror or rotation); there is no map editor or generator in the repo, so they can only be tweaked by hand-editing the tile strings.
+- **The water maps were generated, not drawn.** `island_chain`, `sky_strait` and `four_seas` (and `iron_curtain`) came from throwaway scripts; they can now be opened and touched up in the map editor.
 - **The AI never plans amphibious landings,** so every map still needs a land route between the HQs (the island map uses a causeway); real island-hopping play is human-only until the AI learns to use transports.
 - **Skirmish no longer offers Random or No leader,** and a colour with no leader (none exist today) would play with the map's own units; `RANDOM_LEADER` and `resolveLeaders` remain in `src/data/skirmish.js` for map files and tests only.
 
-- **Static defences and walls are gallery-only drawing code.** Defences now use the units' flat style plus a shared `footing`, `grass` and `footShadow` (`gallery/concept-art-static.js`, also used by the new defences in `concept-art-ideas.js`); walls are pipe tiles in `gallery/structure-art.js`. If they ship, the footing belongs in `src/render/parts.js` and the wall drawing next to the terrain layer.
-- **Wall drawing order matters.** A riser or elbow reaches a little into the tile above, so walls must be drawn row by row from the top, after the terrain and before units; the game's layer code would need to respect that (the wall builder does).
+- **Defence art lives in `src/render/art-defences.js`** (moved from the gallery) together with three concept defences only the gallery shows (gun turret, automated factory, land mine); its `footing`, `grass` and `footShadow` could move to `parts.js`. The wall drawing is in `src/render/walls.js`; the gallery re-exports both.
+- **Wall drawing order matters.** A riser or elbow reaches a little into the tile above, so `drawWalls` paints row by row from the top, after the terrain and before units. A unit in the tile above a riser is drawn over it.
 - **Brainstormed units overlap some existing ones on purpose** (technical vs recon, tank destroyer vs tank). The October 2026 ideas in `concepts.json` each come with a new mechanic (building in the field, guarding, smoke, EMP stun, wrecks and salvage, disguise, single-use attacks, liberation of assimilated units); none of these exist in the engine, and several (wrecks, smoke fog, disguise) touch fog of war and the AI's targeting.
 
 ## Fuel, ambush, double attacks (October 2026)
@@ -122,3 +122,25 @@
 - **The marine's boarding rifle is a separate weapon with `fromTerrain`** rather than a general "attack from a boat" rule; `attackProblem` answers `wrong-terrain` but the controller shows the generic out-of-range hint.
 - **Vex's basic infantry is the spy,** so her transports drop spies; `deploy.unit` (soldier) is only the fallback for a player with no leader.
 - **Mine reveal timing is presentation only:** the engine still deletes the mine the moment it detonates, so the board shows it through a throw-away `show` effect rather than as a real unit.
+
+## Walls, defences and fog of war (October 2026)
+- **Neutral turrets and Vantor Reach look alike.** Neutral structures are drawn in charcoal (`rules.neutralUnitColors`) as asked, but Vantor Reach's team colour is slate grey, so on a map with Vantor the two are hard to tell apart at small sizes. A neutral marker (a hazard-striped footing, a badge) or a different Vantor colour would fix it.
+- **Structures are units.** Turrets, the jammer and the cracked wall are units with the `structure` attribute (owner `null` when neutral), so a lot of code that loops over `state.units` now meets units that never move and may have no owner (victory, formations, the AI, the end-of-turn prompt, the controller each special-case them through `structures.js`). A first-class "fixture" list in the state would be cleaner if many more kinds arrive.
+- **The cracked wall is drawn by the wall layer, not its sprite** (`render.inWall`): the renderer skips such units, and its sprite in `art-defences.js` is only for the gallery and the editor. Its destruction shows the hit and the rubble but no sprite falling apart.
+- **Walls block aircraft** (like Advance Wars pipes, and as "impenetrable" asked). If flyers should cross them, give `wall` an `air` move cost; nothing else depends on it.
+- **A breakable wall is always intact at the start.** The cracked wall is placed by the `wall_breach` terrain when the game starts, unless a unit is already there; a map cannot say "this section is already broken" other than by not using a breach. The editor removes a unit painted over a breach.
+- **Neutral turrets fire in `Game.endTurn`**, at the units of the player whose turn ends, one shot per turret. The AI does not avoid their reach when choosing where to stop, and the human only learns their range from the threat preview of a tapped turret. Their shots are paced by a pause in the session, not animated per turret.
+- **Fog sight is cached on `game.revision`.** Every Game method calls `touch()`; code that edits `game.state` directly (tests, a future campaign script, reinforcements) must call `game.touch()` or the cached sight goes stale.
+- **Fog leaks a little:** a structure stays drawn on explored tiles even after it has been destroyed out of sight; a property seen before shows its current owner, not the one last seen; a computer unit that ends its move in sight is animated along its whole path, including the part in fog, and one that leaves sight simply vanishes; the shot of an unseen attacker is drawn from where it stands; the commentary's "outnumbered"/"dominant" counts include unseen units.
+- **Undo is nearly gone in fog**, by design: any order that brings a tile into sight clears it, and most moves do.
+- **Vision numbers are first guesses** (`rules.vision`, unit `vision`, mountain `visionBonus`); there are no fog-specific tests of balance, and no forest/reef hiding (in Advance Wars a unit in a forest is only seen from next to it).
+- **The AI ignores fog** (as asked) and never goes out of its way to destroy jammers; it breaks cracked walls only when nothing better is in reach (`breakWall`) and does not reason about walls beyond the distance field.
+
+## Map editor (October 2026)
+- **No browser test.** The editor's model, palette, storage and screen wiring are unit-tested (tests/editor), but drawing, painting, pinch and the sheets were checked with a throwaway headless-Chromium script only.
+- **The editor drives the game's `Renderer` with stand-ins** (a game made by `createState`, and stub effects and animator). If the renderer starts reading more of the session, the editor needs the same stubs; a small board-view interface would make the contract explicit.
+- **Saved maps live in one browser** (localStorage, `pocketwars.editor.*`). Sharing a map means downloading the file and adding it to `data/maps/` by hand; skirmish lists saved maps under `my-<id>` so they never clash with shipped ids.
+- **Legend glyphs for properties** in written files still come from the generic pool (terrain gets mnemonic glyphs: `.`, `F`, `M`, `~`, `W`, `X`...), so an edited map's legend is readable but not as tidy as a hand-written one.
+- **Symmetry assumes the players sit in mirror order** (copy n of something owned by player p goes to player p + n x players/copies); maps whose HQs are laid out otherwise need the owners fixed by hand.
+- **The editor redraws the whole board from a fresh `createState` after each change**; fine up to 64x64, but a very large map with many units would want incremental updates.
+

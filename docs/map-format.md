@@ -39,6 +39,13 @@ reports every problem at once.
 `serializeMap(map)` is the inverse of `parseMap`; the map editor (`editor/`) uses both. To add a map: drop the file in `data/maps/`, add it
 to `index.json`, run `npm run validate`.
 
+## Making maps with the editor
+
+The title screen's **Map editor** paints terrain, buildings, units and defences with the game's own art, with symmetry (left/right, top/bottom,
+180 degrees, four ways), fill, pick and undo, and sets the name, size and players. **File -> Download .map.json** writes a file in exactly
+this format: drop it in `data/maps/`, add it to `index.json` and run `npm run validate`. **Save to My maps** keeps it in the browser only (the
+skirmish page lists it as "(my map)"). Any shipped map can be opened as a starting point (File -> Game maps).
+
 ## Terrain notes
 
 - Walls: `wall` is impassable to everything (aircraft too) and blocks line of sight; `wall_breach` gets a neutral cracked wall on it when

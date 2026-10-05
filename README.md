@@ -22,6 +22,7 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 - Large maps scroll: drag to pan, pinch (or ctrl + wheel) to zoom.
 - Skirmish on the title screen lets you pick a map, set up to 4 teams (player or computer, colour) the starting funds and a leader for each team (random by default for computer teams). A leader sets which units the factories build and which units you start with, placed in a formation around the HQ (see docs/leaders.md).
 - The gear in the status bar opens a menu: resume, reset the mission, or quit back to the title screen.
+- **Map editor** (title screen): paint terrain, buildings, units and defences on a map with the game's own art. One finger (or the mouse) paints with the tool (Brush, Fill, Erase, Pick, Pan), two fingers or the wheel and right-drag move and zoom. Symmetry mirrors every edit (and gives the mirrored copies to the other side). Map sets the name, size and players; File makes a new map, opens any game map as a starting point, saves to "My maps" (they appear on the skirmish page), downloads the `.map.json` or copies it; Play starts the map straight away. Your work is kept in the browser after every change. Desktop keys: Ctrl+Z / Shift+Ctrl+Z, B F E I H, 1 and 3 for the brush size.
 
 ## Development
 

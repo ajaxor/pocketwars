@@ -5,7 +5,8 @@ Plain ES modules, no bundler, no runtime dependencies. Node 22+ is only needed f
 ```
 data/            game content as JSON (units, weapons, terrain, factions, rules, ai) and data/maps/*.map.json
 src/data/        validate.js, registry.js (frozen lookup of the data), map-format.js, loader.js
-src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, sight (line of sight), capture, economy, victory, ai
+src/engine/      pure game rules; no DOM. Game facade + queries, movement, combat, sight (line of sight), capture, economy, victory, ai,
+                 structures (turrets, jammer, cracked walls; neutral fire), fog (fog of war)
 src/render/      canvas drawing: renderer, unit art (unit-art.js), unit-frame.js, unit-sprites.js, buildings.js, color.js,
                  terrain-art.js (trees, mountains, sea), terrain-layer.js (rounded merged tiles), effects, move animator, arrivals (reinforcements)
 src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/windows/chips), info + build-menu (facts as plain data),
@@ -13,6 +14,8 @@ src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/wi
 src/fonts/       the self-hosted typeface (Fredoka, OFL); declared in style.css, named for canvas text in src/render/font.js
 src/main.js      boot(): load data + map, create Game, start Session
 src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Quick Start (a random map)
+src/editor/      the map editor: model.js (the map being edited, undo, symmetry), palette.js, storage.js (My maps, the draft),
+                 editor-screen.js (the page; draws with the game's Renderer)
 src/ui/title-screen.js  the title screen view (logo, progress, Quick Start, gallery links, update button); styles are `.title*` in style.css
 index.html       tiny shell: the game's DOM plus a few lines that find the build folder and hand over to src/launcher.js
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
@@ -33,6 +36,11 @@ gallery/         live preview pages published next to the game: unit art (index.
 - **Hidden information.** `src/engine/detection.js` (who sees a submerged unit) and `submerge.js` (diving rules) are the only places that
   know; movement, combat, AI, the renderer (`Renderer.viewer`) and the controller all ask `canSee`. A move that hits a hidden unit is
   *interrupted* (see combat.md); the Controller resumes the unit in its act menu and the AI issues a second order.
+- **Fog of war.** `src/engine/fog.js` works out what each human player sees while a jammer stands; `canSee` (detection.js) applies it, so
+  everything that already respected hidden units respects fog. Sight is cached on `game.revision`, which every Game method bumps through
+  `game.touch()` (which also records explored tiles in `state.explored`). The renderer greys out explored tiles and blacks out the rest.
+- **Structures** (`src/engine/structures.js`): turrets, jammers and cracked walls are units with the `structure` attribute, possibly owned by
+  nobody (`owner: null`). Walls are terrain, drawn by `src/render/walls.js` as a layer between the terrain and the units.
 - **Special handling is data.** Engine code asks `hasAttribute(def, 'capture')`; it never compares unit ids.
   See `docs/attributes.md`.
 
@@ -85,6 +93,15 @@ the build and not in the shell, a stale cached `index.html` cannot hide changes 
 `version.json`, the loader uses `./` with a timestamp query and the title screen shows "build dev" (no update button).
 
 To add a button to the title screen, add an entry to `GALLERIES` in `src/launcher.js`.
+
+## Map editor
+
+The title screen's **Map editor** opens `src/editor/editor-screen.js` over the title screen (like the skirmish page). It edits an `EditorModel`
+(`model.js`: plain mutable grids plus units and players, with snapshot undo/redo) and draws it every frame with the game's own `Renderer`,
+fed a throw-away game (`createState` of the model, so cracked walls appear on breakable wall tiles exactly as in play) and stub effects. The
+palette (`palette.js`) is read from the registry, so new terrain and units appear in it without editor changes. The map being edited is saved
+to localStorage after every change; Save keeps a copy in "My maps", which the skirmish page lists (`customMaps` in `storage.js`); Download
+gives the `.map.json` to add to `data/maps/`. Play parses the map (`parseMap`) and hands it to `game.play`, like the skirmish page.
 
 ES modules and `fetch` do not work from `file://`; run `npm start`.
 

@@ -173,9 +173,14 @@ function deepFreeze(o) {
 }
 
 const GLYPH_POOL = '.FMr~cobkvOBKVabdefghijlmnpqstuwxyzACDEGHIJLNPQRSTUWXYZ0123456789';
+/** Glyphs a new legend entry tries first, so a written map stays readable: the shipped maps' habits for the common terrain. */
+const PREFERRED = { plain: '.', forest: 'F', mountain: 'M', rough: ':', road: 'r', sea: '~', shoals: '*', wall: 'W', wall_breach: 'X', city: 'c' };
 
-/** Inverse of parseMap. Reuses the map's legend glyphs and assigns new ones for any new (terrain, owner) pair. */
-export function serializeMap(map) {
+/**
+ * Inverse of parseMap. Reuses the map's legend glyphs and assigns new ones for any new (terrain, owner) pair. `defaultGround` (the registry's)
+ * lets a map that is all one other ground (all dirt) keep it; without it, a map with a single ground writes none.
+ */
+export function serializeMap(map, { defaultGround } = {}) {
   const key = (t, o) => `${t}|${o ?? ''}`;
   const glyphFor = new Map(Object.entries(map.legend || {}).map(([g, e]) => [key(e.terrain, e.owner), g]));
   const used = new Set(glyphFor.values());
@@ -184,7 +189,7 @@ export function serializeMap(map) {
     const owner = map.owners[y][x];
     const k = key(t, owner);
     if (!glyphFor.has(k)) {
-      const g = [...GLYPH_POOL].find((c) => !used.has(c));
+      const g = [...(owner === null && PREFERRED[t] ? PREFERRED[t] : ''), ...GLYPH_POOL, ...'#$%&+=?@^_|'].find((c) => !used.has(c));
       if (!g) throw new Error('serializeMap: ran out of legend glyphs');
       used.add(g);
       glyphFor.set(k, g);
@@ -199,7 +204,7 @@ export function serializeMap(map) {
   };
   // ground is only written when some tile is not the default ground (the first id in the grid's most common value)
   const ids = [...new Set((map.ground || []).flat().filter((g) => g != null))];
-  if (ids.length > 1) {
+  if (ids.length > 1 || (ids.length === 1 && defaultGround !== undefined && ids[0] !== defaultGround)) {
     const glyphs = new Map();
     for (const id of ids) glyphs.set(id, [...id, ...'0123456789'].find((c) => ![...glyphs.values()].includes(c)));
     out.groundLegend = Object.fromEntries([...glyphs].map(([id, g]) => [g, id]));

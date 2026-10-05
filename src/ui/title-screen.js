@@ -56,6 +56,7 @@ export class TitleScreen {
     this.onStart = () => {};
     this.onSkirmish = () => {};
     this.onCampaign = () => {};
+    this.onEditor = () => {};
     this.onUpdate = () => {};
 
     const art = h('div', 'title-scene'); art.innerHTML = ART;
@@ -70,6 +71,8 @@ export class TitleScreen {
     this.skirmish.addEventListener('click', () => this.onSkirmish());
     this.links = h('nav', 'title-links');
     for (const { label, href } of links) { const a = h('a', 'btn btn--ghost', label); a.setAttribute('href', href); this.links.append(a); }
+    this.editor = h('button', 'btn btn--ghost title-editor', 'Map editor'); this.editor.disabled = true;
+    this.editor.addEventListener('click', () => this.onEditor());
     this.upd = h('button', 'btn btn--sm title-upd', 'New version available - tap to update'); this.upd.hidden = true;
     this.upd.addEventListener('click', () => this.onUpdate());
     this.ver = h('div', 'title-ver');
@@ -80,7 +83,9 @@ export class TitleScreen {
     const body = h('div', 'title-body');
     const logo = h('h1', 'title-logo');
     logo.append(h('span', 'logo-top', 'Pocket'), h('span', 'logo-main', 'Wars'));
-    body.append(logo, loading, this.go, this.campaign, this.skirmish, this.links, this.upd, this.ver);
+    const extras = h('div', 'title-extras');   // the map editor and the gallery links, on one row
+    extras.append(this.editor, this.links);
+    body.append(logo, loading, this.go, this.campaign, this.skirmish, extras, this.upd, this.ver);
     this.root = h('div', 'title');
     this.root.append(art, body);
     doc.body.append(this.root);
@@ -91,7 +96,8 @@ export class TitleScreen {
   setReady() { this.ready = true; this.go.disabled = false; this.go.textContent = 'Quick Start'; this.setProgress(100, 'Ready'); this.loading.classList.add('is-done'); }
   setSkirmish(enabled) { this.skirmish.disabled = !enabled; }
   setCampaign(enabled) { this.campaign.disabled = !enabled; }
-  setFailed(message) { this.ready = false; this.skirmish.disabled = true; this.campaign.disabled = true; this.go.disabled = false; this.go.textContent = 'Retry'; this.setProgress(0, 'Could not load the game: ' + message); }
+  setEditor(enabled) { this.editor.disabled = !enabled; }
+  setFailed(message) { this.ready = false; this.skirmish.disabled = true; this.campaign.disabled = true; this.editor.disabled = true; this.go.disabled = false; this.go.textContent = 'Retry'; this.setProgress(0, 'Could not load the game: ' + message); }
   showUpdate(onClick) { this.onUpdate = onClick; this.upd.hidden = false; }
   remove() { this.root.remove(); }
 }
