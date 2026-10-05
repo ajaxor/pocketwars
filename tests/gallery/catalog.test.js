@@ -54,7 +54,7 @@ test('walls link to their wall neighbours, and a wall draws in both variants wit
 });
 
 test('wall builder: tap cycles wall, cracked wall, empty; the starting fort has gaps only for its gate and buildings', () => {
-  assert.equal(cycle(undefined), 'wall'); assert.equal(cycle('wall'), 'cracked'); assert.equal(cycle('cracked'), undefined);
+  assert.equal(cycle(undefined), 'wall'); assert.equal(cycle('wall'), 'cracked'); assert.equal(cycle('cracked'), 'broken'); assert.equal(cycle('broken'), undefined);
   const fort = fortLayout();
   assert.ok(fort.size > 10);
   for (const k of Object.keys(FORT_BUILDINGS)) assert.ok(!fort.has(k), `${k} is a building, not a wall`);

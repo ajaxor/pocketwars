@@ -181,9 +181,9 @@ export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false, 
     };
     if (broken && (straightH || straightV)) {                                    // a destroyed straight pipe: two halves, each ending in a jagged break
       const zig = (side) => {
-        const e0 = side < 0 ? .34 : .66, dirn = side < 0 ? 1 : -1;
+        const e0 = side < 0 ? .34 : .66, dirn = side < 0 ? 1 : -1, lift = pass === 2 && side < 0 ? SHD : 0;   // (the lit copy of a break that faces down or right is pre-shifted, so the break face itself is not shaded)
         const offs = side < 0 ? [0, .09, -.04, .11, -.01, .08, -.05] : [-.02, .08, -.06, .05, .12, -.03, .07];
-        return offs.map((o, i) => [e0 + dirn * (o + gr), (i / (offs.length - 1)) * 2 - 1]);   // [position along the pipe, -1..1 across it]
+        return offs.map((o, i) => [e0 + dirn * o + lift, (i / (offs.length - 1)) * 2 - 1]);   // [position along the pipe, -1..1 across it]
       };
       const piece = (side) => {
         const z = zig(side), outerAt = side < 0 ? 0 : 1 + ext;                    // the far end of the piece is the tile's edge
@@ -192,6 +192,11 @@ export function drawWall(gIn, px, py, S, _owner, { links = {}, cracked = false, 
         const first = P(outerAt, -1); g.moveTo(X(first[0]), Y(first[1]));
         for (const [u, v] of z) { const q = P(u, v); g.lineTo(X(q[0]), Y(q[1])); }
         const last = P(outerAt, 1); g.lineTo(X(last[0]), Y(last[1])); g.closePath(); g.fill();
+        if (pass === 0) {                                                         // the break's outline: the jagged edge stroked at an even width, so its border is clean
+          g.strokeStyle = c; g.lineWidth = 2 * OW * S; g.lineJoin = 'round'; g.lineCap = 'butt'; g.beginPath();
+          z.forEach(([u, v], i) => { const q = P(u, v); i ? g.lineTo(X(q[0]), Y(q[1])) : g.moveTo(X(q[0]), Y(q[1])); });
+          g.stroke();
+        }
       };
       piece(-1); piece(1);
     } else if (straightH) lieH(0, 1);
