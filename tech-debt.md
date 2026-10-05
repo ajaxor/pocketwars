@@ -148,3 +148,9 @@
 
 - **Remembered structures are only pictures.** A turret out of sight is drawn as last seen but cannot be tapped for its info card or targeted (artillery cannot shell a remembered turret in the fog any more).
 - **Siege is a flag on weapons** (`siege: true`), and structures' damage skips armor, toughness and cover entirely; `rules.structureDamage` holds the two multipliers. Durability values and the 1.5 / 0.25 split are first guesses with no damage-baseline cases.
+
+## Computer opponent (October 2026 review)
+- **No turn-level plan.** `chooseOrder` scores one unit at a time in a fixed order against the board as it stands, so focus fire, "attack with the weak unit first, finish with the strong one", screening artillery and blocking chokepoints only happen by accident. It is also shaped by the UI's need to animate one unit at a time; a planner that decides the whole turn up front and then hands orders out one by one would serve both.
+- **No benchmark harness.** There is no tool to play AI against AI over many maps and report win rates, so a change to `data/ai.json` cannot be measured. Two things make one necessary: the engine is fully deterministic, so a mirror match always replays the same game (on `classic`, 28 of 28 identical games went to player 1), and on the larger maps (`four_corners`, `island_chain`) AI-vs-AI games often had no winner after 30 days.
+- **Turn speed limits search.** A full computer turn takes roughly 3 ms on `classic` but 20 to 40 ms on the larger maps (most of it movement ranges and distance fields recomputed per unit). Any look-ahead (trying several orderings, or simulating the reply) needs cheaper move generation or caching of reachable tiles per turn.
+- **Build lists are global** (`data/ai.json` `build`, with fixed `max` counts), not driven by what the enemy fields; the campaign will need them per leader anyway.
