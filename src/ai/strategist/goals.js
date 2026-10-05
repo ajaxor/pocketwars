@@ -95,7 +95,7 @@ export function planCaptures(sit) {
   for (const { u, p } of pairs) {
     if (done.has(u.id)) continue;
     const k = p.y * W(game) + p.x;
-    if ((taken.get(k) ?? 0) >= (isHq(p) && p.owner !== null ? 2 : 1)) continue;
+    if ((taken.get(k) ?? 0) >= (isHq(p) && p.owner !== null && sit.tactics.target === 'hq' ? 2 : 1)) continue;   // a second for the HQ only in an HQ rush, as a backup
     taken.set(k, (taken.get(k) ?? 0) + 1);
     sit.captureTargets.set(u.id, p);
     done.add(u.id);
