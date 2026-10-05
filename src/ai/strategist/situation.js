@@ -25,6 +25,7 @@ export class Situation {
     this.tactics = strategy.tactics;
     this.maxHp = game.registry.rules.maxHp;
     this.fields = new Map();
+    this.goalCache = new Map();   // unit id -> { at, goal }: goals hold for the turn unless the unit moves or someone dies
     this.refresh();
     this.threats = this.enemies.filter((e) => !isWall(game, e)).map((e) => ({ unit: e, mask: hitMask(game, e) })).filter((t) => t.mask);
     this.properties = allProperties(game);
@@ -57,7 +58,8 @@ export class Situation {
   }
 
   field(moveClass, goals) {
-    const key = `${moveClass}|${goals.map(([x, y]) => y * this.game.map.width + x).sort((a, b) => a - b).join(',')}`;
+    let key = moveClass;
+    for (const g of goals) key += `|${g[0]},${g[1]},${g[2] ?? 0}`;
     let f = this.fields.get(key);
     if (!f) this.fields.set(key, (f = distanceField(this.game, moveClass, goals)));
     return f;

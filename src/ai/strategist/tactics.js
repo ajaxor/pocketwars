@@ -48,7 +48,10 @@ export function bestOrder(sit, unit) {
   const { game, params, tactics, player } = sit;
   const def = unitDef(game, unit);
   const reach = computeReach(game, unit);
-  const goal = goalsFor(sit, unit);
+  const at = unit.y * game.map.width + unit.x;
+  let cached = sit.goalCache?.get(unit.id);
+  if (!cached || cached.at !== at || cached.hp !== unit.hp) sit.goalCache?.set(unit.id, (cached = { at, hp: unit.hp, goal: goalsFor(sit, unit) }));
+  const goal = cached.goal;
   const field = sit.field(def.moveClass, goal.tiles);
   const movedAlready = hasMovedAlready(unit);
   const mayAct = !unit.fresh;
@@ -67,7 +70,9 @@ export function bestOrder(sit, unit) {
     const stars = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
     let base = -(field.get(tileIndex(game.map, x, y)) ?? fallback(x, y)) * params.distance + stars * params.terrain;
     base -= sit.threatAt(unit, x, y) * params.threat * caution;
-    base += Math.min(3, sit.mine.filter((f) => f !== unit && distance(f.x, f.y, x, y) <= 2).length) * params.guard;
+    let friends = 0;
+    for (const f of sit.mine) if (f !== unit && Math.abs(f.x - x) + Math.abs(f.y - y) <= 2 && ++friends >= 3) break;
+    base += friends * params.guard;
     const prop = propertyAt(game, x, y);
     if (prop && ownerAt(game, x, y) === player && prop.builds?.length && menuFor(game, player, x, y).length && moved) base -= BLOCK_BUILD;
 

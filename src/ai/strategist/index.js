@@ -50,6 +50,19 @@ function wantsDeploy(sit, carrier) {
     && landing.some((l) => areaAt(game, cargo.moveClass, l.x, l.y) === t.area));
 }
 
+/**
+ * Is a plan made earlier this turn still good? In our own turn enemies only die or come to light, never move, so a route stays open;
+ * what can go wrong is a friend now standing on the tile, or the target gone. (Plans near anything that changed are made again anyway.)
+ */
+function stillGood(game, unit, order) {
+  const there = game.state.units.find((u) => u.x === order.to.x && u.y === order.to.y);
+  if (there && there !== unit) return false;
+  if (order.action.targetId != null && !game.state.units.some((u) => u.id === order.action.targetId)) return false;
+  const type = order.action.type;
+  if (type !== 'wait' && type !== 'attack') return game.validateOrder(order).ok;   // a heal, supply, lay... depends on who is around now
+  return true;
+}
+
 /** Units whose plans may have changed after something happened at these tiles. */
 function invalidate(game, cache, units, tiles) {
   for (const u of units) {
@@ -88,12 +101,17 @@ export function* turn(game, ctx) {
   const wants = (u) => game.state.units.includes(u) && u.owner === player && !u.done && !isStructure(game, u);
   let pending = game.state.units.filter((u) => wants(u) && !u.fresh);
   const cache = new Map();
+  const seen = new Set(sit.enemies.map((e) => e.id));
 
   for (let guard = 0; guard < 500 && !game.isOver; guard++) {
     pending = pending.filter((u) => wants(u) && !u.fresh);
     if (!pending.length) break;
     sit.refresh();
     sit.remaining = pending;
+    if (sit.enemies.some((e) => !seen.has(e.id))) {   // an enemy came to light (a cloaked unit bumped into): every plan is made again
+      cache.clear();
+      for (const e of sit.enemies) seen.add(e.id);
+    }
     let best = null;
     for (const u of pending) {
       if (!cache.has(u.id)) cache.set(u.id, bestOrder(sit, u));
@@ -104,7 +122,7 @@ export function* turn(game, ctx) {
     const { u: unit } = best;
     let c = best.c;
     if (!c) { pending = pending.filter((u) => u !== unit); continue; }
-    if (!game.validateOrder(c.order).ok) {   // something moved into its way since it was planned
+    if (!stillGood(game, unit, c.order)) {   // something moved into its way (or its target is gone) since it was planned
       c = bestOrder(sit, unit);
       if (!c || !game.validateOrder(c.order).ok) { pending = pending.filter((u) => u !== unit); continue; }
     }
@@ -119,12 +137,16 @@ export function* turn(game, ctx) {
       cache.delete(unit.id);
       continue;
     }
-    const from = [unit.x, unit.y];
     const target = c.order.action.targetId != null ? game.state.units.find((e) => e.id === c.order.action.targetId) : null;
     const at = target ? [target.x, target.y] : null;
     const res = yield { type: 'order', order: c.order };
     cache.delete(unit.id);
-    invalidate(game, cache, pending, [from, [c.order.to.x, c.order.to.y], ...(at ? [at] : [])]);
+    // a move spoils no other plan (friends can be walked through; a taken tile is caught by stillGood); a fight changes what is
+    // worth doing around the target, and a death changes where everyone is heading
+    if (at) {
+      invalidate(game, cache, pending, [at]);
+      if (res.events.some((e) => e.type === 'strike' && e.destroyed)) sit.goalCache.clear();
+    }
     if (res.interrupted) continue;   // stopped by a hidden unit: it is planned again from where it stands
     if (roles(unitDef(game, unit)).carrier && wantsDeploy(sit, unit)) yield* drop(sit, unit, wants);
   }

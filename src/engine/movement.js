@@ -60,6 +60,9 @@ export function computeReach(game, unit) {
   const start = tileIndex(map, unit.x, unit.y);
   cost.set(start, 0);
   if (unit.halted) return new ReachMap(map.width, [unit.x, unit.y], cost, prev);   // stopped by a hidden unit: no more moving this turn
+  // who stands where, looked up once (the first unit listed on a tile, as unitAt finds it)
+  const occupants = new Map();
+  for (const u of game.state.units) { const k = tileIndex(map, u.x, u.y); if (!occupants.has(k)) occupants.set(k, u); }
   const queue = new PathHeap();
   queue.push(unit.x, unit.y, 0);
   while (queue.length) {
@@ -69,7 +72,7 @@ export function computeReach(game, unit) {
       const nx = x + dx;
       const ny = y + dy;
       if (!inBounds(map, nx, ny)) continue;
-      const occupant = unitAt(game, nx, ny);
+      const occupant = occupants.get(tileIndex(map, nx, ny));
       if (occupant && occupant.owner !== unit.owner && canSee(game, unit.owner, occupant) && !passesOverMines(game, unit, occupant)) continue;   // a hidden enemy does not block the plan (nor does a mine for a unit that floats or flies over it)
       const step = moveCostAt(game, def.moveClass, nx, ny);
       if (step === null) continue;
@@ -85,7 +88,7 @@ export function computeReach(game, unit) {
   }
   // Can pass through friends (and over a mine it can see) but not end the move on them. (A hidden enemy is not known to be there, so its tile stays on offer.)
   for (const k of [...cost.keys()]) {
-    const occupant = unitAt(game, k % map.width, Math.floor(k / map.width));
+    const occupant = occupants.get(k);
     if (occupant && occupant !== unit && (occupant.owner === unit.owner || canSee(game, unit.owner, occupant))) cost.delete(k);
   }
   return new ReachMap(map.width, [unit.x, unit.y], cost, prev);
