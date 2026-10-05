@@ -109,21 +109,27 @@ test('two AI teams with different kits build only what their menus allow, over a
   const registry = await loadRegistry(async (p) => (p === 'loadouts.json' ? custom : readData(p)));
   const classic = await loadMap(readData, registry, 'classic');
   const rich = { ...classic, players: classic.players.map((p) => ({ ...p, controller: 'ai', funds: 40000 })) };
-  const g = new Game(registry, withLeaders(rich, registry, ['ada', 'vex']));
-  assert.equal(g.state.units.filter((u) => u.owner === 1).length, 1, 'vex starts with the one soldier her kit gives (no sets for her factories)');
-  assert.equal(g.state.units.filter((u) => u.owner === 0).length, placeStart(classic, base, 0, base.loadoutFor('ada').start).units.length);
-
-  const built = { 0: { barracks: new Set(), factory: new Set() }, 1: { barracks: new Set(), factory: new Set() } };
-  for (let turn = 0; turn < 24 && !g.isOver; turn++) {
-    for (const ev of playTurn(g)) {
-      if (ev.type !== 'build') continue;
-      const terrain = g.map.terrain[ev.unit.y][ev.unit.x];
-      const allowed = registry.loadoutFor(g.map.players[ev.unit.owner].leader).build[terrain];
-      assert.ok(allowed.includes(ev.unit.type), `${ev.unit.type} on a ${terrain} is not on the menu of player ${ev.unit.owner}`);
-      built[ev.unit.owner][terrain]?.add(ev.unit.type);
+  const play = (engine) => {
+    const g = new Game(registry, withLeaders(rich, registry, ['ada', 'vex']));
+    g.aiSetup = [{ engine }, { engine }];
+    g.aiSeed = 1;
+    assert.equal(g.state.units.filter((u) => u.owner === 1).length, 1, 'vex starts with the one soldier her kit gives (no sets for her factories)');
+    assert.equal(g.state.units.filter((u) => u.owner === 0).length, placeStart(classic, base, 0, base.loadoutFor('ada').start).units.length);
+    const built = { 0: { barracks: new Set(), factory: new Set() }, 1: { barracks: new Set(), factory: new Set() } };
+    for (let turn = 0; turn < 24 && !g.isOver; turn++) {
+      for (const ev of playTurn(g)) {
+        if (ev.type !== 'build') continue;
+        const terrain = g.map.terrain[ev.unit.y][ev.unit.x];
+        const allowed = registry.loadoutFor(g.map.players[ev.unit.owner].leader).build[terrain];
+        assert.ok(allowed.includes(ev.unit.type), `${engine}: ${ev.unit.type} on a ${terrain} is not on the menu of player ${ev.unit.owner}`);
+        built[ev.unit.owner][terrain]?.add(ev.unit.type);
+      }
+      g.endTurn();
     }
-    g.endTurn();
-  }
+    return built;
+  };
+  play('strategist');   // every engine keeps to the menus; which buildings it uses depends on its plan
+  const built = play('greedy');   // greedy's fixed lists use every building
   assert.deepEqual([...built[0].barracks], ['soldier']);
   assert.deepEqual([...built[0].factory], ['tank']);
   assert.ok(built[1].barracks.size && [...built[1].barracks].every((t) => ['sniper', 'mech'].includes(t)), 'vex builds snipers and mechs at the barracks');

@@ -56,17 +56,31 @@ jobs:
           name: tune-log
           path: tools/ai/out/
           if-no-files-found: ignore
-      - name: Commit and deploy
-        env:
-          GH_TOKEN: ${{ github.token }}
+      # separate steps, so the run's summary shows which one failed
+      - name: Anything to ship?
+        id: changed
         run: |
-          if git diff --quiet data/ai.json; then echo "data/ai.json unchanged"; exit 0; fi
-          npm run validate
-          npm test
+          if git diff --quiet data/ai.json; then echo "data/ai.json unchanged"; echo "ship=no" >> "$GITHUB_OUTPUT"; else echo "ship=yes" >> "$GITHUB_OUTPUT"; fi
+      - name: Validate the data
+        if: steps.changed.outputs.ship == 'yes'
+        run: npm run validate
+      - name: Test with the tuned profile
+        if: steps.changed.outputs.ship == 'yes'
+        run: npm test
+      - name: Commit
+        if: steps.changed.outputs.ship == 'yes'
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add data/ai.json
           git commit -m "Retune the strategist AI on the current data"
+      - name: Push
+        if: steps.changed.outputs.ship == 'yes'
+        run: |
           git pull --rebase origin main
           git push origin HEAD:main
-          gh workflow run pages.yml --ref main
+      - name: Deploy
+        if: steps.changed.outputs.ship == 'yes'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref main

@@ -104,9 +104,10 @@ export async function duel(pool, a, b, { maps, seeds, seedBase, maxDays }) {
  *   start      the profile to start from (data/ai.json engines.strategist)
  *   budget     { minutes?, rounds? }
  *   lambda     variants per round; maps: { id, slots } list; batchMaps: maps per batch (sampled each round)
+ *   onChampion called with each new champion (the CLI saves it, so an interrupted run can be resumed with --from)
  */
 export async function tune({ pool, registry, start, maps, budget, lambda = 4, batchMaps = 6, seedsPerMap = 1, maxDays = 30,
-  accept = 0.06, confirm = 0.53, sigma = 0.15, rng, log = () => {} }) {
+  accept = 0.06, confirm = 0.53, sigma = 0.15, rng, log = () => {}, onChampion = () => {} }) {
   const dims = searchSpace(registry);
   let champion = fullProfile(start, dims);
   const t0 = Date.now();
@@ -131,7 +132,7 @@ export async function tune({ pool, registry, start, maps, budget, lambda = 4, ba
       const c = await duel(pool, { label: 'best', engine: 'strategist', profile: best.v.profile }, champ, { maps: again, seeds: seedsPerMap, seedBase, maxDays });
       seedBase += 100;
       confirmScore = c.score;
-      if ((best.s.score + c.score) / 2 >= confirm && c.score >= 0.5) { champion = best.v.profile; accepted = true; }
+      if ((best.s.score + c.score) / 2 >= confirm && c.score >= 0.5) { champion = best.v.profile; accepted = true; onChampion(champion); }
     }
     // the step grows after a success and shrinks after a failure, but not below what a batch of games can tell apart from noise
     sigma = Math.min(0.4, Math.max(0.08, sigma * (accepted ? 1.25 : 0.96)));

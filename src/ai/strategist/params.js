@@ -58,9 +58,9 @@ export function validateParams(profile, units, strategies, problems, at) {
     if (!units?.[k]) problems.push(`${at}: unitBias.${k}: unknown unit`);
     else if (!isNum(v)) problems.push(`${at}: unitBias.${k} must be a number`);
   }
-  const ids = new Set((strategies ?? []).map((s) => s.id));
+  const ids = strategies ? new Set(strategies.map((s) => s.id)) : null;   // without the strategy file, names cannot be checked
   for (const [k, v] of Object.entries(profile.strategyWeight ?? {})) {
-    if (!ids.has(k)) problems.push(`${at}: strategyWeight.${k}: unknown strategy`);
+    if (ids && !ids.has(k)) problems.push(`${at}: strategyWeight.${k}: unknown strategy`);
     else if (!isNum(v) || v < 0) problems.push(`${at}: strategyWeight.${k} must be a number of 0 or more`);
   }
 }

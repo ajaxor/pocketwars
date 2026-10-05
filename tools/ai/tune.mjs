@@ -11,7 +11,8 @@
 //            --days 30                    day limit per game (then judged on worth)
 //            --gate 0.52 --gate-seeds 2   the final check: the champion must score this much against the starting profile over the whole pool
 //            --write                      write data/ai.json when the gate is passed (otherwise only the --out file)
-//            --out file                   where the champion is saved (default tools/ai/out/strategist-tuned.json)
+//            --out file                   where the champion is saved, after every improvement (default tools/ai/out/strategist-tuned.json)
+//            --from file                  start from a saved champion (resume an interrupted run); the gate still compares with data/ai.json
 //            --if-stale                   do nothing when data/ai.json was tuned on the current data (for scheduled runs)
 //            --check                      only report whether the tuning is stale (exit 2 when it is)
 //            --workers N --seed N
@@ -26,7 +27,7 @@ import { createPool } from './lib/pool.mjs';
 import { mapList } from './lib/arena.mjs';
 import { trainingMapIds } from './lib/maps.mjs';
 import { seeded } from './lib/match.mjs';
-import { compactProfile, dataHash, duel, tune } from './lib/tune.mjs';
+import { compactProfile, dataHash, duel, searchSpace, tune } from './lib/tune.mjs';
 import { parseArgs } from './arena.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -50,7 +51,8 @@ async function main() {
   const registry = await loadRegistry(readData);
   const hash = dataHash(await rawData());
   const ai = JSON.parse(readFileSync(AI_JSON, 'utf8'));
-  const start = ai.engines.strategist ?? {};
+  const start = ai.engines.strategist ?? {};   // the shipped profile: what the result has to beat
+  const from = opts.from ? JSON.parse(readFileSync(opts.from, 'utf8')) : start;   // where the search starts
   const stale = start.tuned?.data !== hash;
   if (opts.check) {
     console.log(stale ? `stale: tuned on ${start.tuned?.data ?? 'nothing'}, data is now ${hash}` : `fresh: tuned on the current data (${hash})`);
@@ -66,8 +68,10 @@ async function main() {
   const maxDays = Number(opts.days ?? 30);
   console.log(`tuning the strategist on ${maps.length} maps with ${pool.size} workers, ${budget.rounds ? `${budget.rounds} rounds` : `${budget.minutes} minutes`}`);
   const logFile = `${OUT}tune-log.jsonl`;
+  const outFile = opts.out ?? `${OUT}strategist-tuned.json`;
   const { champion, history, dims } = await tune({
-    pool, registry, start, maps, budget, rng, maxDays,
+    pool, registry, start: from, maps, budget, rng, maxDays,
+    onChampion: (c) => writeFileSync(outFile, JSON.stringify(compactProfile({ ...c, tuned: { checkpoint: new Date().toISOString(), data: hash } }, searchSpace(registry)), null, 2) + '\n'),
     lambda: Number(opts.lambda ?? 4), batchMaps: Math.min(maps.length, Number(opts['batch-maps'] ?? 6)), seedsPerMap: Number(opts.seeds ?? 1),
     log: (e) => {
       appendFileSync(logFile, JSON.stringify({ at: new Date().toISOString(), ...e }) + '\n');
@@ -75,7 +79,7 @@ async function main() {
       for (const err of e.errors) console.log(`  ENGINE ERROR (counted as a loss): ${err}`);
     },
   });
-  const accepted = history.filter((h) => h.accepted).length;
+  const accepted = history.filter((h) => h.accepted).length + (opts.from ? 1 : 0);   // a resumed champion counts as a change to check
   console.log(`\n${history.length} rounds, ${accepted} improvements accepted`);
 
   // the gate: the champion against the starting profile, and against greedy for the record, over the whole pool
@@ -89,7 +93,7 @@ async function main() {
   const tuned = { date: new Date().toISOString().slice(0, 10), data: hash, rounds: history.length, accepted, vsBefore: round2(vsStart.score), vsGreedy: round2(vsGreedy.score) };
   const passed = accepted && vsStart.score >= Number(opts.gate ?? 0.52);
   const result = compactProfile({ ...(passed ? champion : start), tuned: passed || !start.tuned ? tuned : { ...start.tuned, data: hash, checked: tuned.date } }, dims);
-  writeFileSync(opts.out ?? `${OUT}strategist-tuned.json`, JSON.stringify(compactProfile({ ...champion, tuned }, dims), null, 2) + '\n');
+  writeFileSync(outFile, JSON.stringify(compactProfile({ ...champion, tuned }, dims), null, 2) + '\n');
   if (opts.write) {
     // the stamp is renewed even when nothing better was found: the shipped profile has been checked against the current data
     ai.engines.strategist = result;
