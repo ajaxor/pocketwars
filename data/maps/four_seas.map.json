@@ -107,6 +107,10 @@
     { "type": "artillery", "owner": 3, "x": 2, "y": 23 },
     { "type": "recon", "owner": 3, "x": 3, "y": 24 },
     { "type": "destroyer", "owner": 3, "x": 8, "y": 15 },
-    { "type": "copter", "owner": 3, "x": 4, "y": 20 }
+    { "type": "copter", "owner": 3, "x": 4, "y": 20 },
+    { "type": "jammer", "owner": null, "x": 13, "y": 2 },
+    { "type": "jammer", "owner": null, "x": 25, "y": 13 },
+    { "type": "jammer", "owner": null, "x": 14, "y": 25 },
+    { "type": "jammer", "owner": null, "x": 2, "y": 14 }
   ]
 }

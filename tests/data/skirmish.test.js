@@ -178,6 +178,31 @@ test('fog of war off takes the jammers off the map; on keeps them', () => {
   assert.equal(hasJammers(classic, registry), false);
 });
 
+test('every shipped map but the tiny Classic has jammers, all neutral', () => {
+  for (const m of maps) {
+    const jammers = m.units.filter((u) => u.type === 'jammer');
+    if (m.id === 'classic') assert.equal(jammers.length, 0);
+    else { assert.ok(jammers.length >= 2, m.id); assert.ok(jammers.every((u) => u.owner === null), m.id); }
+  }
+});
+
+test('the skirmish screen forces fog off on a map without jammers, and keeps the player\'s choice for maps that have them', () => {
+  const { s } = screen();
+  assert.equal(s.map.id, 'classic');
+  assert.equal(s.settings.fog, false, 'Classic has no jammers');
+  s.setFog(true);
+  assert.equal(s.settings.fog, false, 'and it cannot be turned on');
+  s.pick('dust_bowl');
+  assert.equal(s.settings.fog, true, 'a map with jammers starts with fog');
+  s.setFog(false);
+  s.pick('classic'); s.pick('river_run');
+  assert.equal(s.settings.fog, false, 'the choice is kept across maps');
+  s.setFog(true); s.pick('classic');
+  assert.equal(s.settings.fog, false);
+  s.pick('four_seas');
+  assert.equal(s.settings.fog, true);
+});
+
 test('every map plays with every leader pairing the shipped kits allow (no unit left unplaced)', () => {
   for (const m of maps) {
     const s = defaultSkirmish(m, ids);

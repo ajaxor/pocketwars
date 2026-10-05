@@ -90,6 +90,9 @@
     { "type": "artillery", "owner": 2, "x": 17, "y": 11 },
     { "type": "sniper", "owner": 0, "x": 11, "y": 4 },
     { "type": "sniper", "owner": 1, "x": 5, "y": 11 },
-    { "type": "sniper", "owner": 2, "x": 15, "y": 11 }
+    { "type": "sniper", "owner": 2, "x": 15, "y": 11 },
+    { "type": "jammer", "owner": null, "x": 5, "y": 5 },
+    { "type": "jammer", "owner": null, "x": 15, "y": 5 },
+    { "type": "jammer", "owner": null, "x": 10, "y": 13 }
   ]
 }

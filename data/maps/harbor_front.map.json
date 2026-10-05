@@ -84,125 +84,27 @@
     "MMM.F..rr....rr..F.MMM"
   ],
   "units": [
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 3,
-      "y": 3
-    },
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 3,
-      "y": 5
-    },
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 4,
-      "y": 9
-    },
-    {
-      "type": "mech",
-      "owner": 0,
-      "x": 2,
-      "y": 4
-    },
-    {
-      "type": "tank",
-      "owner": 0,
-      "x": 5,
-      "y": 6
-    },
-    {
-      "type": "artillery",
-      "owner": 0,
-      "x": 2,
-      "y": 5
-    },
-    {
-      "type": "recon",
-      "owner": 0,
-      "x": 6,
-      "y": 9
-    },
-    {
-      "type": "destroyer",
-      "owner": 0,
-      "x": 9,
-      "y": 4
-    },
-    {
-      "type": "submarine",
-      "owner": 0,
-      "x": 9,
-      "y": 5
-    },
-    {
-      "type": "cruiser",
-      "owner": 0,
-      "x": 9,
-      "y": 10
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 18,
-      "y": 3
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 18,
-      "y": 5
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 17,
-      "y": 9
-    },
-    {
-      "type": "mech",
-      "owner": 1,
-      "x": 19,
-      "y": 4
-    },
-    {
-      "type": "tank",
-      "owner": 1,
-      "x": 16,
-      "y": 6
-    },
-    {
-      "type": "artillery",
-      "owner": 1,
-      "x": 19,
-      "y": 5
-    },
-    {
-      "type": "recon",
-      "owner": 1,
-      "x": 15,
-      "y": 9
-    },
-    {
-      "type": "destroyer",
-      "owner": 1,
-      "x": 12,
-      "y": 4
-    },
-    {
-      "type": "submarine",
-      "owner": 1,
-      "x": 12,
-      "y": 5
-    },
-    {
-      "type": "cruiser",
-      "owner": 1,
-      "x": 12,
-      "y": 10
-    }
+    { "type": "soldier", "owner": 0, "x": 3, "y": 3 },
+    { "type": "soldier", "owner": 0, "x": 3, "y": 5 },
+    { "type": "soldier", "owner": 0, "x": 4, "y": 9 },
+    { "type": "mech", "owner": 0, "x": 2, "y": 4 },
+    { "type": "tank", "owner": 0, "x": 5, "y": 6 },
+    { "type": "artillery", "owner": 0, "x": 2, "y": 5 },
+    { "type": "recon", "owner": 0, "x": 6, "y": 9 },
+    { "type": "destroyer", "owner": 0, "x": 9, "y": 4 },
+    { "type": "submarine", "owner": 0, "x": 9, "y": 5 },
+    { "type": "cruiser", "owner": 0, "x": 9, "y": 10 },
+    { "type": "soldier", "owner": 1, "x": 18, "y": 3 },
+    { "type": "soldier", "owner": 1, "x": 18, "y": 5 },
+    { "type": "soldier", "owner": 1, "x": 17, "y": 9 },
+    { "type": "mech", "owner": 1, "x": 19, "y": 4 },
+    { "type": "tank", "owner": 1, "x": 16, "y": 6 },
+    { "type": "artillery", "owner": 1, "x": 19, "y": 5 },
+    { "type": "recon", "owner": 1, "x": 15, "y": 9 },
+    { "type": "destroyer", "owner": 1, "x": 12, "y": 4 },
+    { "type": "submarine", "owner": 1, "x": 12, "y": 5 },
+    { "type": "cruiser", "owner": 1, "x": 12, "y": 10 },
+    { "type": "jammer", "owner": null, "x": 9, "y": 1 },
+    { "type": "jammer", "owner": null, "x": 12, "y": 14 }
   ]
 }

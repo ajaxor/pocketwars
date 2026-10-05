@@ -50,7 +50,7 @@ skirmish page lists it as "(my map)"). Any shipped map can be opened as a starti
 
 - Walls: `wall` is impassable to everything (aircraft too) and blocks line of sight; `wall_breach` gets a neutral cracked wall on it when
   the game starts (one hit breaks it, leaving passable rubble). Wall tiles of either kind link up into continuous pipes; put cracked walls on
-  straight runs (a corner or an end is drawn whole). A map with a `jammer` unit is played in fog of war (the skirmish page can turn it off).
+  straight runs (a corner or an end is drawn whole). A map with a `jammer` unit is played in fog of war (the skirmish page can turn it off; on a map without one it is locked off). Every shipped map but `classic` has a symmetric set of neutral jammers on contested ground.
 
 - Move classes are `foot`, `wheels`, `tread`, `air` and `naval`. Roads cost wheels 0.5; forests cost treads 2 and block wheels; rough ground blocks wheels and costs treads 1; mountains admit only foot (and air). Water (`sea`) admits only `naval` (and air). `shoals` are little islets in the sea: impassable to every ground and naval unit today (so no unit can use them yet) but they give cover (defense 2) for whatever unit gets to traverse them. A shipyard is a land tile that ships cannot move onto (they are repaired from the water beside it); ships are built on the yard itself, whatever its terrain, and sail off with their free move, so put each shipyard on the shore with sea next to it. The `amphibious` move class (marines) uses foot costs on land and 1 on sea and shoals. No transports exist yet, so every map needs a land route between HQs (tests enforce it).
   wheels and costs treads 1; mountains admit only foot (and air).

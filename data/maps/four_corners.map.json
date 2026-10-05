@@ -123,6 +123,10 @@
     { "type": "tank", "owner": 3, "x": 2, "y": 20 },
     { "type": "recon", "owner": 3, "x": 5, "y": 23 },
     { "type": "artillery", "owner": 3, "x": 6, "y": 23 },
-    { "type": "sniper", "owner": 3, "x": 1, "y": 22 }
+    { "type": "sniper", "owner": 3, "x": 1, "y": 22 },
+    { "type": "jammer", "owner": null, "x": 11, "y": 6 },
+    { "type": "jammer", "owner": null, "x": 19, "y": 11 },
+    { "type": "jammer", "owner": null, "x": 14, "y": 19 },
+    { "type": "jammer", "owner": null, "x": 6, "y": 14 }
   ]
 }

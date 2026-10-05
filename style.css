@@ -281,6 +281,7 @@ canvas.unit-icon { display: block; flex: none; }
 .sk-opt { font: 700 13px/1 var(--font); color: var(--dim); background: none; border: 0; padding: 11px 12px; min-height: 40px; cursor: pointer; touch-action: manipulation; }
 .sk-opt + .sk-opt { border-left: 2px solid var(--edge); }
 .sk-opt.is-picked { background: linear-gradient(#f28c47, #d6601d); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
+.sk-opt:disabled { opacity: .35; cursor: default; }
 .sk-opt:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
 .title-skirmish { min-width: 220px; }
 

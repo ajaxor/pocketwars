@@ -38,7 +38,7 @@ export class SkirmishScreen {
     this.speech = speech;
     this.quotes = new Map();   // the line each team's leader says in the selection box, drawn again whenever the colour changes
     this.map = maps.find((m) => m.id === selectedId) || maps[0];
-    this.settings = this.#defaults(this.map);
+    this.settings = { ...this.#defaults(this.map), fog: this.#fogFor(this.map) };
     this.strips = [];   // the leader strip of each team, kept between redraws so a strip you scrolled stays where it was
 
     const head = h(doc, 'header', 'sk-head');
@@ -89,9 +89,9 @@ export class SkirmishScreen {
   pick(mapId) {
     const map = this.maps.find((m) => m.id === mapId);
     if (!map || map === this.map) return;
-    const { funds, fog } = this.settings;
+    const { funds } = this.settings;
     this.map = map;
-    this.settings = { ...this.#defaults(map), funds, fog };
+    this.settings = { ...this.#defaults(map), funds, fog: this.#fogFor(map) };
     this.quotes.clear();
     this.#render();
   }
@@ -104,8 +104,16 @@ export class SkirmishScreen {
     this.#render();
   }
   setFunds(funds) { this.settings.funds = funds; this.#render(); }
-  /** Fog of war on (the map's jammers stay) or off (they are taken off the map). */
-  setFog(on) { this.settings.fog = on; this.#render(); }
+  /** Fog of war on (the map's jammers stay) or off (they are taken off the map). A map without jammers has no fog: it stays off. */
+  setFog(on) {
+    if (!hasJammers(this.map, this.registry)) return;
+    this.fogWanted = on;
+    this.settings.fog = on;
+    this.#render();
+  }
+
+  /** The fog setting for `map`: the player's last choice (on to begin with), or off when the map has no jammer to cause fog. */
+  #fogFor(map) { return hasJammers(map, this.registry) ? this.fogWanted !== false : false; }
 
   get problems() { return skirmishProblems(this.map, this.registry, this.settings); }
 
@@ -149,7 +157,8 @@ export class SkirmishScreen {
     return c;
   }
 
-  #segmented(options, value, onPick, label) {
+  /** A row of buttons, one picked; `disabled` lists the values that cannot be picked. */
+  #segmented(options, value, onPick, label, disabled = []) {
     const { doc } = this;
     const box = h(doc, 'div', 'sk-seg');
     box.setAttribute('role', 'group');
@@ -157,6 +166,7 @@ export class SkirmishScreen {
     for (const [val, text] of options) {
       const b = h(doc, 'button', 'sk-opt' + (val === value ? ' is-picked' : ''), text);
       b.setAttribute('type', 'button');
+      b.disabled = disabled.includes(val);
       b.addEventListener('click', () => onPick(val));
       box.append(b);
     }
@@ -266,9 +276,8 @@ export class SkirmishScreen {
     const fog = h(doc, 'div', 'sk-rule');
     const jammed = hasJammers(map, registry);
     fog.append(h(doc, 'span', 'sk-rule-name', 'Fog of war'));
-    if (jammed) fog.append(this.#segmented([[true, 'On'], [false, 'Off']], settings.fog !== false, (v) => this.setFog(v), 'Fog of war'),
-      h(doc, 'span', 'sk-rule-note', settings.fog !== false ? 'Jammers on this map hide what your units cannot see. Destroy them all to lift it.' : 'The jammers are taken off the map.'));
-    else fog.append(h(doc, 'span', 'sk-rule-note', 'None: this map has no jammers.'));
+    fog.append(this.#segmented([[true, 'On'], [false, 'Off']], jammed && settings.fog !== false, (v) => this.setFog(v), 'Fog of war', jammed ? [] : [true]),
+      h(doc, 'span', 'sk-rule-note', !jammed ? 'Off: this map has no jammers.' : settings.fog !== false ? 'Jammers on this map hide what your units cannot see. Destroy them all to lift it.' : 'The jammers are taken off the map.'));
     this.el.rules.append(fog);
 
     const problems = this.problems;
