@@ -72,6 +72,7 @@ async function main() {
     log: (e) => {
       appendFileSync(logFile, JSON.stringify({ at: new Date().toISOString(), ...e }) + '\n');
       console.log(`round ${e.round} (${e.minutes.toFixed(1)} min): best ${(e.best * 100).toFixed(0)}%${e.confirm != null ? `, confirm ${(e.confirm * 100).toFixed(0)}%` : ''}${e.accepted ? '  ACCEPTED' : ''}  σ=${e.sigma.toFixed(3)}  ${e.changed.join(', ')}`);
+      for (const err of e.errors) console.log(`  ENGINE ERROR (counted as a loss): ${err}`);
     },
   });
   const accepted = history.filter((h) => h.accepted).length;

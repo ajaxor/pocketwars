@@ -15,7 +15,8 @@ for (const id of ids) {
     const strat = { engine: 'strategist', profile: registry.ai.engines.strategist };
     const greedy = { engine: 'greedy', profile: registry.ai.engines.greedy };
     for (const [seed, seats] of [[1, map.players.map(() => strat)], [2, map.players.map((_, i) => (i % 2 ? greedy : strat))]]) {
-      const r = playMatch(registry, map, { seats, seed, maxDays: 12 });   // an invalid order throws
+      const r = playMatch(registry, map, { seats, seed, maxDays: 12 });
+      assert.equal(r.error, null, r.error?.stack);
       assert.ok(r.days >= 1 && r.turns > 0, id);
       assert.ok(r.strategies.some(Boolean), 'a strategist picked a plan');
     }

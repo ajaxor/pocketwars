@@ -56,6 +56,7 @@ export function scoreDuel(results, a, b) {
     const winLabel = r.winner == null ? null : r.job.labels[r.winner];
     const p = winLabel == null ? 0.5 : winLabel === a.label ? 1 : 0;
     points.push(p);
+    if (r.error) (total.errors ??= []).push(`${r.map} seed ${r.seed}: ${r.job.labels[r.error.seat]} ${r.error.message}`);
     for (const t of [total, m]) {
       t.games++;
       t.days += r.days;
@@ -73,7 +74,8 @@ export function scoreDuel(results, a, b) {
 export function formatDuel(s) {
   const pct = (x) => `${(x * 100).toFixed(0)}%`;
   const lines = [`${s.a} vs ${s.b}: ${s.games} games, ${s.wins} won, ${s.losses} lost, ${s.draws} drawn (${s.adjudicated} judged at the day limit)`,
-    `score ${pct(s.score)} ± ${pct(s.ci)} for ${s.a}`, '', 'map               games  won  lost  drawn  judged  avg days'];
+    `score ${pct(s.score)} ± ${pct(s.ci)} for ${s.a}`, ...(s.errors ?? []).map((e) => `ENGINE ERROR (counted as a loss): ${e}`), '',
+    'map               games  won  lost  drawn  judged  avg days'];
   for (const [id, m] of Object.entries(s.byMap)) {
     lines.push(`${id.padEnd(18)}${String(m.games).padStart(5)}${String(m.wins).padStart(5)}${String(m.losses).padStart(6)}${String(m.draws).padStart(7)}${String(m.adjudicated).padStart(8)}${m.days.toFixed(1).padStart(10)}`);
   }

@@ -51,13 +51,17 @@ function wantsDeploy(sit, carrier) {
 }
 
 /**
- * Is a plan made earlier this turn still good? In our own turn enemies only die or come to light, never move, so a route stays open;
- * what can go wrong is a friend now standing on the tile, or the target gone. (Plans near anything that changed are made again anyway.)
+ * Is a plan made earlier this turn still good? In our own turn enemies only die, come to light or drop out of sight, never move, so a
+ * route stays open; what can go wrong is a friend now standing on the tile, or the target gone or no longer seen. (Plans near anything
+ * that changed are made again anyway.)
  */
 function stillGood(game, unit, order) {
   const there = game.state.units.find((u) => u.x === order.to.x && u.y === order.to.y);
   if (there && there !== unit) return false;
-  if (order.action.targetId != null && !game.state.units.some((u) => u.id === order.action.targetId)) return false;
+  if (order.action.targetId != null) {   // the target must still be there, and still seen (whoever spotted it may have died)
+    const target = game.state.units.find((u) => u.id === order.action.targetId);
+    if (!target || !canSee(game, unit.owner, target)) return false;
+  }
   const type = order.action.type;
   if (type !== 'wait' && type !== 'attack') return game.validateOrder(order).ok;   // a heal, supply, lay... depends on who is around now
   return true;

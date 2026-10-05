@@ -1,7 +1,8 @@
 // One headless game between AI engines, the way a skirmish is set up (random leaders, the map's funds), but every seat played by the
 // computer. Used by the arena and the tuner, in worker threads (pool.mjs) or directly.
 //
-//   playMatch(registry, map, { seats, seed, maxDays, fog, margin }) -> { winner, seatWinner, days, adjudicated, shares, strategies }
+//   playMatch(registry, map, { seats, seed, maxDays, fog, margin }) -> { winner, days, adjudicated, error, shares, strategies }
+//     error    null, or { seat, message, stack } when an engine gave an invalid order: that seat loses the game (see below)
 //     seats    one { engine, profile? } per player slot on the map
 //     seed     makes the match repeatable: leaders are rolled from it and engines' random choices start from it. The same seed with the
 //              seats swapped gives the same leaders to the same slots, so a pair of games is a fair test of the engines alone
@@ -46,15 +47,23 @@ export function playMatch(registry, map, { seats, seed = 1, maxDays = DEFAULT_MA
   const game = setupMatch(registry, map, { seats, seed, fog, leaders });
   const t0 = performance.now();
   let turns = 0;
-  while (!game.isOver && game.state.day <= maxDays) {
-    playTurn(game);
-    turns++;
-    if (!game.isOver) game.endTurn();
+  let error = null;
+  try {
+    while (!game.isOver && game.state.day <= maxDays) {
+      playTurn(game);
+      turns++;
+      if (!game.isOver) game.endTurn();
+    }
+  } catch (e) {
+    // an engine that breaks loses the game (in a duel; a draw with more players), so one bug does not stop a long run. The error is
+    // reported with the result, and the arena and tuner print it.
+    error = { seat: game.state.turn, message: e.message, stack: e.stack };
   }
-  const adjudicated = !game.isOver;
-  const winner = adjudicated ? leader(game, margin) : (game.state.winner === 'draw' ? null : game.state.winner);
+  const adjudicated = !game.isOver && !error;
+  const winner = error ? (game.map.players.length === 2 ? 1 - error.seat : null)
+    : adjudicated ? leader(game, margin) : (game.state.winner === 'draw' ? null : game.state.winner);
   return {
-    map: map.id, seed, winner, adjudicated, days: game.state.day, turns,
+    map: map.id, seed, winner, adjudicated, error, days: game.state.day, turns,
     msPerTurn: (performance.now() - t0) / Math.max(1, turns),
     shares: Object.fromEntries(standings(game).map((s) => [s.player, s.share])),
     leaders: game.map.players.map((p) => p.leader ?? null),

@@ -91,8 +91,11 @@ export function dataHash(raw) {
 }
 
 /** Play contender a against b on `maps` with `seeds` seeds from `seedBase`; returns the duel summary (score for a). */
+const errors = [];   // engine errors seen since the last round was logged
+
 export async function duel(pool, a, b, { maps, seeds, seedBase, maxDays }) {
   const results = await pool.run(duelJobs(a, b, { maps, seeds, seedBase, maxDays }));
+  for (const r of results) if (r.error) errors.push(`${r.map} seed ${r.seed}: ${r.job.labels[r.error.seat]}: ${r.error.message}`);
   return scoreDuel(results, a, b);
 }
 
@@ -131,7 +134,7 @@ export async function tune({ pool, registry, start, maps, budget, lambda = 4, ba
       if ((best.s.score + c.score) / 2 >= confirm && c.score >= 0.5) { champion = best.v.profile; accepted = true; }
     }
     sigma = Math.min(0.4, Math.max(0.03, sigma * (accepted ? 1.25 : 0.93)));
-    const entry = { round, minutes: (Date.now() - t0) / 60000, best: best.s.score, confirm: confirmScore, accepted, sigma, changed: best.v.changed };
+    const entry = { round, minutes: (Date.now() - t0) / 60000, best: best.s.score, confirm: confirmScore, accepted, sigma, changed: best.v.changed, errors: errors.splice(0) };
     history.push(entry);
     log(entry);
   }
