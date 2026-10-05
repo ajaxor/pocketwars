@@ -155,9 +155,9 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
   const dir = e ? 1 : -1, pv = dir > 0 ? .62 : .38;                            // an elbow's pivot on the ground
   // shadows: below the lying pipes and to the right of the upright ones
   g.fillStyle = 'rgba(0,0,0,.2)';
-  if (broken && straightH) { g.fillRect(X(0), Y(GY), .22 * S, .05 * S); g.fillRect(X(.78), Y(GY), .22 * S, .05 * S); }   // a destroyed pipe shades only its two halves, not the gap
+  if (broken && straightH) { g.fillRect(X(0), Y(GY), .18 * S, .05 * S); g.fillRect(X(.82), Y(GY), .18 * S, .05 * S); }   // a destroyed pipe shades only its two halves, not the gap
   else if (w || e) g.fillRect(X(w ? 0 : endH ? .02 : CX), Y(GY), ((w && e) ? 1 : endH ? .98 : .5) * S, .05 * S);
-  if (broken && straightV) { g.fillRect(X(CX + R), Y(0), .06 * S, .2 * S); g.fillRect(X(CX + R), Y(.8), .06 * S, .2 * S); }
+  if (broken && straightV) { g.fillRect(X(CX + R), Y(0), .06 * S, .16 * S); g.fillRect(X(CX + R), Y(.84), .06 * S, .16 * S); }
   else if (n || s) {                                                            // beside an upright pipe, stopping short of its rounded ends
     const y0 = n ? 0 : CY - .1 + .2, y1 = s ? 1 : GY - .2;
     g.fillRect(X(CX + R), Y(y0), .06 * S, (y1 - y0) * S);
@@ -185,7 +185,7 @@ export function drawWall(gIn, px, py, S, _owner, opts = {}) {
     };
     if (broken && (straightH || straightV)) {                                    // a destroyed straight pipe: two halves, each ending in a jagged break
       const zig = (side) => {                                                    // [position along the pipe, -1..1 across it] of one piece's break
-        const e0 = side < 0 ? .15 : .85, dirn = side < 0 ? 1 : -1;
+        const e0 = side < 0 ? .11 : .89, dirn = side < 0 ? 1 : -1;
         const offs = side < 0 ? [0, .09, -.04, .11, -.01, .08, -.05] : [-.02, .08, -.06, .05, .12, -.03, .07];
         return offs.map((o, i) => [e0 + dirn * o, (i / (offs.length - 1)) * 2 - 1]);
       };
