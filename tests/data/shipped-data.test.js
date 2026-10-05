@@ -59,7 +59,7 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('ignoresMines'), ['hover_tank']);
   assert.deepEqual(withAttr('surfacesToFire'), ['missile_sub']);
   assert.deepEqual(withAttr('structure'), ['artillery_turret', 'cannon_turret', 'cracked_wall', 'jammer', 'sam_turret']);
-  assert.deepEqual(withAttr('fragile'), ['cracked_wall']);
+  assert.deepEqual(withAttr('wallSection'), ['cracked_wall']);
   assert.deepEqual(withAttr('jammer'), ['jammer']);
   for (const id of withAttr('structure')) assert.equal(registry.unit(id).category, 'structure', `${id} is in the structure category`);
 });

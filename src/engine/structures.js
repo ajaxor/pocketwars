@@ -51,7 +51,7 @@ export function structureFire(game, player) {
   const armed = (u) => isStructure(game, u) && unitDef(game, u).weapons.length > 0;
   const own = game.state.units.filter((u) => u.owner === player && armed(u));
   const wild = game.state.units.filter((u) => isNeutral(u) && armed(u));
-  const isWall = (e) => isNeutral(e) && hasAttribute(unitDef(game, e), 'fragile');
+  const isWall = (e) => isNeutral(e) && hasAttribute(unitDef(game, e), 'wallSection');
   for (const gun of own) events.push(...fire(game, gun, (e) => e.owner !== player && !isWall(e) && canSee(game, player, e)));
   for (const gun of wild) events.push(...fire(game, gun, (e) => e.owner === player).map((ev) => ({ ...ev, neutral: true })));
   return events;

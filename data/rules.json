@@ -1,6 +1,7 @@
 {
   "maxHp": 10,
   "ambushMultiplier": 1.5,
+  "structureDamage": { "siege": 1.5, "other": 0.25 },
   "neutralColor": "#b9b9b9",
   "neutralUnitColors": { "color": "#3e4045", "dark": "#1b1c1f" },
   "defaultGround": "grass",

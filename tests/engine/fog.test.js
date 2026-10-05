@@ -6,7 +6,7 @@ import { loadRegistry } from '../../src/data/loader.js';
 import { parseMap } from '../../src/data/map-format.js';
 import { Game } from '../../src/engine/game.js';
 import { canSee } from '../../src/engine/detection.js';
-import { fogActive, isFogged, tileExplored, tileVisible, visionOf } from '../../src/engine/fog.js';
+import { fogActive, isFogged, rememberedStructures, tileExplored, tileVisible, visionOf } from '../../src/engine/fog.js';
 import { computeReach } from '../../src/engine/movement.js';
 import { chooseOrder } from '../../src/engine/ai.js';
 import { unitAt } from '../../src/engine/queries.js';
@@ -61,18 +61,22 @@ test('a unit always sees every tile it can move to this turn, round walls includ
   for (const t of computeReach(g, recon).tiles()) assert.equal(tileVisible(g, 0, t.x, t.y), true, `${t.x},${t.y}`);
 });
 
-test('explored tiles are remembered; a structure stays known there, a unit does not', () => {
-  const g = game(['A..........B'], [u('recon', 0, 1, 0), u('cannon_turret', 1, 6, 0), u('tank', 1, 5, 0), u('jammer', null, 11, 0)]);
+test('explored tiles are remembered; an enemy structure out of sight is remembered as last seen, even after it is destroyed', () => {
+  const g = game(['A..........B'], [u('recon', 0, 1, 0), u('cannon_turret', 1, 7, 0), u('tank', 1, 6, 0), u('jammer', null, 11, 0)]);
   const [recon, turret, tank] = g.state.units;
   assert.equal(canSee(g, 0, turret), true);
   assert.equal(canSee(g, 0, tank), true);
   g.state.units = g.state.units.filter((x) => x !== recon);   // the scout is gone
   g.touch();
-  assert.equal(tileVisible(g, 0, 6, 0), false);
-  assert.equal(tileExplored(g, 0, 6, 0), true, 'still explored');
-  assert.equal(canSee(g, 0, turret), true, 'a turret does not move: it is still drawn');
-  assert.equal(canSee(g, 0, tank), false, 'a tank could be anywhere');
-  assert.equal(tileExplored(g, 0, 10, 0), false, 'never seen');
+  assert.equal(tileVisible(g, 0, 7, 0), false);
+  assert.equal(tileExplored(g, 0, 7, 0), true, 'still explored');
+  assert.equal(canSee(g, 0, turret), false, 'out of sight: not seen (so not a target either)');
+  assert.deepEqual(rememberedStructures(g, 0).map((m) => [m.type, m.x, m.hp]), [['cannon_turret', 7, 10]], 'but drawn as remembered');
+  turret.hp = 3; g.state.units = g.state.units.filter((x) => x !== turret); g.touch();   // destroyed out of sight
+  assert.deepEqual(rememberedStructures(g, 0).map((m) => [m.type, m.hp]), [['cannon_turret', 10]], 'still there, untouched, on their map');
+  g.state.units.push({ ...recon }); g.touch();   // back in sight
+  assert.deepEqual(rememberedStructures(g, 0), [], 'seen again: gone');
+  assert.equal(tileExplored(g, 0, 11, 0), false, 'never seen');
 });
 
 test('destroying the last jammer lifts the fog', () => {

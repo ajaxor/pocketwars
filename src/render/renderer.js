@@ -27,11 +27,28 @@ import { isMine } from '../engine/mines.js';
 import { facingAlong, terrainAt, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { drawWalls } from './walls.js';
-import { isFogged, tileExplored, tileVisible } from '../engine/fog.js';
+import { isFogged, rememberedStructures, tileExplored, tileVisible } from '../engine/fog.js';
 import { attributeConfig } from '../engine/attributes.js';
 import { font } from './font.js';
 import { BUBBLE_COUNTER, BUBBLE_HIT, drawBubble } from './bubble.js';
 import { drawUnit } from './unit-sprites.js';
+
+/**
+ * A tile-sized box (x0, y0)-(x1, y1) added to `path`, clockwise from the top-left, with each corner (top-left, top-right, bottom-right,
+ * bottom-left) either square (null), rounded ({ r }) or notched ({ m }: an m x m square cut out of it).
+ */
+function tilePath(path, x0, y0, x1, y1, [tl, tr, br, bl]) {
+  path.moveTo(x0, y0 + (tl?.r ?? tl?.m ?? 0));
+  if (tl?.r) path.arcTo(x0, y0, x0 + tl.r, y0, tl.r); else if (tl?.m) { path.lineTo(x0 + tl.m, y0 + tl.m); path.lineTo(x0 + tl.m, y0); } else path.lineTo(x0, y0);
+  if (tr?.r) { path.lineTo(x1 - tr.r, y0); path.arcTo(x1, y0, x1, y0 + tr.r, tr.r); } else if (tr?.m) { path.lineTo(x1 - tr.m, y0); path.lineTo(x1 - tr.m, y0 + tr.m); path.lineTo(x1, y0 + tr.m); } else path.lineTo(x1, y0);
+  if (br?.r) { path.lineTo(x1, y1 - br.r); path.arcTo(x1, y1, x1 - br.r, y1, br.r); } else if (br?.m) { path.lineTo(x1, y1 - br.m); path.lineTo(x1 - br.m, y1 - br.m); path.lineTo(x1 - br.m, y1); } else path.lineTo(x1, y1);
+  if (bl?.r) { path.lineTo(x0 + bl.r, y1); path.arcTo(x0, y1, x0, y1 - bl.r, bl.r); } else if (bl?.m) { path.lineTo(x0 + bl.m, y1); path.lineTo(x0 + bl.m, y1 - bl.m); path.lineTo(x0, y1 - bl.m); } else path.lineTo(x0, y1);
+  path.closePath();
+}
+
+/** Fog of war look (drawFog): how long a change of sight takes to fade (ms), and the grey rim between black and ground in plain sight (tiles). */
+const FOG_FADE = 380;
+const FOG_RIM = .2;
 
 export class Renderer {
   constructor(canvas, game, effects, animator) {
@@ -85,7 +102,26 @@ export class Renderer {
     const cfg = attributeConfig(game.registry.terrainDef(game.map.terrain[y][x]), 'wall');
     if (!cfg) return null;
     if (cfg === true) return 'wall';
+    if (this.viewer !== null && isFogged(game, this.viewer) && !tileVisible(game, this.viewer, x, y)) {   // out of sight: as last seen
+      return rememberedStructures(game, this.viewer).some((m) => m.x === x && m.y === y && m.type === cfg.structure) ? 'cracked' : 'broken';
+    }
     return game.state.units.some((u) => u.x === x && u.y === y && u.type === cfg.structure) ? 'cracked' : 'broken';
+  }
+
+  /**
+   * Enemy structures out of the viewer's sight, drawn as the viewer last saw them (fog.js rememberedStructures): still (no animation), with
+   * the HP they had, whether or not they are still there.
+   */
+  drawRemembered() {
+    const { g, S, game, viewer } = this;
+    if (viewer === null || !isFogged(game, viewer)) return;
+    for (const m of rememberedStructures(game, viewer)) {
+      const def = game.registry.unit(m.type);
+      if (def.render.inWall) continue;   // a cracked wall is part of the wall layer (wallAt)
+      drawUnit(g, { type: m.type, x: m.x, y: m.y, hp: m.hp }, {
+        def, colors: this.unitColorsOf(m.owner), px: m.x * S, py: m.y * S, size: S, now: 0, animate: true, moving: false, alpha: 1, showHp: true, face: 1,
+      });
+    }
   }
 
   /**
@@ -210,42 +246,99 @@ export class Renderer {
   /**
    * Fog of war for the viewer (fog.js), over the terrain and the units: tiles never seen are black, tiles seen before but out of sight now are
    * greyed out (their colour drained, then darkened). Nothing is drawn when the viewer is not in fog. `seen` is the camera's tile range.
-   * Each kind of fog is one solid shape with rounded corners, like the merged terrain tiles: an outer corner of the fog is rounded, and an inner
-   * corner (where sight pokes into the fog) gets a fillet, so the edge of sight reads as one smooth line. The map's own border stays square.
+   *
+   * Each kind of fog is one solid shape with rounded corners, like the merged terrain tiles: an outer corner of the fog is rounded, an inner
+   * corner (where sight pokes into the fog) gets a fillet, and the map's own border stays square. Where black meets ground in plain sight, the
+   * black stops FOG_RIM short, so a thin band of grey fog always lies between them.
+   *
+   * Changes are animated: when sight changes, tiles that come into sight fade out of the fog and tiles that leave it fade in, over FOG_FADE ms
+   * (fogFrame keeps the sets before and after the change).
    */
-  drawFog(seen) {
+  drawFog(seen, now = 0) {
     const { g, game, viewer } = this;
-    if (viewer === null || !isFogged(game, viewer)) return;
-    const hidden = (x, y) => !tileVisible(game, viewer, x, y);
-    const unknown = (x, y) => !tileExplored(game, viewer, x, y);
-    const grey = this.fogShape(seen, hidden), black = this.fogShape(seen, unknown);
+    if (viewer === null || !isFogged(game, viewer)) { this.fogAnim = null; return; }
+    const f = this.fogFrame(now);
+    if (f.from !== f.to && now - f.t0 >= FOG_FADE) f.from = f.to;   // the fade is over: from now on it is just the new fog
+    const t = f.from === f.to ? 1 : Math.min(1, (now - f.t0) / FOG_FADE);
+    const ease = t * t * (3 - 2 * t);
+    const draw = (sets, paint) => {
+      const { from, to } = sets;
+      const both = (k) => from[k] && to[k], into = (k) => !from[k] && to[k], out = (k) => from[k] && !to[k];
+      const any = (k) => from[k] || to[k];
+      paint(this.fogShape(seen, both, any, sets.rim), 1);
+      if (ease < 1) {
+        paint(this.fogShape(seen, into, any, sets.rim, both), ease);
+        paint(this.fogShape(seen, out, any, sets.rim, both), 1 - ease);
+      }
+    };
     g.save();
-    g.globalCompositeOperation = 'saturation'; g.fillStyle = '#808080'; g.fill(grey);   // a grey source drains the colour out of what is under it
-    g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(14,18,28,.45)'; g.fill(grey);
-    g.fillStyle = '#07090d'; g.fill(black);
+    draw({ from: f.from.grey, to: f.to.grey }, (path, a) => {
+      g.globalAlpha = a;
+      g.globalCompositeOperation = 'saturation'; g.fillStyle = '#808080'; g.fill(path);   // a grey source drains the colour out of what is under it
+      g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(14,18,28,.45)'; g.fill(path);
+    });
+    // the black stops short of ground in plain sight (in sight before and after: grey in neither)
+    const open = (k) => !f.from.grey[k] && !f.to.grey[k];
+    draw({ from: f.from.black, to: f.to.black, rim: open }, (path, a) => { g.globalAlpha = a; g.fillStyle = '#07090d'; g.fill(path); });
     g.restore();
   }
 
-  /** One fog shape: every tile in `seen` for which `inFog(x, y)` holds, merged, outer corners rounded and inner corners filleted. A Path2D. */
-  fogShape(seen, inFog) {
+  /**
+   * The fog sets to draw this frame: { from, to, t0 }, each set { grey, black } (one 0/1 per tile: out of sight / never seen). They are
+   * recomputed when the game changes; when they differ from the last ones, a fade from those to the new ones starts at `now`.
+   */
+  fogFrame(now) {
+    const { game, viewer } = this;
+    const a = this.fogAnim;
+    if (a && a.revision === game.revision && a.viewer === viewer && a.mapW === game.map.width) return a;
+    const { width: W, height: H } = game.map;
+    const grey = new Uint8Array(W * H), black = new Uint8Array(W * H);
+    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const k = y * W + x; grey[k] = tileVisible(game, viewer, x, y) ? 0 : 1; black[k] = tileExplored(game, viewer, x, y) ? 0 : 1; }
+    const to = { grey, black };
+    const same = a && a.viewer === viewer && a.mapW === W && a.to.grey.every((v, k) => v === grey[k]) && a.to.black.every((v, k) => v === black[k]);
+    // a change during a fade starts the next one from where the old one was heading
+    this.fogAnim = same ? { ...a, revision: game.revision } : { revision: game.revision, viewer, mapW: W, from: a && a.viewer === viewer && a.mapW === W ? a.to : to, to, t0: now };
+    return this.fogAnim;
+  }
+
+  /**
+   * One fog shape, as a Path2D: the tiles in `seen` (and a tile round it) for which `member(k)` holds. Corners are rounded and filleted by
+   * `context(k)` (the whole fog the shape belongs to), so pieces of one fog drawn separately still join square. `rim(k)`, when given, marks
+   * tiles the shape stops FOG_RIM short of. A fillet goes to this shape unless both its tiles pass `elsewhere(k)` (another piece draws it).
+   */
+  fogShape(seen, member, context, rim = null, elsewhere = null) {
     const { S, game } = this;
     const { width: W, height: H } = game.map;
-    const r = this.face(0, 0)[4];
-    const on = (x, y) => (x < 0 || y < 0 || x >= W || y >= H ? null : inFog(x, y));   // null: off the map
+    const r = this.face(0, 0)[4], m = rim ? S * FOG_RIM : 0;
+    const k = (x, y) => y * W + x;
+    const inMap = (x, y) => x >= 0 && y >= 0 && x < W && y < H;
+    const ctx = (x, y) => (inMap(x, y) ? !!context(k(x, y)) : true);              // off the map counts as fog: the border stays square
+    const gap = (x, y) => !!(rim && inMap(x, y) && rim(k(x, y)));                 // a neighbour in plain sight: leave a grey rim
     const path = new Path2D();
-    const CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];   // roundRect's order: top-left, top-right, bottom-right, bottom-left
+    const CORNERS = [[-1, -1], [1, -1], [1, 1], [-1, 1]];                          // roundRect's order: top-left, top-right, bottom-right, bottom-left
     for (let y = Math.max(0, seen.y0 - 1); y <= Math.min(H - 1, seen.y1 + 1); y++) {
       for (let x = Math.max(0, seen.x0 - 1); x <= Math.min(W - 1, seen.x1 + 1); x++) {
-        if (on(x, y)) {
-          // an outer corner is rounded when neither neighbour beside it is fog (the map's edge counts as fog, so the border stays square)
-          path.roundRect(x * S, y * S, S, S, CORNERS.map(([dx, dy]) => (on(x + dx, y) === false && on(x, y + dy) === false ? r : 0)));
+        if (member(k(x, y))) {
+          const l = gap(x - 1, y) ? m : 0, t = gap(x, y - 1) ? m : 0, rr = gap(x + 1, y) ? m : 0, b = gap(x, y + 1) ? m : 0;
+          // each corner: rounded (an outer corner of the fog), notched (ground in plain sight just across the corner: the rim goes round it), or square
+          const corner = CORNERS.map(([dx, dy]) => {
+            if (!ctx(x + dx, y) && !ctx(x, y + dy)) return { r };
+            if (m && gap(x + dx, y + dy) && !gap(x + dx, y) && !gap(x, y + dy)) return { m };
+            return null;
+          });
+          tilePath(path, x * S + l, y * S + t, x * S + S - rr, y * S + S - b, corner);
           continue;
         }
-        // a tile in sight whose two neighbours at a corner are both fog: fill that corner in, all but a quarter circle (an inner fillet)
+        if (ctx(x, y)) continue;
+        // a tile outside this fog whose two neighbours at a corner are fog: fill that corner in, all but a quarter circle (an inner fillet)
         for (const [dx, dy] of CORNERS) {
-          if (!on(x + dx, y) || !on(x, y + dy)) continue;
-          const qx = (x + (dx > 0 ? 1 : 0)) * S, qy = (y + (dy > 0 ? 1 : 0)) * S;   // the corner
-          const cx = qx - dx * r, cy = qy - dy * r;                                   // the fillet's centre, inside the tile
+          if (!inMap(x + dx, y) || !inMap(x, y + dy) || !ctx(x + dx, y) || !ctx(x, y + dy)) continue;
+          if (elsewhere && elsewhere(k(x + dx, y)) && elsewhere(k(x, y + dy))) continue;
+          if (!elsewhere && !(member(k(x + dx, y)) || member(k(x, y + dy)))) continue;
+          if (elsewhere && !(member(k(x + dx, y)) || member(k(x, y + dy)))) continue;
+          const sh = gap(x, y) ? m : 0;                                             // the black's corner is pushed back by the rim
+          const qx = (x + (dx > 0 ? 1 : 0)) * S + dx * sh, qy = (y + (dy > 0 ? 1 : 0)) * S + dy * sh;
+          const cx = qx - dx * r, cy = qy - dy * r;
           const a0 = Math.atan2(dy, 0), a1 = Math.atan2(0, dx);
           let d = a1 - a0; while (d <= -Math.PI) d += 2 * Math.PI; while (d > Math.PI) d -= 2 * Math.PI;
           path.moveTo(qx, qy); path.lineTo(cx, qy); path.arc(cx, cy, r, a0, a1, d < 0); path.closePath();
@@ -339,13 +432,14 @@ export class Renderer {
       g.strokeStyle = '#ff3b3b'; g.lineWidth = 5;
       view.targets.filter((e) => this.isShown(e)).forEach((e) => { g.beginPath(); g.roundRect(...this.face(e.x, e.y, 2.5)); g.stroke(); });
     }
+    this.drawRemembered();
     for (const u of state.units) {
       const m = this.motionOf(u, now);
       if (m.alpha > .01) this.drawUnitAt(g, u, view, now, { alpha: m.alpha, dive: m.dive });
     }
     this.motionAt = now;
     if (this.motion.size > state.units.length + 8) for (const id of [...this.motion.keys()]) if (!unitById(game, id)) this.motion.delete(id);
-    this.drawFog(seen);
+    this.drawFog(seen, now);
     this.drawArrow(now);
 
     const atk = view.attackTiles;

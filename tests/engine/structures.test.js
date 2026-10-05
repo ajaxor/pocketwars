@@ -7,7 +7,7 @@ import { parseMap, serializeMap, MapError } from '../../src/data/map-format.js';
 import { withLeaders } from '../../src/data/formation.js';
 import { Game } from '../../src/engine/game.js';
 import { computeReach } from '../../src/engine/movement.js';
-import { forecastAttack, canAttackFrom } from '../../src/engine/combat.js';
+import { forecastAttack, canAttackFrom, calcDamage } from '../../src/engine/combat.js';
 import { hasLineOfSight } from '../../src/engine/sight.js';
 import { isDefeated } from '../../src/engine/victory.js';
 import { playTurn, wantsOrder, chooseOrder } from '../../src/engine/ai.js';
@@ -43,10 +43,11 @@ test('walls stop every unit, aircraft too; a cracked wall blocks its tile until 
   }
   const tank = g.state.units[2];
   const cw = unitAt(g, 2, 2);
-  assert.equal(forecastAttack(g, inf, cw, { x: 1, y: 2 }).destroyed, true, 'a rifle breaks it: any hit does');
+  assert.equal(forecastAttack(g, inf, cw, { x: 1, y: 2 }).destroyed, false, 'a rifle barely scratches it');
+  cw.hp = .3;   // worn down
   const res = g.act({ unitId: inf.id, to: { x: 1, y: 2 }, action: { type: 'attack', targetId: cw.id } });
   assert.ok(res.ok, res.error);
-  assert.ok(res.events.some((e) => e.type === 'strike' && e.destroyed), 'destroyed by one shot');
+  assert.ok(res.events.some((e) => e.type === 'strike' && e.destroyed), 'the last hit brings it down');
   assert.equal(unitAt(g, 2, 2), undefined);
   assert.ok(computeReach(g, tank).has(2, 2), 'the rubble can be crossed now');
 });
@@ -133,4 +134,17 @@ test('leader formations keep the structures a map places for that player', () =>
   const m = parseMap(raw(['A.f.....B', '.........', '.......g.'], [u('cannon_turret', 0, 4, 2), u('soldier', 0, 1, 1)]), registry);
   const led = withLeaders(m, registry, [registry.leaderIds[0], null]);
   assert.ok(led.units.some((x) => x.type === 'cannon_turret' && x.owner === 0 && x.x === 4), 'the turret stays');
+});
+
+test('structures take their own kind of damage: artillery, bombs and missiles hit hard, everything else barely scratches them', () => {
+  const g = game(['A........B'], [u('cannon_turret', null, 4, 0), u('tank', 0, 3, 0), u('artillery', 0, 2, 0), u('soldier', 0, 5, 0), u('tank', 1, 8, 0)]);
+  const [turret, tank, arty, inf, foeTank] = g.state.units;
+  const tankHit = calcDamage(g, tank, turret), artyHit = calcDamage(g, arty, turret), rifle = calcDamage(g, inf, turret);
+  assert.ok(artyHit >= 4, `artillery: ${artyHit}`);
+  assert.ok(tankHit < 1.5, `tank: ${tankHit}`);
+  assert.ok(rifle < 1, `rifle: ${rifle}`);
+  assert.ok(artyHit > tankHit * 3);
+  assert.ok(calcDamage(g, foeTank, tank, { x: 4, y: 0 }) > tankHit * 3, 'the same cannon hurts a tank far more than a turret');
+  const cw = { ...turret, type: 'cracked_wall' };
+  assert.ok(calcDamage(g, arty, cw) < 10, 'a cracked wall survives a shell');
 });

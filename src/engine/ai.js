@@ -163,7 +163,7 @@ export function chooseOrder(game, unit, ai = game.registry.ai) {
         const dmg = calcDamage(game, unit, e, { x, y });
         if (dmg <= 0) continue;
         // a neutral wall section is only worth a shot when there is nothing better: breaking it opens the way (the goal field already runs through it)
-        const wall = isNeutral(e) && hasAttribute(unitDef(game, e), 'fragile');
+        const wall = isNeutral(e) && hasAttribute(unitDef(game, e), 'wallSection');
         const value = wall ? 0 : (dmg * game.registry.unit(e.type).cost) / w.costUnit + (dmg >= e.hp ? w.killBonus : 0);
         if (!target || (target.wall && !wall) || (target.wall === wall && value > target.value)) target = { e, value, wall };
       }

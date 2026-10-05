@@ -22,6 +22,7 @@ export function validateRules(rules, problems) {
   if (!Number.isInteger(rules.maxHp) || rules.maxHp < 1) problems.push('rules: maxHp must be a positive integer');
   if (rules.ambushMultiplier !== undefined && !(typeof rules.ambushMultiplier === 'number' && rules.ambushMultiplier >= 1)) problems.push('rules: ambushMultiplier (the damage bonus of a unit that starts its turn hidden) must be a number of at least 1');
   if (!isColor(rules.neutralColor)) problems.push('rules: neutralColor must be a hex color');
+  if (rules.structureDamage !== undefined && !(isObj(rules.structureDamage) && isNum(rules.structureDamage.siege) && rules.structureDamage.siege > 0 && isNum(rules.structureDamage.other) && rules.structureDamage.other > 0)) problems.push('rules: structureDamage must be { siege, other } positive multipliers (damage to structures by siege weapons and by everything else)');
   if (rules.neutralUnitColors !== undefined && !(isObj(rules.neutralUnitColors) && isColor(rules.neutralUnitColors.color) && isColor(rules.neutralUnitColors.dark))) problems.push('rules: neutralUnitColors (the colours of a structure nobody owns) must be { color, dark } hex colors');
   if (!Array.isArray(rules.moveClasses) || !rules.moveClasses.length || new Set(rules.moveClasses).size !== rules.moveClasses.length
     || rules.moveClasses.some((m) => !isStr(m))) problems.push('rules: moveClasses must be a non-empty array of unique names');
@@ -105,6 +106,7 @@ export function validateWeapons(weapons, rules, problems) {
     if (!isStr(w.name)) problems.push(`weapon "${id}": name is required`);
     if (w.indirect !== undefined && w.indirect !== true) problems.push(`weapon "${id}": indirect must be true when present`);
     if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
+    if (w.siege !== undefined && w.siege !== true) problems.push(`weapon "${id}": siege (artillery, bombs and missiles: the hard hitters against structures) must be true when present`);
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
     if (w.ammo !== undefined && !(Number.isInteger(w.ammo) && w.ammo >= 1)) problems.push(`weapon "${id}": ammo (rounds used per shot) must be a positive whole number`);
     if (w.fromTerrain !== undefined && (!Array.isArray(w.fromTerrain) || !w.fromTerrain.length || w.fromTerrain.some((t) => !isStr(t)))) problems.push(`weapon "${id}": fromTerrain (the terrain it can be fired from) must be a non-empty list of terrain ids`);
@@ -198,7 +200,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     if (isObj(wall) && isStr(wall.structure)) {
       const u = units[wall.structure];
       if (!isObj(u)) problems.push(`terrain "${id}": attribute "wall" names unknown unit "${wall.structure}"`);
-      else if (!isObj(u.attributes) || u.attributes.structure !== true) problems.push(`terrain "${id}": attribute "wall" names "${wall.structure}", which is not a structure (it needs the "structure" attribute)`);
+      else if (!isObj(u.attributes) || !u.attributes.structure) problems.push(`terrain "${id}": attribute "wall" names "${wall.structure}", which is not a structure (it needs the "structure" attribute)`);
       else if (isObj(t.moveCost) && t.moveCost[u.moveClass] == null) problems.push(`terrain "${id}": the "${wall.structure}" placed on it must be able to stand on it (moveCost.${u.moveClass})`);
     }
     const supplies = t && t.attributes && t.attributes.resupply && t.attributes.resupply.categories;

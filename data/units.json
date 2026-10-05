@@ -688,7 +688,7 @@
     "weapons": ["turret_cannon"],
     "toughness": 1.8,
     "armor": 0.9,
-    "attributes": {"structure": true},
+    "attributes": {"structure": {"durability": 2.7}},
     "exclusive": true,
     "render": {"sprite": "cannon_turret", "facing": false, "attackFx": "shot"}
   },
@@ -702,7 +702,7 @@
     "weapons": ["turret_sam"],
     "toughness": 1.2,
     "armor": 0.5,
-    "attributes": {"structure": true},
+    "attributes": {"structure": {"durability": 2.2}},
     "exclusive": true,
     "render": {"sprite": "sam_site", "facing": false, "attackFx": "arc"}
   },
@@ -716,7 +716,7 @@
     "weapons": ["turret_howitzer"],
     "toughness": 1.4,
     "armor": 0.6,
-    "attributes": {"structure": true, "indirect": true},
+    "attributes": {"structure": {"durability": 2.4}, "indirect": true},
     "exclusive": true,
     "render": {"sprite": "artillery_emplacement", "facing": false, "attackFx": "arc"}
   },
@@ -731,7 +731,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0.65,
-    "attributes": {"structure": true, "jammer": true},
+    "attributes": {"structure": {"durability": 1.8}, "jammer": true},
     "exclusive": true,
     "render": {"sprite": "jammer", "facing": false, "attackFx": "shot"}
   },
@@ -745,7 +745,7 @@
     "weapons": [],
     "toughness": 1,
     "armor": 0,
-    "attributes": {"structure": true, "fragile": true, "blocksLineOfSight": 1},
+    "attributes": {"structure": {"durability": 3}, "wallSection": true, "blocksLineOfSight": 1},
     "exclusive": true,
     "render": {"sprite": "cracked_wall", "facing": false, "inWall": true, "attackFx": "shot"}
   }

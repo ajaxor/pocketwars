@@ -78,13 +78,18 @@ with the `structure` attribute on the `ground` layer, so every anti-ground weapo
 player's turrets fire at the enemy they would hurt most (only at what the player can see), then the neutral turrets fire at that player's
 units. The `structure` layer and target mode are still unused.
 
-| Structure | Weapon | Notes |
-|---|---|---|
-| Cannon turret | turret cannon, range 1-3, direct, ground and ships | toughness 1.8, armor .9 |
-| SAM turret | SAM battery, range 1-4, aircraft only | toughness 1.2, armor .5 |
-| Artillery turret | fixed howitzer, range 2-5, indirect, ground and ships | toughness 1.4, armor .6 |
-| Jammer | none | fog of war while it stands (`fog.js`); vision 3 |
-| Cracked wall | none | `fragile`: any hit destroys it; blocks line of sight; leaves rubble |
+Structures take their own kind of damage instead of armor and toughness: `weapon.damage x targetMultiplier x (attackerHP / 10) x
+kind / durability`, with `kind` = `rules.structureDamage.siege` (1.5) for a weapon marked `siege: true` (howitzers, rockets, bombs,
+missiles, mortars, battleship guns) and `.other` (0.25) for everything else; terrain gives them no cover. So artillery takes about half a
+turret's HP in one shot while a tank cannon barely scratches it.
+
+| Structure | Weapon | Durability | Notes |
+|---|---|---|---|
+| Cannon turret | turret cannon, range 1-3, direct, ground and ships | 2.7 | |
+| SAM turret | SAM battery, range 1-4, aircraft only | 2.2 | |
+| Artillery turret | fixed howitzer (siege), range 2-5, indirect, ground and ships | 2.4 | |
+| Jammer | none | 1.8 | fog of war while it stands (`fog.js`); vision 3 |
+| Cracked wall | none | 3 | `wallSection`; blocks line of sight; leaves rubble |
 
 ## Fog of war
 
@@ -92,7 +97,8 @@ units. The `structure` layer and target mode are still unused.
 `rules.vision[category]`, never less than its `move`; a mountain adds `visionBonus`) along a clear line (the direct-fire rules above; aircraft
 see over everything), every tile the unit could move to this turn (so a move never ends in a black tile), plus
 `rules.vision.property` tiles round their properties. `canSee` hides every enemy unit outside that (a structure stays known on explored
-tiles), so planning, targeting, interrupts and the AI-turn animations all follow. The computer is never fogged. Explored tiles are remembered
+tiles), so planning, targeting, interrupts and the AI-turn animations all follow. Enemy structures out of sight are remembered as last seen
+(`state.remembered`, `rememberedStructures`) and drawn still, even after they are destroyed, until the tile is in sight again. The computer is never fogged. Explored tiles are remembered
 (`state.explored`) and drawn greyed out; unexplored ones are black. An order that brings a new tile into sight cannot be undone.
 
 ## Retuning

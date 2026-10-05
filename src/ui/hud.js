@@ -185,7 +185,7 @@ export class Hud {
     if (weapon) stats.append(...weaponChips(d, u.weapons));
     if (u.ammo) stats.append(chip(d, 'Ammo', `${u.ammo.now}/${u.ammo.max}`, u.ammo.now <= 0 ? 'chip--no' : u.ammo.now <= u.ammo.low ? 'chip--gold' : ''));
     if (u.fuel) stats.append(chip(d, 'Fuel', `${u.fuel.now}/${u.fuel.max}`, u.fuel.now <= 0 ? 'chip--no' : u.fuel.now <= u.fuel.low ? 'chip--gold' : ''));
-    stats.append(chip(d, 'Armor', `${u.armor}%`));
+    stats.append(u.durability != null ? chip(d, 'Durability', u.durability) : chip(d, 'Armor', `${u.armor}%`));
     const cover = h(d, 'span', 'chip');
     cover.append(h(d, 'span', 'chip-k', 'Cover'), stars(d, u.cover));
     stats.append(cover);

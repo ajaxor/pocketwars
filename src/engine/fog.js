@@ -12,10 +12,10 @@
 // so a move can never end in a tile that was never seen.
 //
 // What a player has seen (`state.explored[player]`, one 0/1 per tile) only ever grows: Game calls `explore` after every change. The board
-// draws unexplored tiles black and explored ones that are not in sight greyed out (renderer.js).
+// draws unexplored tiles black and explored ones that are not in sight greyed out (renderer.js). Enemy structures are remembered too
+// (`state.remembered[player]`, see rememberedStructures): out of sight, the board shows them still, as last seen, even after they are gone.
 //
-// How it is enforced: detection.js `canSee` says no to any enemy unit on a tile the player cannot see (except a structure on a tile they have
-// explored: turrets do not move), so everything that already respects hidden submarines (movement plans, targeting, the info cards, the
+// How it is enforced: detection.js `canSee` says no to any enemy unit on a tile the player cannot see, so everything that already respects hidden submarines (movement plans, targeting, the info cards, the
 // AI-turn animations, interrupted moves) respects fog too. An order that brings a tile into sight cannot be undone (game.js).
 //
 // Visibility is cached per game and per player, keyed on `game.revision` (bumped by every Game method that changes the state). Code that
@@ -149,7 +149,25 @@ export function explore(game) {
     const seen = state.explored[p] ??= new Array(map.width * map.height).fill(0);
     const now = visibleTiles(game, p);
     for (let k = 0; k < now.length; k++) if (now[k]) seen[k] = 1;
+    // what they last saw of enemy structures: kept as it was while out of sight (a turret destroyed in the fog stays on their map)
+    state.remembered ??= map.players.map(() => null);
+    const memo = state.remembered[p] ??= {};
+    for (const [id, m] of Object.entries(memo)) if (now[tileIndex(map, m.x, m.y)]) delete memo[id];   // in sight again: the truth replaces it
+    for (const u of state.units) {
+      if (u.owner === p || !hasAttribute(unitDef(game, u), 'structure') || !now[tileIndex(map, u.x, u.y)]) continue;
+      memo[u.id] = { id: u.id, type: u.type, owner: u.owner, x: u.x, y: u.y, hp: u.hp };
+    }
   });
+}
+
+/**
+ * The enemy structures `player` remembers on tiles out of their sight, as they last saw them ({ id, type, owner, x, y, hp }; the real one may
+ * have been damaged or destroyed since). The board draws these, still, in the fog. Empty without fog.
+ */
+export function rememberedStructures(game, player) {
+  if (!isFogged(game, player)) return [];
+  const memo = game.state.remembered?.[player];
+  return memo ? Object.values(memo).filter((m) => !tileVisible(game, player, m.x, m.y)) : [];
 }
 
 /** Would `player` see any tile in `after` that they could not see in `before`? (Both from visibleTiles; an order that does cannot be undone.) */

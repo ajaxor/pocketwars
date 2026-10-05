@@ -41,6 +41,7 @@ export function unitStats(game, def) {
   return {
     id: def.id, name: def.name, category: def.category, cost: def.cost, move: def.move,
     toughness: def.toughness, armor: Math.round(def.armor * 100),
+    durability: def.attributes.structure ? def.attributes.structure.durability ?? 1 : null,   // structures take their own kind of damage (combat.js)
     layer: layer?.label ? cap(layer.label) : null,
     weapons: def.weapons.map((id) => {
       const w = registry.weapon(id);

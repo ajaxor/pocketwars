@@ -125,6 +125,15 @@ export function forecastAttack(game, attacker, defender, from = attacker) {
 /** The damage formula before rounding. weapon.damage is scaled by weapon.targetMultipliers for the target mode that reaches the defender's layer. */
 function rawDamage(game, weapon, attacker, defender, moved = false) {
   const d = unitDef(game, defender);
+  const fort = attributeConfig(d, 'structure');
+  if (fort) {   // a structure: no armor, toughness or cover; siege weapons (artillery, bombs, missiles) do much more than the rest
+    const sd = game.registry.rules.structureDamage ?? { siege: 1, other: 1 };
+    const kind = weapon.siege ? sd.siege : sd.other;
+    const layerS = layerOf(game, defender);
+    const modeS = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === layerS);
+    const ambushS = attacker.ambush && attacker.owner === game.state.turn ? game.registry.rules.ambushMultiplier ?? 1 : 1;
+    return (weapon.damage * (weapon.targetMultipliers?.[modeS] ?? 1) * kind * ambushS * attacker.hp) / 10 / (fort.durability ?? 1) / 10;
+  }
   const stars = terrainStars(game, defender);
   const toughness = (1 - d.armor * (1 - weapon.armorPiercing)) / d.toughness;
   // the weapon's multiplier for the target mode that reaches the defender's layer (1 when it lists none)
@@ -138,7 +147,6 @@ function rawDamage(game, weapon, attacker, defender, moved = false) {
 
 /** The damage formula alone: HP that `weapon`, fired by `attacker` at its current HP, takes off `defender` where it stands (whole HP, or one decimal below 1). */
 export function weaponDamage(game, weapon, attacker, defender, moved = false) {
-  if (hasAttribute(unitDef(game, defender), 'fragile')) return defender.hp;   // a cracked wall: any hit that reaches it brings it down
   const v = rawDamage(game, weapon, attacker, defender, moved);
   return v < 1 ? round1(v) : Math.round(v);
 }

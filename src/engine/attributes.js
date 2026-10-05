@@ -71,18 +71,18 @@ export const UNIT_ATTRIBUTES = {
   },
   structure: {
     label: 'Structure',
-    help: 'A fixed structure: it never moves, cannot be captured, carried, healed or built, and it does not keep its owner in the game. A neutral one (dark grey) belongs to nobody and is hostile to everyone.',
-    doc: 'A fixed defence or a breakable wall section, placed by the map (structures.js). It never moves (move 0), is never built (keep it `exclusive` and out of every menu), cannot be captured, carried, healed or supplied, and does not count as a unit when deciding whether its owner is defeated. Leader formations keep it. A map may give it no owner (`owner: null`): a neutral structure is an enemy of every player, and an armed one fires at the units of each player at the end of that player\'s turn. When its owner is knocked out it turns neutral.',
+    help: (v) => `A fixed structure: it never moves and takes no orders, and cannot be captured, carried, healed or built. Artillery, bombs and missiles hit it ${'hard'}; everything else barely scratches it${v?.durability ? ` (durability ${v.durability})` : ''}. A neutral one (dark grey) belongs to nobody and is hostile to everyone.`,
+    doc: 'A fixed defence or a breakable wall section, placed by the map (structures.js). Config: true, or { durability } (default 1). It never moves (move 0) and takes no orders (turrets fire by themselves at the end of their owner\'s turn), is never built (keep it `exclusive` and out of every menu), cannot be captured, carried, healed or supplied, and does not count as a unit when deciding whether its owner is defeated. Leader formations keep it. DAMAGE: a structure ignores armor, toughness and terrain; a hit does weapon damage x attacker HP / 10 x `rules.structureDamage.siege` for a `siege` weapon (artillery, bombs, missiles) or `.other` for anything else, divided by the durability. A map may give it no owner (`owner: null`): a neutral structure is an enemy of every player. When its owner is knocked out it turns neutral.',
     check: (v, e, fail) => {
-      if (!isFlag(v)) fail('must be true');
+      if (v !== true && !(v && typeof v === 'object' && !Array.isArray(v) && typeof v.durability === 'number' && v.durability > 0)) fail('must be true or { "durability": <positive number> }');
       if (e.move !== 0) fail('requires move 0 (a structure never moves)');
     },
   },
-  fragile: {
-    label: 'Breaks on any hit',
-    help: 'Any attack that reaches it destroys it outright.',
-    doc: 'Any weapon that can hit it destroys it, whatever the damage (the cracked wall). The forecast shows a knock-out.',
-    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+  wallSection: {
+    label: 'Wall section',
+    help: 'A breakable piece of wall: once destroyed it leaves rubble that units can cross.',
+    doc: 'A breakable section of a wall (the cracked wall). It is drawn by the wall layer (with `render.inWall`), turrets never shoot at it, and the AI only shoots it when nothing better is in reach, to open the way (`breakWall` in ai.json). Requires `structure`.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); if (!e.attributes?.structure) fail('requires the structure attribute'); },
   },
   jammer: {
     label: 'Jammer',

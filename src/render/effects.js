@@ -19,6 +19,8 @@ export class Effects {
     this.list = [];
     this.holds = new Map(); // unit id -> { hp, until }: the HP to show until a blow has landed (the engine has already applied it)
     this.lockUntil = 0; // input is blocked until this time (ms)
+    // Can the player see tile (x, y)? Numbers, bursts and wrecks are not drawn on tiles in the fog of war (the session sets this).
+    this.shownAt = () => true;
   }
 
   clear() { this.list = []; this.holds.clear(); this.lockUntil = 0; }
@@ -187,6 +189,8 @@ export class Effects {
     this.list = this.list.filter((f) => now < f.t0 + f.d);
     for (const f of this.list) {
       if (now < f.t0 && f.k !== 'die') continue;
+      if ((f.k === 'txt' || f.k === 'burst') && !this.shownAt(Math.floor(f.x), Math.floor(f.y))) continue;   // in the fog: no numbers, no blast
+      if (f.k === 'die' && !this.shownAt(f.unit.x, f.unit.y)) continue;
       const p = Math.max(0, (now - f.t0) / f.d);
       if (f.k === 'shot') {
         const x = (f.x0 + (f.x1 - f.x0) * p) * S;

@@ -4,6 +4,7 @@
 import { buildPhase, chooseOrder, surfaceToTravel, tryDeploy, wantsOrder } from '../engine/ai.js';
 import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
+import { isFogged, tileVisible } from '../engine/fog.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
 import { MoveAnimator } from '../render/animator.js';
 import { Arrivals, planEntrances } from '../render/arrivals.js';
@@ -44,6 +45,7 @@ export class Session {
     this.animator = new MoveAnimator();
     this.renderer = null;
     this.effects = new Effects(game.registry, (owner) => this.renderer.unitColorsOf(owner));
+    this.effects.shownAt = (x, y) => this.#seesTile(x, y);
     this.renderer = new Renderer(canvas, game, this.effects, this.animator);
     this.arrivals = new Arrivals();   // reinforcements sliding in from off screen (see reinforce())
     this.renderer.arrivals = this.arrivals;
@@ -245,6 +247,13 @@ export class Session {
     return names.length ? `${names.join(' vs ')}. ` : '';
   }
 
+  /** Can the player watching see tile (x, y)? Always, except in fog of war (fog.js). */
+  #seesTile(x, y) {
+    const { game } = this;
+    const v = this.#viewer();
+    return !isFogged(game, v) || (x >= 0 && y >= 0 && x < game.map.width && y < game.map.height && tileVisible(game, v, x, y));
+  }
+
   #viewer() {
     const { game } = this;
     if (this.#humanTurn()) return game.currentPlayer;
@@ -369,6 +378,7 @@ export class Session {
       if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
       if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
       if (ev.type === 'lay') return false;   // nobody sees a mine go down
+      if (ev.type === 'strike') return this.#seesTile(ev.attacker.x, ev.attacker.y) || this.#seesTile(ev.defender.x, ev.defender.y);   // a fight deep in the fog is not shown
       return true;
     });
   }
@@ -416,7 +426,9 @@ export class Session {
       const visible = canSee(game, viewer, unit);
       const target = order.action.targetId ? unitById(game, order.action.targetId) : null;
       if (visible) {
-        this.renderer.reveal([[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])]);
+        // only what the human can see: the camera never pans into the fog of war after a unit
+        const points = [[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])].filter(([x, y]) => this.#seesTile(x, y));
+        if (points.length) this.renderer.reveal(points);
         if (this.renderer.camera.glide) await this.#pause(350);
       }
       if (game.isOver || this.disposed) return;

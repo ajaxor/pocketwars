@@ -17,7 +17,7 @@
 
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { distance, inBounds, layerIdOf, ownerAt, tileIndex, unitDef } from './queries.js';
-import { isFogged, tileExplored, tileVisible } from './fog.js';
+import { isFogged, tileVisible } from './fog.js';
 
 /** Does a unit lift its cloak when it fires (`cloak: { revealedByFiring }`)? */
 export const revealsWhenFiring = (game, unit) => attributeConfig(unitDef(game, unit), 'cloak')?.revealedByFiring === true;
@@ -64,14 +64,12 @@ export const isExposed = (game, unit, viewer = null) => game.state.units.some((u
 
 /**
  * Can `player` see `unit`? Their own units: always. In fog of war (fog.js; human players only, while a jammer stands) nothing on a tile out of
- * their sight, except a structure on a tile they have explored (it cannot have moved). Then everything that is not hidden, and a hidden enemy
+ * their sight. Then everything that is not hidden, and a hidden enemy
  * only when detected.
  */
 export function canSee(game, player, unit) {
   if (unit.owner === player) return true;
-  if (isFogged(game, player) && !tileVisible(game, player, unit.x, unit.y)) {
-    if (!(hasAttribute(unitDef(game, unit), 'structure') && tileExplored(game, player, unit.x, unit.y))) return false;
-  }
+  if (isFogged(game, player) && !tileVisible(game, player, unit.x, unit.y)) return false;   // (a structure out of sight is drawn as remembered: fog.js)
   if (!isHidden(game, unit)) return true;
   return isDetectedBy(game, unit, player);
 }
