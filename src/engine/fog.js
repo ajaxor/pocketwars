@@ -7,8 +7,9 @@
 //     line-of-sight rules as direct fire (sight.js: forests, mountains, buildings, walls and standing cracked walls block; the end tiles
 //     never do; a unit on a mountain looks over forests). Aircraft see over everything.
 //   - every tile within `rules.vision.property` of a property they own.
-// Vision: the unit's own `vision`, else `rules.vision[<category>]`, else `rules.vision.default`; plus the `visionBonus` of the terrain a
-// ground unit stands on (a mountain).
+// Vision: the unit's own `vision`, else `rules.vision[<category>]`, else `rules.vision.default`, but never less than its `move`; plus the
+// `visionBonus` of the terrain a ground unit stands on (a mountain). On top of that a unit always sees every tile it could move to this turn,
+// so a move can never end in a tile that was never seen.
 //
 // What a player has seen (`state.explored[player]`, one 0/1 per tile) only ever grows: Game calls `explore` after every change. The board
 // draws unexplored tiles black and explored ones that are not in sight greyed out (renderer.js).
@@ -49,7 +50,7 @@ export const isFogged = (game, player) => player !== null && player !== undefine
 export function visionOf(game, unit) {
   const def = unitDef(game, unit);
   const v = game.registry.rules.vision ?? {};
-  const base = def.vision ?? v[def.category] ?? v.default ?? 2;
+  const base = Math.max(def.vision ?? v[def.category] ?? v.default ?? 2, def.move);   // never less than how far it moves
   const airborne = !!layerInfo(game, unit).airborne;
   return base + (airborne ? 0 : attributeConfig(terrainAt(game, unit.x, unit.y), 'visionBonus') ?? 0);
 }
@@ -79,6 +80,33 @@ function look(game, out, x, y, range, airborne) {
   }
 }
 
+/**
+ * Mark on `out` every tile `unit` could move to this turn (by its move class's terrain costs, ignoring other units): a unit always sees where
+ * it can go, round corners and walls included, so no move ever ends in a tile its player has never seen.
+ */
+function reachable(game, out, unit) {
+  const { map } = game;
+  const def = unitDef(game, unit);
+  if (!def.move) return;
+  const best = new Map([[tileIndex(map, unit.x, unit.y), 0]]);
+  const queue = [[unit.x, unit.y, 0]];
+  while (queue.length) {
+    queue.sort((a, b) => a[2] - b[2]);
+    const [x, y, c] = queue.shift();
+    out[tileIndex(map, x, y)] = 1;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nx = x + dx, ny = y + dy;
+      if (!inBounds(map, nx, ny)) continue;
+      const step = terrainAt(game, nx, ny).moveCost[def.moveClass];
+      if (step == null || c + step > def.move) continue;
+      const k = tileIndex(map, nx, ny);
+      if (best.has(k) && best.get(k) <= c + step) continue;
+      best.set(k, c + step);
+      queue.push([nx, ny, c + step]);
+    }
+  }
+}
+
 /** The tiles `player` can see right now, one 0/1 per tile (row-major). Without fog for them, every tile. Do not modify the result. */
 export function visibleTiles(game, player) {
   const e = entry(game);
@@ -91,6 +119,7 @@ export function visibleTiles(game, player) {
     for (const u of state.units) {
       if (u.owner !== player) continue;
       look(game, tiles, u.x, u.y, visionOf(game, u), !!layerInfo(game, u).airborne);
+      reachable(game, tiles, u);
     }
     const reach = game.registry.rules.vision?.property ?? 0;
     for (let y = 0; y < map.height; y++) {

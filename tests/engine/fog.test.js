@@ -36,23 +36,29 @@ test('no jammer, no fog; any jammer (whoever owns it) fogs the human players and
   }
 });
 
-test('sight: vision range by unit, a mountain adds to it, aircraft see further and over everything', () => {
-  const g = game(['A....M.......B'], [u('soldier', 0, 1, 0), u('recon', 0, 2, 0), u('soldier', 0, 5, 0), u('copter', 0, 3, 0), u('jammer', null, 12, 0)]);
+test('sight: vision range by unit (never less than its move), a mountain adds to it, aircraft see over everything', () => {
+  const g = game(['A....M.......B'], [u('soldier', 0, 1, 0), u('recon', 0, 2, 0), u('soldier', 0, 5, 0), u('copter', 0, 3, 0), u('jammer', null, 13, 0)]);
   const [inf, recon, onMountain, copter] = g.state.units;
-  assert.equal(visionOf(g, inf), 2);
-  assert.equal(visionOf(g, recon), 5, 'the recon\'s own vision');
-  assert.equal(visionOf(g, onMountain), 4, 'mountain +2');
-  assert.equal(visionOf(g, copter), 3);
-  assert.equal(tileVisible(g, 0, 9, 0), true, 'mountain soldier sees 4 tiles');
-  assert.equal(tileVisible(g, 0, 10, 0), false);
+  const move = (t) => registry.unit(t).move;
+  assert.equal(visionOf(g, inf), Math.max(2, move('soldier')));
+  assert.equal(visionOf(g, recon), Math.max(5, move('recon')), 'its own vision, or its move if that is further');
+  assert.equal(visionOf(g, onMountain), Math.max(2, move('soldier')) + 2, 'mountain +2');
+  assert.equal(visionOf(g, copter), Math.max(3, move('copter')));
+  for (const unit of g.state.units.filter((x) => x.owner === 0)) assert.ok(visionOf(g, unit) >= move(unit.type), `${unit.type} sees at least as far as it moves`);
 });
 
-test('sight follows line of sight: a forest or a wall hides what is behind it, but the forest tile itself is seen', () => {
-  const g = game(['A.F...B', '.......', '.......', '.......', '.......', '..W....', '.......'], [u('recon', 0, 1, 0), u('recon', 0, 1, 5), u('jammer', null, 6, 6)]);
-  assert.equal(tileVisible(g, 0, 2, 0), true, 'the forest itself');
-  assert.equal(tileVisible(g, 0, 3, 0), false, 'behind the forest');
-  assert.equal(tileVisible(g, 0, 4, 5), false, 'behind the wall');
-  assert.equal(tileVisible(g, 0, 1, 2), true, 'the open side');
+test('sight follows line of sight: a mountain or a wall hides what is behind it, but the obstacle itself is seen', () => {
+  const g = game(['.M.....', '.......', '.......', '.......', '.......', '.W....A', '......B'], [u('soldier', 0, 0, 0), u('soldier', 0, 0, 5), u('jammer', null, 6, 0)]);
+  assert.equal(tileVisible(g, 0, 1, 0), true, 'the mountain itself');
+  assert.equal(tileVisible(g, 0, 2, 0), false, 'behind the mountain (and too far to walk to this turn)');
+  assert.equal(tileVisible(g, 0, 2, 5), false, 'behind the wall');
+  assert.equal(tileVisible(g, 0, 0, 2), true, 'the open side');
+});
+
+test('a unit always sees every tile it can move to this turn, round walls included', () => {
+  const g = game(['......', '.WWWW.', '......', 'A....B'], [u('recon', 0, 0, 2), u('jammer', null, 5, 3)]);
+  const recon = g.state.units[0];
+  for (const t of computeReach(g, recon).tiles()) assert.equal(tileVisible(g, 0, t.x, t.y), true, `${t.x},${t.y}`);
 });
 
 test('explored tiles are remembered; a structure stays known there, a unit does not', () => {
@@ -80,14 +86,11 @@ test('destroying the last jammer lifts the fog', () => {
   assert.equal(canSee(g, 0, soldier), true);
 });
 
-test('in fog an unseen enemy does not block a planned move, and running into it interrupts the move', () => {
+test('in fog an enemy on a tile the unit could move to is always seen, so it blocks the plan instead of ambushing the move', () => {
   const g = game(['A.......B', '.........'], [u('recon', 0, 0, 1), u('soldier', 1, 6, 1), u('jammer', null, 8, 0)]);
   const [recon, foe] = g.state.units;
-  assert.equal(canSee(g, 0, foe), false);
-  assert.ok(computeReach(g, recon).has(6, 1), 'the hidden soldier\'s tile is on offer');
-  const res = g.act({ unitId: recon.id, to: { x: 6, y: 1 }, action: { type: 'wait' } });
-  assert.ok(res.interrupted, 'stopped short');
-  assert.equal(recon.x, 5);
+  assert.equal(canSee(g, 0, foe), true);
+  assert.equal(computeReach(g, recon).has(6, 1), false);
 });
 
 test('undo: an order that brings a new tile into sight cannot be undone; one that shows nothing new can', () => {

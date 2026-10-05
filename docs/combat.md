@@ -88,7 +88,8 @@ player's units. The `structure` layer and target mode are still unused.
 ## Fog of war
 
 `src/engine/fog.js`. While a jammer is on the board, human players see only what is within their units' `vision` (unit `vision`, else
-`rules.vision[category]`; a mountain adds `visionBonus`) along a clear line (the direct-fire rules above; aircraft see over everything), plus
+`rules.vision[category]`, never less than its `move`; a mountain adds `visionBonus`) along a clear line (the direct-fire rules above; aircraft
+see over everything), every tile the unit could move to this turn (so a move never ends in a black tile), plus
 `rules.vision.property` tiles round their properties. `canSee` hides every enemy unit outside that (a structure stays known on explored
 tiles), so planning, targeting, interrupts and the AI-turn animations all follow. The computer is never fogged. Explored tiles are remembered
 (`state.explored`) and drawn greyed out; unexplored ones are black. An order that brings a new tile into sight cannot be undone.
