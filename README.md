@@ -32,6 +32,7 @@ npm test           # node --test, Node 22+
 npm run validate   # validates data/*.json and every map
 npm run ai:arena   # plays the AI engines against each other on every map and reports who wins
 npm run ai:ratchet # tunes in short shipped sessions (ai:tune: one session)
+npm run ai:evolve   # tunes every AI number at once for a set time (evolution strategy)
 npm run ai:tune    # tunes the strategist AI by self-play (--write to keep a result that beats the shipped one)
 ```
 

@@ -14,6 +14,7 @@
     "lab": "node tools/sprite-lab/lab.mjs",
     "ai:arena": "node tools/ai/arena.mjs",
     "ai:tune": "node tools/ai/tune.mjs",
+    "ai:evolve": "node tools/ai/evolve.mjs",
     "ai:sweep": "node tools/ai/sweep.mjs",
     "ai:ratchet": "node tools/ai/ratchet.mjs"
   }

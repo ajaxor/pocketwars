@@ -184,3 +184,7 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Short games are weak evidence.** At 8 days nearly every parameter value scores about 50%: an opening says little about the game.
   They are kept for cheap noise reduction and given little weight; if tuning still drifts toward fast openers, lower their weight or drop
   the short window (`--screen 0,5,0`).
+- **`ai:evolve` has no covariance learning and judges itself on small samples.** Its checks between generations swing widely (40-67%
+  for the same drift); the final pick among three means is made on one 22-game sample, so it is slightly optimistic. Validate a result
+  on a bigger independent sample before shipping, and run it for hours before expecting more than a few points. Also, with 97 numbers
+  and little signal, many of them random-walk: a pass that pulls irrelevant numbers back toward their defaults would be cleaner.

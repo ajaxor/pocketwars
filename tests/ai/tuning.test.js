@@ -75,3 +75,25 @@ test('the data hash changes when the units do (so the tuning is known to be stal
   raw.units.a.cost = 2;
   assert.notEqual(dataHash(raw), before);
 });
+
+test('evolution strategy: finds the top of a noisy hill over many dimensions at once, and keeps to its bounds', async () => {
+  const es = await import('../../tools/ai/lib/es.mjs');
+  const dim = { min: 0.2, max: 4, log: true };
+  assert.ok(Math.abs(es.fromUnit(dim, es.toUnit(dim, 1)) - 1) < 1e-9, 'log scale round-trips');
+  assert.equal(es.fromUnit({ min: -1.5, max: 1.5 }, 0.5), 0);
+  const n = 40;
+  const target = Array.from({ length: n }, (_, i) => 0.2 + 0.6 * ((i * 7) % 10) / 10);
+  const rng = seeded(5);
+  const state = es.init(new Array(n).fill(0.5), { lambda: 24, sigma: 0.15 });
+  const score = (x) => -x.reduce((a, xi, i) => a + (xi - target[i]) ** 2, 0) + (rng() - 0.5) * 0.05;   // noisy
+  const dist = (m) => Math.sqrt(m.reduce((a, xi, i) => a + (xi - target[i]) ** 2, 0));
+  const before = dist(state.mean);
+  for (let g = 0; g < 120; g++) {
+    const cands = es.ask(state, rng);
+    for (const c of cands) assert.ok(c.x.every((v) => v >= 0 && v <= 1));
+    es.tell(state, cands, cands.map((c) => score(c.x)));
+    assert.ok(state.sigma >= es.SIGMA_MIN && state.sigma <= es.SIGMA_MAX);
+  }
+  assert.ok(dist(state.mean) < before * 0.35, `mean moved toward the target: ${before.toFixed(2)} -> ${dist(state.mean).toFixed(2)}`);
+  assert.equal(es.ask(state, rng).length, 24);
+});

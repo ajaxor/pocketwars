@@ -136,6 +136,16 @@ npm run ai:ratchet -- --sessions 1 --minutes 15 --if-stale --commit --push   onl
 Tuning is run by hand, on purpose: there is no workflow for it. Run it after changing units, strategies, maps or the AI's code (`--check`
 says when it is stale), commit the resulting `data/ai.json`, and push.
 
+## Tuning everything at once (`npm run ai:evolve`)
+
+`npm run ai:evolve -- --minutes 10` runs an evolution strategy (`tools/ai/lib/es.mjs`, the CMA-ES recipe without the covariance matrix) over
+every number in the profile together: each generation, 16 mirrored random variations of the whole profile play the current mean on the
+same games; the best few are averaged and the mean moves toward them, and the step size adapts. Every game informs every number, so it
+learns far faster than changing one at a time. It stops at the time limit (the last minute or so is kept for the final check), plays the
+best means it saw against the profile it started from, prints the best weights and what moved most, and saves them (`--out`). Progress
+is saved every generation: `--resume` carries on, so long searches can be run in sessions. `--write` puts the result in `data/ai.json`
+if it passes the gate (53% overall, 50% in the mid and late games). More cores mean more generations: it is almost all game-playing.
+
 ## Tuning one number (`npm run ai:sweep`)
 
 `npm run ai:sweep -- --param params.threat` (`--list` shows everything that can be swept: `params.*`, `unitBias.<unit>`,
