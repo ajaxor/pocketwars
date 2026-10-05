@@ -14,7 +14,7 @@
 //                           move off the property that built it; no attack, capture or dive). Cleared when it acts and at the start of its
 //                           owner's next turn; absent otherwise;
 //                           ammo: rounds left, only on a unit type with the `ammo` attribute (see ammo.js)
-//                           fuel: tiles it can still fly, only on a unit type with the `fuel` attribute; fuelOut: true when it began its turn empty (fuel.js)
+//                           fuel: turns it can still stay up, only on a unit type with the `fuel` attribute; fuelOut: true when it began its turn empty (fuel.js)
 //   defeated: boolean[]     per player
 //   winner: null | number | 'draw'
 //   nextUnitId: number

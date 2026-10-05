@@ -75,12 +75,12 @@ function supplyScore(game, unit, x, y, w) {
  */
 function goalTiles(game, unit) {
   const { state, map } = game;
-  // a flyer that could not manage another full sortie and still get home turns back to where it refuels
+  // a flyer whose fuel (in turns) is about to run out turns back to where it refuels
   if (usesFuel(game, unit)) {
     const homes = fuelHomes(game, unit);
     if (homes.length) {
       const away = Math.min(...homes.map(([hx, hy]) => distance(unit.x, unit.y, hx, hy)));
-      if (away > 0 && fuelOf(game, unit) <= away + unitDef(game, unit).move) return homes;
+      if (away > 0 && fuelOf(game, unit) <= Math.ceil(away / unitDef(game, unit).move)) return homes;   // fuel is in turns: head home when it would take as many turns to get there as it has left
     }
   }
   // out of ammo (and able to pay for more): back to the property that refills it

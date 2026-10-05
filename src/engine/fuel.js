@@ -1,7 +1,8 @@
-// Fuel: a flyer burns one unit of fuel per tile it flies. Nothing here knows about particular units.
+// Fuel: a flyer burns one unit of fuel per TURN, whether it flies or sits still. Nothing here knows about particular units.
 //
-//   unit attribute `fuel: { max, low }`   the unit starts full (`unit.fuel`); at `low` or fewer it is "low", at 0 it is "empty"
-//   a tile moved costs 1 fuel (game.js act); the tank never limits a move (the player does not have to count tiles), it only decides who crashes
+//   unit attribute `fuel: { max, low }`   the unit starts full (`unit.fuel`, in turns); at `low` or fewer it is "low", at 0 it is "empty"
+//   every unit with a tank burns 1 as its owner's turn ends (burnFuel, called by game.endTurn); the tank never limits a move (the player does not
+//   have to count tiles), it only decides who crashes
 //
 // REFUELLING IS FREE AND AUTOMATIC. At the start of its owner's turn (economy.js startTurn) a unit is topped up when it stands where a source
 // reaches it: a property of its owner whose `resupply` covers its category (an airfield: on or next to it), a friendly unit whose `supply`
@@ -33,10 +34,15 @@ export function fuelLevel(game, unit) {
   return n <= 0 ? 'empty' : n <= cfg.low ? 'low' : 'ok';
 }
 
-/** Burn `tiles` of fuel (no-op for a unit that uses none). */
-export function spendFuel(game, unit, tiles) {
-  if (!tiles || !usesFuel(game, unit)) return;
-  unit.fuel = Math.max(0, fuelOf(game, unit) - tiles);
+/** Burn `amount` of fuel (no-op for a unit that uses none). */
+export function spendFuel(game, unit, amount = 1) {
+  if (!amount || !usesFuel(game, unit)) return;
+  unit.fuel = Math.max(0, fuelOf(game, unit) - amount);
+}
+
+/** End of `player`'s turn: every unit of theirs with a tank burns one turn of fuel, moving or not. (Run after crashEmpty, so a unit that just ran dry gets its turn at 0.) */
+export function burnFuel(game, player) {
+  for (const u of game.state.units) if (u.owner === player) spendFuel(game, u, 1);
 }
 
 /** Fill the tank (and lift the crash sentence). */

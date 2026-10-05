@@ -17,16 +17,28 @@ const units = {
 };
 const game = (rows, unitsOnMap) => makeGame({ units, terrain: { airfield }, legend, rows, unitsOnMap });
 
-test('fuel: a flyer starts full, burns a unit per tile and its level is ok / low / empty', () => {
+test('fuel: a flyer starts full, burns a unit per TURN (flying or idle) and its level is ok / low / empty', () => {
   const g = game(['H.......h'], [['flyer', 0, 1, 0], ['grunt', 1, 8, 0]]);
   const u = g.state.units[0];
   assert.equal(fuelOf(g, u), 8);
   assert.equal(fuelLevel(g, u), 'ok');
   assert.equal(g.act({ unitId: u.id, to: { x: 5, y: 0 }, action: { type: 'wait' } }).ok, true);
-  assert.equal(u.fuel, 4, 'four tiles, four fuel');
+  assert.equal(u.fuel, 8, 'flying costs nothing by itself');
+  g.endTurn();
+  assert.equal(u.fuel, 7, 'the turn ending burns one');
   u.fuel = 3; assert.equal(fuelLevel(g, u), 'low');
   u.fuel = 0; assert.equal(fuelLevel(g, u), 'empty');
   assert.equal(fuelLevel(g, g.state.units[1]), null, 'a unit without the attribute has no tank');
+});
+
+test('fuel: an idle flyer burns fuel too, and only its owner\'s turn ends burn it', () => {
+  const g = game(['H.......h'], [['flyer', 0, 0, 0], ['flyer', 1, 4, 0]]);
+  const [mine, theirs] = g.state.units;
+  g.endTurn();
+  assert.equal(mine.fuel, 7, 'never moved, still burned');
+  assert.equal(theirs.fuel, 8, 'the other player\'s flyer has not had its turn end yet');
+  g.endTurn();
+  assert.equal(theirs.fuel, 7);
 });
 
 test('fuel: the tank never limits a move; a flyer can fly on empty, and the tank bottoms out at 0', () => {
@@ -48,7 +60,7 @@ test('fuel: refuelled for free at the start of the owner\'s turn next to their a
   const res = g.endTurn();
   assert.equal(onField.fuel, 8, 'on its own airfield');
   assert.equal(nextToOwn.fuel, 8, 'next to it');
-  assert.equal(far.fuel, 2, 'two tiles from its own airfield (the one beside it is the enemy\'s)');
+  assert.equal(far.fuel, 1, 'burned one while idle; two tiles from its own airfield (the one beside it is the enemy\'s)');
   const start = res.events.find((e) => e.type === 'turnStart');
   assert.equal(start.refuelled.length, 2);
 });
@@ -57,7 +69,7 @@ test('fuel: an enemy airfield does not refuel', () => {
   const g = game(['H....B..h'], [['flyer', 0, 4, 0], ['grunt', 1, 8, 0]]);
   g.state.units[0].fuel = 2;
   g.endTurn(); g.endTurn();
-  assert.equal(g.state.units[0].fuel, 2);
+  assert.equal(g.state.units[0].fuel, 1, 'no refuel, just the two burns');
 });
 
 test('fuel: a flyer that begins its turn empty crashes when the turn ends; one that is refuelled meanwhile does not', () => {

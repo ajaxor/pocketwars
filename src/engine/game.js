@@ -38,7 +38,7 @@ import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
 import { detonate, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
 import { attacksPerTurn } from './combat.js';
 import { canSupplyAt, resolveSupply } from './supply.js';
-import { crashEmpty, spendFuel } from './fuel.js';
+import { burnFuel, crashEmpty } from './fuel.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
 import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
@@ -142,7 +142,6 @@ export class Game {
       }
       if (last > 0) {
         unit.moved = true;   // read (and cleared) by heal.js at the start of its owner's next turn: a unit that stayed put can rest
-        spendFuel(this, unit, last);   // a flyer burns a unit of fuel for every tile
         unit.x = path[last][0];
         unit.y = path[last][1];
         unit.capture = 0; // leaving a tile abandons capture progress
@@ -261,6 +260,7 @@ export class Game {
     this.undoSnapshot = null;
     const events = crashEmpty(this, state.turn);   // a flyer that began the turn on an empty tank and is still dry falls out of the sky
     if (events.length) { events.push(...evaluateVictory(this)); if (this.isOver) return { ok: true, events }; }
+    burnFuel(this, state.turn);   // every flyer burns a turn of fuel, flown or not
     for (let tries = 0; tries < map.players.length; tries++) {
       let next = state.turn;
       do {
