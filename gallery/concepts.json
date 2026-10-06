@@ -566,7 +566,7 @@
    "move": 2,
    "role": "Armoured escort",
    "overlaps": "Soldier, Commando",
-   "mechanic": "Armoured infantry (armour 0.4: rifles and other weapons without armour piercing do 40% less) with a simple rifle (the soldier's, range 1). NEW MECHANIC, guarding: friendly infantry next to it take 30% less damage from direct fire. A moving shield wall for pushing soldiers across open plains, and able to shoot back. Armour-piercing weapons (RPG, bazooka, laser) ignore its plating. Cannot capture."
+   "mechanic": "Armoured infantry (armour 0.4: rifles and other weapons without armour piercing do 40% less) with a simple rifle (the soldier's, range 1). NEW MECHANIC, guarding: friendly infantry next to it take 30% less damage from direct fire. A moving shield wall for pushing soldiers across open plains, and able to shoot back. Armour-piercing weapons (RPG, bazooka, Tesla cannon) ignore its plating. Cannot capture."
   },
   {
    "id": "k9_team",
@@ -582,17 +582,17 @@
    "mechanic": "Infantry with a dog: move 3 on foot, and it smells out cloaked ground units (spy, sniper in a forest, stealth tank, a diver coming ashore) within 2 tiles, revealing them to the whole team. The cheap counter to Vex's stealth kit. Weak bite at range 1."
   },
   {
-   "id": "scientist",
-   "name": "Scientist",
+   "id": "shock_trooper",
+   "name": "Shock Trooper",
    "facility": "training_ground",
    "group": "infantry",
-   "sprite": "scientist",
+   "sprite": "shock_trooper",
    "altitude": 0,
    "cost": 3500,
    "move": 2,
    "role": "Armour-piercing support",
    "overlaps": "RPG Trooper, Sniper",
-   "mechanic": "Laser pistol: range 1-2, damage 40, ignores armour completely and never runs out of charge, but the beam is weaker than a rifle's and the Scientist is as fragile as a soldier. Can move and fire. A cheap, endless answer to Royal Guards and heavy armour, best kept behind the front line. Cannot capture."
+   "mechanic": "Hand-held Tesla cannon: range 1-2, damage 40, the lightning ignores armour completely and the cannon never runs out of charge, but the arc is weaker than a rifle's and the Shock Trooper is as fragile as a soldier. Can move and fire. A cheap, endless answer to Royal Guards and heavy armour, best kept behind the front line. Cannot capture."
   },
   {
    "id": "fanatic",
@@ -605,7 +605,7 @@
    "move": 2,
    "role": "Suicide bomber",
    "overlaps": "Soldier, Flame Trooper",
-   "mechanic": "Weak melee attack (range 1). Explodes when it dies, however it dies (shot, countered, even burned): the blast deals 3 damage to every adjacent unit, friend or foe, and sets off any neighbouring Fanatic it kills. Punishes whoever kills it from next to it, and makes the enemy think twice about attacking it. Can capture."
+   "mechanic": "A cheap AK-47 (range 1, as strong as a soldier's rifle). Explodes when it dies, however it dies (shot, countered, even burned): the blast deals 3 damage to every adjacent unit, friend or foe, and sets off any neighbouring Fanatic it kills. Punishes whoever kills it from next to it, and makes the enemy think twice about attacking it. Can capture."
   },
   {
    "id": "bridge_layer",
