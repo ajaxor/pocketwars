@@ -191,3 +191,8 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Leader balance (AI-played) shows real spread.** First run: vex 67%, ludwig 57% against rex 40%, ada 43% (each ±4 over 160 games). Part of it
   may be how well the strategist uses each kit rather than the kit itself; the unit trade report (`docs/balance.md`) is the check on the numbers.
   The `unreachable` engine error seen in tuning also turned up once in this run (archipelago).
+- **Starting armies are uneven after the fighter price rise.** The leaders' start loadouts include fighters (vex, hiroshi, ludwig, lysandra) that now
+  cost 13,000, so the cheapest and dearest start armies differ by 6,200 (the leaders test was loosened from 4,000 to 6,500 to allow it). Swapping
+  some of those start units, or trimming the others', would restore the fairness check.
+- **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
+  still moves anywhere (and the AI still sees everything).

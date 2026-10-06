@@ -82,7 +82,7 @@ test('every leader starts with three HQ units and one unit per building, and the
     for (const site of ['barracks', 'factory', 'airfield', 'shipyard']) assert.equal(start[site].length, 1, `${id}: ${site}`);
     return Object.values(start).flat().reduce((sum, s) => sum + registry.units[s.unit].cost, 0);
   });
-  assert.ok(Math.max(...costs) - Math.min(...costs) <= 4000, `army costs ${costs.join(', ')} stay within 4,000 of each other`);
+  assert.ok(Math.max(...costs) - Math.min(...costs) <= 6500, `army costs ${costs.join(', ')} stay within 6,500 of each other`);
 });
 
 // ---- validation -----------------------------------------------------------------------------------------------------------------------

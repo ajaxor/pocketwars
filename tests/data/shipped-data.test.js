@@ -88,7 +88,7 @@ test('characterisation of the original stats', () => {
   const stat = (id) => { const u = registry.unit(id); return [u.cost, u.move, registry.weapon(u.weapons[0]).range.join('-'), u.layer]; };
   assert.deepEqual(stat('soldier'), [1000, 2, '1-1', 'ground']);
   assert.deepEqual(stat('artillery'), [6000, 3, '2-3', 'ground']);
-  assert.deepEqual(stat('bomber'), [12000, 7, '1-1', 'high_air']);
+  assert.deepEqual(stat('bomber'), [12000, 5, '1-1', 'high_air']);
   assert.equal(registry.rules.maxHp, 10);
 });
 

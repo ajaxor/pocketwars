@@ -12,7 +12,7 @@ import { chooseOrder } from '../../src/ai/greedy.js';
 import { unitAt } from '../../src/engine/queries.js';
 
 const registry = await loadRegistry(readData);
-const LEGEND = { '.': { terrain: 'plain' }, F: { terrain: 'forest' }, M: { terrain: 'mountain' }, W: { terrain: 'wall' }, X: { terrain: 'wall_breach' },
+const LEGEND = { '.': { terrain: 'plain' }, F: { terrain: 'forest' }, M: { terrain: 'mountain' }, W: { terrain: 'wall' }, C: { terrain: 'city' }, X: { terrain: 'wall_breach' },
   A: { terrain: 'hq', owner: 0 }, B: { terrain: 'hq', owner: 1 } };
 const game = (tiles, units, controllers = ['human', 'ai']) => new Game(registry, parseMap({
   format: 'pocketwars-map', version: 1, id: 'fog', name: 'Fog',
@@ -36,15 +36,14 @@ test('no jammer, no fog; any jammer (whoever owns it) fogs the human players and
   }
 });
 
-test('sight: vision range by unit (never less than its move), a mountain adds to it, aircraft see over everything', () => {
+test('sight: vision range by unit (its own, else its category; not stretched to its move), a mountain adds to it, aircraft see over everything', () => {
   const g = game(['A....M.......B'], [u('soldier', 0, 1, 0), u('recon', 0, 2, 0), u('soldier', 0, 5, 0), u('copter', 0, 3, 0), u('jammer', null, 13, 0)]);
   const [inf, recon, onMountain, copter] = g.state.units;
-  const move = (t) => registry.unit(t).move;
-  assert.equal(visionOf(g, inf), Math.max(2, move('soldier')));
-  assert.equal(visionOf(g, recon), Math.max(5, move('recon')), 'its own vision, or its move if that is further');
-  assert.equal(visionOf(g, onMountain), Math.max(2, move('soldier')) + 2, 'mountain +2');
-  assert.equal(visionOf(g, copter), Math.max(3, move('copter')));
-  for (const unit of g.state.units.filter((x) => x.owner === 0)) assert.ok(visionOf(g, unit) >= move(unit.type), `${unit.type} sees at least as far as it moves`);
+  assert.equal(visionOf(g, inf), 2);
+  assert.equal(visionOf(g, recon), 5, 'its own vision');
+  assert.equal(visionOf(g, onMountain), 2 + 2, 'mountain +2');
+  assert.equal(visionOf(g, copter), 3, 'the aircraft category, not its move');
+  assert.ok(visionOf(g, copter) < registry.unit('copter').move, 'vision no longer grows to match movement');
 });
 
 test('sight follows line of sight: a mountain or a wall hides what is behind it, but the obstacle itself is seen', () => {
@@ -55,23 +54,26 @@ test('sight follows line of sight: a mountain or a wall hides what is behind it,
   assert.equal(tileVisible(g, 0, 0, 2), true, 'the open side');
 });
 
-test('a unit always sees every tile it can move to this turn, round walls included', () => {
-  const g = game(['......', '.WWWW.', '......', 'A....B'], [u('recon', 0, 0, 2), u('jammer', null, 5, 3)]);
-  const recon = g.state.units[0];
-  for (const t of computeReach(g, recon).tiles()) assert.equal(tileVisible(g, 0, t.x, t.y), true, `${t.x},${t.y}`);
+test('buildings do not block sight (forests, mountains and walls still do)', () => {
+  const g = game(['A.C...', '.W....', '......'], [u('soldier', 0, 0, 0), u('jammer', null, 5, 2)]);
+  assert.equal(tileVisible(g, 0, 2, 0), true, 'the city itself');
+  const far = game(['A.C.B'], [u('sniper', 0, 0, 0), u('jammer', null, 4, 0)]);
+  assert.equal(tileVisible(far, 0, 3, 0), true, 'behind a city, seen: a building does not hide what is behind it');
+  const wall = game(['A.W.B'], [u('sniper', 0, 0, 0), u('jammer', null, 4, 0)]);
+  assert.equal(tileVisible(wall, 0, 3, 0), false, 'behind a wall, hidden');
 });
 
 test('explored tiles are remembered; an enemy structure out of sight is remembered as last seen, even after it is destroyed', () => {
-  const g = game(['A..........B'], [u('recon', 0, 1, 0), u('cannon_turret', 1, 7, 0), u('tank', 1, 6, 0), u('jammer', null, 11, 0)]);
+  const g = game(['A..........B'], [u('recon', 0, 1, 0), u('cannon_turret', 1, 6, 0), u('tank', 1, 5, 0), u('jammer', null, 11, 0)]);
   const [recon, turret, tank] = g.state.units;
   assert.equal(canSee(g, 0, turret), true);
   assert.equal(canSee(g, 0, tank), true);
   g.state.units = g.state.units.filter((x) => x !== recon);   // the scout is gone
   g.touch();
-  assert.equal(tileVisible(g, 0, 7, 0), false);
-  assert.equal(tileExplored(g, 0, 7, 0), true, 'still explored');
+  assert.equal(tileVisible(g, 0, 6, 0), false);
+  assert.equal(tileExplored(g, 0, 6, 0), true, 'still explored');
   assert.equal(canSee(g, 0, turret), false, 'out of sight: not seen (so not a target either)');
-  assert.deepEqual(rememberedStructures(g, 0).map((m) => [m.type, m.x, m.hp]), [['cannon_turret', 7, 10]], 'but drawn as remembered');
+  assert.deepEqual(rememberedStructures(g, 0).map((m) => [m.type, m.x, m.hp]), [['cannon_turret', 6, 10]], 'but drawn as remembered');
   turret.hp = 3; g.state.units = g.state.units.filter((x) => x !== turret); g.touch();   // destroyed out of sight
   assert.deepEqual(rememberedStructures(g, 0).map((m) => [m.type, m.hp]), [['cannon_turret', 10]], 'still there, untouched, on their map');
   g.state.units.push({ ...recon }); g.touch();   // back in sight
@@ -90,11 +92,24 @@ test('destroying the last jammer lifts the fog', () => {
   assert.equal(canSee(g, 0, soldier), true);
 });
 
-test('in fog an enemy on a tile the unit could move to is always seen, so it blocks the plan instead of ambushing the move', () => {
-  const g = game(['A.......B', '.........'], [u('recon', 0, 0, 1), u('soldier', 1, 6, 1), u('jammer', null, 8, 0)]);
-  const [recon, foe] = g.state.units;
-  assert.equal(canSee(g, 0, foe), true);
-  assert.equal(computeReach(g, recon).has(6, 1), false);
+test('in fog a unit cannot move into, or through, a tile its player has never seen; it advances into the unknown a step at a time', () => {
+  const g = game(['A..........B'], [u('tank', 0, 0, 0), u('jammer', null, 11, 0)]);
+  const tank = g.state.units[0];
+  assert.ok(registry.unit('tank').move > visionOf(g, tank), 'the tank can move further than it sees');
+  const first = computeReach(g, tank);
+  assert.equal(first.has(2, 0), true, 'two tiles: seen');
+  assert.equal(first.has(3, 0), false, 'three tiles would be in the black');
+  assert.ok(g.act({ unitId: tank.id, to: { x: 2, y: 0 }, action: { type: 'wait' } }).ok);
+  const second = computeReach(g, tank);
+  assert.equal(second.has(4, 0), true, 'now it sees two further');
+  assert.equal(second.has(5, 0), false);
+  const asked = g.validateOrder?.({ unitId: tank.id, to: { x: 5, y: 0 }, action: { type: 'wait' } });
+  if (asked) assert.notEqual(asked.ok, true, 'an order into the black is refused');
+});
+
+test('a computer player is never fogged, so it can move anywhere', () => {
+  const g = game(['A..........B'], [u('soldier', 0, 0, 0), u('tank', 1, 11, 0), u('jammer', null, 5, 0)]);
+  assert.equal(computeReach(g, g.state.units[1]).has(8, 0), true);
 });
 
 test('undo: an order that brings a new tile into sight cannot be undone; one that shows nothing new can', () => {

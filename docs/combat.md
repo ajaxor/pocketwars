@@ -94,9 +94,10 @@ turret's HP in one shot while a tank cannon barely scratches it.
 ## Fog of war
 
 `src/engine/fog.js`. While a jammer is on the board, human players see only what is within their units' `vision` (unit `vision`, else
-`rules.vision[category]`, never less than its `move`; a mountain adds `visionBonus`) along a clear line (the direct-fire rules above; aircraft
-see over everything), every tile the unit could move to this turn (so a move never ends in a black tile), plus
-`rules.vision.property` tiles round their properties. `canSee` hides every enemy unit outside that (a structure stays known on explored
+`rules.vision[category]`; a mountain adds `visionBonus`; vision is not stretched to match movement) along a clear line (the direct-fire
+rules above, except that buildings do not block sight; aircraft see over everything), plus `rules.vision.property` tiles round their
+properties. A fogged player cannot move a unit into, or through, a tile they have never seen (the black part of the board): a unit moves
+into the unknown a step at a time (`computeReach`). `canSee` hides every enemy unit outside that (a structure stays known on explored
 tiles), so planning, targeting, interrupts and the AI-turn animations all follow. Enemy structures out of sight are remembered as last seen
 (`state.remembered`, `rememberedStructures`) and drawn still, even after they are destroyed, until the tile is in sight again. The computer is never fogged. Explored tiles are remembered
 (`state.explored`) and drawn greyed out; unexplored ones are black. An order that brings a new tile into sight cannot be undone.

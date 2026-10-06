@@ -3,6 +3,7 @@
 //
 // Only enemies the mover can SEE block the search. A hidden enemy (a submerged submarine nobody has noticed) is treated as open
 // water, so planning a move, or previewing one, never gives it away; it is found out when the move is carried out (game.js act).
+// In fog, a unit cannot enter a tile its player has never seen (the black part of the board; fog.js).
 // A unit whose move was interrupted (`unit.halted`) has used its move: it can only act where it stands.
 
 import { DIRS, distance, inBounds, tileIndex, unitAt, unitDef, terrainAt } from './queries.js';
@@ -10,6 +11,7 @@ import { hasAmmoFor } from './ammo.js';
 import { hasAttribute } from './attributes.js';
 import { canAttackFrom, isIndirect, weaponsOf } from './combat.js';
 import { canSee } from './detection.js';
+import { tileExplored } from './fog.js';
 import { passesOverMines } from './mines.js';
 import { moveOf } from './submerge.js';
 import { PathHeap } from './heap.js';
@@ -72,6 +74,7 @@ export function computeReach(game, unit) {
       const nx = x + dx;
       const ny = y + dy;
       if (!inBounds(map, nx, ny)) continue;
+      if (!tileExplored(game, unit.owner, nx, ny)) continue;   // fog: a player cannot move a unit into (or through) a tile they have never seen
       const occupant = occupants.get(tileIndex(map, nx, ny));
       if (occupant && occupant.owner !== unit.owner && canSee(game, unit.owner, occupant) && !passesOverMines(game, unit, occupant)) continue;   // a hidden enemy does not block the plan (nor does a mine for a unit that floats or flies over it)
       const step = moveCostAt(game, def.moveClass, nx, ny);

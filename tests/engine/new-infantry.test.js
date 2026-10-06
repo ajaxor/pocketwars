@@ -67,15 +67,15 @@ test('diver: its harpoon reaches ships and other submerged units; a destroyer is
 });
 
 // ---- motorcycle ----------------------------------------------------------------------------------------------------------------
-test('motorcycle: fast on open ground and roads, nearly stuck in forest and rough ground, and no mountains', () => {
+test('motorcycle: fast on open ground, nearly stuck in forest and rough ground, and no mountains', () => {
   const g = game(['H.F..', '.....', 'M....', '.R...', '....h'], [['motorcycle', 0, 0, 3], ['soldier', 1, 4, 0]]);
   const reach = computeReach(g, g.state.units[0]);
-  assert.equal(reach.has(4, 4), true, 'five tiles of plain');
+  assert.equal(reach.has(3, 4), true, 'four tiles of plain');
   assert.equal(reach.costAt(1, 3), 4, 'a rough tile eats most of the move');
   assert.equal(reach.has(0, 2), false, 'mountains are closed');
   const cost = (t) => registry.terrainDef(t).moveCost.bike;
   assert.ok(cost('forest') >= 3 && cost('rough') >= 3, 'a severe penalty');
-  assert.ok(cost('road') < cost('plain'));
+  assert.equal(cost('road'), cost('plain'), 'no road bonus');
   assert.equal(cost('mountain'), null);
 });
 

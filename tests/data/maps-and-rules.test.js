@@ -24,8 +24,8 @@ test('movement classes: wheels, treads, foot and air', () => {
   for (const t of ['plain', 'forest', 'mountain', 'rough', 'city']) assert.equal(registry.terrainDef(t).render.base, undefined, `${t} is drawn on the ground under it`);
 });
 
-test('roads favour wheels; forests and rough ground block wheels; treads pay extra in forests', () => {
-  assert.ok(cost('road', 'wheels') < cost('plain', 'wheels'));
+test('roads give no speed bonus; forests and rough ground block wheels; treads pay extra in forests', () => {
+  for (const moveClass of Object.keys(registry.terrainDef('plain').moveCost)) assert.equal(cost('road', moveClass), cost('plain', moveClass), `${moveClass}: a road is no faster than open ground`);
   assert.equal(cost('road', 'tread'), 1);
   assert.equal(cost('forest', 'wheels'), null);
   assert.equal(cost('forest', 'tread'), 2);

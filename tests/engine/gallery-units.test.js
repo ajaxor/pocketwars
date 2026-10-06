@@ -248,10 +248,10 @@ test('an amphibious tank sets a mine off; a hover tank floats over it and a heli
   assert.deepEqual([t.x, t.y], [2, 0]);
   const hover = mined('hover_tank');
   const h = first(hover, 'hover_tank', 1);
-  const r = hover.act({ unitId: h.id, to: { x: 6, y: 0 } });
+  const r = hover.act({ unitId: h.id, to: { x: 5, y: 0 } });
   assert.equal(r.ok, true);
   assert.equal(r.interrupted, undefined);
-  assert.deepEqual([h.x, h.y], [6, 0], 'it crossed the mine');
+  assert.deepEqual([h.x, h.y], [5, 0], 'it crossed the mine');
   assert.equal(unitAt(hover, 4, 0).type, 'sea_mine', 'which is untouched');
   const air = mined('copter');
   const c = first(air, 'copter', 1);
@@ -344,10 +344,10 @@ test('a troop transport unloads soldiers onto the land next to it, not into the 
 
 // ---- the land vehicles -------------------------------------------------------------------------------------------------------
 
-test('the amphibious tank is tougher than a tank but slower, and swims; the hover tank hits as hard as a tank', () => {
+test('the amphibious tank is tougher than a tank but no faster, and swims; the hover tank hits as hard as a tank', () => {
   const tank = registry.unit('tank');
   const amph = registry.unit('amphibious_tank');
-  assert.ok(amph.toughness > tank.toughness && amph.move < tank.move);
+  assert.ok(amph.toughness > tank.toughness && amph.move <= tank.move);
   const g = world(['H~~~~~h'], [['amphibious_tank', 0, 0, 0], ['tank', 1, 6, 0]]);
   assert.equal(computeReach(g, first(g, 'amphibious_tank')).has(2, 0), true, 'two sea tiles at 1.5 each fit in 3 moves');
   assert.equal(computeReach(g, first(g, 'amphibious_tank')).has(3, 0), false);

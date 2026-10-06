@@ -21,7 +21,7 @@ const world = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, u
 test('every infantry unit except the motorcycle moves 2', () => {
   for (const id of registry.unitIds) {
     const u = registry.unit(id);
-    if (u.category === 'infantry' || u.category === 'amphibious') assert.equal(u.move, id === 'motorcycle' ? 5 : 2, id);
+    if (u.category === 'infantry' || u.category === 'amphibious') assert.equal(u.move, id === 'motorcycle' ? 4 : 2, id);
   }
 });
 
