@@ -601,11 +601,11 @@
    "group": "infantry",
    "sprite": "fanatic",
    "altitude": 0,
-   "cost": 1200,
+   "cost": 1500,
    "move": 2,
-   "role": "Suicide bomber",
-   "overlaps": "Soldier, Flame Trooper",
-   "mechanic": "A cheap AK-47 (range 1, as strong as a soldier's rifle). Explodes when it dies, however it dies (shot, countered, even burned): the blast deals 3 damage to every adjacent unit, friend or foe, and sets off any neighbouring Fanatic it kills. Punishes whoever kills it from next to it, and makes the enemy think twice about attacking it. Can capture."
+   "role": "Zealot",
+   "overlaps": "Soldier, Commando",
+   "mechanic": "A simple AK-47 infantryman who fights at full strength however hurt he is: his attack does not fall as he loses HP, so wounded Fanatics are as dangerous as fresh ones. Cheap, no frills, can capture."
   },
   {
    "id": "bridge_layer",
@@ -683,7 +683,33 @@
    "move": 7,
    "role": "Raider",
    "overlaps": "Recon, Motorcycle",
-   "mechanic": "A pickup with a machine gun bolted in the back: cheaper and faster than a recon, but with half its armour. Harlan's opening unit: a lot of them early, before the heavy kit arrives."
+   "mechanic": "A pickup with a machine gun bolted in the back: cheaper and faster than a recon, but with half its armour. Harlan's opening unit: a lot of them early, before the heavy kit arrives. (The shipped Recon now wears this same sprite.)"
+  },
+  {
+   "id": "missile_tank",
+   "name": "Missile Tank",
+   "facility": "war_factory",
+   "group": "vehicle",
+   "sprite": "missile_tank",
+   "altitude": 0,
+   "cost": 9000,
+   "move": 2,
+   "role": "Heavy missile battery",
+   "overlaps": "Rocket Buggy, Rocket Launcher, Tank",
+   "mechanic": "Rocket Buggy missiles (range 1-2, damage 85) on a heavy hull: armour 0.6, six rounds instead of three, and very slow (move 2). Can move and fire."
+  },
+  {
+   "id": "remote_technical",
+   "name": "Remote Technical",
+   "facility": "drone_bay",
+   "group": "vehicle",
+   "sprite": "remote_technical",
+   "altitude": 0,
+   "cost": 1800,
+   "move": 7,
+   "role": "Expendable raider",
+   "overlaps": "Technical, Recon",
+   "mechanic": "An unmanned, radio-controlled technical: cheap and fast, with half a recon's armour. Shut down by jammers; cannot capture or carry cargo. Meant to be thrown at the enemy in numbers."
   },
   {
    "id": "salvager",
@@ -718,11 +744,11 @@
    "group": "air",
    "sprite": "airship",
    "altitude": 0.14,
-   "cost": 9000,
-   "move": 4,
-   "role": "Air transport",
-   "overlaps": "Transport copter, Troop glider",
-   "mechanic": "Slow (move 4) but very tough against ground fire: carries two infantry, and every carried unit heals 1 HP per turn on board. Fighters and flak tear it apart. A floating forward base rather than a quick shuttle."
+   "cost": 12000,
+   "move": 3,
+   "role": "Heavy bomber",
+   "overlaps": "Bomber, Vintage Bomber",
+   "mechanic": "A tough, slow flying bomber: armour 0.7, drops powerful bombs (damage 120) on ground and sea targets at range 1, two bombs per sortie. Cannot hit aircraft; fighters, SAMs and flak are its counters. Cannot capture."
   },
   {
    "id": "loiter_drone",

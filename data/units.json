@@ -65,7 +65,7 @@
     "toughness": 1,
     "armor": 0.65,
     "attributes": {},
-    "render": { "sprite": "recon", "attackFx": "shot" }
+    "render": { "sprite": "technical", "attackFx": "shot" }
   },
   "tank": {
     "name": "Tank",

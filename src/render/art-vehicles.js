@@ -1,4 +1,4 @@
-// Vehicle art: the APC, the amphibious tank (on land and swimming), the SAM launcher and the rocket buggy. unit-art.js takes them by name.
+// Vehicle art: the APC, the amphibious tank (on land and swimming), the SAM launcher, the rocket buggy and the technical (the Recon). unit-art.js takes them by name.
 // Same conventions as unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
 // centred on (0, 0), +x forward, sizes are tile fractions; the ground is at about y = .29.
 import { box, disc, poly, stroke, mix, wheel, wheels, treads, propeller, afloat, UNDER_SHADE, INK, STEEL, SKIN, GLASS } from './parts.js';
@@ -121,9 +121,26 @@ const apc = (g, { s, c, dk, w, run, j }) => {
 };
 const darkInterior = (dk) => mix(dk, '#000000', .72);
 
-export const SPRITES = { apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, ...CYCLE.SPRITES };
+// Technical (the Recon's art): a battered pickup with a machine gun on a post in its bed and a rusty door.
+const RUST = '#9a5a2e';
+const technical = (g, { s, c, dk, w, ph, run, j }) => {
+  const jj = j / s;
+  box(g, s, -.36, .0 + jj, .74, .13, 3, c);                                                   // the body
+  box(g, s, .02, -.14 + jj, .2, .15, 4, c);                                                   // the cab
+  box(g, s, .07, -.11 + jj, .12, .07, 2, GLASS);
+  box(g, s, .04, .02 + jj, .12, .08, 2, RUST);                                                // a mismatched rusty door
+  box(g, s, -.36, -.03 + jj, .34, .04, 1, dk);                                                // the bed's rail
+  stroke(g, s, -.2, -.02 + jj, -.2, -.17 + jj, Math.max(2, s * .03), '#555a64');              // the gun post
+  const sw = run ? Math.sin(w * 1.3 + ph) * .05 : 0;
+  g.save(); g.translate(-.2 * s, (-.18 + jj) * s); g.rotate(sw);
+  box(g, s, -.06, -.03, .12, .06, 2, INK); box(g, s, .04, -.016, .22, .032, 1, INK);          // the machine gun, sweeping
+  g.restore();
+  wheel(g, s, -.22, .19, .085, w, run, 10); wheel(g, s, .24, .19, .085, w, run, 10);
+};
+
+export const SPRITES = { apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, technical, ...CYCLE.SPRITES };
 
 const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
-  apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), ...CYCLE.SHADOWS,
+  apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), technical: ground(.38, .05, .285), ...CYCLE.SHADOWS,
 };
