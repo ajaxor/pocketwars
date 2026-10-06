@@ -484,7 +484,7 @@
     "name": "Motorcycle Infantry",
     "category": "infantry",
     "cost": 2000,
-    "move": 4,
+    "move": 3,
     "moveClass": "bike",
     "layer": "ground",
     "weapons": ["bike_rifle"],

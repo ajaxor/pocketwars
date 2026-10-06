@@ -62,3 +62,6 @@ Changes made from these reports (return = damage dealt per credit fielded, from 
   bomber was well ahead of ground units despite a median return. Bomber 14,500 -> 17,000, vintage bomber 7,500 -> 9,000, torpedo bomber
   10,500 -> 12,500, stealth bomber 21,500 -> 24,000. Result: bomber return 0.48, net +0.18, fielded 22M -> 16M credits. Fighters are still the
   best of the planes on net (+0.45) and are the next candidate.
+- **Round 6 (from play, October 2026).** RPG trooper range 2-3 -> 1-2 (it can now fire at an adjacent unit, and be answered there); motorcycle infantry
+  move 4 -> 3. Not yet measured: run `npm run balance:units` and the leader report before judging either, and re-tune the AI (`npm run ai:tune`, it
+  was already stale).

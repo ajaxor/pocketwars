@@ -27,10 +27,10 @@ test('the medic has a weak attack, the mechanic has a weak but fully armor-pierc
   assert.ok(weaponsOf('medic')[0].damage <= registry.weapons.pistol.damage);
 });
 
-test('the RPG trooper is anti-vehicle infantry: one rocket, range 2-3, can move and fire, hits low aircraft, captures', () => {
+test('the RPG trooper is anti-vehicle infantry: one rocket, range 1-2, can move and fire, hits low aircraft, captures', () => {
   const rpg = unit('rpg_trooper');
   assert.equal(rpg.attributes.ammo.max, 1);
-  assert.deepEqual(weaponsOf('rpg_trooper')[0].range, [2, 3]);
+  assert.deepEqual(weaponsOf('rpg_trooper')[0].range, [1, 2]);
   assert.equal(weaponsOf('rpg_trooper')[0].armorPiercing, 1);
   assert.ok(hasAttribute(rpg, 'capture') && !hasAttribute(rpg, 'indirect'));
   assert.ok(canFireAfterMoving({ registry }, { type: 'rpg_trooper' }), 'a single rocket is no reason to stand still');

@@ -18,10 +18,10 @@ const legend = {
 const players = [{ faction: 'ashmark', controller: 'human', funds: 30000 }, { faction: 'vantor_reach', controller: 'human', funds: 30000 }];
 const world = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
 
-test('every infantry unit except the motorcycle moves 2', () => {
+test('every infantry unit except the motorcycle moves 2 (the motorcycle moves 3)', () => {
   for (const id of registry.unitIds) {
     const u = registry.unit(id);
-    if (u.category === 'infantry' || u.category === 'amphibious') assert.equal(u.move, id === 'motorcycle' ? 4 : 2, id);
+    if (u.category === 'infantry' || u.category === 'amphibious') assert.equal(u.move, id === 'motorcycle' ? 3 : 2, id);
   }
 });
 

@@ -168,7 +168,7 @@
    "move": 4,
    "role": "Anti-infantry",
    "overlaps": "Soldier, Mech, Flak",
-   "mechanic": "A flamer port on one arm and a fuel tank on its back. Range 1 only, devastating against infantry and units in cover, weak against tanks. Its fuel tank makes it volatile: when destroyed it explodes, hurting adjacent units.",
+   "mechanic": "A flamer port on one arm and a fuel tank on its back. Range 1 only, devastating against infantry and units in cover, weak against tanks. Flame attacks allow no counterattack. Its fuel tank makes it volatile: when destroyed it explodes, hurting adjacent units.",
    "group": "vehicle"
   },
   {
@@ -553,20 +553,20 @@
    "move": 2,
    "role": "Anti-infantry, clears cover",
    "overlaps": "Soldier, Flame Walker",
-   "mechanic": "Range 1. Its damage ignores the target's terrain defence (fire goes round sandbags), and an attack on a forest burns it to plains for the rest of the battle, taking away the sniper's and the soldier's cover. When it is destroyed its tanks burst and deal 1 damage to every adjacent unit, friend or foe."
+   "mechanic": "Range 1. Flame attacks allow no counterattack: whatever it burns cannot hit back. Its damage ignores the target's terrain defence (fire goes round sandbags), and an attack on a forest burns it to plains for the rest of the battle, taking away the sniper's and the soldier's cover. When it is destroyed its tanks burst and deal 1 damage to every adjacent unit, friend or foe."
   },
   {
-   "id": "shield_trooper",
-   "name": "Riot Shield",
+   "id": "royal_guard",
+   "name": "Royal Guard",
    "facility": "training_ground",
    "group": "infantry",
-   "sprite": "shield_trooper",
+   "sprite": "royal_guard",
    "altitude": 0,
-   "cost": 2500,
+   "cost": 3500,
    "move": 2,
-   "role": "Escort",
-   "overlaps": "Commando",
-   "mechanic": "NEW MECHANIC, guarding: unarmed. Friendly infantry next to it take 30% less damage from direct fire, and it takes half damage from the front-line rifles itself. A moving shield wall for pushing soldiers across open plains. Cannot capture."
+   "role": "Armoured escort",
+   "overlaps": "Soldier, Commando",
+   "mechanic": "Armoured infantry (armour 0.4: rifles and other weapons without armour piercing do 40% less) with a simple rifle (the soldier's, range 1). NEW MECHANIC, guarding: friendly infantry next to it take 30% less damage from direct fire. A moving shield wall for pushing soldiers across open plains, and able to shoot back. Armour-piercing weapons (RPG, bazooka, laser) ignore its plating. Cannot capture."
   },
   {
    "id": "k9_team",
@@ -580,6 +580,32 @@
    "role": "Detector",
    "overlaps": "Radar plane, destroyer sonar",
    "mechanic": "Infantry with a dog: move 3 on foot, and it smells out cloaked ground units (spy, sniper in a forest, stealth tank, a diver coming ashore) within 2 tiles, revealing them to the whole team. The cheap counter to Vex's stealth kit. Weak bite at range 1."
+  },
+  {
+   "id": "scientist",
+   "name": "Scientist",
+   "facility": "training_ground",
+   "group": "infantry",
+   "sprite": "scientist",
+   "altitude": 0,
+   "cost": 3500,
+   "move": 2,
+   "role": "Armour-piercing support",
+   "overlaps": "RPG Trooper, Sniper",
+   "mechanic": "Laser pistol: range 1-2, damage 40, ignores armour completely and never runs out of charge, but the beam is weaker than a rifle's and the Scientist is as fragile as a soldier. Can move and fire. A cheap, endless answer to Royal Guards and heavy armour, best kept behind the front line. Cannot capture."
+  },
+  {
+   "id": "fanatic",
+   "name": "Fanatic",
+   "facility": "training_ground",
+   "group": "infantry",
+   "sprite": "fanatic",
+   "altitude": 0,
+   "cost": 1200,
+   "move": 2,
+   "role": "Suicide bomber",
+   "overlaps": "Soldier, Flame Trooper",
+   "mechanic": "Weak melee attack (range 1). Explodes when it dies, however it dies (shot, countered, even burned): the blast deals 3 damage to every adjacent unit, friend or foe, and sets off any neighbouring Fanatic it kills. Punishes whoever kills it from next to it, and makes the enemy think twice about attacking it. Can capture."
   },
   {
    "id": "bridge_layer",
