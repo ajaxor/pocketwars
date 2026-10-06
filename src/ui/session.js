@@ -14,6 +14,7 @@ import { Effects } from '../render/effects.js';
 import { Renderer } from '../render/renderer.js';
 import { Controller } from './controller.js';
 import { Gestures } from './gestures.js';
+import { GhostClickGuard } from './ghost-click.js';
 import { Hud } from './hud.js';
 import { describeEvents } from './messages.js';
 import { Presenter } from './presenter.js';
@@ -78,7 +79,11 @@ export class Session {
     this.onContextMenu = (e) => e.preventDefault();   // a long press must not open the browser's menu
     this.onPointerDown = (e) => { e.preventDefault(); this.canvas.setPointerCapture?.(e.pointerId); this.gestures.down(e); };
     this.onPointerMove = (e) => this.gestures.move(e);
-    this.onPointerUp = (e) => this.gestures.up(e);
+    this.onPointerUp = (e) => { this.gestures.up(e); this.ghost.mapRelease(); };
+    // the click a touch browser sends after a map tap must not press whatever the tap opened under the finger (the build menu's rows)
+    this.ghost = new GhostClickGuard();
+    this.onDocPointerDown = () => this.ghost.press();
+    this.onDocClick = (e) => { if (this.ghost.swallows(e, this.canvas)) { e.stopPropagation(); e.preventDefault(); } };
     this.onPointerCancel = (e) => this.gestures.cancel(e);
     // iOS Safari scrolls (rubber-bands) the whole page on a touch drag unless the touchmove is cancelled; only the lists that scroll themselves are exempt
     this.onTouchMove = (e) => { if (!e.target.closest?.('.build-list, .sk-body, .sk-maps, .title')) e.preventDefault(); };
@@ -127,6 +132,8 @@ export class Session {
     this.canvas.addEventListener('contextmenu', this.onContextMenu);
     addEventListener('resize', this.onResize);
     globalThis.document?.addEventListener?.('touchmove', this.onTouchMove, { passive: false });
+    globalThis.document?.addEventListener?.('pointerdown', this.onDocPointerDown, true);   // capture: before anything can stop the event
+    globalThis.document?.addEventListener?.('click', this.onDocClick, true);
     hud.onEnd(() => this.#onEndTurn());
     hud.onUndo(() => this.#onUndo());
     hud.onMenu(() => this.#openMenu());
@@ -150,6 +157,8 @@ export class Session {
     for (const el of this.banner?.elements ?? []) el.remove();
     removeEventListener('resize', this.onResize);
     globalThis.document?.removeEventListener?.('touchmove', this.onTouchMove);
+    globalThis.document?.removeEventListener?.('pointerdown', this.onDocPointerDown, true);
+    globalThis.document?.removeEventListener?.('click', this.onDocClick, true);
     this.hud.onEnd(null);
     this.hud.onUndo(null);
     this.hud.onMenu(null);
