@@ -608,6 +608,19 @@
    "mechanic": "A simple AK-47 infantryman who fights at full strength however hurt he is: his attack does not fall as he loses HP, so wounded Fanatics are as dangerous as fresh ones. Cheap, no frills, can capture."
   },
   {
+   "id": "swordsman",
+   "name": "Swordsman",
+   "facility": "training_ground",
+   "group": "infantry",
+   "sprite": "swordsman",
+   "altitude": 0,
+   "cost": 1600,
+   "move": 2,
+   "role": "Infantry hunter",
+   "overlaps": "Soldier, Commando",
+   "mechanic": "Carries a simple katana: range 1, bonus damage against infantry (about +50% over a soldier's rifle) and reduced damage against vehicles (about 40%). Can only attack ground units: no low air, no ships. Can capture."
+  },
+  {
    "id": "bridge_layer",
    "name": "Bridge Layer",
    "facility": "war_factory",
