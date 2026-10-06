@@ -98,9 +98,9 @@ async function main() {
   const types = Object.entries(overall).filter(([, c]) => c.fielded > 0).sort((a, b) => eff(b[1]) - eff(a[1]));
   const effs = types.map(([, c]) => eff(c)).sort((a, b) => a - b);
   const medianEff = effs[Math.floor(effs.length / 2)] || 1;
-  md.push('', '### Every unit type, best return first', '', `Over all ${results.length} games (each game has two leaders). Return = damage dealt / credits fielded; "lost" = how much of what was fielded was destroyed. The median return is ${medianEff.toFixed(2)}.`, '',
-    '| unit | fielded | damage dealt | return | destroyed (of fielded) | vs median |', '|---|---:|---:|---:|---:|---:|',
-    ...types.map(([t, c]) => `| ${t} | ${k(c.fielded)} | ${k(c.dealt)} | ${eff(c).toFixed(2)} | ${pct(c.lost / c.fielded)} | ${(eff(c) / medianEff).toFixed(1)}x |`), '',
+  md.push('', '### Every unit type, best return first', '', `Over all ${results.length} games (each game has two leaders). Return = damage dealt / credits fielded; "lost" = how much of what was fielded was destroyed; net per credit = (damage dealt - value lost) / credits fielded, which credits a unit for hitting things that cannot hit back (bombers, fighters), where return alone does not. The median return is ${medianEff.toFixed(2)}.`, '',
+    '| unit | fielded | damage dealt | return | destroyed (of fielded) | net per credit | vs median |', '|---|---:|---:|---:|---:|---:|---:|',
+    ...types.map(([t, c]) => `| ${t} | ${k(c.fielded)} | ${k(c.dealt)} | ${eff(c).toFixed(2)} | ${pct(c.lost / c.fielded)} | ${((c.dealt - c.lost) / c.fielded).toFixed(2)} | ${(eff(c) / medianEff).toFixed(1)}x |`), '',
     `Low hanging fruit: ${types.filter(([, c]) => eff(c) > 2 * medianEff).map(([t, c]) => `**${t}** (${(eff(c) / medianEff).toFixed(1)}x the median return)`).join(', ') || 'no unit returns more than twice the median'}. Units under a third of the median: ${types.filter(([, c]) => eff(c) < medianEff / 3).map(([t]) => t).join(', ') || 'none'} (support units that deal little damage by design will always be here).`, '');
   // units bought and never used: armed types ranked by the share of their units that never attacked (a gap in the AI's controller, or a
   // unit that is not worth its price). Types with a handful of units are left out: too few to say.

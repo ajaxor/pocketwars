@@ -57,3 +57,8 @@ Changes made from these reports (return = damage dealt per credit fielded, from 
   62%; ludwig trails at 43%): the removed helicopter fuel helped the air-heavy kits most, so the next pass should look at chase and ludwig.
   Note: the AI plays defensively, so about half of all armed units never attack; that is a style rather than a fault as long as its income
   holds up, and the under-use table should be read with that in mind.
+- **Round 5 (bombers).** The report only showed return (damage dealt per credit), which hides that a bomber mostly hits what cannot hit back. A
+  net column (damage dealt - value lost, per credit fielded) shows it: bomber +0.28 against -0.05 for a tank and +0.09 for a heavy tank, so the
+  bomber was well ahead of ground units despite a median return. Bomber 14,500 -> 17,000, vintage bomber 7,500 -> 9,000, torpedo bomber
+  10,500 -> 12,500, stealth bomber 21,500 -> 24,000. Result: bomber return 0.48, net +0.18, fielded 22M -> 16M credits. Fighters are still the
+  best of the planes on net (+0.45) and are the next candidate.

@@ -189,7 +189,7 @@
   "bomber": {
     "name": "Bomber",
     "category": "aircraft",
-    "cost": 14500,
+    "cost": 17000,
     "move": 7,
     "moveClass": "air",
     "layer": "high_air",
@@ -354,7 +354,7 @@
   "vintage_bomber": {
     "name": "Vintage Bomber",
     "category": "aircraft",
-    "cost": 7500,
+    "cost": 9000,
     "move": 6,
     "moveClass": "air",
     "layer": "high_air",
@@ -368,7 +368,7 @@
   "torpedo_bomber": {
     "name": "Torpedo Bomber",
     "category": "aircraft",
-    "cost": 10500,
+    "cost": 12500,
     "move": 7,
     "moveClass": "air",
     "layer": "high_air",
@@ -411,7 +411,7 @@
   "stealth_bomber": {
     "name": "Stealth Bomber",
     "category": "aircraft",
-    "cost": 21500,
+    "cost": 24000,
     "move": 8,
     "moveClass": "air",
     "layer": "high_air",
