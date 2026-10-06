@@ -673,19 +673,6 @@
    "mechanic": "A tank with no turret: hits tanks harder than a heavy tank does, but it can only fire if it has not moved this turn (like artillery, at range 1). Strong in a prepared position, poor on the attack. A sideways choice to the tank rather than a bigger one."
   },
   {
-   "id": "technical",
-   "name": "Technical",
-   "facility": "salvage_yard",
-   "group": "vehicle",
-   "sprite": "technical",
-   "altitude": 0,
-   "cost": 2500,
-   "move": 7,
-   "role": "Raider",
-   "overlaps": "Recon, Motorcycle",
-   "mechanic": "A pickup with a machine gun bolted in the back: cheaper and faster than a recon, but with half its armour. Harlan's opening unit: a lot of them early, before the heavy kit arrives. (The shipped Recon now wears this same sprite.)"
-  },
-  {
    "id": "missile_tank",
    "name": "Missile Tank",
    "facility": "war_factory",
@@ -708,7 +695,7 @@
    "cost": 1800,
    "move": 7,
    "role": "Expendable raider",
-   "overlaps": "Technical, Recon",
+   "overlaps": "Recon",
    "mechanic": "An unmanned, radio-controlled technical: cheap and fast, with half a recon's armour. Shut down by jammers; cannot capture or carry cargo. Meant to be thrown at the enemy in numbers."
   },
   {

@@ -351,7 +351,7 @@ const watchtower = (g, { s, c, dk, w, ph, run }) => {
 export const SPRITES = {
   engineer, flame_trooper: flameTrooper, royal_guard: royalGuard, shock_trooper: shockTrooper, fanatic, k9_team: k9Team,
   bridge_layer: bridgeLayer, decoy_tank: decoyTank, smoke_carrier: smokeCarrier, emp_truck: empTruck, tank_destroyer: tankDestroyer,
-  technical: VEHICLES.SPRITES.technical, remote_technical: remoteTechnical, missile_tank: missileTank, salvager, broadcast_truck: broadcastTruck,
+  remote_technical: remoteTechnical, missile_tank: missileTank, salvager, broadcast_truck: broadcastTruck,
   airship: (g, o) => { g.save(); g.scale(.95, .95); airship(g, o); g.restore(); }, loiter_drone: loiterDrone,
   q_ship: (g, o) => { g.save(); g.scale(.88, .88); qShip(g, o); g.restore(); },
   coastal_battery: coastalBattery, barrage_balloon: barrageBalloon, tank_trap: tankTrap, watchtower,
@@ -363,7 +363,7 @@ const air = (rx, ry) => (g, { s, alt = 0 }) => { g.fillStyle = 'rgba(0,0,0,.22)'
 export const SHADOWS = {
   engineer: ground(.2, .04, .3), flame_trooper: ground(.22, .04, .3), royal_guard: ground(.2, .04, .3), shock_trooper: ground(.2, .04, .3), fanatic: ground(.2, .04, .3), k9_team: ground(.3, .045, .3, .05),
   bridge_layer: ground(.4, .05, .285), decoy_tank: ground(.36, .05, .285), smoke_carrier: ground(.4, .05, .285), emp_truck: ground(.4, .05, .285),
-  tank_destroyer: ground(.38, .05, .285), technical: ground(.38, .05, .285), remote_technical: ground(.38, .05, .285), missile_tank: ground(.4, .05, .285), salvager: ground(.36, .05, .285), broadcast_truck: ground(.4, .05, .285),
+  tank_destroyer: ground(.38, .05, .285), remote_technical: ground(.38, .05, .285), missile_tank: ground(.4, .05, .285), salvager: ground(.36, .05, .285), broadcast_truck: ground(.4, .05, .285),
   airship: air(.38, .05), loiter_drone: air(.2, .04), q_ship: () => {},
   coastal_battery: footShadow(-.38, .38, .05), barrage_balloon: footShadow(-.24, .2), tank_trap: ground(.4, .05, .3), watchtower: footShadow(-.24, .24, .06),
 };
