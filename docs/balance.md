@@ -47,3 +47,13 @@ Changes made from these reports (return = damage dealt per credit fielded, from 
   Copter return rose from 0.2 to 0.39 (the median); leaders now span 44-57% (wider than round 2's 46-55%, since air-heavy leaders gain most), so
   the next balance pass should start from a fresh run. The leader report gained "Most under-used armed units" (units that never attacked, by
   credits wasted); about half of all armed units never attack in a game, so read it against that median.
+- **Round 4 (from play).** Helicopters (copter, transport copter, stealth copter) no longer use fuel; radar plane fuel 3 -> 6. Fighters and bombers
+  fly further so they can strike anywhere, and cost more for it: fighter move 6 -> 8, 13,000 -> 19,000; vintage fighter 5 -> 7, 6,000 -> 9,000;
+  stealth fighter 6 -> 8, 19,000 -> 22,000; bomber 5 -> 7, 12,000 -> 14,500; vintage bomber 4 -> 6, 6,500 -> 7,500; torpedo bomber 5 -> 7,
+  9,000 -> 10,500; stealth bomber 6 -> 8, 19,000 -> 21,500; copter 7,000 -> 8,000; stealth copter 10,000 -> 11,000. Start armies: vex's fighter
+  became a torpedo bomber, hiroshi's a radar plane, harlan's vintage fighter a vintage bomber.
+- **Result** (720 games): fighter return 0.63 (1.5x the median, it was 2.0x at the first price of 16,000) and fighters fielded fell from 25M to 7M
+  credits; bombers 0.56. Only the submarine is above twice the median. Leaders now span 43-62% (chase, whose kit is copters and bombers, leads at
+  62%; ludwig trails at 43%): the removed helicopter fuel helped the air-heavy kits most, so the next pass should look at chase and ludwig.
+  Note: the AI plays defensively, so about half of all armed units never attack; that is a style rather than a fault as long as its income
+  holds up, and the under-use table should be read with that in mind.

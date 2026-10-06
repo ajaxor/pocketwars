@@ -42,7 +42,7 @@
           { "unit": "artillery", "at": [0, 1] }
         ],
         "airfield": [
-          { "unit": "vintage_fighter", "at": [0, 1] }
+          { "unit": "vintage_bomber", "at": [0, 1] }
         ]
       }
     },
@@ -89,7 +89,7 @@
           { "unit": "sniper", "at": [0, 1] }
         ],
         "airfield": [
-          { "unit": "fighter", "at": [0, 1] }
+          { "unit": "torpedo_bomber", "at": [0, 1] }
         ]
       }
     },
@@ -113,7 +113,7 @@
           { "unit": "recon", "at": [0, 1] }
         ],
         "airfield": [
-          { "unit": "fighter", "at": [0, 1] }
+          { "unit": "radar_plane", "at": [0, 1] }
         ]
       }
     },

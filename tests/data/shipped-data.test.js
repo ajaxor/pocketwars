@@ -49,7 +49,7 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('rest'), ['commando']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
   assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
-  assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air').sort(), 'every flyer has a fuel tank, and nothing else does');
+  assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter')).sort(), 'every plane has a fuel tank, and nothing else does (helicopters fly without one)');
   assert.deepEqual(withAttr('attacksPerTurn'), ['dreadnought']);
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);
@@ -88,7 +88,7 @@ test('characterisation of the original stats', () => {
   const stat = (id) => { const u = registry.unit(id); return [u.cost, u.move, registry.weapon(u.weapons[0]).range.join('-'), u.layer]; };
   assert.deepEqual(stat('soldier'), [1000, 2, '1-1', 'ground']);
   assert.deepEqual(stat('artillery'), [6000, 3, '2-3', 'ground']);
-  assert.deepEqual(stat('bomber'), [12000, 5, '1-1', 'high_air']);
+  assert.deepEqual(stat('bomber'), [14500, 7, '1-1', 'high_air']);
   assert.equal(registry.rules.maxHp, 10);
 });
 

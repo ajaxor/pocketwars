@@ -198,7 +198,7 @@ The review's points and where they stand, then what the new system leaves open. 
   some of those start units, or trimming the others', would restore the fairness check.
 - **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
   still moves anywhere (and the AI still sees everything).
-- **Fixed in part: copters and vintage bombers were valued without their fuel** (copter and transport copter fuel then went 4 -> 6; copter return 0.39, the median).** Production and the attack goals treated a flier as able to
+- **Fixed in part: copters and vintage bombers were valued without their fuel** (helicopters later lost their fuel altogether, round 4 of `docs/balance.md`).** Production and the attack goals treated a flier as able to
   reach any enemy, but a copter (fuel 4 then, move 5) can only fight about 10 tiles from where it refuels and a vintage bomber (fuel 3, move 4) about
   8. They were built to chase targets two turns away, turned for home before arriving, and struck on only 16% of their turns. Production now
   counts only enemies within the round trip of an own refuel spot (plus the enemy's two turns of advance) and the goals skip targets it could not

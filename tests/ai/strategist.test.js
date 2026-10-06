@@ -24,9 +24,9 @@ const legend = {
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 },
   F: { terrain: 'factory', owner: 0 }, B: { terrain: 'barracks', owner: 0 }, A: { terrain: 'airfield', owner: 0 }, Y: { terrain: 'shipyard', owner: 0 },
 };
-const world = (rows, unitsOnMap, funds = [30000, 30000]) => {
+const world = (rows, unitsOnMap, funds = [30000, 30000], reg = registry) => {
   const players = [{ faction: 'ashmark', controller: 'ai', funds: funds[0] }, { faction: 'vantor_reach', controller: 'ai', funds: funds[1] }];
-  const g = new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
+  const g = new Game(reg, parseMap(rawMap({ rows, unitsOnMap, players, legend }), reg));
   g.aiSetup = [{ engine: 'strategist', profile: {} }, { engine: 'strategist', profile: {} }];
   g.aiSeed = 3;
   return g;
@@ -97,11 +97,17 @@ test('a transport copter flies its troops over and they capture the city on the 
   assert.ok(g.state.owners[0][7] === 0 || (city?.owner === 0 && city.capture > 0), 'and they are taking the city');
 });
 
-test('a flier only plans landings it can make and still get back to refuel', () => {
+test('a flier only plans landings it can make and still get back to refuel', async () => {
+  // helicopters carry no fuel in the shipped data, so give this carrier a four-turn tank for the test
+  const fueled = await loadRegistry(async (path) => {
+    const data = await readData(path);
+    if (path === 'units.json') data.transport_copter.attributes.fuel = { max: 4, low: 1 };
+    return data;
+  });
   const g = world([
     'H.~~~~~~~~~~~~~~~~~~~c..h',
     '.A~~~~~~~~~~~~~~~~~~~....',
-  ], [['transport_copter', 0, 1, 1], ['soldier', 1, 24, 1]], [0, 0]);
+  ], [['transport_copter', 0, 1, 1], ['soldier', 1, 24, 1]], [0, 0], fueled);
   const sit = situation(g);
   const c = bestOrder(sit, g.state.units[0]);
   assert.notEqual(c.goal.kind, 'land', 'the city is 20 tiles out: too far for 4 turns of fuel there and back');
