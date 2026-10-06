@@ -1,7 +1,9 @@
 // One headless game between AI engines, the way a skirmish is set up (random leaders, the map's funds), but every seat played by the
 // computer. Used by the arena and the tuner, in worker threads (pool.mjs) or directly.
 //
-//   playMatch(registry, map, { seats, seed, maxDays, fog, margin }) -> { winner, days, adjudicated, error, shares, strategies }
+//   playMatch(registry, map, { seats, seed, maxDays, fog, margin }) -> { winner, days, adjudicated, error, shares, strategies, combat }
+//     combat   per player, by unit type: { fielded, dealt, lost } in credits - what was built (and started with), the value of damage
+//              the type did to the enemy (counterattacks included), and the value of it destroyed. Damage counts what it took off, not overkill
 //     error    null, or { seat, message, stack } when an engine gave an invalid order: that seat loses the game (see below)
 //     seats    one { engine, profile? } per player slot on the map
 //     seed     makes the match repeatable: leaders are rolled from it and engines' random choices start from it. The same seed with the
@@ -14,6 +16,7 @@
 import { Game } from '../../../src/engine/game.js';
 import { applySkirmish } from '../../../src/data/skirmish.js';
 import { playTurn } from '../../../src/ai/runner.js';
+import { isStructureDef } from '../../../src/engine/structures.js';
 import { leader, standings } from '../../../src/ai/evaluate.js';
 
 export const DEFAULT_MAX_DAYS = 30;
@@ -43,14 +46,38 @@ export function setupMatch(registry, map, { seats, seed = 1, fog = true, leaders
   return game;
 }
 
+/** Credits of damage per unit type: who fielded what, who dealt how much, what was lost. Starts from the units on the map. */
+function trackCombat(game) {
+  const { registry } = game;
+  const maxHp = registry.rules.maxHp;
+  const players = game.map.players.map(() => ({}));
+  const row = (p, type) => (players[p][type] ??= { fielded: 0, dealt: 0, lost: 0 });
+  for (const u of game.state.units) if (players[u.owner] && !isStructureDef(registry.unit(u.type))) row(u.owner, u.type).fielded += registry.unit(u.type).cost * u.hp / maxHp;
+  return {
+    players,
+    add(events) {
+      for (const e of events) {
+        if (e.type === 'build' && players[e.unit.owner]) row(e.unit.owner, e.unit.type).fielded += e.cost;
+        else if (e.type === 'strike' && players[e.attacker.owner] && players[e.defender.owner] && e.attacker.owner !== e.defender.owner) {
+          const hp = e.destroyed ? e.damage + e.defender.hp : e.damage;   // the snapshot is taken after the hit: a destroyed unit's HP is what was left over
+          const credits = Math.max(0, hp) * registry.unit(e.defender.type).cost / maxHp;
+          row(e.attacker.owner, e.attacker.type).dealt += credits;
+          row(e.defender.owner, e.defender.type).lost += credits;
+        }
+      }
+    },
+  };
+}
+
 export function playMatch(registry, map, { seats, seed = 1, maxDays = DEFAULT_MAX_DAYS, fog = true, margin = DEFAULT_MARGIN, leaders = true }) {
   const game = setupMatch(registry, map, { seats, seed, fog, leaders });
+  const combat = trackCombat(game);
   const t0 = performance.now();
   let turns = 0;
   let error = null;
   try {
     while (!game.isOver && game.state.day <= maxDays) {
-      playTurn(game);
+      combat.add(playTurn(game));
       turns++;
       if (!game.isOver) game.endTurn();
     }
@@ -67,6 +94,7 @@ export function playMatch(registry, map, { seats, seed = 1, maxDays = DEFAULT_MA
     msPerTurn: (performance.now() - t0) / Math.max(1, turns),
     shares: Object.fromEntries(standings(game).map((s) => [s.player, s.share])),
     leaders: game.map.players.map((p) => p.leader ?? null),
+    combat: combat.players,
     strategies: game.map.players.map((_, i) => game.state.ai?.[i]?.strategy?.id ?? null),
   };
 }

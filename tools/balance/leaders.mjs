@@ -59,7 +59,14 @@ async function main() {
   const perMap = {};   // leader -> map -> points
   const all = {};   // leader -> every game's points (for the confidence interval)
   const errors = [];
+  const credits = {};   // leader -> type -> { fielded, dealt, lost, games } summed over the games
+  const overall = {};   // type -> the same, over every leader
   for (const r of results) {
+    r.leaders.forEach((l, seat) => {
+      for (const [type, c] of Object.entries(r.combat?.[seat] ?? {})) {
+        for (const t of [((credits[l] ??= {})[type] ??= { fielded: 0, dealt: 0, lost: 0 }), (overall[type] ??= { fielded: 0, dealt: 0, lost: 0 })]) { t.fielded += c.fielded; t.dealt += c.dealt; t.lost += c.lost; }
+      }
+    });
     if (r.error) errors.push(`${r.map}: ${r.job.labels[r.error.seat]}: ${r.error.message}`);
     const [a, b] = r.job.labels;
     const pa = pointsFor(r, a, days);
@@ -77,6 +84,24 @@ async function main() {
     ...leaders.map((a) => `| **${a}** | ${leaders.map((b) => (a === b ? '·' : pct(mean(cell[`${a}>${b}`] ?? [0.5])))).join(' | ')} |`), '',
     '## Score on each map', '', `| | ${maps.map((m) => m.id).join(' | ')} |`, `|---|${maps.map(() => '---:').join('|')}|`,
     ...stats.map((s) => `| **${s.id}** | ${maps.map((m) => pct(mean(perMap[s.id]?.[m.id] ?? [0.5]))).join(' | ')} |`), ''];
+  // where the damage comes from: credits of enemy value each unit type took off, per game, and per credit it cost to field
+  const k = (v) => (v >= 10000 ? `${(v / 1000).toFixed(0)}k` : v >= 1000 ? `${(v / 1000).toFixed(1)}k` : String(Math.round(v)));
+  const eff = (c) => (c.fielded > 0 ? c.dealt / c.fielded : 0);
+  md.push('## Where the damage comes from', '', 'Credits of enemy value each unit type took off (counterattacks included), per game the leader played, with its share of the leader\'s total and its **return**: credits of damage dealt per credit of that type fielded (built, plus what the leader starts with). A return well above the rest of the leader\'s army, or above the same unit for other leaders, points at a unit that is too good for its price (or a leader whose kit leans on one).', '',
+    '| leader | top unit by damage | 2nd | 3rd |', '|---|---|---|---|');
+  for (const s of stats) {
+    const games = all[s.id].length;
+    const rows = Object.entries(credits[s.id] ?? {}).sort((a, b) => b[1].dealt - a[1].dealt);
+    const total = rows.reduce((x, [, c]) => x + c.dealt, 0) || 1;
+    md.push(`| **${s.id}** | ${[0, 1, 2].map((i) => (rows[i] ? `${rows[i][0]}: ${k(rows[i][1].dealt / games)}/game, ${pct(rows[i][1].dealt / total)} of its damage, return ${eff(rows[i][1]).toFixed(1)}` : '')).join(' | ')} |`);
+  }
+  const types = Object.entries(overall).filter(([, c]) => c.fielded > 0).sort((a, b) => eff(b[1]) - eff(a[1]));
+  const effs = types.map(([, c]) => eff(c)).sort((a, b) => a - b);
+  const medianEff = effs[Math.floor(effs.length / 2)] || 1;
+  md.push('', '### Every unit type, best return first', '', `Over all ${results.length} games (each game has two leaders). Return = damage dealt / credits fielded; "lost" = how much of what was fielded was destroyed. The median return is ${medianEff.toFixed(2)}.`, '',
+    '| unit | fielded | damage dealt | return | destroyed (of fielded) | vs median |', '|---|---:|---:|---:|---:|---:|',
+    ...types.map(([t, c]) => `| ${t} | ${k(c.fielded)} | ${k(c.dealt)} | ${eff(c).toFixed(2)} | ${pct(c.lost / c.fielded)} | ${(eff(c) / medianEff).toFixed(1)}x |`), '',
+    `Low hanging fruit: ${types.filter(([, c]) => eff(c) > 2 * medianEff).map(([t, c]) => `**${t}** (${(eff(c) / medianEff).toFixed(1)}x the median return)`).join(', ') || 'no unit returns more than twice the median'}. Units under a third of the median: ${types.filter(([, c]) => eff(c) < medianEff / 3).map(([t]) => t).join(', ') || 'none'} (support units that deal little damage by design will always be here).`, '');
   const out = stats.filter((s) => Math.abs(s.mean - 0.5) > s.ci);
   md.push('## Worth a look', '', out.length ? out.map((s) => `- **${s.id}** scores ${pct(s.mean)} ± ${(s.ci * 100).toFixed(0)}: ${s.mean > 0.5 ? 'stronger' : 'weaker'} than the field, outside the noise`).join('\n') : 'No leader is outside the noise: none can be called stronger or weaker than the field on these games.', '',
     ...[...new Set(stats.flatMap((s) => Object.entries(perMap[s.id] ?? {}).filter(([, p]) => p.length >= 4 && Math.abs(mean(p) - 0.5) > 0.2).map(([m, p]) => `- ${s.id} on ${m}: ${pct(mean(p))}`)))], '',

@@ -105,13 +105,20 @@ async function main() {
   });
   const valueMedian = [...stats.map((s) => s.value)].sort((a, b) => a - b)[Math.floor(stats.length / 2)];
 
-  // distilled by category: every pair of an attacking category and a defending one, mean and median of the net
+  // Distilled by category. A pair of units is a fight with two sides: the value of A against D is the average of A striking first
+  // (net of A attacking D) and A being struck first (minus the net of D attacking A). One that cannot hit the other counts 0 for its side.
   const cats = [...new Set(ids.map((id) => registry.unit(id).category))];
   const median = (xs) => { const v = [...xs].sort((a, b) => a - b); return v.length ? (v.length % 2 ? v[(v.length - 1) / 2] : (v[v.length / 2 - 1] + v[v.length / 2]) / 2) : null; };
   const catOf = (id) => registry.unit(id).category;
-  const nets = (aCat, dCat, unit = null) => rows.filter((r) => catOf(r.attacker) === aCat && catOf(r.defender) === dCat && (unit == null || r.attacker === unit)).map((r) => r.net);
-  const attCats = cats.filter((c) => attackers.some((a) => catOf(a) === c));
-  const defCats = cats.filter((c) => ids.some((d) => catOf(d) === c) && rows.some((r) => catOf(r.defender) === c));
+  const both = (a, d) => {
+    const first = by.get(a)?.get(d)?.net ?? null;
+    const second = by.get(d)?.get(a)?.net ?? null;
+    return first == null && second == null ? null : ((first ?? 0) - (second ?? 0)) / 2;
+  };
+  const nets = (aCat, dCat, unit = null) => ids.filter((x) => catOf(x) === aCat && (unit == null || x === unit))
+    .flatMap((x) => ids.filter((d) => catOf(d) === dCat && d !== x).map((d) => both(x, d)).filter((v) => v != null));
+  const attCats = cats.filter((c) => ids.some((x) => catOf(x) === c) && c !== 'mine');
+  const defCats = attCats;
   const cell2 = (xs) => (xs.length ? `${round(mean(xs), 0)} / ${round(median(xs), 0)}` : '·');
   const catRows = [];
   for (const a of attCats) for (const d of defCats) { const xs = nets(a, d); if (xs.length) catRows.push({ attacker: a, defender: d, pairs: xs.length, mean: mean(xs), median: median(xs) }); }
@@ -120,17 +127,18 @@ async function main() {
   mkdirSync(out, { recursive: true });
   writeFileSync(`${out}/unit-trades.csv`, ['attacker,defender,hp_dealt,hp_taken_back,credits_dealt,credits_taken,net,value_per_credit,kills',
     ...rows.map((r) => [r.attacker, r.defender, round(r.hit), round(r.back), round(r.dealt, 0), round(r.taken, 0), round(r.net, 0), round(r.value, 3), r.kills ? 1 : 0].join(','))].join('\n') + '\n');
-  writeFileSync(`${out}/category-trades.csv`, ['attacker_category,defender_category,pairs,mean_net,median_net', ...catRows.map((r) => [r.attacker, r.defender, r.pairs, round(r.mean, 0), round(r.median, 0)].join(','))].join('\n') + '\n');
+  writeFileSync(`${out}/category-trades.csv`, ['category,against_category,pairs,mean_net,median_net', ...catRows.map((r) => [r.attacker, r.defender, r.pairs, round(r.mean, 0), round(r.median, 0)].join(','))].join('\n') + '\n');
   writeFileSync(`${out}/unit-matrix.csv`, [['attacker\\defender', ...ids].join(','), ...attackers.map((a) => [a, ...ids.map((d) => round(by.get(a).get(d)?.net, 0))].join(','))].join('\n') + '\n');
 
   const md = [`# Unit trades`, '', `${attackers.length} armed units against ${ids.length} units, one attack each at full HP in the open. \`net\` = credits of damage dealt minus credits taken back; \`value\` = damage dealt per credit of the attacker's price (averaged over everything it can hit).`, '',
     '| unit | cost | can hit | avg net | win share | value/credit | as a target (avg loss to attackers) | best against | worst against |', '|---|---:|---:|---:|---:|---:|---:|---|---|',
     ...[...stats].sort((x, y) => y.value - x.value).map((s) => `| ${s.id} | ${s.cost} | ${s.targets}/${ids.length} | ${round(s.mean, 0)} | ${(s.winShare * 100).toFixed(0)}% | ${round(s.value, 2)} | ${round(s.defence, 0)} | ${s.best.join(', ')} | ${s.worst.join(', ')} |`), ''];
-  md.push('## By category: mean / median net credits per exchange', '', `Attacking category down, defending category across; ${defCats.map((c) => `${c} (${ids.filter((d) => catOf(d) === c).length})`).join(', ')} units as targets. Ranged units are assumed to strike first and be answered second (unless the target is ranged too), so their rows read high or low depending on that assumption.`, '',
-    `| attacker \\ target | ${defCats.join(' | ')} |`, `|---|${defCats.map(() => '---:').join('|')}|`,
-    ...attCats.map((a) => `| **${a}** (${attackers.filter((x) => catOf(x) === a).length}) | ${defCats.map((d) => cell2(nets(a, d))).join(' | ')} |`), '',
-    '### Each unit against each category (mean net)', '', `| unit | ${defCats.join(' | ')} |`, `|---|${defCats.map(() => '---:').join('|')}|`,
-    ...[...stats].sort((x, y) => (catOf(x.id) === catOf(y.id) ? y.mean - x.mean : cats.indexOf(catOf(x.id)) - cats.indexOf(catOf(y.id)))).map((st) => `| ${st.id} (${catOf(st.id)}${registry.unit(st.id).weapons.some((w) => registry.weapon(w).indirect) || hasAttribute(registry.unit(st.id), 'indirect') ? ', ranged' : ''}) | ${defCats.map((d) => { const xs = nets(catOf(st.id), d, st.id); return xs.length ? round(mean(xs), 0) : '·'; }).join(' | ')} |`), '');
+  md.push('## By category: mean / median value of a fight, both sides averaged', '', `Each pair of units is counted from both ends: the value for A against D is the average of A striking first (credits dealt minus credits taken back) and A being struck first (minus what D's attack nets D). So a positive number means the category comes out ahead whoever shoots first. A unit that cannot hit the other counts zero for its side. Rows are the unit's own category, columns the category it is up against; ${attCats.map((c) => `${c} (${ids.filter((d) => catOf(d) === c).length})`).join(', ')}. A ranged unit is assumed to strike first and be answered second, unless the other is ranged too, so ranged units always score a little oddly.`, '',
+    `| category \\ against | ${defCats.join(' | ')} |`, `|---|${defCats.map(() => '---:').join('|')}|`,
+    ...attCats.map((a) => `| **${a}** | ${defCats.map((d) => cell2(nets(a, d))).join(' | ')} |`), '',
+    '### Each unit against each category (mean, both sides averaged)', '', `| unit | ${defCats.join(' | ')} |`, `|---|${defCats.map(() => '---:').join('|')}|`,
+    ...[...ids].filter((id) => catOf(id) !== 'mine').sort((x, y) => (catOf(x) === catOf(y) ? mean(nets(catOf(y), 'infantry', y).concat(nets(catOf(y), 'vehicle', y))) - mean(nets(catOf(x), 'infantry', x).concat(nets(catOf(x), 'vehicle', x))) : cats.indexOf(catOf(x)) - cats.indexOf(catOf(y))))
+      .map((id) => `| ${id} (${catOf(id)}${registry.unit(id).weapons.some((w) => registry.weapon(w).indirect) || hasAttribute(registry.unit(id), 'indirect') ? ', ranged' : ''}) | ${defCats.map((d) => { const xs = nets(catOf(id), d, id); return xs.length ? round(mean(xs), 0) : '·'; }).join(' | ')} |`), '');
   const strong = stats.filter((s) => s.value > 2 * valueMedian);
   const weak = stats.filter((s) => s.value < 0.5 * valueMedian || s.winShare < 0.2);
   md.push('## Worth a look', '', strong.length ? `Strong for their price (value/credit more than twice the median, ${round(valueMedian, 2)}): ${strong.map((s) => `${s.id} (${round(s.value, 2)})`).join(', ')}.` : 'No unit stands out as strong for its price.', '',
@@ -143,7 +151,7 @@ async function main() {
     const cells = attackers.map((a) => `<tr><th>${a}</th>${ids.map((d) => { const t = by.get(a).get(d); return t ? `<td style="background:${col(t.net, 0)}" title="${a} vs ${d}: ${round(t.hit, 1)} HP dealt, ${round(t.back, 1)} back, net ${round(t.net, 0)}">${round(t.net, 0)}</td>` : '<td class="n"></td>'; }).join('')}</tr>`).join('');
     writeFileSync(`${out}/unit-matrix.html`, `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Unit trades</title><style>body{font:12px system-ui;margin:12px}table{border-collapse:collapse}td,th{padding:2px 4px;text-align:right;border:1px solid #ddd}th{font-weight:600;background:#f4f4f4;position:sticky;left:0}thead th{position:sticky;top:0;writing-mode:vertical-rl;left:auto}td.n{background:#eee}</style><h2>Unit trades: net credits of one attack (row attacks column)</h2><table><thead><tr><th></th>${ids.map((d) => `<th>${d}</th>`).join('')}</tr></thead><tbody>${cells}</tbody></table>`);
   }
-  console.log(md.slice(md.indexOf('## By category: mean / median net credits per exchange'), md.indexOf('### Each unit against each category (mean net)')).join('\n'));
+  console.log(md.slice(md.indexOf('## By category: mean / median value of a fight, both sides averaged'), md.indexOf('### Each unit against each category (mean, both sides averaged)')).join('\n'));
   console.log(`\nwrote ${out}/unit-trades.csv, unit-matrix.csv, unit-report.md${opts.html ? ', unit-matrix.html' : ''}`);
 }
 
