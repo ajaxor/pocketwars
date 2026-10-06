@@ -196,3 +196,6 @@ The review's points and where they stand, then what the new system leaves open. 
   some of those start units, or trimming the others', would restore the fairness check.
 - **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
   still moves anywhere (and the AI still sees everything).
+- **The AI builds many copters and vintage bombers and gets little from them.** Copters: about 29M credits fielded over 720 games, return 0.2 (0.7x the
+  median); vintage bombers ~10M, return 0.18, with few losses. They are probably built and then held back (fuel and range with the shorter air
+  moves, or no worthwhile target). Worth a look at the flier goals before cutting their price further.

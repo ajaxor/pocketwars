@@ -27,3 +27,19 @@ The default run is 720 games (about 4 minutes on two cores); `--seeds 3` firms u
 The leader report also has a "Where the damage comes from" section: for each leader its top three unit types by credits of enemy value
 destroyed (damage dealt, counterattacks included), and for every unit type the **return**: damage dealt per credit fielded (built, plus
 starting units), compared with the median. A unit far above the median for every leader that fields it is the first place to look.
+
+## Balance log
+
+Changes made from these reports (return = damage dealt per credit fielded, from `balance:leaders`; "median" = the median unit's return):
+
+- **Round 1.** Fighter 10,000 -> 13,000 and move 9 -> 6 (it was the top damage dealer for 8 of 9 leaders, 3.5x the median return); vintage
+  fighter 5,000 -> 6,000, move 7 -> 5; stealth fighter 16,000 -> 19,000, move 9 -> 6. Vintage and torpedo bombers moved to high air (a
+  conscript could shoot them). Aircraft and vehicle moves cut by about a quarter (fighters most; vehicles floor 3, aircraft floor 4), motorcycle
+  5 -> 4, no road bonus. Fog vision no longer matches movement; fogged players cannot move into never-seen tiles.
+- **Round 2.** Submarine 9,000 -> 11,000 (3.7x median); SAM launcher 9,000 -> 11,000; rocket launcher 9,000 -> 10,000; rocket buggy 4,500 -> 5,000;
+  destroyer 7,000 -> 8,000; gun boat 3,000 -> 3,500; cruiser 12,000 -> 13,000; diver 4,500 -> 5,500 (the leader doing best on naval maps leaned
+  on it); copter 8,000 -> 7,000; stealth copter 12,000 -> 10,000; stealth bomber 22,000 -> 19,000; dreadnought 34,000 -> 30,000; light bombs 58 -> 68
+  damage. Start armies: ludwig's start fighter became a radar plane and lysandra's a copter, to keep the starting armies within 4,500 of each
+  other. (Marine and mech cuts were tried and reverted: the trade matrix showed them overshooting.)
+- **Result** (720 games each): leaders went from 40-67% to 46-55% average score against the field. Fighters' return fell from 3.5x to 2.2x
+  the median. Still above the pack: submarine, destroyer, fighter (and SAM launcher, on a very small sample).

@@ -137,7 +137,7 @@
           { "unit": "hover_tank", "at": [0, 1] }
         ],
         "airfield": [
-          { "unit": "fighter", "at": [0, 1] }
+          { "unit": "radar_plane", "at": [0, 1] }
         ]
       }
     },
@@ -230,7 +230,7 @@
           { "unit": "mech", "at": [0, 1] }
         ],
         "airfield": [
-          { "unit": "fighter", "at": [0, 1] }
+          { "unit": "copter", "at": [0, 1] }
         ]
       }
     }

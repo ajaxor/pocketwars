@@ -122,7 +122,7 @@
   "rocket_launcher": {
     "name": "Rocket Launcher",
     "category": "vehicle",
-    "cost": 9000,
+    "cost": 10000,
     "move": 3,
     "moveClass": "wheels",
     "layer": "ground",
@@ -162,7 +162,7 @@
   "copter": {
     "name": "Copter",
     "category": "aircraft",
-    "cost": 8000,
+    "cost": 7000,
     "move": 5,
     "moveClass": "air",
     "layer": "low_air",
@@ -202,7 +202,7 @@
   "destroyer": {
     "name": "Destroyer",
     "category": "naval",
-    "cost": 7000,
+    "cost": 8000,
     "move": 7,
     "moveClass": "naval",
     "layer": "surface",
@@ -215,7 +215,7 @@
   "submarine": {
     "name": "Submarine",
     "category": "naval",
-    "cost": 9000,
+    "cost": 11000,
     "move": 5,
     "moveClass": "naval",
     "layer": "surface",
@@ -229,7 +229,7 @@
   "cruiser": {
     "name": "Cruiser",
     "category": "naval",
-    "cost": 12000,
+    "cost": 13000,
     "move": 6,
     "moveClass": "naval",
     "layer": "surface",
@@ -326,7 +326,7 @@
   "gun_boat": {
     "name": "Gun Boat",
     "category": "naval",
-    "cost": 3000,
+    "cost": 3500,
     "move": 8,
     "moveClass": "naval",
     "layer": "surface",
@@ -411,7 +411,7 @@
   "stealth_bomber": {
     "name": "Stealth Bomber",
     "category": "aircraft",
-    "cost": 22000,
+    "cost": 19000,
     "move": 6,
     "moveClass": "air",
     "layer": "high_air",
@@ -425,7 +425,7 @@
   "stealth_copter": {
     "name": "Stealth Copter",
     "category": "aircraft",
-    "cost": 12000,
+    "cost": 10000,
     "move": 5,
     "moveClass": "air",
     "layer": "low_air",
@@ -468,7 +468,7 @@
   "diver": {
     "name": "Diver",
     "category": "infantry",
-    "cost": 4500,
+    "cost": 5500,
     "move": 2,
     "moveClass": "diver",
     "layer": "ground",
@@ -539,7 +539,7 @@
   "sam_launcher": {
     "name": "SAM Launcher",
     "category": "vehicle",
-    "cost": 9000,
+    "cost": 11000,
     "move": 3,
     "moveClass": "tread",
     "layer": "ground",
@@ -553,7 +553,7 @@
   "rocket_buggy": {
     "name": "Rocket Buggy",
     "category": "vehicle",
-    "cost": 4500,
+    "cost": 5000,
     "move": 5,
     "moveClass": "wheels",
     "layer": "ground",
@@ -637,7 +637,7 @@
   "dreadnought": {
     "name": "Dreadnought",
     "category": "naval",
-    "cost": 34000,
+    "cost": 30000,
     "move": 3,
     "moveClass": "naval",
     "layer": "surface",
