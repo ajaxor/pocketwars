@@ -43,8 +43,8 @@ const flame = (g, s, x, y, h, w, sway, col) => {   // a teardrop standing on its
 };
 const flameTrooper = (g, o) => {
   const { s, dk, bb, sw } = body(g, o, (bb) => {   // drawn before the torso, so the tanks stand behind the body, toward the left
-    box(g, o.s, -.27, -.3 + bb, .13, .44, .065 * o.s, '#d3d6db');                                          // a plain white tank, a little shaded (the far one)
-    box(g, o.s, -.18, -.3 + bb, .13, .44, .065 * o.s, '#f3f4f6');                                          // and the near one
+    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#d3d6db');                                          // a plain white tank, a little shaded (the far one)
+    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#f3f4f6');                                          // and the near one
   });
   helmet(g, s, bb, dk);
   const y0 = -.01 + bb, y1 = -.07 + bb + sw;
@@ -77,10 +77,10 @@ const shockTrooper = (g, o) => {
   helmet(g, s, bb, dk);
   const glow = o.run ? .6 + .4 * Math.sin(o.w * 11 + o.ph) : .7;
   g.save(); g.translate(-.02 * s, (.02 + bb + sw * .3) * s); g.rotate(-.3 + sw * .4);                           // held across the body, muzzle up
-  box(g, s, -.2, -.075, .22, .15, 3, '#3b3f48');                                                               // the big housing at the base, like a minigun's motor block
-  box(g, s, -.2, -.075, .22, .04, 2, '#555a64');                                                               // its lighter top plate
-  box(g, s, -.14, .06, .06, .1, 1, '#555a64');                                                                 // the grip under it
-  box(g, s, .02, -.045, .3, .03, 1, '#555a64'); box(g, s, .02, .015, .3, .03, 1, '#555a64');                   // two short barrels side by side
+  box(g, s, -.2, -.075, .22, .15, 3, '#0d0e10');                                                               // the big housing at the base, like a minigun's motor block
+  box(g, s, -.2, -.075, .22, .04, 2, '#0d0e10');                                                               // its lighter top plate
+  box(g, s, -.14, .06, .06, .1, 1, '#0d0e10');                                                                 // the grip under it
+  box(g, s, .02, -.045, .3, .03, 1, '#0d0e10'); box(g, s, .02, .015, .3, .03, 1, '#0d0e10');                   // two short barrels side by side
   for (const x of [.08, .17, .26]) box(g, s, x, -.06, .03, .13, 1, COPPER);                                    // copper rings round them
   disc(g, s, .35, 0, .05 * glow + .03, 'rgba(159,232,255,.35)'); disc(g, s, .35, 0, .035, ARC);                // the glowing ball at the muzzle
   if (o.run) {                                                                                                 // a little arc that jumps about
@@ -91,14 +91,14 @@ const shockTrooper = (g, o) => {
   g.restore();
 };
 
-// Swordsman: a plain soldier in a helmet with a katana held up and forward: a pale blade, a dark grip and a small guard.
+// Swordsman: a plain soldier in a helmet with a katana held up and forward: a dark grey blade, a black grip and a small guard.
 const swordsman = (g, o) => {
   const { s, dk, bb, sw } = body(g, o);
   helmet(g, s, bb, dk);
   g.save(); g.translate(-.02 * s, (.04 + bb + sw * .5) * s); g.rotate(-.85 + sw * .5);
-  box(g, s, -.1, -.018, .14, .036, 1, INK);                                                                      // the grip
+  box(g, s, -.1, -.02, .14, .04, 1, '#0d0e10');                                                                      // the grip
   box(g, s, .04, -.05, .025, .1, 1, '#c9a227');                                                                  // the guard
-  poly(g, s, [[.065, -.014], [.43, -.014], [.47, -.03], [.43, .004], [.065, .014]], '#e4e8ee');                  // the long, slightly curved blade
+  poly(g, s, [[.065, -.026], [.43, -.026], [.48, -.046], [.43, .008], [.065, .026]], '#4a4f58');                  // the long, slightly curved blade
   g.restore();
 };
 
@@ -137,15 +137,12 @@ const k9Team = (g, o) => {
 // Missile tank: the rocket buggy grown up: a squat tracked hull with heavy armour skirts and a front glacis, carrying a raised rack of three
 // missiles side by side (white, red-nosed), angled up and forward.
 const missileTank = (g, { s, c, dk, w, run, j }) => {
-  const jj = j / s;
+  const jj = j / s, P = (pts) => pts.map(([x, y]) => [x, y + jj]);
   treads(g, s, -.36, .36, .12 + jj, .16, w, run);
-  poly(g, s, [[-.38, .12 + jj], [-.38, -.02 + jj], [-.3, -.09 + jj], [.2, -.09 + jj], [.4, .03 + jj], [.4, .12 + jj]], c);   // a low wedge hull
-  poly(g, s, [[-.38, .12 + jj], [-.38, .07 + jj], [.4, .07 + jj], [.4, .12 + jj]], dk);                          // its dark lower skirt
-  poly(g, s, [[-.3, -.09 + jj], [-.26, -.28 + jj], [.1, -.28 + jj], [.2, -.09 + jj]], dk);                       // the angular launcher block
-  for (const y of [-.25, -.17]) for (const x of [-.24, -.13, -.02]) {                                           // two rows of rectangular ports
-    box(g, s, x, y + jj, .09, .06, 1, INK); box(g, s, x + .055, y + .015 + jj, .025, .03, 1, RED);
-  }
-  box(g, s, .22, -.04 + jj, .1, .04, 1, GLASS);                                                                  // the driver's slit on the front slope
+  poly(g, s, P([[-.3, -.1], [-.4, -.2], [-.3, -.14]]), dk); poly(g, s, P([[.2, -.14], [.3, -.26], [.32, -.07]]), dk);   // swept decorative fins: rear and front
+  poly(g, s, P([[-.4, .12], [-.4, -.03], [-.3, -.1], [-.27, -.25], [-.1, -.29], [.1, -.29], [.2, -.14], [.42, .0], [.42, .12]]), c);   // the whole body in one piece: a stepped, swept wedge
+  for (const x of [-.2, .0]) { box(g, s, x, -.23 + jj, .17, .06, 1, INK); box(g, s, x + .12, -.215 + jj, .035, .03, 1, RED); }   // two rectangular missile ports
+  box(g, s, .24, -.04 + jj, .1, .04, 1, GLASS);                                                                  // the driver's slit on the front slope
 };
 
 // Remote technical: the technical with nobody in it: a radio mast on the cab with a blinking light.
@@ -268,10 +265,9 @@ const broadcastTruck = (g, { s, c, dk, w, ph, run, j }) => {
 // ---- air -------------------------------------------------------------------------------------------------------------------------
 // Armoured airship: a fat envelope with an armoured belly band and two tail fins, and a gondola with one big bomb slung under it.
 const airship = (g, { s, c, dk, w, run, ph }) => {
-  poly(g, s, [[-.3, -.1], [-.5, -.34], [-.52, -.1], [-.32, -.02]], c);                                         // the flared tail fins, the hull's colour
-  poly(g, s, [[-.3, .02], [-.5, .26], [-.52, .02], [-.32, -.06]], c);
+  poly(g, s, [[-.32, -.1], [-.48, -.25], [-.5, -.1], [-.33, -.03]], c);                                         // the flared tail fins, the hull's colour
+  poly(g, s, [[-.32, .02], [-.48, .17], [-.5, .02], [-.33, -.05]], c);
   oval(g, s, 0, -.04, .44, .2, c);                                                                              // the envelope
-  box(g, s, -.3, .06, .6, .04, 2, dk);                                                                          // the armoured belly band
   stroke(g, s, -.12, .14, -.12, .2, 3, INK); stroke(g, s, .14, .14, .14, .2, 3, INK);                           // the struts
   box(g, s, -.26, .19, .5, .1, 4, dk);                                                                          // the undercarriage
   propDisc(g, s, -.5, -.04, .11, w, run, ph, INK);                                                              // the tail propeller
