@@ -178,9 +178,12 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Training maps sit outside the game** (`tools/ai/maps/`): Archipelago has HQs that cannot reach each other on foot, which the shipped-map
   tests forbid. Shipping a true islands map would mean relaxing that rule on purpose.
 - **Tools import a test helper** (`tests/helpers/node-io.js` for reading data in Node), as the existing tools already did.
-- **Rare `unreachable` engine error.** A few games in a long tuning run (about 3 in 100 rounds, on island_chain, twin_fleets and
-  harbor_front) end with the strategist giving an order the engine rejects as `unreachable`, probably a plan whose path was blocked
-  mid-turn. It counts as a loss and is logged by the arena/tuner; it wants a seeded repro and a `stillGood()` check for moves.
+- **Fixed: the `unreachable` engine error (October 2026).** A hidden enemy submarine that was spotted, lost from sight (a spotter moved on)
+  and spotted again was only news the first time: the strategist kept a cached plan routed through its tile once it became visible, and the
+  engine refused the move. The plan cache is now cleared whenever a visible enemy appears or one that is still alive drops out of sight;
+  two seeded regression tests in `tests/ai/tuning.test.js` replay the failing games. `stillGood` still trusts `wait` orders without a reach
+  check, so any other way a route can change mid-turn would show up the same way (the arena logs it and counts a loss).
+
 - **Short games are weak evidence.** At 8 days nearly every parameter value scores about 50%: an opening says little about the game.
   They are kept for cheap noise reduction and given little weight; if tuning still drifts toward fast openers, lower their weight or drop
   the short window (`--screen 0,5,0`).
@@ -190,12 +193,15 @@ The review's points and where they stand, then what the new system leaves open. 
   and little signal, many of them random-walk: a pass that pulls irrelevant numbers back toward their defaults would be cleaner.
 - **Leader balance (AI-played) shows real spread.** First run: vex 67%, ludwig 57% against rex 40%, ada 43% (each ±4 over 160 games). Part of it
   may be how well the strategist uses each kit rather than the kit itself; the unit trade report (`docs/balance.md`) is the check on the numbers.
-  The `unreachable` engine error seen in tuning also turned up once in this run (archipelago).
 - **Starting armies are uneven after the fighter price rise.** The leaders' start loadouts include fighters (vex, hiroshi, ludwig, lysandra) that now
   cost 13,000, so the cheapest and dearest start armies differ by 6,200 (the leaders test was loosened from 4,000 to 6,500 to allow it). Swapping
   some of those start units, or trimming the others', would restore the fairness check.
 - **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
   still moves anywhere (and the AI still sees everything).
-- **The AI builds many copters and vintage bombers and gets little from them.** Copters: about 29M credits fielded over 720 games, return 0.2 (0.7x the
-  median); vintage bombers ~10M, return 0.18, with few losses. They are probably built and then held back (fuel and range with the shorter air
-  moves, or no worthwhile target). Worth a look at the flier goals before cutting their price further.
+- **Fixed in part: copters and vintage bombers were valued without their fuel.** Production and the attack goals treated a flier as able to
+  reach any enemy, but a copter (fuel 4, move 5) can only fight about 10 tiles from where it refuels and a vintage bomber (fuel 3, move 4) about
+  8. They were built to chase targets two turns away, turned for home before arriving, and struck on only 16% of their turns. Production now
+  counts only enemies within the round trip of an own refuel spot (plus the enemy's two turns of advance) and the goals skip targets it could not
+  get back from. 400-game A/B against the old valuation: 54% +-3, no map worse. Copters built 228 -> 147 per 60 games, strikes per copter 1.3 -> 1.6.
+  Still open: about 55% of vintage bombers never strike (they only hit artillery and ships, which are often absent, and the enemy's
+  *potential* builds count towards their worth), and 35% of copters never strike (fighters kill most of them).

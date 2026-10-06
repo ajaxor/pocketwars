@@ -47,6 +47,10 @@ export function typeWorth(sit, type, x, y, ctx) {
   const mc = def.moveClass;
   const ids = ctx.areas.get(mc) ?? ctx.areas.set(mc, areasAround(game, mc, x, y)).get(mc);
   const { max: range } = reachOf(game.registry, def);
+  // a flier on a tank of fuel can only fight what lies within its round trip of a place it refuels, once the enemy has come a couple of
+  // turns closer: worth nothing against the rest
+  const trip = roundTrip(game, def);
+  const spots = trip < Infinity ? (fuelSpots(sit, def).length ? fuelSpots(sit, def) : [[x, y]]) : [];
   let combat = 0;
   if (ctx.mix.length) {
     let dealt = 0;
@@ -55,7 +59,8 @@ export function typeWorth(sit, type, x, y, ctx) {
     for (const e of ctx.mix) {
       const ed = game.registry.unit(e.type);
       total += e.weight;
-      if (range && canGet(game, mc, ids, e.x, e.y, range)) dealt += e.weight * Math.min(1, matchup(game, type, e.type) / sit.maxHp) * ed.cost;
+      const near = !spots.length || spots.some(([hx, hy]) => distance(e.x, e.y, hx, hy) <= trip + range + (ed.move ?? 0) * 2);
+      if (range && near && canGet(game, mc, ids, e.x, e.y, range)) dealt += e.weight * Math.min(1, matchup(game, type, e.type) / sit.maxHp) * ed.cost;
       const er = reachOf(game.registry, ed).max;
       const theirs = areasAround(game, ed.moveClass, e.x, e.y);
       if (er && canGet(game, ed.moveClass, theirs, x, y, er + (ed.move ?? 0) * 2)) taken += e.weight * Math.min(1, matchup(game, e.type, type) / sit.maxHp) * def.cost;

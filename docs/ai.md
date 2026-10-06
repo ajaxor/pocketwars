@@ -64,6 +64,7 @@ Which engine plays whom: `game.aiSetup[player] = { engine, profile?, history? }`
 - **Landings**: carriers (transport copter, troop transport, APC) are worth building when there is land worth taking that no walker of
   ours can reach. They head for tiles next to that land, close to a property, and drop their troops when the property is within a walk;
   the troops then capture. Island land and the enemy HQ come first. A flier only plans landings it can make and still fly home to refuel.
+  Fuel limits fighting too: production counts a flier's damage only against enemies within its round trip of an own refuel spot (`roundTrip`, plus two turns of the enemy's advance), and its attack goals skip targets it could not get back from.
 - Units that swim (marines, hover and amphibious tanks, divers) simply see the sea as passable and are valued accordingly.
 - The `island_hopping`, `amphibious_assault` and `coastal_bombardment` plans lean into all of this.
 

@@ -179,10 +179,13 @@ function attackGoals(sit, unit, mc, ids, start = 0) {
   const { min, max } = reachOf(game.registry, def);
   const out = [];
   if (!max) return out;
+  const trip = roundTrip(game, def);   // a flier cannot chase what it could not get back from: it would turn for home before it arrived
+  const homes = trip < Infinity && usesFuel(game, unit) ? fuelHomes(game, unit) : [];
   for (const e of sit.army) {
     const dmg = matchup(game, unit.type, e.type);
     if (dmg <= 0.5) continue;
     if (!canGet(game, mc, ids, e.x, e.y, max)) continue;
+    if (homes.length && homes.every(([hx, hy]) => distance(e.x, e.y, hx, hy) > trip + max)) continue;
     const weak = Math.max(0, 3 - dmg / 2);   // prefer what it hurts most
     ring(game, mc, ids, e.x, e.y, Math.max(1, min), max, start + weak, out);
   }

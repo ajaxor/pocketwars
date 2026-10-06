@@ -105,17 +105,18 @@ export function* turn(game, ctx) {
   const wants = (u) => game.state.units.includes(u) && u.owner === player && !u.done && !isStructure(game, u);
   let pending = game.state.units.filter((u) => wants(u) && !u.fresh);
   const cache = new Map();
-  const seen = new Set(sit.enemies.map((e) => e.id));
+  let sight = new Set(sit.enemies.map((e) => e.id));
 
   for (let guard = 0; guard < 500 && !game.isOver; guard++) {
     pending = pending.filter((u) => wants(u) && !u.fresh);
     if (!pending.length) break;
     sit.refresh();
     sit.remaining = pending;
-    if (sit.enemies.some((e) => !seen.has(e.id))) {   // an enemy came to light (a cloaked unit bumped into): every plan is made again
-      cache.clear();
-      for (const e of sit.enemies) seen.add(e.id);
-    }
+    const now = new Set(sit.enemies.map((e) => e.id));
+    // an enemy came to light, or one still alive dropped out of sight (a spotter moved away): routes and threats changed, so every plan
+    // is made again (an enemy that died is handled by `invalidate`)
+    if (sit.enemies.some((e) => !sight.has(e.id)) || [...sight].some((id) => !now.has(id) && game.state.units.some((u) => u.id === id))) cache.clear();
+    sight = now;
     let best = null;
     for (const u of pending) {
       if (!cache.has(u.id)) cache.set(u.id, bestOrder(sit, u));

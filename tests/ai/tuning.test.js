@@ -96,3 +96,14 @@ test('evolution strategy: finds the top of a noisy hill over many dimensions at 
   assert.ok(dist(state.mean) < before * 0.35, `mean moved toward the target: ${before.toFixed(2)} -> ${dist(state.mean).toFixed(2)}`);
   assert.equal(es.ask(state, rng).length, 24);
 });
+
+// Regression: a hidden enemy submarine that was spotted, lost from sight and spotted again left the strategist with a plan through its
+// tile (only a first sighting threw the plans away), and the engine refused the order as `unreachable`. These two seeds hit it on day 9.
+for (const [mapId, leaders] of [['twin_fleets', ['dmitri', 'hiroshi']], ['archipelago', ['harlan', 'ludwig']]]) {
+  test(`the strategist gives no invalid order when a submarine slips in and out of sight (${mapId})`, async () => {
+    const map = await loadAnyMap(readData, registry, mapId);
+    const seat = { engine: registry.ai.default, profile: registry.ai.engines[registry.ai.default] };
+    const r = playMatch(registry, map, { seats: [seat, seat], seed: 1, maxDays: 10, fog: true, leaders });
+    assert.equal(r.error, null, r.error?.message);
+  });
+}
