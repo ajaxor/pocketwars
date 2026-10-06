@@ -43,3 +43,7 @@ Changes made from these reports (return = damage dealt per credit fielded, from 
   other. (Marine and mech cuts were tried and reverted: the trade matrix showed them overshooting.)
 - **Result** (720 games each): leaders went from 40-67% to 46-55% average score against the field. Fighters' return fell from 3.5x to 2.2x
   the median. Still above the pack: submarine, destroyer, fighter (and SAM launcher, on a very small sample).
+- **Round 3 (AI and fuel).** The AI now values fliers within their fuel range (see `docs/ai.md`) and copter and transport copter fuel went 4 -> 6.
+  Copter return rose from 0.2 to 0.39 (the median); leaders now span 44-57% (wider than round 2's 46-55%, since air-heavy leaders gain most), so
+  the next balance pass should start from a fresh run. The leader report gained "Most under-used armed units" (units that never attacked, by
+  credits wasted); about half of all armed units never attack in a game, so read it against that median.

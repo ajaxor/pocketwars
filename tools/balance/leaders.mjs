@@ -64,7 +64,7 @@ async function main() {
   for (const r of results) {
     r.leaders.forEach((l, seat) => {
       for (const [type, c] of Object.entries(r.combat?.[seat] ?? {})) {
-        for (const t of [((credits[l] ??= {})[type] ??= { fielded: 0, dealt: 0, lost: 0 }), (overall[type] ??= { fielded: 0, dealt: 0, lost: 0 })]) { t.fielded += c.fielded; t.dealt += c.dealt; t.lost += c.lost; }
+        for (const t of [((credits[l] ??= {})[type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0 }), (overall[type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0 })]) { t.fielded += c.fielded; t.dealt += c.dealt; t.lost += c.lost; t.units += c.units ?? 0; t.struck += c.struck ?? 0; }
       }
     });
     if (r.error) errors.push(`${r.map}: ${r.job.labels[r.error.seat]}: ${r.error.message}`);
@@ -102,6 +102,15 @@ async function main() {
     '| unit | fielded | damage dealt | return | destroyed (of fielded) | vs median |', '|---|---:|---:|---:|---:|---:|',
     ...types.map(([t, c]) => `| ${t} | ${k(c.fielded)} | ${k(c.dealt)} | ${eff(c).toFixed(2)} | ${pct(c.lost / c.fielded)} | ${(eff(c) / medianEff).toFixed(1)}x |`), '',
     `Low hanging fruit: ${types.filter(([, c]) => eff(c) > 2 * medianEff).map(([t, c]) => `**${t}** (${(eff(c) / medianEff).toFixed(1)}x the median return)`).join(', ') || 'no unit returns more than twice the median'}. Units under a third of the median: ${types.filter(([, c]) => eff(c) < medianEff / 3).map(([t]) => t).join(', ') || 'none'} (support units that deal little damage by design will always be here).`, '');
+  // units bought and never used: armed types ranked by the share of their units that never attacked (a gap in the AI's controller, or a
+  // unit that is not worth its price). Types with a handful of units are left out: too few to say.
+  const armed = Object.entries(overall).filter(([t, c]) => registry.unit(t).weapons?.length && !registry.unit(t).attributes?.heal && !registry.unit(t).attributes?.supply && c.units >= 15);
+  const idle = (c) => 1 - c.struck / c.units;
+  const unused = armed.sort((a, b) => b[1].fielded * idle(b[1]) - a[1].fielded * idle(a[1]));
+  md.push('### Most under-used armed units', '', `Armed unit types with at least 15 units fielded over the ${results.length} games, ranked by the credits spent on units that never attacked at all (killed on arrival counts: the AI paid for it and got nothing; a unit that only captures counts too, so infantry sit high by nature). Healers and suppliers are left out. "Wasted" is the type's credits fielded times the share that never attacked. Read it against the median below and the return column above: a type that is both idle and low-return is probably used badly by the AI; one that is idle but dies quickly may be priced above what it survives to do.`, '',
+    '| unit | units | never attacked | wasted | return | destroyed (of fielded) |', '|---|---:|---:|---:|---:|---:|',
+    ...unused.slice(0, 12).map(([t, c]) => `| ${t} | ${c.units} | ${pct(idle(c))} | ${k(c.fielded * idle(c))} | ${eff(c).toFixed(2)} | ${pct(c.lost / c.fielded)} |`), '',
+    `Median share that never attacked, over all ${armed.length} armed types: ${pct(armed.map(([, c]) => idle(c)).sort((a, b) => a - b)[Math.floor(armed.length / 2)] ?? 0)}.`, '');
   const out = stats.filter((s) => Math.abs(s.mean - 0.5) > s.ci);
   md.push('## Worth a look', '', out.length ? out.map((s) => `- **${s.id}** scores ${pct(s.mean)} ± ${(s.ci * 100).toFixed(0)}: ${s.mean > 0.5 ? 'stronger' : 'weaker'} than the field, outside the noise`).join('\n') : 'No leader is outside the noise: none can be called stronger or weaker than the field on these games.', '',
     ...[...new Set(stats.flatMap((s) => Object.entries(perMap[s.id] ?? {}).filter(([, p]) => p.length >= 4 && Math.abs(mean(p) - 0.5) > 0.2).map(([m, p]) => `- ${s.id} on ${m}: ${pct(mean(p))}`)))], '',

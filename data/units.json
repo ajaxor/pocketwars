@@ -156,7 +156,7 @@
     "weapons": [],
     "toughness": 1.5,
     "armor": 0,
-    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
+    "attributes": { "fuel": {"max": 6, "low": 1}, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
     "render": { "sprite": "transport_copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "copter": {
@@ -170,7 +170,7 @@
     "weapons": ["rocket_pods"],
     "toughness": 1.8,
     "armor": 0,
-    "attributes": { "fuel": {"max": 4, "low": 1}, "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 6, "low": 1}, "ignoresTerrainDefense": true },
     "render": { "sprite": "copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "fighter": {
