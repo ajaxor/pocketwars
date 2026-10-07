@@ -133,8 +133,8 @@ const k9Team = (g, o) => {
 };
 
 // ---- vehicles ------------------------------------------------------------------------------------------------------------------
-// Missile tank: the standard tank with the barrel swapped for two missile ports: a one-colour hull and a sharp wedge turret set back from
-// the front, the ports faint rectangular outlines tilted up on the turret's side.
+// Missile tank: the standard tank with the barrel swapped for a missile port: a one-colour hull and a sharp wedge turret set back from
+// the front, the port a faint rectangular outline set along the turret's sloped front edge.
 const faintRect = (g, s, cx, cy, w, h, rot) => {
   g.save(); g.translate(cx * s, cy * s); g.rotate(rot);
   g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(-w * s / 2, -h * s / 2, w * s, h * s);
@@ -148,7 +148,7 @@ const missileTank = (g, { s, c, w, run, j }) => {
   poly(g, s, turret.map(([x, y]) => [x, y + jj]), c);                                                            // the turret
   g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = Math.max(1, s * .012); g.beginPath();                         // its faint seam
   turret.forEach(([x, y], i) => (i ? g.lineTo(x * s, (y + jj) * s) : g.moveTo(x * s, (y + jj) * s))); g.closePath(); g.stroke();
-  faintRect(g, s, -.08, -.17 + jj, .17, .04, -.3); faintRect(g, s, -.07, -.105 + jj, .17, .04, -.3);            // two missile ports, tilted up, inside the turret
+  faintRect(g, s, .049, -.142 + jj, .18, .05, .66);                                                            // the missile port, along the turret's sloped front edge
 };
 
 // Remote technical: the technical with nobody in it: a radio mast on the cab with a blinking light.
