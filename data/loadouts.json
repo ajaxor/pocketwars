@@ -121,7 +121,7 @@
     "ludwig": {
       "infantry": "shock_trooper",
       "build": {
-        "barracks": ["shock_trooper", "flamethrower", "medic", "mech"],
+        "barracks": ["shock_trooper", "medic", "flamethrower", "mech"],
         "factory": ["rocket_buggy", "supply_truck", "artillery", "flak", "hover_tank", "rocket_launcher"],
         "airfield": ["stealth_copter", "radar_plane", "bomber", "fighter"],
         "shipyard": ["diver", "destroyer", "cruiser", "missile_sub", "battleship"]
@@ -171,7 +171,7 @@
     "chase": {
       "infantry": "motorcycle",
       "build": {
-        "barracks": ["flamethrower", "motorcycle", "sniper"],
+        "barracks": ["motorcycle", "flamethrower", "sniper"],
         "factory": ["recon", "artillery", "hover_tank", "heavy_tank", "rocket_launcher", "sam_launcher"],
         "airfield": ["transport_copter", "copter", "radar_plane", "bomber", "stealth_fighter"],
         "shipyard": ["destroyer", "submarine", "cruiser", "aircraft_carrier", "battleship"]
