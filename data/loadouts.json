@@ -121,7 +121,7 @@
     "ludwig": {
       "infantry": "shock_trooper",
       "build": {
-        "barracks": ["shock_trooper", "medic", "flamethrower"],
+        "barracks": ["shock_trooper", "medic", "mechanic"],
         "factory": ["rocket_buggy", "supply_truck", "artillery", "flak", "hover_tank", "rocket_launcher"],
         "airfield": ["stealth_copter", "radar_plane", "bomber", "fighter"],
         "shipyard": ["diver", "destroyer", "cruiser", "missile_sub", "battleship"]
@@ -130,10 +130,10 @@
         "hq": [
           { "unit": "medic", "at": [-1, 1] },
           { "unit": "rocket_buggy", "at": [1, 1] },
-          { "unit": "flamethrower", "at": [0, 1] }
+          { "unit": "mechanic", "at": [0, 1] }
         ],
         "barracks": [
-          { "unit": "flamethrower", "at": [0, 1] }
+          { "unit": "mechanic", "at": [0, 1] }
         ],
         "factory": [
           { "unit": "hover_tank", "at": [0, 1] }
@@ -221,7 +221,7 @@
     "lysandra": {
       "infantry": "royal_guard",
       "build": {
-        "barracks": ["royal_guard", "medic", "sniper", "mech"],
+        "barracks": ["royal_guard", "medic", "sniper", "flamethrower"],
         "factory": ["recon", "supply_truck", "artillery", "flak", "tank", "heavy_tank", "rocket_launcher", "sam_launcher"],
         "airfield": ["transport_copter", "copter", "radar_plane", "fighter", "stealth_bomber"],
         "shipyard": ["gun_boat", "destroyer", "cruiser", "dreadnought"]
@@ -233,7 +233,7 @@
           { "unit": "artillery", "at": [0, 1] }
         ],
         "barracks": [
-          { "unit": "mech", "at": [0, 1] }
+          { "unit": "flamethrower", "at": [0, 1] }
         ],
         "airfield": [
           { "unit": "copter", "at": [0, 1] }
