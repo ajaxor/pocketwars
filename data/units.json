@@ -291,7 +291,7 @@
     "weapons": ["pistol"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "capture": true, "heal": { "amount": 2, "categories": ["infantry", "amphibious"], "costRate": 0.1 } },
+    "attributes": { "capture": true, "heal": { "amount": 2, "categories": ["infantry", "amphibious"], "auto": true, "self": true } },
     "exclusive": true,
     "render": { "sprite": "medic", "facing": false, "attackFx": "shot" }
   },

@@ -31,7 +31,7 @@
 // Its reach is only its own tile; a unit that got at least one tile cannot fire indirect weapons, like any unit that has moved.
 
 import { canResupplyAt, resupply } from './ammo.js';
-import { canHealAt, resolveHeal } from './heal.js';
+import { canHealAt, healPlan, healsAutomatically, resolveHeal } from './heal.js';
 import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
@@ -216,6 +216,7 @@ export class Game {
     }
     delete unit.fresh;
     delete unit.carriedBy;   // a deployed unit has now been ordered: it cannot be put back
+    if (unitById(this, unit.id) && healsAutomatically(this, unit) && healPlan(this, unit).length) events.push(...resolveHeal(this, unit));   // the medic: free, after every order
     if (action.type === 'resupply') {
       const filled = resupply(this, unit);   // paid for from the owner's funds; without enough it is only a Wait
       if (filled) events.push(filled);

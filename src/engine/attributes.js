@@ -206,12 +206,13 @@ export const UNIT_ATTRIBUTES = {
   },
   heal: {
     label: (v) => `Heals ${v.amount}`,
-    help: (v) => `Heal order (after moving, instead of Wait): each damaged friendly ${v.categories.join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ''}.`,
-    doc: 'Support healing. Config: { amount, categories, costRate? }. A `heal` order (after moving, like capture or resupply) restores up to `amount` HP (not above max) to every damaged friendly unit of one of those categories on a tile next to the healer. `costRate` is the price of one HP as a fraction of the healed unit\'s cost, paid from the owner\'s funds (0 or absent: free); with too little money it heals what it can pay for. The order is only offered when someone can be healed. See heal.js.',
+    help: (v) => v.auto ? `Heals by itself after every order: each damaged ${[...v.categories, ...(v.self ? ['(itself included)'] : [])].join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ', free'}.` : `Heal order (after moving, instead of Wait): each damaged friendly ${v.categories.join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ''}.`,
+    doc: 'Support healing. Config: { amount, categories, costRate?, auto?, self? }. With `auto: true` there is no Heal order: the unit heals by itself at the end of every order it is given (after its move, whatever it then does), and `self: true` lets it count itself among the units it heals. A `heal` order (after moving, like capture or resupply) restores up to `amount` HP (not above max) to every damaged friendly unit of one of those categories on a tile next to the healer. `costRate` is the price of one HP as a fraction of the healed unit\'s cost, paid from the owner\'s funds (0 or absent: free); with too little money it heals what it can pay for. The order is only offered when someone can be healed. See heal.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "amount": 2, "categories": ["infantry"], "costRate": 0.1 }');
       if (!Number.isInteger(v.amount) || v.amount < 1) fail('amount must be a positive whole number of HP');
       if (!Array.isArray(v.categories) || !v.categories.length || v.categories.some((c) => typeof c !== 'string' || !c)) fail('categories must be a non-empty array of unit category names');
+      for (const k of ['auto', 'self']) if (v[k] !== undefined && typeof v[k] !== 'boolean') fail(`${k} must be true or false`);
       if (v.costRate !== undefined && !(typeof v.costRate === 'number' && v.costRate >= 0 && v.costRate <= 1)) fail('costRate must be a number from 0 to 1');
     },
   },

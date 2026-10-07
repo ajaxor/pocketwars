@@ -196,6 +196,7 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Starting armies are uneven after the fighter price rise.** The leaders' start loadouts include fighters (vex, hiroshi, ludwig, lysandra) that now
   cost 13,000, so the cheapest and dearest start armies differ by 6,200 (the leaders test was loosened from 4,000 to 6,500 to allow it). Swapping
   some of those start units, or trimming the others', would restore the fairness check.
+- **The AI does not place medics to heal.** The medic heals by itself now, but the AI still positions it by its attack value, not to stand next to wounded units; a "HP healed" column in the leader report would show its worth.
 - **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
   still moves anywhere (and the AI still sees everything).
 - **Fixed in part: copters and vintage bombers were valued without their fuel** (helicopters later lost their fuel altogether, round 4 of `docs/balance.md`).** Production and the attack goals treated a flier as able to

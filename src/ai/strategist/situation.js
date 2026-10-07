@@ -35,7 +35,7 @@ export class Situation {
   refresh() {
     const { game, player } = this;
     this.mine = game.state.units.filter((u) => u.owner === player);
-    this.enemies = game.state.units.filter((e) => e.owner !== player && (e.owner !== null || isStructure(game, e)) && canSee(game, player, e));
+    this.enemies = game.state.units.filter((e) => e.owner !== player && (e.owner !== null || isStructure(game, e)) && !hasAttribute(unitDef(game, e), 'jammer') && canSee(game, player, e));   // a jammer only fogs the human: the computer never attacks, hunts or fears it
     this.army = this.enemies.filter((e) => !isNeutral(e) && !isStructure(game, e) && !hasAttribute(unitDef(game, e), 'mine'));
     // the balance of forces: our army's worth over the enemy's (both at their HP). Stronger, we press on; weaker, we are careful
     const worth = (list) => list.reduce((a, u) => a + (unitDef(game, u).weapons.length ? unitDef(game, u).cost * u.hp / game.registry.rules.maxHp : 0), 0);

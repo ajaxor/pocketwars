@@ -168,7 +168,10 @@ test('primary infantry: Lysandra royal guard, Ludwig shock trooper, Hiroshi swor
 test('flamethrowers: Chase (instead of the AT infantry) and Ludwig (instead of the sniper)', () => {
   assert.ok(menu('chase', 'barracks').includes('flamethrower') && !menu('chase', 'barracks').includes('mech'));
   assert.ok(menu('ludwig', 'barracks').includes('flamethrower') && !menu('ludwig', 'barracks').includes('sniper'));
-  assert.ok(menu('ludwig', 'barracks').includes('mech'), 'Ludwig keeps his AT infantry');
+  for (const leader of registry.leaderIds) {
+    const all = Object.values(kit(leader).build).flat();
+    assert.ok(!(all.includes('flamethrower') && (all.includes('mech') || all.includes('rpg_trooper'))), `${leader} has the flamethrower and an AT infantry`);
+  }
   assert.ok(menu('chase', 'barracks').includes('sniper'), 'and Chase his sniper');
   for (const leader of registry.leaderIds) if (!['chase', 'ludwig'].includes(leader)) assert.ok(!Object.values(kit(leader).build).flat().includes('flamethrower'), `${leader} has none`);
 });

@@ -140,7 +140,7 @@ export function chooseOrder(game, unit, ai = profileOf(game)) {
   const w = ai.weights;
   const def = unitDef(game, unit);
   const reach = computeReach(game, unit);
-  const enemies = state.units.filter((e) => e.owner !== unit.owner && canSee(game, unit.owner, e));
+  const enemies = state.units.filter((e) => e.owner !== unit.owner && !hasAttribute(unitDef(game, e), 'jammer') && canSee(game, unit.owner, e));   // jammers only fog the human player: ignored
   const goals = goalTiles(game, unit);
   const field = distanceField(game, def.moveClass, goals);
   const movedAlready = hasMovedAlready(unit);   // an interrupted move counts: indirect weapons cannot fire after it

@@ -121,7 +121,7 @@
     "ludwig": {
       "infantry": "shock_trooper",
       "build": {
-        "barracks": ["shock_trooper", "medic", "flamethrower", "mech"],
+        "barracks": ["shock_trooper", "medic", "flamethrower"],
         "factory": ["rocket_buggy", "supply_truck", "artillery", "flak", "hover_tank", "rocket_launcher"],
         "airfield": ["stealth_copter", "radar_plane", "bomber", "fighter"],
         "shipyard": ["diver", "destroyer", "cruiser", "missile_sub", "battleship"]
@@ -130,7 +130,7 @@
         "hq": [
           { "unit": "medic", "at": [-1, 1] },
           { "unit": "rocket_buggy", "at": [1, 1] },
-          { "unit": "mech", "at": [0, 1] }
+          { "unit": "flamethrower", "at": [0, 1] }
         ],
         "barracks": [
           { "unit": "flamethrower", "at": [0, 1] }

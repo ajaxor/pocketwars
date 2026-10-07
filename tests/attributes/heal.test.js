@@ -136,3 +136,13 @@ test('AI: a healer with a wounded friend in reach walks to it and gives the Heal
   assert.equal(order.action.type, 'heal');
   assert.equal(Math.abs(order.to.x - 3), 1, 'it stops next to the wounded unit');
 });
+
+test('heal auto + self: a medic heals itself and its neighbours for free after any order, and has no Heal order', () => {
+  const g = makeGame({ units: { ...units, autoMedic: { ...footHealer({ auto: true, self: true }), category: 'foot' } }, rows: ['......h'], unitsOnMap: [['autoMedic', 0, 0, 0, 4], ['walker', 0, 2, 0, 5], ['foe', 1, 6, 0]] });
+  assert.equal(canHealAt(g, g.state.units[0], 1, 0), false, 'no order to give');
+  const r = g.act({ unitId: g.state.units[0].id, to: { x: 1, y: 0 }, action: { type: 'wait' } });
+  assert.equal(r.ok, true);
+  assert.equal(hp(g, 0), 6, 'itself 4 -> 6');
+  assert.equal(hp(g, 1), 7, 'the walker next to where it stopped, 5 -> 7');
+  assert.ok(r.events.some((e) => e.type === 'heal' && e.healed.length === 2));
+});

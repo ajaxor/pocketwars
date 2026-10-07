@@ -4,6 +4,7 @@
 //       Resupply: after moving (or staying put) the unit heals every damaged friendly unit of those categories on a tile next to it, each
 //       by up to `amount` HP. `costRate` is the price of one HP as a fraction of the healed unit's cost, paid from the owner's funds; when
 //       the funds run short only the HP that can be paid for are restored. A unit that has nothing to heal cannot give the order.
+//   `auto: true` in the config: there is no order; game.act runs the same heal at the end of every order the unit is given. `self: true`: it heals itself too.
 //   `reloads: true`   a unit that did not change tile during its last turn is topped up to full ammo for free at the start of its next one (the SAM launcher).
 //   `rest: { heal }`   a unit that did not change tile during its owner's last turn (`unit.moved` was never set, see game.js) regains
 //       `heal` HP of its own at the start of its next turn. `unit.moved` is cleared here, for every unit of the player, once it has been looked at.
@@ -39,7 +40,7 @@ export function healTargets(game, unit, x = unit.x, y = unit.y) {
   const cfg = attributeConfig(unitDef(game, unit), 'heal');
   if (!cfg) return [];
   const max = game.registry.rules.maxHp;
-  return game.state.units.filter((v) => v !== unit && v.owner === unit.owner && v.hp < max && distance(x, y, v.x, v.y) === 1
+  return game.state.units.filter((v) => (v !== unit || cfg.self) && v.owner === unit.owner && v.hp < max && (v === unit || distance(x, y, v.x, v.y) === 1)
     && cfg.categories.includes(unitDef(game, v).category));
 }
 
@@ -62,7 +63,10 @@ export function healPlan(game, unit, x = unit.x, y = unit.y) {
 }
 
 /** Could `unit`, stopping on (x, y), heal anybody (and can its owner pay for at least some of it)? */
-export const canHealAt = (game, unit, x, y) => hasAttribute(unitDef(game, unit), 'heal') && healPlan(game, unit, x, y).length > 0;
+export const canHealAt = (game, unit, x, y) => hasAttribute(unitDef(game, unit), 'heal') && !attributeConfig(unitDef(game, unit), 'heal').auto && healPlan(game, unit, x, y).length > 0;
+
+/** Does `unit` heal by itself after every order (`heal.auto`)? */
+export const healsAutomatically = (game, unit) => !!attributeConfig(unitDef(game, unit), 'heal')?.auto;
 
 /** Carry out the Heal order from where the unit stands: returns the single 'heal' event. */
 export function resolveHeal(game, unit) {
