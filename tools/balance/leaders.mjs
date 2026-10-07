@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Every leader against every other leader, played out by the AI on a range of maps: how balanced are they?
 //
-//   npm run balance:leaders [-- --maps 2p --seeds 1 --days 20 --engine strategist --workers N --no-start-units --out tools/balance/out]
+//   npm run balance:leaders [-- --maps 2p --seeds 1 --days 20 --engine strategist --workers N --no-start-units --seed-base N --out tools/balance/out]
 //   --no-start-units   nobody starts with units (the skirmish "Starting units: Off" rule): the leaders are then only their build menus and prices
 //
 // A leader brings a build menu and starting units (data/loadouts.json); the factions are only colours. For every pair of leaders and every
@@ -43,7 +43,7 @@ async function main() {
       for (let i = 0; i < leaders.length; i++) {
         for (let j = i + 1; j < leaders.length; j++) {
           for (const order of [[leaders[i], leaders[j]], [leaders[j], leaders[i]]]) {
-            jobs.push({ mapId: m.id, seed: 1 + s, maxDays: days, fog: true, startUnits: !opts['no-start-units'], leaders: order, seats: [seat, seat], labels: order });
+            jobs.push({ mapId: m.id, seed: Number(opts['seed-base'] ?? 1) + s, maxDays: days, fog: true, startUnits: !opts['no-start-units'], leaders: order, seats: [seat, seat], labels: order });
           }
         }
       }

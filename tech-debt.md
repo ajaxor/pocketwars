@@ -226,3 +226,5 @@ The review's points and where they stand, then what the new system leaves open. 
 - **The AI never joins units, and its fuel-home logic still treats low fuel as a danger** although running dry no longer crashes a flyer (it only disarms it).
 - **Join loses surplus HP with no refund**, and repair costs the full tenth of the unit price per HP (`rules.repairCostRate`); neither has been balanced (no leader run since the repair costs went in).
 - **The join action and repaired-HP effects are untested in a browser** (controller Join button, presenter 'join' event).
+
+- **Maps are missing building types, which skews leader balance.** No airfields on harbor_front, reef_raiders, twin_fleets; no shipyards on classic, dust_bowl, iron_curtain, river_run; no factory on river_run; tri_point gives only player 1 a factory. Every leader's kit assumes barracks, factory, airfield and shipyard, so a map without one hands an advantage to the leaders who need it least. A map-validation rule (every start owner has all four, or the map says it is restricted) and fixes to these maps are needed.
