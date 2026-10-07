@@ -142,8 +142,8 @@ test('the build menu has a row per unit with its price, and no details below the
   assert.equal(rows().length, 7);
   assert.deepEqual(texts(byClass('win-title')), ['Factory']);
   assert.deepEqual(texts(byClass('win-tag')), [], 'the menu does not show the player\'s funds');
-  assert.deepEqual(texts(byClass('build-name')), ['Recon', 'Tank', 'Stealth Tank', 'Heavy Tank', 'Artillery', 'Rocket Launcher', 'Flak']);
-  assert.deepEqual(texts(byClass('build-cost')), ['4,000', '7,000', '9,000', '10,000', '6,000', '10,000', '6,000']);
+  assert.deepEqual(texts(byClass('build-name')), ['Recon', 'Artillery', 'Flak', 'Tank', 'Stealth Tank', 'Heavy Tank', 'Rocket Launcher']);
+  assert.deepEqual(texts(byClass('build-cost')), ['4,000', '6,000', '6,000', '7,000', '9,000', '10,000', '10,000'], 'cheapest at the top');
   assert.equal(byClass('build-detail').length, 0, 'the extended unit info is gone');
   assert.equal(byClass('btn--primary').length, 0, 'and so is the Build button');
   assert.equal(rows().filter((r) => r.classList.contains('is-picked')).length, 0, 'nothing is pre-selected');
@@ -151,15 +151,15 @@ test('the build menu has a row per unit with its price, and no details below the
 
 test('one tap on a row builds that unit', () => {
   const { rows, calls } = openBuild(8000);
-  rows()[1].click();
+  rows()[3].click();
   assert.deepEqual(calls, [['build', 'tank']]);
 });
 
 test('an unaffordable row is dimmed, and tapping it is passed on so the game can say there is not enough money', () => {
   const { rows, calls } = openBuild(8000);
-  assert.ok(rows()[3].classList.contains('is-poor'));
-  assert.ok(!rows()[1].classList.contains('is-poor'));
-  rows()[3].click();
+  assert.ok(rows()[5].classList.contains('is-poor'));
+  assert.ok(!rows()[3].classList.contains('is-poor'));
+  rows()[5].click();
   assert.deepEqual(calls, [['build', 'heavy_tank']]);
 });
 

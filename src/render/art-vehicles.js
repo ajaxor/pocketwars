@@ -138,9 +138,28 @@ const technical = (g, { s, c, dk, w, ph, run, j }) => {
   wheel(g, s, -.22, .19, .085, w, run, 10); wheel(g, s, .24, .19, .085, w, run, 10);
 };
 
-export const SPRITES = { apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, technical, ...CYCLE.SPRITES };
+// Missile tank: the standard tank with the barrel swapped for a missile port: a one-colour hull and a sharp wedge turret set back from
+// the front, the port a faint rectangular outline set along the turret's sloped front edge.
+const faintRect = (g, s, cx, cy, w, h, rot) => {
+  g.save(); g.translate(cx * s, cy * s); g.rotate(rot);
+  g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(-w * s / 2, -h * s / 2, w * s, h * s);
+  g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = Math.max(1, s * .012); g.strokeRect(-w * s / 2, -h * s / 2, w * s, h * s);
+  g.restore();
+};
+const missileTank = (g, { s, c, w, run, j }) => {
+  const jj = j / s, turret = [[-.3, -.06], [-.24, -.2], [-.02, -.24], [.16, -.1], [.16, -.06]];
+  treads(g, s, -.34, .34, .08 + jj, .19, w, run);
+  poly(g, s, [[-.32, .11 + jj], [-.32, -.06 + jj], [.2, -.06 + jj], [.35, .03 + jj], [.35, .11 + jj]], c);        // the hull, with a sloped front plate
+  poly(g, s, [[-.23, -.2 + jj], [-.36, -.3 + jj], [-.29, -.1 + jj]], c);                                          // a swept fin on the back of the turret
+  poly(g, s, turret.map(([x, y]) => [x, y + jj]), c);                                                            // the turret
+  g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = Math.max(1, s * .012); g.beginPath();                         // its faint seam
+  turret.forEach(([x, y], i) => (i ? g.lineTo(x * s, (y + jj) * s) : g.moveTo(x * s, (y + jj) * s))); g.closePath(); g.stroke();
+  faintRect(g, s, .049, -.142 + jj, .18, .05, .66);                                                            // the missile port, along the turret's sloped front edge
+};
+
+export const SPRITES = { missile_tank: missileTank, apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, technical, ...CYCLE.SPRITES };
 
 const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
-  apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), technical: ground(.38, .05, .285), ...CYCLE.SHADOWS,
+  missile_tank: ground(.4, .05, .285), apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), technical: ground(.38, .05, .285), ...CYCLE.SHADOWS,
 };

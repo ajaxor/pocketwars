@@ -22,6 +22,7 @@ export function validateRules(rules, problems) {
   if (!isObj(rules)) return problems.push('rules.json must be an object');
   if (!Number.isInteger(rules.maxHp) || rules.maxHp < 1) problems.push('rules: maxHp must be a positive integer');
   if (rules.ambushMultiplier !== undefined && !(typeof rules.ambushMultiplier === 'number' && rules.ambushMultiplier >= 1)) problems.push('rules: ambushMultiplier (the damage bonus of a unit that starts its turn hidden) must be a number of at least 1');
+  if (rules.carrierCargoRate !== undefined && !(isNum(rules.carrierCargoRate) && rules.carrierCargoRate >= 0 && rules.carrierCargoRate <= 1)) problems.push('rules: carrierCargoRate (the share of the cargo price difference a troop carrier passes on) must be a number from 0 to 1');
   if (!isColor(rules.neutralColor)) problems.push('rules: neutralColor must be a hex color');
   if (rules.structureDamage !== undefined && !(isObj(rules.structureDamage) && isNum(rules.structureDamage.siege) && rules.structureDamage.siege > 0 && isNum(rules.structureDamage.other) && rules.structureDamage.other > 0)) problems.push('rules: structureDamage must be { siege, other } positive multipliers (damage to structures by siege weapons and by everything else)');
   if (rules.neutralUnitColors !== undefined && !(isObj(rules.neutralUnitColors) && isColor(rules.neutralUnitColors.color) && isColor(rules.neutralUnitColors.dark))) problems.push('rules: neutralUnitColors (the colours of a structure nobody owns) must be { color, dark } hex colors');
@@ -108,6 +109,13 @@ export function validateWeapons(weapons, rules, problems) {
     if (w.indirect !== undefined && w.indirect !== true) problems.push(`weapon "${id}": indirect must be true when present`);
     if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
     if (w.siege !== undefined && w.siege !== true) problems.push(`weapon "${id}": siege (artillery, bombs and missiles: the hard hitters against structures) must be true when present`);
+    if (w.noCounter !== undefined && w.noCounter !== true) problems.push(`weapon "${id}": noCounter (the target never hits back) must be true when present`);
+    if (w.categoryMultipliers !== undefined) {
+      const m = w.categoryMultipliers;
+      if (!isObj(m) || !Object.keys(m).length || Object.entries(m).some(([cat, f]) => !isStr(cat) || !isNum(f) || f <= 0)) {
+        problems.push(`weapon "${id}": categoryMultipliers must map unit categories to positive numbers`);
+      }
+    }
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
     if (w.ammo !== undefined && !(Number.isInteger(w.ammo) && w.ammo >= 1)) problems.push(`weapon "${id}": ammo (rounds used per shot) must be a positive whole number`);
     if (w.fromTerrain !== undefined && (!Array.isArray(w.fromTerrain) || !w.fromTerrain.length || w.fromTerrain.some((t) => !isStr(t)))) problems.push(`weapon "${id}": fromTerrain (the terrain it can be fired from) must be a non-empty list of terrain ids`);
@@ -163,6 +171,10 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
         if (!isObj(supply)) problems.push(`unit "${id}": weapon "${w}" uses ammo, so the unit needs the "ammo" attribute`);
         else if (Number.isInteger(supply.max) && cost > supply.max) problems.push(`unit "${id}": weapon "${w}" costs ${cost} ammo a shot but the unit only carries ${supply.max}`);
       }
+    }
+    if (Array.isArray(u.weapons) && isObj(weapons)) {
+      const known = new Set(Object.values(units).filter(isObj).map((x) => x.category));
+      for (const w of u.weapons) for (const c of Object.keys(weapons[w]?.categoryMultipliers ?? {})) if (!known.has(c)) problems.push(`unit "${id}": weapon "${w}" has a categoryMultiplier for unknown unit category "${c}"`);
     }
     const heals = u.attributes && u.attributes.heal;
     if (isObj(heals) && Array.isArray(heals.categories)) {

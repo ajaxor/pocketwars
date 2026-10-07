@@ -543,32 +543,6 @@
    "mechanic": "NEW MECHANIC, building in the field: instead of attacking, builds a wall, a tank trap or a static defence on an adjacent empty tile (paid for, ready next turn), repairs a cracked wall into a whole one, or knocks down an adjacent cracked wall. Lets walls and defences appear mid-mission instead of only from the map. Weak rifle, can capture."
   },
   {
-   "id": "flame_trooper",
-   "name": "Flame Trooper",
-   "facility": "training_ground",
-   "group": "infantry",
-   "sprite": "flame_trooper",
-   "altitude": 0,
-   "cost": 3000,
-   "move": 2,
-   "role": "Anti-infantry, clears cover",
-   "overlaps": "Soldier, Flame Walker",
-   "mechanic": "Range 1. Flame attacks allow no counterattack: whatever it burns cannot hit back. Its damage ignores the target's terrain defence (fire goes round sandbags), and an attack on a forest burns it to plains for the rest of the battle, taking away the sniper's and the soldier's cover. When it is destroyed its tanks burst and deal 1 damage to every adjacent unit, friend or foe."
-  },
-  {
-   "id": "royal_guard",
-   "name": "Royal Guard",
-   "facility": "training_ground",
-   "group": "infantry",
-   "sprite": "royal_guard",
-   "altitude": 0,
-   "cost": 3500,
-   "move": 2,
-   "role": "Armoured escort",
-   "overlaps": "Soldier, Commando",
-   "mechanic": "Armoured infantry (armour 0.4: rifles and other weapons without armour piercing do 40% less) with a simple rifle (the soldier's, range 1). NEW MECHANIC, guarding: friendly infantry next to it take 30% less damage from direct fire. A moving shield wall for pushing soldiers across open plains, and able to shoot back. Armour-piercing weapons (RPG, bazooka, Tesla cannon) ignore its plating. Cannot capture."
-  },
-  {
    "id": "k9_team",
    "name": "K9 Team",
    "facility": "training_ground",
@@ -582,19 +556,6 @@
    "mechanic": "Infantry with a dog: move 3 on foot, and it smells out cloaked ground units (spy, sniper in a forest, stealth tank, a diver coming ashore) within 2 tiles, revealing them to the whole team. The cheap counter to Vex's stealth kit. Weak bite at range 1."
   },
   {
-   "id": "shock_trooper",
-   "name": "Shock Trooper",
-   "facility": "training_ground",
-   "group": "infantry",
-   "sprite": "shock_trooper",
-   "altitude": 0,
-   "cost": 3500,
-   "move": 2,
-   "role": "Armour-piercing support",
-   "overlaps": "RPG Trooper, Sniper",
-   "mechanic": "Hand-held Tesla cannon: range 1-2, damage 40, the lightning ignores armour completely and the cannon never runs out of charge, but the arc is weaker than a rifle's and the Shock Trooper is as fragile as a soldier. Can move and fire. A cheap, endless answer to Royal Guards and heavy armour, best kept behind the front line. Cannot capture."
-  },
-  {
    "id": "fanatic",
    "name": "Fanatic",
    "facility": "training_ground",
@@ -606,19 +567,6 @@
    "role": "Zealot",
    "overlaps": "Soldier, Commando",
    "mechanic": "A simple AK-47 infantryman who fights at full strength however hurt he is: his attack does not fall as he loses HP, so wounded Fanatics are as dangerous as fresh ones. Cheap, no frills, can capture."
-  },
-  {
-   "id": "swordsman",
-   "name": "Swordsman",
-   "facility": "training_ground",
-   "group": "infantry",
-   "sprite": "swordsman",
-   "altitude": 0,
-   "cost": 1600,
-   "move": 2,
-   "role": "Infantry hunter",
-   "overlaps": "Soldier, Commando",
-   "mechanic": "Carries a simple katana: range 1, bonus damage against infantry (about +50% over a soldier's rifle) and reduced damage against vehicles (about 40%). Can only attack ground units: no low air, no ships. Can capture."
   },
   {
    "id": "bridge_layer",
@@ -686,19 +634,6 @@
    "mechanic": "A tank with no turret: hits tanks harder than a heavy tank does, but it can only fire if it has not moved this turn (like artillery, at range 1). Strong in a prepared position, poor on the attack. A sideways choice to the tank rather than a bigger one."
   },
   {
-   "id": "missile_tank",
-   "name": "Missile Tank",
-   "facility": "war_factory",
-   "group": "vehicle",
-   "sprite": "missile_tank",
-   "altitude": 0,
-   "cost": 9000,
-   "move": 2,
-   "role": "Heavy missile battery",
-   "overlaps": "Rocket Buggy, Rocket Launcher, Tank",
-   "mechanic": "Rocket Buggy missiles (range 1-2, damage 85) on a heavy hull: armour 0.6, six rounds instead of three, and very slow (move 2). Can move and fire."
-  },
-  {
    "id": "remote_technical",
    "name": "Remote Technical",
    "facility": "drone_bay",
@@ -736,19 +671,6 @@
    "role": "Liberator (campaign)",
    "overlaps": "Spy",
    "mechanic": "NEW MECHANIC, liberation: campaign only. Plays the old national radio over the Chorus signal: an assimilated enemy unit next to it with 3 HP or less at the start of your turn breaks free and joins your side (keeping its HP). Unarmed and fragile. Turns the story's liberation into something you do on the map, and makes weakening a unit better than finishing it."
-  },
-  {
-   "id": "airship",
-   "name": "Armoured Airship",
-   "facility": "airfield",
-   "group": "air",
-   "sprite": "airship",
-   "altitude": 0.14,
-   "cost": 12000,
-   "move": 3,
-   "role": "Heavy bomber",
-   "overlaps": "Bomber, Vintage Bomber",
-   "mechanic": "A tough, slow flying bomber: armour 0.7, drops powerful bombs (damage 120) on ground and sea targets at range 1, two bombs per sortie. Cannot hit aircraft; fighters, SAMs and flak are its counters. Cannot capture."
   },
   {
    "id": "loiter_drone",

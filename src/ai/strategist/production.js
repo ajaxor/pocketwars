@@ -15,7 +15,7 @@
 import { attributeConfig } from '../../engine/attributes.js';
 import { buildProblem, menuFor } from '../../engine/economy.js';
 import { builtThisTurn } from '../../engine/economy.js';
-import { deployedType, distance, unitAt, unitDef } from '../../engine/queries.js';
+import { costFor, deployedType, distance, unitAt, unitDef } from '../../engine/queries.js';
 import { isStructure } from '../../engine/structures.js';
 import { areaAt } from './analysis.js';
 import { areasAround, fuelSpots, roundTrip } from './goals.js';
@@ -63,7 +63,7 @@ export function typeWorth(sit, type, x, y, ctx) {
       if (range && near && canGet(game, mc, ids, e.x, e.y, range)) dealt += e.weight * Math.min(1, matchup(game, type, e.type) / sit.maxHp) * ed.cost;
       const er = reachOf(game.registry, ed).max;
       const theirs = areasAround(game, ed.moveClass, e.x, e.y);
-      if (er && canGet(game, ed.moveClass, theirs, x, y, er + (ed.move ?? 0) * 2)) taken += e.weight * Math.min(1, matchup(game, e.type, type) / sit.maxHp) * def.cost;
+      if (er && canGet(game, ed.moveClass, theirs, x, y, er + (ed.move ?? 0) * 2)) taken += e.weight * Math.min(1, matchup(game, e.type, type) / sit.maxHp) * costFor(game, player, type);
     }
     if (total) combat = (params.offense * dealt - params.defense * taken) / total / 1000;
   }
@@ -111,7 +111,8 @@ export function planBuilds(sit) {
     for (const def of menuFor(game, player, p.x, p.y)) {
       const worth = typeWorth(sit, def.id, p.x, p.y, ctx);
       if (worth <= 0) continue;
-      options.push({ x: p.x, y: p.y, unit: def.id, cost: def.cost, worth, score: worth / (def.cost / 1000) ** params.costExponent });
+      const cost = costFor(game, player, def.id);
+      options.push({ x: p.x, y: p.y, unit: def.id, cost, worth, score: worth / (cost / 1000) ** params.costExponent });
     }
   }
   options.sort((a, b) => b.score - a.score);

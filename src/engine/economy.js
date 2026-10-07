@@ -3,7 +3,7 @@
 import { isHidden } from './detection.js';
 import { refuelAtTurnStart } from './fuel.js';
 import { healAtTurnStart } from './heal.js';
-import { inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
+import { costFor, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -63,8 +63,8 @@ export function startTurn(game, player) {
 
 /**
  * The menu of the production building at (x, y) for `player`: the units their leader's loadout lists for that kind of building
- * (data/loadouts.json), in the loadout's order. A building the loadout says nothing about (a lab, say) gives the same menu to
- * everyone: the units of the categories its `builds` names. No player (a neutral building) gets the standard menu.
+ * (data/loadouts.json), in the loadout's order (cheapest first: tools/sort-build-menus.mjs keeps the data so). A building the loadout says nothing
+ * about (a lab, say) gives the same menu to everyone: the units of the categories its `builds` names, cheapest first. No player (a neutral building) gets the standard menu.
  */
 export function menuFor(game, player, x, y) {
   const property = propertyAt(game, x, y);
@@ -72,7 +72,7 @@ export function menuFor(game, player, x, y) {
   const { registry, map } = game;
   const leader = player == null ? null : map.players[player].leader ?? null;
   const ids = registry.loadoutFor(leader).build[map.terrain[y][x]];
-  return ids ? ids.map((id) => registry.unit(id)) : registry.unitsInCategories(property.builds);
+  return ids ? ids.map((id) => registry.unit(id)) : [...registry.unitsInCategories(property.builds)].sort((a, b) => a.cost - b.cost);   // the cheapest at the top, like every kit's menu
 }
 
 /** Unit definitions that the property at (x, y) can produce for the player who owns it, in menu order. */
@@ -95,7 +95,7 @@ export function buildProblem(game, player, x, y, typeId) {
   if (!menuFor(game, player, x, y).some((u) => u.id === typeId)) return 'cannot-build-here';
   if (unitAt(game, x, y)) return 'tile-occupied';
   if (builtThisTurn(game, x, y)) return 'already-built';
-  if (state.funds[player] < def.cost) return 'not-enough-funds';
+  if (state.funds[player] < costFor(game, player, typeId)) return 'not-enough-funds';
   return null;
 }
 
@@ -108,14 +108,15 @@ export function buildUnit(game, player, x, y, typeId) {
   if (problem) return { ok: false, error: problem, events: [] };
   const { state, registry } = game;
   const def = registry.unit(typeId);
-  state.funds[player] -= def.cost;
+  const cost = costFor(game, player, typeId);
+  state.funds[player] -= cost;
   state.builtThisTurn.push(tileIndex(game.map, x, y));
   const unit = makeUnit(registry, game.map, state.nextUnitId++, { type: typeId, owner: player, x, y, fresh: true });
   state.units.push(unit);
-  return { ok: true, events: [{ type: 'build', unit: snapshotUnit(unit), cost: def.cost }] };
+  return { ok: true, events: [{ type: 'build', unit: snapshotUnit(unit), cost }] };
 }
 
 export const cheapestBuildableCost = (game, player) => {
-  const costs = propertiesOwnedBy(game, player).flatMap((p) => menuFor(game, player, p.x, p.y).map((u) => u.cost));
+  const costs = propertiesOwnedBy(game, player).flatMap((p) => menuFor(game, player, p.x, p.y).map((u) => costFor(game, player, u.id)));
   return costs.length ? Math.min(...costs) : Infinity;
 };

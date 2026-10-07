@@ -9,6 +9,8 @@
 //   - an indirect weapon (the unit attribute `indirect` makes all of a unit's weapons so, or one weapon says `indirect: true`) cannot
 //     fire after moving, is never answered by a counterattack, and is never used to counter; not being able to see the attacker
 //     (hidden, see detection.js) also disables the counter
+//   - a weapon with `noCounter: true` (the flamethrower) is never answered by a counterattack, whatever it hits
+//   - a weapon's `categoryMultipliers` ({ infantry: 1.6 }) scale its damage against defenders of those unit categories (the swordsman's blade)
 //   - a unit may carry several weapons: of those that can legally fire at the defender from where the attacker stands, the one
 //     that would do the most damage is used (weaponFor), for the order, the forecast and the counterattack alike
 //   - a weapon with an `ammo` cost (and a unit with the `ammo` attribute) needs that many rounds left, and spends them when it fires,
@@ -122,7 +124,7 @@ export function forecastAttack(game, attacker, defender, from = attacker) {
   return { damage, destroyed: false, counter: reply ? weaponDamage(game, reply, hurt, where) : null };
 }
 
-/** The damage formula before rounding. weapon.damage is scaled by weapon.targetMultipliers for the target mode that reaches the defender's layer. */
+/** The damage formula before rounding. weapon.damage is scaled by weapon.targetMultipliers for the target mode that reaches the defender's layer, and by weapon.categoryMultipliers for the defender's category. */
 function rawDamage(game, weapon, attacker, defender, moved = false) {
   const d = unitDef(game, defender);
   const fort = attributeConfig(d, 'structure');
@@ -139,7 +141,7 @@ function rawDamage(game, weapon, attacker, defender, moved = false) {
   // the weapon's multiplier for the target mode that reaches the defender's layer (1 when it lists none)
   const layer = layerOf(game, defender);
   const mode = weapon.targets.find((m) => game.registry.rules.targetModes[m].layer === layer);
-  const vs = weapon.targetMultipliers?.[mode] ?? 1;
+  const vs = (weapon.targetMultipliers?.[mode] ?? 1) * (weapon.categoryMultipliers?.[d.category] ?? 1);   // and for the defender's unit category (the swordsman hurts infantry most)
   const slow = moved ? attributeConfig(unitDef(game, attacker), 'moveFirePenalty')?.multiplier ?? 1 : 1;   // e.g. the motorcycle: half damage when it moved first
   const ambush = attacker.ambush && attacker.owner === game.state.turn ? game.registry.rules.ambushMultiplier ?? 1 : 1;   // started its turn hidden: +50% on the attack (never on a counterattack)
   return (weapon.damage * vs * slow * ambush * attacker.hp) / 10 * toughness * Math.max(0, 1 - (stars * defender.hp) / 100) / 10;
@@ -155,9 +157,9 @@ const strike = (attacker, defender, damage, { counter, destroyed, weapon }) => (
   type: 'strike', attacker: snapshotUnit(attacker), defender: snapshotUnit(defender), damage, counter, destroyed, weapon: weapon ? weapon.id : null,
 });
 
-/** Does `defender` hit back at `attacker`'s `weapon` after surviving? (Not against an indirect weapon, not with one, and not when it cannot see what hit it.) */
+/** Does `defender` hit back at `attacker`'s `weapon` after surviving? (Not against an indirect weapon or a `noCounter` one, not with an indirect one, and not when it cannot see what hit it.) */
 export function canCounter(game, defender, attacker, weapon = weaponFor(game, attacker, defender)) {
-  return !(weapon && isIndirect(game, attacker, weapon))
+  return !(weapon && (isIndirect(game, attacker, weapon) || weapon.noCounter))
     && canSee(game, defender.owner, attacker)
     && weaponFor(game, defender, attacker, defender, { counter: true }) !== null;
 }

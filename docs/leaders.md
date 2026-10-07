@@ -24,8 +24,13 @@ Units flagged `"exclusive": true` in `data/units.json` stay off the default kit 
 
 ## Faction rules (rework)
 - Variants replace their original: a leader has one tank, recon, AA, copter, fighter, bomber, submarine, big-gun ship, small ship and mech/RPG trooper.
-- Each leader has exactly one basic infantry: soldier (Harlan, Hiroshi, Ludwig, Chase), commando (Ada), spy (Vex), conscript (Dmitri), marine (Rex, Lysandra).
-- Each leader can carry troops over water: transport copter, troop transport, marine or diver.
+- Each leader has exactly one basic infantry: soldier (Harlan), swordsman (Hiroshi), shock trooper (Ludwig), royal guard (Lysandra), motorcycle infantry (Chase, who has no soldier), commando (Ada), spy (Vex), conscript (Dmitri), marine (Rex). Chase and Ludwig also build the flamethrower (its attack is never answered). Ada has the missile tank, Dmitri the airship.
+- Each leader can carry troops over water: transport copter, troop transport, marine or diver (Lysandra, who lost the marine, has a transport copter). The diver builds at Vex's shipyard.
 - No technology belongs to one leader; units sit on several kits.
 - Starting armies: three HQ units that show the faction's spirit, plus one unit per production building. Totals are within 4,000 of each other (35,500 to 38,500); `tests/data/leaders.test.js` pins this.
 - Colours: Vex dark grey, Ada brown, Hiroshi red, Ludwig white, Chase orange, Dmitri teal, Lysandra purple (Rex blue, Harlan olive).
+
+
+## Troop carriers and menus
+
+A carrier that drops infantry (`deploy.basic`: transport copter, APC, troop transport and the like) costs its base price plus half (`rules.carrierCargoRate`) of what the leader's basic infantry costs over the soldier, per drop: Dmitri's conscripts make carriers cheaper, Ada's commandos dearer. `costFor` in `src/engine/queries.js` is the one place that works it out (build, menu, AI). Every build menu is listed cheapest first for that leader; `node tools/sort-build-menus.mjs` sorts them and `tests/data/leaders.test.js` checks.

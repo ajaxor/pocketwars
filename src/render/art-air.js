@@ -108,7 +108,18 @@ const stealthCopter = (g, { s, c, dk, w, run }) => {
   g.restore();
 };
 
+// Armoured airship: a fat envelope with an armoured belly band and two tail fins, and a gondola with one big bomb slung under it.
+const airship = (g, { s, c, dk, w, run, ph }) => {
+  poly(g, s, [[-.32, -.1], [-.48, -.25], [-.5, -.1], [-.33, -.03]], c);                                         // the flared tail fins, the hull's colour
+  poly(g, s, [[-.32, .02], [-.48, .17], [-.5, .02], [-.33, -.05]], c);
+  oval(g, s, 0, -.04, .44, .2, c);                                                                              // the envelope
+  stroke(g, s, -.12, .14, -.12, .2, 3, INK); stroke(g, s, .14, .14, .14, .2, 3, INK);                           // the struts
+  box(g, s, -.26, .19, .5, .1, 4, dk);                                                                          // the undercarriage
+  propDisc(g, s, -.55, -.04, .11, w, run, ph, INK);                                                              // the tail propeller
+};
+
 export const SPRITES = {
+  airship: (g, o) => { g.save(); g.translate(.05 * o.s, 0); g.scale(.94, .94); airship(g, o); g.restore(); },
   stealth_copter: (g, o) => { g.save(); g.scale(.9, .9); stealthCopter(g, o); g.restore(); },
   stealth_fighter: stealthFighter,
   torpedo_bomber: (g, o) => { g.save(); g.scale(.96, .96); torpedoBomber(g, o); g.restore(); },
@@ -124,6 +135,7 @@ const airShadow = (outline, k = 1) => (g, { s, alt = 0 }) => {
 };
 
 export const SHADOWS = {
+  airship: (g, { s, alt = 0 }) => { g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(0, s * (.25 + alt * .35), s * .38, s * .05, 0, 0, 7); g.fill(); },
   stealth_copter: airShadow(mirror([[.4, .0], [.2, -.1], [-.1, -.12], [-.4, -.06], [-.45, 0]]), .9),
   stealth_fighter: airShadow(mirror([[.45, 0], [.28, -.04], [.1, -.08], [-.1, -.3], [-.2, -.3], [-.16, -.1], [-.3, -.2], [-.36, -.1], [-.36, 0]])),
   torpedo_bomber: airShadow(mirror([[.43, 0], [.3, -.08], [.05, -.08], [-.1, -.3], [-.14, -.3], [-.14, -.08], [-.3, -.08], [-.44, -.2], [-.44, 0]]), .96),

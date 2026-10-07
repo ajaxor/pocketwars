@@ -10,14 +10,14 @@ const registry = await loadRegistry(readData);
 const classic = await loadMap(readData, registry, 'classic');
 const factory = (game) => allProperties(game).find((p) => p.owner === 0 && p.terrain.id === 'factory');
 
-test('a factory lists the vehicles in menu order with what the player can and cannot pay', () => {
+test('a factory lists the vehicles cheapest first with what the player can and cannot pay', () => {
   const game = new Game(registry, classic);
   const f = factory(game);
   const m = buildMenuModel(game, 0, f.x, f.y);
   assert.equal(m.title, 'Factory');
   assert.equal(m.funds, 8000);
-  assert.deepEqual(m.options.map((o) => o.id), ['recon', 'tank', 'stealth_tank', 'heavy_tank', 'artillery', 'rocket_launcher', 'flak']);
-  assert.deepEqual(m.options.map((o) => o.affordable), [true, true, false, false, true, false, true]);
+  assert.deepEqual(m.options.map((o) => o.id), ['recon', 'artillery', 'flak', 'tank', 'stealth_tank', 'heavy_tank', 'rocket_launcher'], 'cheapest first');
+  assert.deepEqual(m.options.map((o) => o.affordable), [true, true, true, true, false, false, false]);
   const heavy = m.options.find((o) => o.id === 'heavy_tank');
   assert.equal(heavy.missing, 2000);
   assert.equal(m.options[0].missing, 0);

@@ -2,7 +2,7 @@
 // Pure (no DOM); the window that shows it is in hud.js.
 
 import { buildOptions } from '../engine/economy.js';
-import { terrainAt } from '../engine/queries.js';
+import { costFor, terrainAt } from '../engine/queries.js';
 import { unitStats } from './info.js';
 
 /**
@@ -14,11 +14,10 @@ export function buildMenuModel(game, player, x, y) {
   return {
     title: terrainAt(game, x, y).name,
     funds,
-    options: buildOptions(game, x, y).map((def) => ({
-      ...unitStats(game, def),
-      affordable: funds >= def.cost,
-      missing: Math.max(0, def.cost - funds),
-    })),
+    options: buildOptions(game, x, y).map((def) => {
+      const cost = costFor(game, player, def.id);   // a troop carrier costs more or less by the infantry its leader loads it with
+      return { ...unitStats(game, def), cost, affordable: funds >= cost, missing: Math.max(0, cost - funds) };
+    }),
   };
 }
 

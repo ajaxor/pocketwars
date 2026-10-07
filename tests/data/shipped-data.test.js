@@ -37,7 +37,7 @@ test('every property terrain has a building drawing; decor names exist', () => {
 
 test('attributes are assigned to the intended units', () => {
   const withAttr = (a) => registry.unitIds.filter((id) => hasAttribute(registry.unit(id), a)).sort();
-  assert.deepEqual(withAttr('capture'), ['commando', 'conscript', 'diver', 'marine', 'mech', 'mechanic', 'medic', 'mortar', 'motorcycle', 'rpg_trooper', 'sniper', 'soldier', 'spy']);
+  assert.deepEqual(withAttr('capture'), ['commando', 'conscript', 'diver', 'flamethrower', 'marine', 'mech', 'mechanic', 'medic', 'mortar', 'motorcycle', 'royal_guard', 'rpg_trooper', 'shock_trooper', 'sniper', 'soldier', 'spy', 'swordsman']);
   for (const id of registry.unitIds) if (['infantry', 'amphibious'].includes(registry.unit(id).category)) assert.ok(hasAttribute(registry.unit(id), 'capture'), `${id}: all infantry capture`);
   assert.deepEqual(withAttr('terrainDefenseMultiplier'), ['commando', 'conscript']);
   assert.deepEqual(withAttr('indirect'), ['artillery', 'artillery_turret', 'mortar', 'rocket_launcher', 'sniper']);
@@ -47,8 +47,8 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('cloak'), ['sniper', 'spy', 'stealth_bomber', 'stealth_copter', 'stealth_fighter']);
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
-  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
+  assert.deepEqual(withAttr('ignoresTerrainDefense'), ['airship', 'bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
+  assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'missile_tank', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter')).sort(), 'every plane has a fuel tank, and nothing else does (helicopters fly without one)');
   assert.deepEqual(withAttr('attacksPerTurn'), ['dreadnought']);
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
@@ -66,7 +66,7 @@ test('attributes are assigned to the intended units', () => {
 
 test('exclusive units are on no standard menu, and every one of them is on some leader\'s menu', () => {
   const exclusive = registry.unitIds.filter((id) => registry.unit(id).exclusive).sort();
-  assert.equal(exclusive.length, 36, 'the seventeen drafted units, the thirteen gallery units (supply truck to hunter sub), the marine and the five structures');
+  assert.equal(exclusive.length, 42, 'the seventeen drafted units, the thirteen gallery units (supply truck to hunter sub), the six drafted from the gallery in October 2026 (flamethrower, royal guard, shock trooper, swordsman, missile tank, airship), the marine and the five structures');
   const standard = new Set(Object.values(registry.loadouts.default.build).flat());
   for (const id of exclusive) {
     assert.ok(!standard.has(id), `${id} is not on the standard menu`);
@@ -172,7 +172,7 @@ test('classic map: size, players, HQs', async () => {
 
 test('transports carry each leader\'s basic infantry, and the tuning of the stealth and fuel changes', () => {
   const basic = Object.fromEntries(registry.leaderIds.map((l) => [l, registry.loadoutFor(l).infantry]));
-  assert.deepEqual(basic, { harlan: 'soldier', ada: 'commando', vex: 'spy', hiroshi: 'soldier', ludwig: 'soldier', rex: 'marine', chase: 'soldier', dmitri: 'conscript', lysandra: 'marine' });
+  assert.deepEqual(basic, { harlan: 'soldier', ada: 'commando', vex: 'spy', hiroshi: 'swordsman', ludwig: 'shock_trooper', rex: 'marine', chase: 'motorcycle', dmitri: 'conscript', lysandra: 'royal_guard' });
   for (const id of ['transport_copter', 'apc', 'troop_transport']) assert.equal(registry.unit(id).attributes.deploy.basic, true, `${id} carries basic infantry`);
   assert.ok(registry.unit('marine').weapons.includes('marine_deck_rifle'), 'marines can fight ships from the water');
   assert.deepEqual(registry.weapon('marine_deck_rifle').fromTerrain, ['sea', 'shoals']);

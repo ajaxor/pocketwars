@@ -7,7 +7,7 @@
 
 import { incomeFor } from '../engine/economy.js';
 import { isStructure } from '../engine/structures.js';
-import { allProperties, unitDef } from '../engine/queries.js';
+import { allProperties, unitCost } from '../engine/queries.js';
 import { hasAttribute } from '../engine/attributes.js';
 
 export const INCOME_DAYS = 5;
@@ -17,7 +17,7 @@ export function worth(game, player, { incomeDays = INCOME_DAYS } = {}) {
   let army = 0;
   for (const u of game.state.units) {
     if (u.owner !== player || isStructure(game, u)) continue;
-    army += unitDef(game, u).cost * u.hp / max;
+    army += unitCost(game, u) * u.hp / max;
   }
   // an HQ half captured is worth less: losing it loses the game
   let threat = 0;

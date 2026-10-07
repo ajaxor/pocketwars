@@ -52,6 +52,27 @@ export function deployedType(game, unit) {
   const leader = unit.owner == null ? null : game.map.players[unit.owner]?.leader ?? null;
   return (cfg.basic && game.registry.loadoutFor(leader).infantry) || cfg.unit;
 }
+/**
+ * What `typeId` costs `player` to build. Normally the unit's own `cost`. A troop carrier (the `deploy` attribute with `basic`: transport copter, APC,
+ * troop transport) is priced in data for a carrier of plain soldiers; the owner's leader carries a different basic infantry, so the price moves by
+ * `rules.carrierCargoRate` (default 0.5) of the price difference for every drop it holds: a Royal Guard carrier costs more than a Conscript one.
+ * Rounded to the nearest 100.
+ */
+export function costFor(game, player, typeId) {
+  const { registry } = game;
+  const def = registry.unit(typeId);
+  const cfg = attributeConfig(def, 'deploy');
+  if (!cfg?.basic) return def.cost;
+  const leader = player == null ? null : game.map.players[player]?.leader ?? null;
+  const cargo = registry.unit(registry.loadoutFor(leader).infantry || cfg.unit);
+  const reference = registry.unit(cfg.unit);
+  const drops = Math.max(1, Math.floor((attributeConfig(def, 'ammo')?.max ?? 1) / (cfg.ammo ?? 1)));
+  const rate = registry.rules.carrierCargoRate ?? 0.5;
+  return Math.max(100, Math.round((def.cost + (cargo.cost - reference.cost) * drops * rate) / 100) * 100);
+}
+/** What the unit on the board is worth to its owner (see costFor). */
+export const unitCost = (game, unit) => costFor(game, unit.owner, unit.type);
+
 export const factionOf = (game, player) => game.registry.faction(game.map.players[player].faction);
 
 /** Which way a unit standing at column `x` faces when it starts: toward the middle of the map (1 right, -1 left; the middle column faces right). */

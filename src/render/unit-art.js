@@ -23,10 +23,10 @@ import * as ART_DEFENCES from './art-defences.js';
 // Units whose art lives in a group module (art-infantry.js, art-air.js, art-ships.js): only the ones the game has are taken, so the
 // concept-only sprites in those files stay out of the game's tables. Add a name here when its unit moves into data/units.json.
 const pick = (table, names) => Object.fromEntries(names.map((n) => { if (!table[n]) throw new Error(`no art for "${n}"`); return [n, table[n]]; }));
-const INFANTRY_ART = ['commando', 'mechanic', 'medic', 'mortar_team', 'rpg_trooper', 'spy', 'conscript', 'diver', 'diver_swim'];
-const AIR_ART = ['stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'radar_plane', 'vintage_fighter', 'vintage_bomber'];
+const INFANTRY_ART = ['flamethrower', 'royal_guard', 'shock_trooper', 'swordsman', 'commando', 'mechanic', 'medic', 'mortar_team', 'rpg_trooper', 'spy', 'conscript', 'diver', 'diver_swim'];
+const AIR_ART = ['airship', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'radar_plane', 'vintage_fighter', 'vintage_bomber'];
 const SHIP_ART = ['gun_boat', 'aircraft_carrier', 'dreadnought'];
-const VEHICLE_ART = ['apc', 'amphibious_tank', 'amphibious_tank_swim', 'sam_launcher', 'rocket_buggy', 'technical'];
+const VEHICLE_ART = ['missile_tank', 'apc', 'amphibious_tank', 'amphibious_tank_swim', 'sam_launcher', 'rocket_buggy', 'technical'];
 const FLEET_ART = ['troop_transport', 'missile_sub', 'hunter_sub'];
 const SUPPORT_ART = ['supply_truck', 'hover_tank', 'mine_layer', 'sea_mine'];
 /** The static defences (art-defences.js) that are in the game; the file also holds concept defences that only the gallery shows. */

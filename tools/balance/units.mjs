@@ -51,7 +51,7 @@ export function trade(game, a, d) {
       if (counter && indirect) continue;
       const attacker = { ...ghost(from, -1), hp: BIG };
       const perHp = weaponDamage(game, w, attacker, ghost(to, -2), !counter && !indirect) / BIG;   // a direct-fire unit usually moves before it fires
-      if (!best || perHp > best.perHp) best = { perHp, indirect };
+      if (!best || perHp > best.perHp) best = { perHp, indirect, noCounter: !!w.noCounter };
     }
     return best;
   };
@@ -60,7 +60,7 @@ export function trade(game, a, d) {
   const hit = Math.min(maxHp, first.perHp * maxHp);   // HP taken off D by a full-strength A
   const survives = hit < maxHp;
   let back = 0;
-  if (survives) {   // a ranged attacker is treated as striking first and being answered second, unless the target is ranged too (reach() skips indirect counters)
+  if (survives && !first.noCounter) {   // (a weapon with noCounter, the flamethrower's, is never answered) a ranged attacker is treated as striking first and being answered second, unless the target is ranged too (reach() skips indirect counters)
     const r = reach(d, a, true);
     if (r) back = Math.min(maxHp, r.perHp * (maxHp - hit));
   }

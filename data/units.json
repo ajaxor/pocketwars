@@ -437,6 +437,20 @@
     "exclusive": true,
     "render": { "sprite": "stealth_copter", "attackFx": "shot", "altitude": 0.07 }
   },
+  "airship": {
+    "name": "Airship",
+    "category": "aircraft",
+    "cost": 16000,
+    "move": 4,
+    "moveClass": "air",
+    "layer": "high_air",
+    "weapons": ["bombs"],
+    "toughness": 2,
+    "armor": 0.5,
+    "attributes": { "fuel": {"max": 6, "low": 2}, "ignoresTerrainDefense": true },
+    "exclusive": true,
+    "render": { "sprite": "airship", "attackFx": "drop", "altitude": 0.14 }
+  },
   "rpg_trooper": {
     "name": "RPG Trooper",
     "category": "infantry",
@@ -483,7 +497,7 @@
     "vision": 3,
     "name": "Motorcycle Infantry",
     "category": "infantry",
-    "cost": 2000,
+    "cost": 1900,
     "move": 3,
     "moveClass": "bike",
     "layer": "ground",
@@ -493,6 +507,62 @@
     "attributes": { "capture": true },
     "exclusive": true,
     "render": { "sprite": "motorcycle", "attackFx": "shot" }
+  },
+  "flamethrower": {
+    "name": "Flamethrower",
+    "category": "infantry",
+    "cost": 1700,
+    "move": 2,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["flamethrower"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true },
+    "exclusive": true,
+    "render": { "sprite": "flamethrower", "facing": false, "attackFx": "shot" }
+  },
+  "royal_guard": {
+    "name": "Royal Guard",
+    "category": "infantry",
+    "cost": 1600,
+    "move": 2,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["rifle"],
+    "toughness": 1,
+    "armor": 0.35,
+    "attributes": { "capture": true },
+    "exclusive": true,
+    "render": { "sprite": "royal_guard", "facing": false, "attackFx": "shot" }
+  },
+  "shock_trooper": {
+    "name": "Shock Trooper",
+    "category": "infantry",
+    "cost": 1300,
+    "move": 2,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["shock_rifle"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true },
+    "exclusive": true,
+    "render": { "sprite": "shock_trooper", "facing": false, "attackFx": "shot" }
+  },
+  "swordsman": {
+    "name": "Swordsman",
+    "category": "infantry",
+    "cost": 1300,
+    "move": 2,
+    "moveClass": "foot",
+    "layer": "ground",
+    "weapons": ["katana"],
+    "toughness": 1,
+    "armor": 0,
+    "attributes": { "capture": true },
+    "exclusive": true,
+    "render": { "sprite": "swordsman", "facing": false, "attackFx": "lunge" }
   },
   "supply_truck": {
     "name": "Supply Truck",
@@ -563,6 +633,20 @@
     "attributes": {"ammo": {"max": 3, "low": 1}},
     "exclusive": true,
     "render": {"sprite": "rocket_buggy", "attackFx": "arc"}
+  },
+  "missile_tank": {
+    "name": "Missile Tank",
+    "category": "vehicle",
+    "cost": 8000,
+    "move": 3,
+    "moveClass": "tread",
+    "layer": "ground",
+    "weapons": ["tank_missiles"],
+    "toughness": 1.3,
+    "armor": 0.85,
+    "attributes": {"ammo": {"max": 4, "low": 1}},
+    "exclusive": true,
+    "render": {"sprite": "missile_tank", "attackFx": "arc"}
   },
   "apc": {
     "name": "APC",

@@ -1,9 +1,10 @@
-// Sprites for the Training Ground's specialist infantry: commando, mechanic, medic, mortar team and spy are in the game (unit-art.js
-// takes them by name); the rest are still concepts (gallery/concepts.json).
+// Sprites for the Training Ground's specialist infantry: commando, mechanic, medic, mortar team, spy, flamethrower, royal guard, shock trooper and
+// swordsman are in the game (unit-art.js takes them by name); the rest are still concepts (gallery/concepts.json).
 // Same conventions as src/render/unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }), centred on (0, 0), +x forward.
 // The rule for this group (and the guideline in docs/unit-art-lessons.md): every specialist is the game's plain soldier (legs, torso,
 // head, helmet, the same walk cycle) plus ONE thing that tells it apart: a bandanna, a launcher, a wrench, a case, a fur hat.
 import { box, disc, oval, poly, stroke, mix, afloat, skyClip, seaClip, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome } from './parts.js';
+import { shade } from './color.js';
 
 const RED = '#d4442e', WHITE = '#f4f4ee', WOOD = '#7a4e2a', FUR = '#8a7a66';
 
@@ -170,12 +171,92 @@ const diverSwim = (g, { s, c, dk, w, run, moving, ph, b }) => {
   poly(g, s, [[hx, LN - .004], [hx - .1 - .03 * p, LN + .008], [hx - .1 - .03 * p, LN - .008]], 'rgba(255,255,255,.25)');
 };
 
-export const SPRITES = { commando, rpg_trooper: rpgTrooper, mechanic, medic, mortar_team: mortarTeam, conscript, spy, diver, diver_swim: diverSwim };
+
+// ---- Flamethrower, Royal Guard, Shock Trooper and Swordsman: the soldier plus ONE thing (fuel tanks, a bearskin and shield, a Tesla rifle, a katana) ----
+const FLAME = '#ff9a2e', FLAME_HOT = '#ffe36b', ARC = '#9fe8ff', BLADE = '#8a8f98';   // BLADE is listed in outline.js's NO_OUTLINE: a light grey that gets no outline
+/** Like `body`, but the pack is drawn by a callback (it needs the bob `bb`) before the torso, so it stands behind the body. */
+const bodyPack = (g, o, pack) => {
+  const { s, c, dk } = o, { l, sw, bb } = gait(s, o);
+  legs(g, s, l, dk); pack(bb); torso(g, s, bb, c); head(g, s, bb);
+  return { s, c, dk, bb, sw: sw / s };
+};
+const flame = (g, s, x, y, h, w, sway, col) => {   // a teardrop standing on its base at (x, y), h tall, its point leaning by `sway`
+  g.fillStyle = col; g.beginPath();
+  g.moveTo((x - w) * s, y * s);
+  g.quadraticCurveTo((x - w * 1.15) * s, (y - h * .55) * s, (x + sway) * s, (y - h) * s);
+  g.quadraticCurveTo((x + w * 1.15) * s, (y - h * .55) * s, (x + w) * s, y * s);
+  g.quadraticCurveTo(x * s, (y + w * .9) * s, (x - w) * s, y * s);
+  g.fill();
+};
+const flamethrower = (g, o) => {
+  const { s, dk, bb, sw } = bodyPack(g, o, (bb) => {   // drawn before the torso, so the tanks stand behind the body, toward the left
+    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#bcc0c7');                                          // a plain white tank, a little shaded (the far one)
+    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#bcc0c7');                                          // and the near one
+  });
+  helmet(g, s, bb, dk);
+  const y0 = -.01 + bb, y1 = -.07 + bb + sw;
+  stroke(g, s, -.1, y0 + .04, .29, y1, Math.max(2.5, s * .05), INK);                                               // the flamer, long across the chest
+  box(g, s, .28, y1 - .04, .045, .08, 1, '#555a64');                                                          // its nozzle
+  const f = o.run ? .85 + .2 * Math.sin(o.w * 19 + o.ph) : .9, lean = o.run ? Math.sin(o.w * 13 + o.ph) * .015 : 0;
+  const fx = .335, fy = y1 - .035;
+  flame(g, s, fx, fy, .27 * f, .065, lean, FLAME);                                                            // the flame, upright at the tip
+  flame(g, s, fx, fy, .15 * f, .033, lean * .6, FLAME_HOT);
+};
+
+// Royal Guard: a soldier in a tall black bearskin with a team-coloured band, a tall shield in a pale tint of the team colour, and a rifle
+// (the soldier's single black line) carried over his shoulder.
+const BEAR = '#2b2b2f';
+const royalGuard = (g, o) => {
+  const { s, c, bb, sw } = body(g, o);
+  box(g, s, -.115, -.47 + bb, .23, .23, .06 * s, BEAR);                                                         // the bearskin, sitting on top of the head
+  box(g, s, -.115, -.285 + bb, .23, .035, 1, c);                                                                // its band, in the team colour
+  const sh = mix(c, '#dfe6ee', .55);
+  box(g, s, .1, -.16 + bb, .11, .44, 4, shade(sh, -.25));                                                       // the shield's edge
+  box(g, s, .14, -.18 + bb, .1, .44, 4, sh);                                                                    // and its plain face
+  stroke(g, s, .08, .08 + bb, -.2, -.3 + bb + sw * .5, Math.max(2, s * .05), INK);                              // the rifle: up across the shoulder, barrel behind it
+};
+
+// Shock trooper: a soldier in a helmet with a hand-held Tesla rifle: a long dark gun with a stock, copper coil windings along the barrel and a
+// glowing ball at the muzzle.
+const COPPER = '#c58b3a';
+const shockTrooper = (g, o) => {
+  const { s, dk, bb, sw } = body(g, o);
+  helmet(g, s, bb, dk);
+  const glow = o.run ? .6 + .4 * Math.sin(o.w * 11 + o.ph) : .7;
+  g.save(); g.translate(-.02 * s, (.02 + bb + sw * .3) * s); g.rotate(-.3 + sw * .4);                           // held across the body, muzzle up
+  box(g, s, -.2, -.075, .22, .15, 3, '#0d0e10');                                                               // the big housing at the base, like a minigun's motor block
+  box(g, s, -.2, -.075, .22, .04, 2, '#0d0e10');                                                               // its lighter top plate
+  box(g, s, -.14, .06, .06, .1, 1, '#0d0e10');                                                                 // the grip under it
+  box(g, s, .02, -.045, .3, .03, 1, '#0d0e10'); box(g, s, .02, .015, .3, .03, 1, '#0d0e10');                   // two short barrels side by side
+  for (const x of [.08, .17, .26]) box(g, s, x, -.06, .03, .13, 1, COPPER);                                    // copper rings round them
+  disc(g, s, .35, 0, .05 * glow + .03, 'rgba(159,232,255,.35)'); disc(g, s, .35, 0, .035, ARC);                // the glowing ball at the muzzle
+  if (o.run) {                                                                                                 // a little arc that jumps about
+    const j = ((Math.floor(o.w * 9 + o.ph) * 7) % 5 - 2) * .012;
+    g.strokeStyle = ARC; g.lineWidth = Math.max(1.5, s * .014); g.lineJoin = 'round';
+    g.beginPath(); g.moveTo(.35 * s, 0); g.lineTo(.39 * s, (-.05 + j) * s); g.lineTo(.37 * s, (-.065 + j) * s); g.lineTo(.42 * s, (-.11 + j) * s); g.stroke();
+  }
+  g.restore();
+};
+
+// Swordsman: a plain soldier in a helmet with a katana held up and forward: a dark grey blade, a black grip and a small guard.
+const swordsman = (g, o) => {
+  const { s, dk, bb, sw } = body(g, o);
+  helmet(g, s, bb, dk);
+  g.save(); g.translate(-.02 * s, (.04 + bb + sw * .5) * s); g.rotate(-.85 + sw * .5);
+  box(g, s, -.1, -.02, .14, .04, 1, '#0d0e10');                                                                      // the grip
+  box(g, s, .04, -.033, .022, .066, 1, '#0d0e10');                                                                  // the guard
+  const bow = (x) => .03 * ((x - .065) / .43) ** 2, xs = [.065, .15, .24, .33, .42], top = xs.map((x) => [x, -.022 - bow(x)]);   // a slim blade bowed gently upward
+  poly(g, s, [...top, [.5, -.022 - bow(.5) + .004], [.44, .022 - bow(.44)], ...xs.slice(0, 4).reverse().map((x) => [x, .022 - bow(x)])], BLADE);   // the tip sweeps up to a point
+  g.restore();
+};
+
+export const SPRITES = { flamethrower, royal_guard: royalGuard, shock_trooper: shockTrooper, swordsman, commando, rpg_trooper: rpgTrooper, mechanic, medic, mortar_team: mortarTeam, conscript, spy, diver, diver_swim: diverSwim };
 
 // ---- shadows ------------------------------------------------------------------------------------------------------------------------------
 const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 const none = () => {};
 export const SHADOWS = {
+  flamethrower: ground(.22, .04, .3), royal_guard: ground(.2, .04, .3), shock_trooper: ground(.2, .04, .3), swordsman: ground(.2, .04, .3),
   commando: ground(.17, .04, .3), rpg_trooper: ground(.2, .04, .3), mechanic: ground(.2, .04, .3), medic: ground(.2, .04, .3),
   mortar_team: ground(.35, .045, .3, .02), conscript: ground(.17, .04, .3), spy: ground(.18, .04, .3), diver: ground(.19, .04, .3), diver_swim: none,
 };
