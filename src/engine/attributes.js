@@ -16,9 +16,9 @@ const isFlag = (v) => v === true;
 export const UNIT_ATTRIBUTES = {
   capture: {
     label: 'Captures',
-    help: 'Can capture the property it stands on. Each turn adds its current HP to the capture points; when they reach the total the property changes hands.',
-    doc: 'Can capture properties (cities, HQ, factories...) it stands on. Progress per capture action equals the unit\'s current HP.',
-    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+    help: 'Can capture the property it stands on. Each turn adds its current HP (plus any bonus) to the capture points; when they reach the total the property changes hands.',
+    doc: 'Can capture properties (cities, HQ, factories...) it stands on. Config: true, or { bonus } (a whole number of 1 or more). Progress per capture action equals the unit\'s current HP, plus the bonus (the flamethrower\'s 5).',
+    check: (v, e, fail) => { if (isFlag(v)) return; if (!v || typeof v !== 'object' || Object.keys(v).some((k) => k !== 'bonus') || !Number.isInteger(v.bonus) || v.bonus < 1) fail('must be true or { bonus: whole number >= 1 }'); },
   },
   indirect: {
     label: 'Indirect fire',

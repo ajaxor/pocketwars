@@ -89,3 +89,11 @@ test('victoryOnCapture: capturing an HQ knocks its owner out (the last player le
   assert.deepEqual(hq.events.find((e) => e.type === 'gameOver'), { type: 'gameOver', winner: 0, reason: 'hq' });
   assert.equal(game.state.winner, 0);
 });
+
+test('capture: a bonus is added to the HP on every action, and the config is validated', () => {
+  const game = makeGame({ units: { taker: { attributes: { capture: { bonus: 5 } } } }, rows: ['c...'], unitsOnMap: [['taker', 0, 0, 0, 7], ['taker', 1, 3, 0]] });
+  const unit = game.state.units[0];
+  capture(game, 0, { x: 0, y: 0 });
+  assert.equal(unit.capture, 12, '7 HP + 5');
+  assert.throws(() => makeGame({ units: { taker: { attributes: { capture: { bonus: 0 } } } }, rows: ['c...'], unitsOnMap: [['taker', 0, 0, 0], ['taker', 1, 3, 0]] }));
+});

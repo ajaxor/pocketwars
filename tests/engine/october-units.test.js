@@ -195,3 +195,9 @@ test('every build menu lists the cheapest unit first (node tools/sort-build-menu
     }
   }
 });
+
+test('flamethrower: some armour piercing (less than the RPG trooper and mech) and a +5 capture bonus', () => {
+  const ap = weapon('flamethrower').armorPiercing;
+  assert.ok(ap > 0 && ap < registry.weapon(unit('rpg_trooper').weapons[0]).armorPiercing && ap < registry.weapon(unit('mech').weapons[0]).armorPiercing);
+  assert.deepEqual(unit('flamethrower').attributes.capture, { bonus: 5 });
+});

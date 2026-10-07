@@ -1,7 +1,7 @@
 // Capturing properties. Governed by the unit attribute `capture` and the terrain attribute `property`
 // (capturePoints to flip owner) plus `victoryOnCapture` (capturing it knocks its owner out; the last player left wins).
 
-import { hasAttribute } from './attributes.js';
+import { attributeConfig, hasAttribute } from './attributes.js';
 import { ownerAt, propertyAt, snapshotUnit, terrainAt, unitDef } from './queries.js';
 import { eliminate } from './victory.js';
 
@@ -20,7 +20,7 @@ export function resolveCapture(game, unit) {
   const { x, y } = unit;
   const property = propertyAt(game, x, y);
   const before = unit.capture;
-  unit.capture += Math.ceil(unit.hp);
+  unit.capture += Math.ceil(unit.hp) + (attributeConfig(unitDef(game, unit), 'capture')?.bonus ?? 0);
   const completed = unit.capture >= property.capturePoints;
   const events = [{
     type: 'capture', unit: snapshotUnit(unit), x, y, owner: unit.owner, completed,

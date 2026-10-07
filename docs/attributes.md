@@ -13,7 +13,7 @@ wrong kind of entity, fail validation.
 
 | Attribute | Meaning | Tests |
 |---|---|---|
-| `capture` | Can capture properties it stands on; progress per action = current HP. | `tests/attributes/capture.test.js` |
+| `capture` | Can capture properties it stands on; progress per action = current HP, plus `{ bonus }` when configured (the flamethrower: 5). | `tests/attributes/capture.test.js` |
 | `indirect` | Cannot move and fire in the same turn; no counterattack either way. Every weapon needs `range[0] >= 2`. (Not the same as the `indirect_ground` target mode, which decides whether obstacles block a shot: see [combat.md](combat.md).) | `indirect.test.js` |
 | `ignoresTerrainDefense` | Terrain defense does not reduce damage this unit takes. | `ignoresTerrainDefense.test.js` |
 | `submerge` | Can dive (an order, after moving) on `submergible` terrain and surface again. Config `{ layer, move? }` names the layer while down (`move`: the speed while down, lower than the surface speed); a unit that has not moved can dive or surface for free first (`game.setSubmerged`), or after moving as an order; if that layer is `hidden`, enemies only see the unit when adjacent or in `sonar` range. Ending a move off deep water brings it up. With `auto: true` (the diver) there are no Submerge/Surface orders: the unit is down exactly while it stands on deep water. | `tests/engine/naval.test.js` |

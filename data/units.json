@@ -518,7 +518,7 @@
     "weapons": ["flamethrower"],
     "toughness": 1.5,
     "armor": 0,
-    "attributes": { "capture": true },
+    "attributes": { "capture": { "bonus": 5 } },
     "exclusive": true,
     "render": { "sprite": "flamethrower", "facing": false, "attackFx": "shot" }
   },
