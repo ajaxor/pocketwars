@@ -65,7 +65,7 @@ async function main() {
   for (const r of results) {
     r.leaders.forEach((l, seat) => {
       for (const [type, c] of Object.entries(r.combat?.[seat] ?? {})) {
-        for (const t of [((credits[l] ??= {})[type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0 }), (overall[type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0 })]) { t.fielded += c.fielded; t.dealt += c.dealt; t.lost += c.lost; t.units += c.units ?? 0; t.struck += c.struck ?? 0; }
+        for (const t of [((credits[l] ??= {})[type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0, healed: 0 }), (overall[type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0, healed: 0 })]) { t.fielded += c.fielded; t.dealt += c.dealt; t.lost += c.lost; t.units += c.units ?? 0; t.struck += c.struck ?? 0; t.healed += c.healed ?? 0; }
       }
     });
     if (r.error) errors.push(`${r.map}: ${r.job.labels[r.error.seat]}: ${r.error.message}`);
@@ -108,6 +108,8 @@ async function main() {
   const armed = Object.entries(overall).filter(([t, c]) => registry.unit(t).weapons?.length && !registry.unit(t).attributes?.heal && !registry.unit(t).attributes?.supply && c.units >= 15);
   const idle = (c) => 1 - c.struck / c.units;
   const unused = armed.sort((a, b) => b[1].fielded * idle(b[1]) - a[1].fielded * idle(a[1]));
+  const healers = Object.entries(overall).filter(([, c]) => c.healed > 0).sort((a, b) => b[1].healed - a[1].healed);
+  if (healers.length) md.push('### Healing', '', 'Credits of HP restored by healers (units next to them, and themselves, valued at their price), over all games, and per credit of healer fielded.', '', '| unit | fielded | healed | healed per credit fielded |', '|---|---:|---:|---:|', ...healers.map(([t, c]) => `| ${t} | ${Math.round(c.fielded / 1000)}k | ${Math.round(c.healed / 1000)}k | ${(c.healed / c.fielded).toFixed(2)} |`), '');
   md.push('### Most under-used armed units', '', `Armed unit types with at least 15 units fielded over the ${results.length} games, ranked by the credits spent on units that never attacked at all (killed on arrival counts: the AI paid for it and got nothing; a unit that only captures counts too, so infantry sit high by nature). Healers and suppliers are left out. "Wasted" is the type's credits fielded times the share that never attacked. Read it against the median below and the return column above: a type that is both idle and low-return is probably used badly by the AI; one that is idle but dies quickly may be priced above what it survives to do.`, '',
     '| unit | units | never attacked | wasted | return | destroyed (of fielded) |', '|---|---:|---:|---:|---:|---:|',
     ...unused.slice(0, 12).map(([t, c]) => `| ${t} | ${c.units} | ${pct(idle(c))} | ${k(c.fielded * idle(c))} | ${eff(c).toFixed(2)} | ${pct(c.lost / c.fielded)} |`), '',

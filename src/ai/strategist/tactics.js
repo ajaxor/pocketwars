@@ -11,7 +11,7 @@ import { ammoLevel, ammoOf, canResupplyAt, resupplyCost, roundCost } from '../..
 import { attributeConfig, hasAttribute } from '../../engine/attributes.js';
 import { canCapture } from '../../engine/capture.js';
 import { canAttackFrom, forecastAttack } from '../../engine/combat.js';
-import { canHealAt, healPlan } from '../../engine/heal.js';
+import { canHealAt, healPlan, healsAutomatically } from '../../engine/heal.js';
 import { isMine, layConfig, layTiles } from '../../engine/mines.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from '../../engine/movement.js';
 import { distance, propertyAt, ownerAt, terrainAt, tileIndex, unitDef } from '../../engine/queries.js';
@@ -113,6 +113,11 @@ export function bestOrder(sit, unit) {
     if (mayAct && pick.kind !== 'attack' && canSupplyAt(game, unit, x, y)) {
       const gain = supplyPlan(game, unit, x, y).reduce((a, p) => a + (p.rounds * roundCost(game, p.unit) + p.hp * unitDef(game, p.unit).cost / sit.maxHp) / 1000, 0) * params.heal;
       if (gain > 0 && base + gain > pick.score) pick = { score: base + gain, kind: 'support', action: { type: 'supply' }, gain };
+    }
+    // a medic heals by itself after whatever it does (heal.auto): where it ends the order is worth what it would restore there, on top of the order
+    if (healsAutomatically(game, unit)) {
+      const gain = healPlan(game, unit, x, y).reduce((a, h) => a + h.hp * unitDef(game, h.unit).cost / 1000, 0) * params.heal / sit.maxHp * 4;
+      if (gain > 0) pick = { ...pick, score: pick.score + gain, gain: pick.gain + gain, kind: pick.kind === 'move' ? 'support' : pick.kind };
     }
     if (!best || pick.score > best.score) best = { ...pick, x, y };
   }

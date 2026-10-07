@@ -196,7 +196,6 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Starting armies are uneven after the fighter price rise.** The leaders' start loadouts include fighters (vex, hiroshi, ludwig, lysandra) that now
   cost 13,000, so the cheapest and dearest start armies differ by 6,200 (the leaders test was loosened from 4,000 to 6,500 to allow it). Swapping
   some of those start units, or trimming the others', would restore the fairness check.
-- **The AI does not place medics to heal.** The medic heals by itself now, but the AI still positions it by its attack value, not to stand next to wounded units; a "HP healed" column in the leader report would show its worth.
 - **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
   still moves anywhere (and the AI still sees everything).
 - **Fixed in part: copters and vintage bombers were valued without their fuel** (helicopters later lost their fuel altogether, round 4 of `docs/balance.md`).** Production and the attack goals treated a flier as able to
@@ -221,3 +220,4 @@ The review's points and where they stand, then what the new system leaves open. 
 - **The new sprites (flamethrower, royal guard, shock trooper, swordsman, missile tank, airship) have not been checked in a browser.**
 - **The damage baseline has few cases for the new units**, and the AI tuning is still stale (`npm run ai:tune`).
 - **Balance of the October units rests on one 720-game AI run**; hiroshi (43%) and ludwig (45%) still trail.
+- **Healer value is measured, not tuned.** The leader report now has a Healing table (mechanic 0.89 credits restored per credit fielded, medic 0.28 after the AI change). The strategist's `heal` weight is still the old default and nobody has swept it (`npm run ai:sweep`).

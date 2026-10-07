@@ -52,7 +52,7 @@ function trackCombat(game) {
   const { registry } = game;
   const maxHp = registry.rules.maxHp;
   const players = game.map.players.map(() => ({}));
-  const row = (p, type) => (players[p][type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0 });
+  const row = (p, type) => (players[p][type] ??= { fielded: 0, dealt: 0, lost: 0, units: 0, struck: 0, healed: 0 });
   const strikers = new Set();   // ids of the units that ever attacked: a unit that never does was bought for nothing
   const typeOf = new Map();
   for (const u of game.state.units) {
@@ -63,6 +63,7 @@ function trackCombat(game) {
     add(events) {
       for (const e of events) {
         if (e.type === 'build' && players[e.unit.owner]) { row(e.unit.owner, e.unit.type).fielded += e.cost; row(e.unit.owner, e.unit.type).units++; typeOf.set(e.unit.id, [e.unit.owner, e.unit.type]); }
+        else if (e.type === 'heal' && players[e.unit.owner]) row(e.unit.owner, e.unit.type).healed += e.healed.reduce((a, h) => a + (h.to - h.from) * (typeOf.get(h.id) ? registry.unit(typeOf.get(h.id)[1]).cost : 0) / maxHp, 0);   // credits of HP restored
         else if (e.type === 'strike' && players[e.attacker.owner] && players[e.defender.owner] && e.attacker.owner !== e.defender.owner) {
           const hp = e.destroyed ? e.damage + e.defender.hp : e.damage;   // the snapshot is taken after the hit: a destroyed unit's HP is what was left over
           const credits = Math.max(0, hp) * registry.unit(e.defender.type).cost / maxHp;

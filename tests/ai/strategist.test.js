@@ -159,3 +159,14 @@ test('matchups come from the data: a new unit is understood without any code', (
   assert.equal(matchup(g, 'tank', 'fighter'), 0, 'a tank cannot shoot down a fighter');
   assert.ok(matchup(g, 'fighter', 'bomber') > 0);
 });
+
+test('a medic (which heals by itself) ends its move next to wounded friends, and plays on as a support', () => {
+  // a wounded soldier at x=3, the medic at x=0 (it moves 2); the enemy HQ is far off to the right
+  const g = world(['H.......h'], [['medic', 0, 0, 0], ['soldier', 0, 3, 0, 4], ['soldier', 1, 8, 0]]);
+  const medic = g.state.units[0];
+  const sit = situation(g);
+  const order = bestOrder(sit, medic);
+  assert.ok(order, 'the medic gets an order');
+  assert.equal(order.kind, 'support');
+  assert.ok(Math.abs(order.order.to.x - 3) <= 1 && order.order.to.y === 0, `next to the wounded soldier, not at ${order.order.to.x},${order.order.to.y}`);
+});
