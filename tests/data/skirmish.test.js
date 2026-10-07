@@ -296,3 +296,25 @@ test('launcher: Skirmish offers the colour\'s leaders, and Start plays a map whe
   assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'ada').length);
   assert.ok(Object.isFrozen(m));
 });
+
+test('starting units off: nobody starts with units (map structures stay), with or without leaders; on is the default', () => {
+  assert.equal(defaultSkirmish(classic).startUnits, true);
+  const m = maps.find((x) => x.id === 'iron_curtain');
+  for (const leader of [null, 'vex']) {
+    const s = { ...defaultSkirmish(m), startUnits: false, players: defaultSkirmish(m).players.map((p) => ({ ...p, leader })) };
+    const off = applySkirmish(m, s, registry);
+    assert.equal(off.units.filter((u) => u.owner !== null && !registry.unit(u.type).attributes?.structure).length, 0, `leader ${leader}`);
+    assert.equal(off.units.filter((u) => u.owner === null).length, m.units.filter((u) => u.owner === null).length, 'neutral units stay');
+  }
+  const led = applySkirmish(m, { ...defaultSkirmish(m), startUnits: false, players: defaultSkirmish(m).players.map((p) => ({ ...p, leader: 'vex' })) }, registry);
+  assert.equal(led.players[0].leader, 'vex', 'the leader still sets the menus');
+  assert.ok(skirmishProblems(m, registry, { ...defaultSkirmish(m), startUnits: 'no' }).length);
+});
+
+test('the skirmish screen keeps the starting-units choice across maps', () => {
+  const { s } = screen();
+  assert.equal(s.settings.startUnits, true);
+  s.setStartUnits(false);
+  s.pick('dust_bowl');
+  assert.equal(s.settings.startUnits, false);
+});

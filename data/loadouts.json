@@ -74,7 +74,7 @@
     "vex": {
       "infantry": "spy",
       "build": {
-        "barracks": ["spy", "motorcycle", "sniper"],
+        "barracks": ["spy", "sniper"],
         "factory": ["recon", "flak", "tank", "rocket_launcher", "sam_launcher"],
         "airfield": ["transport_copter", "stealth_copter", "bomber", "fighter"],
         "shipyard": ["gun_boat", "diver", "destroyer", "submarine", "cruiser", "missile_sub"]
@@ -198,7 +198,7 @@
       "build": {
         "barracks": ["conscript", "mechanic", "rpg_trooper", "mortar"],
         "factory": ["recon", "apc", "artillery", "flak", "heavy_tank", "rocket_launcher"],
-        "airfield": ["copter", "vintage_bomber", "torpedo_bomber", "airship", "fighter"],
+        "airfield": ["copter", "torpedo_bomber", "airship", "fighter"],
         "shipyard": ["mine_layer", "troop_transport", "destroyer", "cruiser", "missile_sub", "battleship"]
       },
       "start": {
@@ -211,7 +211,7 @@
           { "unit": "conscript", "at": [0, 1] }
         ],
         "airfield": [
-          { "unit": "vintage_bomber", "at": [0, 1] }
+          { "unit": "copter", "at": [0, 1] }
         ],
         "shipyard": [
           { "unit": "mine_layer", "at": [0, 1] }

@@ -89,9 +89,9 @@ export class SkirmishScreen {
   pick(mapId) {
     const map = this.maps.find((m) => m.id === mapId);
     if (!map || map === this.map) return;
-    const { funds } = this.settings;
+    const { funds, startUnits } = this.settings;
     this.map = map;
-    this.settings = { ...this.#defaults(map), funds, fog: this.#fogFor(map) };
+    this.settings = { ...this.#defaults(map), funds, startUnits, fog: this.#fogFor(map) };
     this.quotes.clear();
     this.#render();
   }
@@ -104,6 +104,8 @@ export class SkirmishScreen {
     this.#render();
   }
   setFunds(funds) { this.settings.funds = funds; this.#render(); }
+  /** Start with each team's starting units (on) or with none, only what the buildings can build (off). */
+  setStartUnits(on) { this.settings.startUnits = on; this.#render(); }
   /** Fog of war on (the map's jammers stay) or off (they are taken off the map). A map without jammers has no fog: it stays off. */
   setFog(on) {
     if (!hasJammers(this.map, this.registry)) return;
@@ -279,6 +281,10 @@ export class SkirmishScreen {
     fog.append(this.#segmented([[true, 'On'], [false, 'Off']], jammed && settings.fog !== false, (v) => this.setFog(v), 'Fog of war', jammed ? [] : [true]),
       h(doc, 'span', 'sk-rule-note', !jammed ? 'Off: this map has no jammers.' : settings.fog !== false ? 'Jammers on this map hide what your units cannot see. Destroy them all to lift it.' : 'The jammers are taken off the map.'));
     this.el.rules.append(fog);
+    const start = h(doc, 'div', 'sk-rule');
+    start.append(h(doc, 'span', 'sk-rule-name', 'Starting units'), this.#segmented([[true, 'On'], [false, 'Off']], settings.startUnits !== false, (v) => this.setStartUnits(v), 'Starting units'),
+      h(doc, 'span', 'sk-rule-note', settings.startUnits !== false ? 'Each team begins with its starting army.' : 'Nobody starts with any units: build everything.'));
+    this.el.rules.append(start);
 
     const problems = this.problems;
     this.go.disabled = problems.length > 0;

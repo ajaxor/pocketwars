@@ -156,16 +156,16 @@ export function placeStart(map, registry, owner, start, taken = new Set()) {
 /**
  * A copy of `map` (frozen) in which player i fights with the leader leaders[i] (an id from the registry, or null for none). Their
  * build menus follow the leader's loadout, and their starting units are the loadout's sets around their HQ and factories instead
- * of the units the map file gives them.
+ * of the units the map file gives them. With `startUnits: false` they get the menus only and begin with no units (structures stay).
  */
-export function withLeaders(map, registry, leaders) {
+export function withLeaders(map, registry, leaders, { startUnits = true } = {}) {
   const placeable = leaders.map((id, owner) => (id && hqOf(map, registry, owner) ? id : null));
   const kept = map.units.filter((u) => u.owner === null || !placeable[u.owner] || registry.unit(u.type).attributes?.structure).map((u) => ({ ...u }));   // structures (turrets, jammers) stay where the map put them
   const taken = new Set(kept.map((u) => key(u.x, u.y)));
   map.terrain.forEach((row, y) => row.forEach((t, x) => { if (registry.terrainDef(t).attributes?.wall?.structure) taken.add(key(x, y)); }));   // a cracked wall goes there
   const units = [...kept];
   placeable.forEach((id, owner) => {
-    if (id) units.push(...placeStart(map, registry, owner, registry.loadoutFor(id).start, taken).units);
+    if (id && startUnits) units.push(...placeStart(map, registry, owner, registry.loadoutFor(id).start, taken).units);
   });
   const players = map.players.map((p, i) => (leaders[i] ? { ...p, leader: leaders[i] } : { ...p }));
   return deepFreeze({ ...map, players, units });
