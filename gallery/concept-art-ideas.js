@@ -43,8 +43,8 @@ const flame = (g, s, x, y, h, w, sway, col) => {   // a teardrop standing on its
 };
 const flameTrooper = (g, o) => {
   const { s, dk, bb, sw } = body(g, o, (bb) => {   // drawn before the torso, so the tanks stand behind the body, toward the left
-    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#d3d6db');                                          // a plain white tank, a little shaded (the far one)
-    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#f3f4f6');                                          // and the near one
+    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#eceef1');                                          // a plain white tank, a little shaded (the far one)
+    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#eceef1');                                          // and the near one
   });
   helmet(g, s, bb, dk);
   const y0 = -.01 + bb, y1 = -.07 + bb + sw;
@@ -97,8 +97,8 @@ const swordsman = (g, o) => {
   helmet(g, s, bb, dk);
   g.save(); g.translate(-.02 * s, (.04 + bb + sw * .5) * s); g.rotate(-.85 + sw * .5);
   box(g, s, -.1, -.02, .14, .04, 1, '#0d0e10');                                                                      // the grip
-  box(g, s, .04, -.05, .025, .1, 1, '#c9a227');                                                                  // the guard
-  poly(g, s, [[.065, -.026], [.43, -.026], [.48, -.046], [.43, .008], [.065, .026]], '#4a4f58');                  // the long, slightly curved blade
+  box(g, s, .04, -.05, .025, .1, 1, '#0d0e10');                                                                  // the guard
+  poly(g, s, [[.065, -.026], [.43, -.026], [.48, -.046], [.43, .008], [.065, .026]], '#343434');                  // the long, slightly curved blade
   g.restore();
 };
 
@@ -270,7 +270,7 @@ const airship = (g, { s, c, dk, w, run, ph }) => {
   oval(g, s, 0, -.04, .44, .2, c);                                                                              // the envelope
   stroke(g, s, -.12, .14, -.12, .2, 3, INK); stroke(g, s, .14, .14, .14, .2, 3, INK);                           // the struts
   box(g, s, -.26, .19, .5, .1, 4, dk);                                                                          // the undercarriage
-  propDisc(g, s, -.5, -.04, .11, w, run, ph, INK);                                                              // the tail propeller
+  propDisc(g, s, -.55, -.04, .11, w, run, ph, INK);                                                              // the tail propeller
 };
 
 // Loitering drone: a small delta wing with a pusher propeller and a red warhead nose, circling as it waits.
