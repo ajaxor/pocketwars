@@ -141,7 +141,7 @@
     "layer": "ground",
     "weapons": ["flak_cannon"],
     "toughness": 1,
-    "armor": 0.55,
+    "armor": 0.9,
     "attributes": {},
     "render": { "sprite": "flak", "attackFx": "shot" }
   },
@@ -539,7 +539,7 @@
   "shock_trooper": {
     "name": "Shock Trooper",
     "category": "infantry",
-    "cost": 1300,
+    "cost": 1500,
     "move": 2,
     "moveClass": "foot",
     "layer": "ground",

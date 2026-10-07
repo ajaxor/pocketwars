@@ -109,6 +109,7 @@ export function validateWeapons(weapons, rules, problems) {
     if (w.indirect !== undefined && w.indirect !== true) problems.push(`weapon "${id}": indirect must be true when present`);
     if (w.indirect && Array.isArray(w.range) && w.range[0] < 2) problems.push(`weapon "${id}": an indirect weapon needs a minimum range of at least 2`);
     if (w.siege !== undefined && w.siege !== true) problems.push(`weapon "${id}": siege (artillery, bombs and missiles: the hard hitters against structures) must be true when present`);
+    if (w.ignoresCover !== undefined && w.ignoresCover !== true) problems.push(`weapon "${id}": ignoresCover (the target gets no terrain defence) must be true when present`);
     if (w.noCounter !== undefined && w.noCounter !== true) problems.push(`weapon "${id}": noCounter (the target never hits back) must be true when present`);
     if (w.categoryMultipliers !== undefined) {
       const m = w.categoryMultipliers;

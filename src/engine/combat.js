@@ -136,7 +136,7 @@ function rawDamage(game, weapon, attacker, defender, moved = false) {
     const ambushS = attacker.ambush && attacker.owner === game.state.turn ? game.registry.rules.ambushMultiplier ?? 1 : 1;
     return (weapon.damage * (weapon.targetMultipliers?.[modeS] ?? 1) * kind * ambushS * attacker.hp) / 10 / (fort.durability ?? 1) / 10;
   }
-  const stars = terrainStars(game, defender);
+  const stars = weapon.ignoresCover ? 0 : terrainStars(game, defender);   // the flamethrower burns them out of cover
   const toughness = (1 - d.armor * (1 - weapon.armorPiercing)) / d.toughness;
   // the weapon's multiplier for the target mode that reaches the defender's layer (1 when it lists none)
   const layer = layerOf(game, defender);
