@@ -15,8 +15,11 @@ export const OUTLINE_THIN = .014;
 const REACH = 1.7;                                   // the same room around the tile centre that drawFrameAlpha allows
 const cache = { body: null, edge: null, mix: null, mask: null, owners: {} };      // owners: which `make` built each scratch canvas
 const BLACK = 52;                                     // a colour whose red, green and blue are all at or below this counts as black
-const isBlack = (css) => {                            // is this canvas colour string near-black (and not see-through)?
+/** Exact colours that never grow an outline either, whatever their brightness (a katana's blade grey: it has to stay light but read as a thin line). */
+export const NO_OUTLINE = ['#8a8f98'];
+const isBlack = (css) => {                            // is this canvas colour string near-black (and not see-through), or one of NO_OUTLINE?
   if (typeof css !== 'string') return false;
+  if (NO_OUTLINE.includes(css.toLowerCase())) return true;
   let m = /^#([0-9a-f]{3,8})$/i.exec(css), r, g, b, a = 1;
   if (m) { let h = m[1]; if (h.length <= 4) h = [...h].map((c) => c + c).join(''); r = parseInt(h.slice(0, 2), 16); g = parseInt(h.slice(2, 4), 16); b = parseInt(h.slice(4, 6), 16); if (h.length === 8) a = parseInt(h.slice(6, 8), 16) / 255; }
   else if ((m = /^rgba?\(([^)]+)\)$/i.exec(css))) { [r, g, b, a = 1] = m[1].split(',').map(Number); }

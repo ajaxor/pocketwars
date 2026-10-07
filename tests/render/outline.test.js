@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { drawOutlined } from '../../src/render/outline.js';
+import { NO_OUTLINE, drawOutlined } from '../../src/render/outline.js';
 
 function recorder(calls = []) {
   const g = new Proxy({ canvas: null }, { get: (t, p) => (p in t ? t[p] : p === 'getTransform' ? () => ({ a: 1, b: 0 }) : (...a) => { calls.push([p, ...a]); return undefined; }), set: (t, p, v) => { t[p] = v; return true; } });
@@ -50,4 +50,19 @@ test("the game's units are drawn with black parts left out of the outline (skipB
   const { readFile } = await import('node:fs/promises');
   const src = await readFile(new URL('../../src/render/unit-sprites.js', import.meta.url), 'utf8');
   assert.match(src, /drawOutlined\([\s\S]*skipBlack: true/);
+});
+
+test('a colour listed in NO_OUTLINE is left out of the outlined silhouette like a near-black one, however light it is', () => {
+  const filled = [];
+  const make = (w, h) => {
+    const r = recorder([]); r.g.width = w; r.g.height = h; r.g.getContext = () => r.g;
+    r.g.fill = () => { filled.push(r.g.fillStyle); };
+    return r.g;
+  };
+  const sprite = (g) => { g.fillStyle = NO_OUTLINE[0]; g.fill(); g.fillStyle = '#e8742a'; g.fill(); };
+  const mod = { SPRITES: { x: sprite }, SHADOWS: { x: () => {} } };
+  const { g } = recorder();
+  drawOutlined(g, mod, 'x', { s: 40 }, { r: 2, color: '#123456', skipBlack: true, make });
+  assert.equal(filled.filter((c) => c === NO_OUTLINE[0]).length, 1, 'drawn in the body, skipped in the mask');
+  assert.equal(filled.filter((c) => c === '#e8742a').length, 2);
 });

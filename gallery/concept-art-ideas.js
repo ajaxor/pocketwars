@@ -8,6 +8,7 @@ import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hull
 import { shade } from '../src/render/color.js';
 import { footing, footShadow } from '../src/render/art-defences.js';
 import * as VEHICLES from '../src/render/art-vehicles.js';
+const BLADE = '#8a8f98';   // listed in outline.js's NO_OUTLINE: a light grey that, like the near-black parts, gets no outline
 const WOOD = '#7a4e2a', HAZARD = '#ffc531', RUST = '#9a5a2e', FLAME = '#ff9a2e', FLAME_HOT = '#ffe36b', ARC = '#9fe8ff';
 
 // ---- infantry ------------------------------------------------------------------------------------------------------------------
@@ -42,8 +43,8 @@ const flame = (g, s, x, y, h, w, sway, col) => {   // a teardrop standing on its
 };
 const flameTrooper = (g, o) => {
   const { s, dk, bb, sw } = body(g, o, (bb) => {   // drawn before the torso, so the tanks stand behind the body, toward the left
-    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#eceef1');                                          // a plain white tank, a little shaded (the far one)
-    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#eceef1');                                          // and the near one
+    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#d4d7dc');                                          // a plain white tank, a little shaded (the far one)
+    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#d4d7dc');                                          // and the near one
   });
   helmet(g, s, bb, dk);
   const y0 = -.01 + bb, y1 = -.07 + bb + sw;
@@ -97,7 +98,7 @@ const swordsman = (g, o) => {
   g.save(); g.translate(-.02 * s, (.04 + bb + sw * .5) * s); g.rotate(-.85 + sw * .5);
   box(g, s, -.1, -.02, .14, .04, 1, '#0d0e10');                                                                      // the grip
   box(g, s, .04, -.05, .025, .1, 1, '#0d0e10');                                                                  // the guard
-  poly(g, s, [[.065, -.026], [.43, -.026], [.48, -.046], [.43, .008], [.065, .026]], '#343434');                  // the long, slightly curved blade
+  poly(g, s, [[.065, -.026], [.42, -.026], [.5, -.004], [.42, .026], [.065, .026]], BLADE);                  // the long, slightly curved blade
   g.restore();
 };
 
