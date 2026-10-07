@@ -61,11 +61,12 @@ export const UNIT_ATTRIBUTES = {
   supply: {
     label: 'Supplies',
     help: (v) => `Supply order (after moving, instead of Wait): refills the ammo of friendly ${v.categories.join(', ')} units next to it${v.repair ? ` and repairs them ${v.repair} HP` : ''}, paying the usual price per round.`,
-    doc: 'A support order. Config: { categories, repair?, fuelTags? }. It also refuels units that use fuel (free): all of them, or only those with one of the unit tags in `fuelTags` (the supply truck refuels helicopters but not planes), and the same units are refuelled at the start of their owner\'s turn when next to this unit (fuel.js). After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round that stands for a unit (ammo.js roundCost; plain ammunition is free), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
+    doc: 'A support order. Config: { categories, repair?, fuelTags?, autoRepair? }. With `autoRepair: true` (the aircraft carrier) the units of those categories next to it are also repaired `repair` HP at the start of their owner\'s turn, for the usual price (economy.js). It also refuels units that use fuel (free): all of them, or only those with one of the unit tags in `fuelTags` (the supply truck refuels helicopters but not planes), and the same units are refuelled at the start of their owner\'s turn when next to this unit (fuel.js). After moving (or staying put) a `supply` order refills the ammo of every friendly unit of one of those categories on a tile next to the unit, charging the owner the price of each round that stands for a unit (ammo.js roundCost; plain ammunition is free), and heals them `repair` HP (free) when given. Only offered when someone nearby needs it. See supply.js.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "categories": ["aircraft"], "repair": 2 }');
       if (!Array.isArray(v.categories) || !v.categories.length || v.categories.some((c) => typeof c !== 'string' || !c)) fail('categories must be a non-empty array of unit category names');
       if (v.repair !== undefined && (!Number.isInteger(v.repair) || v.repair < 1)) fail('repair must be a positive whole number of HP');
+      if (v.autoRepair !== undefined && (v.autoRepair !== true || v.repair === undefined)) fail('autoRepair must be true and needs a repair amount');
       if (v.fuelTags !== undefined && (!Array.isArray(v.fuelTags) || !v.fuelTags.length || v.fuelTags.some((t) => typeof t !== 'string' || !t))) fail('fuelTags must be a non-empty array of unit tags (only units with one of them are refuelled; without it every unit of the categories is)');
     },
   },
@@ -231,13 +232,14 @@ export const UNIT_ATTRIBUTES = {
 export const TERRAIN_ATTRIBUTES = {
   property: {
     label: 'Property',
-    help: 'Can be owned and captured. It earns income and repairs units standing on it.',
-    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored each turn to units on it, if owned), builds (unit categories the owner may build here; a leader\'s loadout in data/loadouts.json can give the building its own list of units instead, see economy.js). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn.',
+    help: 'Can be owned and captured. It earns income, and repairs (for a price) the units of the kinds it serves that begin their turn on it.',
+    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored at the start of its owner\'s turn to a unit of one of the `repairs` categories that stands on it, or, for a unit that cannot enter the tile such as a ship beside its shipyard, next to it; it is paid for out of the owner\'s funds, see `rules.repairCostRate`), repairs (the unit categories it repairs: ground buildings never repair aircraft, the airfield repairs aircraft, the shipyard ships), builds (unit categories the owner may build here; a leader\'s loadout in data/loadouts.json can give the building its own list of units instead, see economy.js). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn.',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object');
       if (!Number.isInteger(v.income) || v.income < 0) fail('income must be a non-negative integer');
       if (!Number.isInteger(v.capturePoints) || v.capturePoints < 1) fail('capturePoints must be a positive integer');
       if (typeof v.repair !== 'number' || v.repair < 0) fail('repair must be a non-negative number');
+      if (v.repairs !== undefined && (!Array.isArray(v.repairs) || v.repairs.some((c) => typeof c !== 'string' || !c))) fail('repairs must be an array of unit category names');
       if (!Array.isArray(v.builds) || v.builds.some((c) => typeof c !== 'string')) fail('builds must be an array of unit category names');
     },
   },

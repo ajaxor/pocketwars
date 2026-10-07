@@ -46,11 +46,14 @@ export class Presenter {
         this.effects.resupply(ev.unit, t, ev.cost);
       } else if (ev.type === 'heal') {
         this.effects.healed(ev, t);
+      } else if (ev.type === 'join') {
+        this.effects.healed({ healed: [{ x: ev.unit.x, y: ev.unit.y, from: ev.from, to: ev.to }] }, t);
       } else if (ev.type === 'deploy') {
         this.effects.deploy(ev, t);
       } else if (ev.type === 'turnStart') {
         this.effects.income(ev, t);
         this.effects.healed(ev, t);
+        this.effects.healed({ healed: ev.repaired ?? [] }, t);   // repairs at a building (paid for)
         this.effects.refuelled(ev, t);
       }
     }

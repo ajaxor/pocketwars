@@ -222,3 +222,7 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Balance of the October units rests on one 720-game AI run**; hiroshi (43%) and ludwig (45%) still trail.
 - **Healer value is measured, not tuned.** The leader report now has a Healing table (mechanic 0.89 credits restored per credit fielded, medic 0.28 after the AI change). The strategist's `heal` weight is still the old default and nobody has swept it (`npm run ai:sweep`).
 - **Fog presentation of AI turns is untested.** `Session#visibleTo` / `#playAiStep` (what the human sees of the computer's turn: strikes from the fog, hidden captures) has no automated test, and the October change (blows from out of sight at a visible unit now pan the camera and are waited for; capture flags are not drawn in the fog) was not checked in a browser. A headless-browser test with a fogged map and an artillery in the fog would cover it.
+
+- **The AI never joins units, and its fuel-home logic still treats low fuel as a danger** although running dry no longer crashes a flyer (it only disarms it).
+- **Join loses surplus HP with no refund**, and repair costs the full tenth of the unit price per HP (`rules.repairCostRate`); neither has been balanced (no leader run since the repair costs went in).
+- **The join action and repaired-HP effects are untested in a browser** (controller Join button, presenter 'join' event).

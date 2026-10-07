@@ -15,6 +15,7 @@ import { tileExplored } from './fog.js';
 import { passesOverMines } from './mines.js';
 import { moveOf } from './submerge.js';
 import { PathHeap } from './heap.js';
+import { canJoin } from './join.js';
 
 /** Cost for a move class to enter (x, y), or null when impassable. */
 export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveCost[moveClass];
@@ -53,7 +54,7 @@ export class ReachMap {
 }
 
 /** Every tile `unit` can move to this turn (including its own tile), as a ReachMap. */
-export function computeReach(game, unit) {
+export function computeReach(game, unit, { join = false } = {}) {   // `join`: a damaged friend of the same kind counts as a place to end the move (for the Join order; the AI does not join)
   const { map } = game;
   const def = unitDef(game, unit);
   const allowance = moveOf(game, unit);
@@ -92,7 +93,7 @@ export function computeReach(game, unit) {
   // Can pass through friends (and over a mine it can see) but not end the move on them. (A hidden enemy is not known to be there, so its tile stays on offer.)
   for (const k of [...cost.keys()]) {
     const occupant = occupants.get(k);
-    if (occupant && occupant !== unit && (occupant.owner === unit.owner || canSee(game, unit.owner, occupant))) cost.delete(k);
+    if (occupant && occupant !== unit && !(join && canJoin(game, unit, occupant)) && (occupant.owner === unit.owner || canSee(game, unit.owner, occupant))) cost.delete(k);   // a damaged friend of the same kind stays on offer: the unit may join it
   }
   return new ReachMap(map.width, [unit.x, unit.y], cost, prev);
 }
@@ -176,6 +177,7 @@ export function bestAttackTile(game, unit, target, reach) {
   const candidates = canFireAfterMoving(game, unit) ? [...reach.tiles()] : [{ x: unit.x, y: unit.y, cost: reach.costAt(unit.x, unit.y) ?? 0 }];
   let best = null;
   for (const { x, y, cost } of candidates) {
+    if (unitAt(game, x, y) && unitAt(game, x, y) !== unit) continue;   // a friend to join stands there: no place to fire from
     if (!canAttackFrom(game, unit, target, x, y)) continue;
     const score = (x === unit.x && y === unit.y ? 100 : 0) + terrainAt(game, x, y).defense * 3 - cost;
     if (!best || score > best.score) best = { x, y, score };

@@ -21,6 +21,7 @@ import { hasAmmoFor, spendAmmo } from './ammo.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { hasLineOfSight } from './sight.js';
 import { canSee } from './detection.js';
+import { isOutOfFuel } from './fuel.js';
 import { distance, layerIdOf, removeUnit, round1, snapshotUnit, terrainAt, unitDef } from './queries.js';
 
 /** Is `weapon` of `unit` an indirect-fire weapon (artillery style: fires from where the unit started, never counters or is countered)? */
@@ -33,7 +34,8 @@ const firedAfterMoving = (unit, from) => hasMoved(unit, from) || !!unit.moved;
 /** How many attacks `unit` may make in one turn (the attribute `attacksPerTurn`; 1 for everybody else). */
 export const attacksPerTurn = (game, unit) => attributeConfig(unitDef(game, unit), 'attacksPerTurn') ?? 1;
 
-export const weaponsOf = (game, unit) => unitDef(game, unit).weapons.map((id) => game.registry.weapon(id));
+/** The weapons a unit can use now: none while a flyer's tank is dry (fuel.js). */
+export const weaponsOf = (game, unit) => (isOutOfFuel(game, unit) ? [] : unitDef(game, unit).weapons.map((id) => game.registry.weapon(id)));
 const modesOf = (game, weapon) => weapon.targets.map((m) => game.registry.rules.targetModes[m]);
 // the layer a unit is on right now: a submerged submarine is on another layer than a surfaced one
 const layerOf = (game, unit) => layerIdOf(game, unit);

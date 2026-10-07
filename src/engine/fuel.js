@@ -2,18 +2,18 @@
 //
 //   unit attribute `fuel: { max, low }`   the unit starts full (`unit.fuel`, in turns); at `low` or fewer it is "low", at 0 it is "empty"
 //   every unit with a tank burns 1 as its owner's turn ends (burnFuel, called by game.endTurn); the tank never limits a move (the player does not
-//   have to count tiles), it only decides who crashes
+//   have to count tiles); at 0 the unit cannot attack or use radar (see RUNNING DRY)
 //
 // REFUELLING IS FREE AND AUTOMATIC. At the start of its owner's turn (economy.js startTurn) a unit is topped up when it stands where a source
 // reaches it: a property of its owner whose `resupply` covers its category (an airfield: on or next to it), a friendly unit whose `supply`
 // covers its category and is next to it (an aircraft carrier), or a friendly supply unit whose `supply.fuelTags` names one of its tags (the
 // supply truck refuels helicopters, not planes). The Resupply order (ammo.js) and the Supply order (supply.js) fill the tank mid-turn too.
 //
-// RUNNING DRY. A unit that is still empty after the turn-start refuel is marked `fuelOut`; if it is still empty when its owner ends that turn
-// it crashes (crashEmpty, called by game.endTurn), unless a Resupply or Supply order filled it meanwhile.
+// RUNNING DRY. A flyer with an empty tank (fuel 0) is not lost: it can still move, but it cannot attack (so it does not counterattack
+// either) and its radar is switched off, until a source refuels it (free, at the start of its owner's turn, or with a Resupply / Supply order).
 
 import { attributeConfig } from './attributes.js';
-import { distance, removeUnit, snapshotUnit, unitDef } from './queries.js';
+import { distance, snapshotUnit, unitDef } from './queries.js';
 import { allProperties } from './queries.js';
 
 export const fuelConfigOf = (def) => attributeConfig(def, 'fuel');
@@ -23,6 +23,8 @@ export const usesFuel = (game, unit) => !!fuelConfig(game, unit);
 export const initialFuel = (def) => fuelConfigOf(def)?.max;
 /** Fuel left, or null for a unit that does not use any. */
 export const fuelOf = (game, unit) => (usesFuel(game, unit) ? unit.fuel ?? fuelConfig(game, unit).max : null);
+/** Is the tank dry? A flyer with no fuel left can neither attack nor use its radar until it is refuelled (it never crashes). */
+export const isOutOfFuel = (game, unit) => usesFuel(game, unit) && fuelOf(game, unit) <= 0;
 /** Is the tank below full? */
 export const needsFuel = (game, unit) => usesFuel(game, unit) && fuelOf(game, unit) < fuelConfig(game, unit).max;
 
@@ -49,7 +51,6 @@ export function burnFuel(game, player) {
 export function refuel(game, unit) {
   if (!usesFuel(game, unit)) return;
   unit.fuel = fuelConfig(game, unit).max;
-  delete unit.fuelOut;
 }
 
 /** Does the supply unit `source` refuel `unit`? (It supplies the unit's category, and when it names `fuelTags`, the unit carries one.) */
@@ -87,23 +88,10 @@ export function refuelAtTurnStart(game, player) {
   const events = [];
   for (const u of game.state.units) {
     if (u.owner !== player || !usesFuel(game, u)) continue;
-    delete u.fuelOut;
     if (needsFuel(game, u)) {
       const source = fuelSourceAt(game, u);
       if (source) { const from = fuelOf(game, u); refuel(game, u); events.push({ type: 'refuel', unit: snapshotUnit(u), from, to: u.fuel, source }); }
     }
-    if (fuelOf(game, u) <= 0) u.fuelOut = true;
-  }
-  return events;
-}
-
-/** End of `player`'s turn: units that began it empty and are still empty crash. Returns the 'crash' events. */
-export function crashEmpty(game, player) {
-  const events = [];
-  for (const u of [...game.state.units]) {
-    if (u.owner !== player || !u.fuelOut || fuelOf(game, u) > 0) continue;
-    removeUnit(game, u);
-    events.push({ type: 'crash', unit: snapshotUnit(u) });
   }
   return events;
 }

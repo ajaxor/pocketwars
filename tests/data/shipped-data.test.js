@@ -49,7 +49,10 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('rest'), ['commando']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['airship', 'bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
   assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'missile_tank', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
-  assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter')).sort(), 'every plane has a fuel tank, and nothing else does (helicopters fly without one)');
+  assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air').sort(), 'every flyer has a fuel tank, and nothing else does');
+  const tank = (id) => registry.unit(id).attributes.fuel.max;
+  const planes = registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter'));
+  for (const id of registry.unitIds.filter((i) => registry.unit(i).tags?.includes('helicopter'))) assert.ok(planes.every((p) => tank(id) > tank(p)), `${id} carries more fuel than any plane`);
   assert.deepEqual(withAttr('attacksPerTurn'), ['dreadnought']);
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);

@@ -37,6 +37,11 @@ export function describeEvents(game, events) {
     } else if (ev.type === 'heal') {
       const n = ev.healed.length, cost = ev.healed.reduce((a, h) => a + h.cost, 0);
       text = `${name(ev.unit)} heals ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');
+    } else if (ev.type === 'join') {
+      text = `${name(ev.joined)} joins ${name(ev.unit)}: ${ev.to} HP` + (ev.lost ? ` (${ev.lost} HP lost over the maximum)` : '');
+    } else if (ev.type === 'turnStart' && ev.repaired?.length) {
+      const cost = ev.repaired.reduce((a, r) => a + (r.cost ?? 0), 0);
+      text = `${ev.repaired.length} unit${ev.repaired.length === 1 ? '' : 's'} repaired` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');
     } else if (ev.type === 'turnStart' && ev.healed?.length) {
       text = `${ev.healed.length} unit${ev.healed.length === 1 ? '' : 's'} healed`;
     } else if (ev.type === 'crash') {

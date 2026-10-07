@@ -156,7 +156,7 @@
     "weapons": [],
     "toughness": 1.5,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
+    "attributes": { "fuel": {"max": 8, "low": 2}, "ignoresTerrainDefense": true, "ammo": { "max": 2, "low": 1 }, "deploy": { "unit": "soldier", "basic": true } },
     "render": { "sprite": "transport_copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "copter": {
@@ -170,7 +170,7 @@
     "weapons": ["rocket_pods"],
     "toughness": 1.8,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true },
+    "attributes": { "fuel": {"max": 8, "low": 2}, "ignoresTerrainDefense": true },
     "render": { "sprite": "copter", "attackFx": "shot", "altitude": 0.07 }
   },
   "fighter": {
@@ -433,7 +433,7 @@
     "weapons": ["rocket_pods"],
     "toughness": 1,
     "armor": 0,
-    "attributes": { "ignoresTerrainDefense": true, "cloak": true },
+    "attributes": { "fuel": {"max": 8, "low": 2}, "ignoresTerrainDefense": true, "cloak": true },
     "exclusive": true,
     "render": { "sprite": "stealth_copter", "attackFx": "shot", "altitude": 0.07 }
   },
@@ -714,7 +714,7 @@
     "weapons": ["carrier_guns"],
     "toughness": 2.2,
     "armor": 0.7,
-    "attributes": {"supply": {"categories": ["aircraft"], "repair": 2}},
+    "attributes": {"supply": {"categories": ["aircraft"], "repair": 2, "autoRepair": true}},
     "exclusive": true,
     "render": {"sprite": "aircraft_carrier", "attackFx": "shot"}
   },

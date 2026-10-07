@@ -1,9 +1,10 @@
 // Turn income, repair, resupply and unit production, all driven by the terrain `property` attribute.
 
+import { attributeConfig } from './attributes.js';
 import { isHidden } from './detection.js';
 import { refuelAtTurnStart } from './fuel.js';
 import { healAtTurnStart } from './heal.js';
-import { costFor, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitDef } from './queries.js';
+import { costFor, distance, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -16,17 +17,33 @@ export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduc
  */
 /** The property of `player` that repairs `unit` now: the one it stands on, or an owned one right next to it that the unit cannot enter (a ship beside its shipyard). */
 function repairingProperty(game, unit, player) {
+  const category = unitDef(game, unit).category;
+  const serves = (p) => !p.repairs || p.repairs.includes(category);   // a property that names no categories repairs everyone
   const here = propertyAt(game, unit.x, unit.y);
-  if (here && ownerAt(game, unit.x, unit.y) === player) return here;
+  if (here && ownerAt(game, unit.x, unit.y) === player) return serves(here) ? here : null;
   const moveClass = unitDef(game, unit).moveClass;
   for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
     const x = unit.x + dx;
     const y = unit.y + dy;
     if (!inBounds(game.map, x, y)) continue;
     const p = propertyAt(game, x, y);
-    if (p && ownerAt(game, x, y) === player && terrainAt(game, x, y).moveCost[moveClass] == null) return p;
+    if (p && ownerAt(game, x, y) === player && terrainAt(game, x, y).moveCost[moveClass] == null && serves(p)) return p;
   }
   return null;
+}
+
+/** HP the start of `player`'s turn would repair on `unit`: its property's `repair` (see repairingProperty), or an adjacent friendly carrier's `supply.repair` with `autoRepair`; 0 if none. */
+export function repairAmount(game, unit, player = unit.owner) {
+  const property = repairingProperty(game, unit, player);
+  if (property) return property.repair;
+  const category = unitDef(game, unit).category;
+  let best = 0;
+  for (const v of game.state.units) {
+    if (v === unit || v.owner !== player || distance(unit.x, unit.y, v.x, v.y) !== 1) continue;
+    const cfg = attributeConfig(unitDef(game, v), 'supply');
+    if (cfg?.autoRepair && cfg.categories.includes(category)) best = Math.max(best, cfg.repair);
+  }
+  return best;
 }
 
 export function startTurn(game, player) {
@@ -44,12 +61,20 @@ export function startTurn(game, player) {
     delete u.fresh;
     delete u.deployed;
     delete u.carriedBy;
-    const property = repairingProperty(game, u, player);
-    if (property && u.hp < registry.rules.maxHp) {
-      const from = u.hp;
-      u.hp = Math.min(registry.rules.maxHp, round1(u.hp + property.repair));
-      if (u.hp !== from) repaired.push({ id: u.id, from, to: u.hp });
-    }
+  }
+  for (const u of state.units) {   // repairs: after income (so it can pay) and in unit order; each HP costs a tenth of the unit's price
+    if (u.owner !== player || u.hp >= registry.rules.maxHp) continue;
+    const amount = repairAmount(game, u, player);
+    if (!amount) continue;
+    const perHp = Math.round(unitCost(game, u) * (registry.rules.repairCostRate ?? 1) / registry.rules.maxHp);
+    let hp = Math.min(amount, round1(registry.rules.maxHp - u.hp));
+    if (perHp > 0) hp = Math.min(hp, Math.floor(state.funds[player] / perHp));
+    if (hp <= 0) continue;
+    const from = u.hp;
+    u.hp = Math.min(registry.rules.maxHp, round1(u.hp + hp));
+    const cost = hp * perHp;
+    state.funds[player] -= cost;
+    repaired.push({ id: u.id, x: u.x, y: u.y, from, to: u.hp, cost });
   }
   for (const u of state.units) if (u.owner === player) delete u.revealed;
   for (const u of state.units) {   // a unit that begins its turn hidden (cloaked, submerged) strikes with the ambush bonus this turn

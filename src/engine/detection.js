@@ -18,6 +18,7 @@
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { distance, inBounds, layerIdOf, ownerAt, tileIndex, unitDef } from './queries.js';
 import { isFogged, tileVisible } from './fog.js';
+import { isOutOfFuel } from './fuel.js';
 
 /** Does a unit lift its cloak when it fires (`cloak: { revealedByFiring }`)? */
 export const revealsWhenFiring = (game, unit) => attributeConfig(unitDef(game, unit), 'cloak')?.revealedByFiring === true;
@@ -48,7 +49,7 @@ const notices = (game, observer, unit) => {
   if (d <= ADJACENT) return true;
   const def = unitDef(game, observer);
   const sonar = isSubmerged(game, unit) && !hasAttribute(unitDef(game, unit), 'mine') ? attributeConfig(def, 'sonar') : undefined;   // sonar hears ships, not mines
-  const radar = isCloaked(game, unit) ? attributeConfig(def, 'radar') : undefined;
+  const radar = isCloaked(game, unit) && !isOutOfFuel(game, observer) ? attributeConfig(def, 'radar') : undefined;   // a dry radar plane sees nothing
   return (sonar !== undefined && d <= sonar) || (radar !== undefined && d <= radar);
 };
 

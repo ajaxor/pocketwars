@@ -30,6 +30,7 @@
 
 import { canCapture } from '../engine/capture.js';
 import { canHealAt, healPlan } from '../engine/heal.js';
+import { joinPartner } from '../engine/join.js';
 import { canTarget, forecastAttack } from '../engine/combat.js';
 import { canSee, sonarTiles } from '../engine/detection.js';
 import { isStructure } from '../engine/structures.js';
@@ -225,6 +226,7 @@ export class Controller {
   /** What tapping the unit's own tile does: capture a property, take on ammo, or just wait. */
   #plainAction(pos) {
     const { game, sel } = this;
+    if (joinPartner(game, sel, pos.x, pos.y)) return { type: 'join' };
     if (!sel.fresh && canCapture(game, sel, pos.x, pos.y)) return { type: 'capture' };
     if (!sel.fresh && canHealAt(game, sel, pos.x, pos.y)) return { type: 'heal' };
     if (!sel.fresh && canSupplyAt(game, sel, pos.x, pos.y)) return { type: 'supply' };
@@ -275,7 +277,7 @@ export class Controller {
   #select(u, text = null) {
     this.sel = u;
     this.dest = null;
-    this.reach = computeReach(this.game, u);
+    this.reach = computeReach(this.game, u, { join: !u.fresh });   // a damaged friend of its own kind is a place to move to: Join
     this.attack = u.fresh ? null : attackTiles(this.game, u);   // a freshly built unit only moves
     this.mode = 'move';
     this.hud.message(text);
@@ -330,6 +332,16 @@ export class Controller {
     const { game, sel, hud } = this;
     const pos = this.#selPos();
     const fresh = !!sel.fresh;   // a just-built unit has its free move only: Wait is its one action
+    const partner = fresh ? null : joinPartner(game, sel, pos.x, pos.y);   // standing on a damaged friend of its own kind: the only order is to join it
+    if (partner) {
+      const max = game.registry.rules.maxHp;
+      const total = Math.min(max, Math.round((sel.hp + partner.hp) * 10) / 10);
+      hud.actions({
+        hint: `Join the ${game.registry.unit(sel.type).name} here: ${sel.hp} + ${partner.hp} HP makes ${total}.`,
+        items: [{ label: `Join (${total} HP)`, variant: 'primary', onClick: () => this.#commit({ type: 'join' }) }, this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+      });
+      return;
+    }
     const capture = !fresh && canCapture(game, sel, pos.x, pos.y);
     const heal = !fresh && canHealAt(game, sel, pos.x, pos.y);
     const healCost = heal ? healPlan(game, sel, pos.x, pos.y).reduce((a, p) => a + p.cost, 0) : 0;

@@ -32,6 +32,7 @@
 
 import { canResupplyAt, resupply } from './ammo.js';
 import { canHealAt, healPlan, healsAutomatically, resolveHeal } from './heal.js';
+import { joinPartner, resolveJoin } from './join.js';
 import { canCapture, resolveCapture } from './capture.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
@@ -39,7 +40,7 @@ import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
 import { detonate, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
 import { attacksPerTurn } from './combat.js';
 import { canSupplyAt, resolveSupply } from './supply.js';
-import { burnFuel, crashEmpty } from './fuel.js';
+import { burnFuel } from './fuel.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
 import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
@@ -89,8 +90,14 @@ export class Game {
     if (isStructure(this, unit)) return fail('fires-by-itself');   // turrets take no orders: they fire when the turn ends (structureFire)
     const to = order.to;
     if (!to || !inBounds(map, to.x, to.y)) return fail('out-of-bounds');
-    const reach = computeReach(this, unit);
+    const reach = computeReach(this, unit, { join: true });
     if (!reach.has(to.x, to.y)) return fail('unreachable');
+    const partner = (to.x !== unit.x || to.y !== unit.y) ? joinPartner(this, unit, to.x, to.y) : null;   // a damaged friend of the same kind standing there
+    if (partner && order.action?.type !== 'join') return fail('tile-occupied');
+    if (order.action?.type === 'join') {
+      if (!partner || unit.fresh || unit.carriedBy) return fail('cannot-join');
+      return { ok: true, unit, reach };
+    }
     const moved = hasMovedAlready(unit) || to.x !== unit.x || to.y !== unit.y;
     const action = order.action || { type: 'wait' };
     if (unit.carriedBy && !moved) return fail('tile-occupied');   // a unit that was just deployed shares its carrier's tile and has to leave it
@@ -162,7 +169,7 @@ export class Game {
         if (there && there !== unit && there.owner !== unit.owner) {
           if (passesOverMines(this, unit, there) && i < path.length - 1) continue;   // flies or floats over a mine; it just cannot stop on it
           blocker = there;
-        } else if (!there) last = i;
+        } else if (!there || (action.type === 'join' && i === path.length - 1)) last = i;   // a join ends on its partner's tile
       }
       if (last > 0) {
         unit.moved = true;   // read (and cleared) by heal.js at the start of its owner's next turn: a unit that stayed put can rest
@@ -193,7 +200,8 @@ export class Game {
         return { ok: true, events, interrupted: { unitId: unit.id, at: { x: unit.x, y: unit.y }, blocker: snapshotUnit(blocker) } };
       }
     }
-    if (action.type === 'capture') events.push(...resolveCapture(this, unit));
+    if (action.type === 'join') events.push(...resolveJoin(this, unit, joinPartner(this, unit, unit.x, unit.y)));
+    else if (action.type === 'capture') events.push(...resolveCapture(this, unit));
     else if (action.type === 'heal') events.push(...resolveHeal(this, unit));
     else if (action.type === 'supply') events.push(...resolveSupply(this, unit));
     else if (action.type === 'lay') events.push(...resolveLay(this, unit, action.at));
@@ -287,8 +295,7 @@ export class Game {
     if (this.isOver) return fail('game-over');
     const { state, map } = this;
     this.undoSnapshot = null;
-    const events = crashEmpty(this, state.turn);   // a flyer that began the turn on an empty tank and is still dry falls out of the sky
-    events.push(...structureFire(this, state.turn));   // the player's turrets fire by themselves, then neutral ones fire at the player's units (structures.js)
+    const events = structureFire(this, state.turn);   // the player's turrets fire by themselves, then neutral ones fire at the player's units (structures.js)
     this.touch();
     if (events.length) { events.push(...evaluateVictory(this)); if (this.isOver) { this.touch(); return { ok: true, events }; } }
     burnFuel(this, state.turn);   // every flyer burns a turn of fuel, flown or not
