@@ -145,6 +145,7 @@ const missileTank = (g, { s, c, w, run, j }) => {
   const jj = j / s, turret = [[-.3, -.06], [-.24, -.2], [-.02, -.24], [.16, -.1], [.16, -.06]];
   treads(g, s, -.34, .34, .08 + jj, .19, w, run);
   poly(g, s, [[-.32, .11 + jj], [-.32, -.06 + jj], [.2, -.06 + jj], [.35, .03 + jj], [.35, .11 + jj]], c);        // the hull, with a sloped front plate
+  poly(g, s, [[-.23, -.2 + jj], [-.36, -.3 + jj], [-.29, -.1 + jj]], c);                                          // a swept fin on the back of the turret
   poly(g, s, turret.map(([x, y]) => [x, y + jj]), c);                                                            // the turret
   g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = Math.max(1, s * .012); g.beginPath();                         // its faint seam
   turret.forEach(([x, y], i) => (i ? g.lineTo(x * s, (y + jj) * s) : g.moveTo(x * s, (y + jj) * s))); g.closePath(); g.stroke();
