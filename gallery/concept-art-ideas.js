@@ -8,7 +8,6 @@ import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hull
 import { shade } from '../src/render/color.js';
 import { footing, footShadow } from '../src/render/art-defences.js';
 import * as VEHICLES from '../src/render/art-vehicles.js';
-import { missile } from '../src/render/art-vehicles.js';
 const WOOD = '#7a4e2a', HAZARD = '#ffc531', RUST = '#9a5a2e', FLAME = '#ff9a2e', FLAME_HOT = '#ffe36b', ARC = '#9fe8ff';
 
 // ---- infantry ------------------------------------------------------------------------------------------------------------------
@@ -134,15 +133,22 @@ const k9Team = (g, o) => {
 };
 
 // ---- vehicles ------------------------------------------------------------------------------------------------------------------
-// Missile tank: the rocket buggy grown up: a squat tracked hull with heavy armour skirts and a front glacis, carrying a raised rack of three
-// missiles side by side (white, red-nosed), angled up and forward.
-const missileTank = (g, { s, c, dk, w, run, j }) => {
-  const jj = j / s, P = (pts) => pts.map(([x, y]) => [x, y + jj]);
-  treads(g, s, -.36, .36, .12 + jj, .16, w, run);
-  poly(g, s, P([[-.3, -.1], [-.4, -.2], [-.3, -.14]]), dk); poly(g, s, P([[.2, -.14], [.3, -.26], [.32, -.07]]), dk);   // swept decorative fins: rear and front
-  poly(g, s, P([[-.4, .12], [-.4, -.03], [-.3, -.1], [-.27, -.25], [-.1, -.29], [.1, -.29], [.2, -.14], [.42, .0], [.42, .12]]), c);   // the whole body in one piece: a stepped, swept wedge
-  for (const x of [-.2, .0]) { box(g, s, x, -.23 + jj, .17, .06, 1, INK); box(g, s, x + .12, -.215 + jj, .035, .03, 1, RED); }   // two rectangular missile ports
-  box(g, s, .24, -.04 + jj, .1, .04, 1, GLASS);                                                                  // the driver's slit on the front slope
+// Missile tank: the standard tank with the barrel swapped for two missile ports: a one-colour hull and a faceted trapezoid turret set back from
+// the front, the ports faint rectangular outlines tilted up on the turret's side.
+const faintRect = (g, s, cx, cy, w, h, rot) => {
+  g.save(); g.translate(cx * s, cy * s); g.rotate(rot);
+  g.fillStyle = 'rgba(0,0,0,.14)'; g.fillRect(-w * s / 2, -h * s / 2, w * s, h * s);
+  g.strokeStyle = 'rgba(0,0,0,.4)'; g.lineWidth = Math.max(1, s * .012); g.strokeRect(-w * s / 2, -h * s / 2, w * s, h * s);
+  g.restore();
+};
+const missileTank = (g, { s, c, w, run, j }) => {
+  const jj = j / s, turret = [[-.3, -.06], [-.22, -.21], [.02, -.21], [.12, -.13], [.12, -.06]];
+  treads(g, s, -.34, .34, .08 + jj, .19, w, run);
+  poly(g, s, [[-.32, .11 + jj], [-.32, -.06 + jj], [.2, -.06 + jj], [.35, .03 + jj], [.35, .11 + jj]], c);        // the hull, with a sloped front plate
+  poly(g, s, turret.map(([x, y]) => [x, y + jj]), c);                                                            // the turret
+  g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = Math.max(1, s * .012); g.beginPath();                         // its faint seam
+  turret.forEach(([x, y], i) => (i ? g.lineTo(x * s, (y + jj) * s) : g.moveTo(x * s, (y + jj) * s))); g.closePath(); g.stroke();
+  faintRect(g, s, -.09, -.165 + jj, .17, .042, -.3); faintRect(g, s, -.08, -.1 + jj, .17, .042, -.3);            // two missile ports, tilted up, inside the turret
 };
 
 // Remote technical: the technical with nobody in it: a radio mast on the cab with a blinking light.
