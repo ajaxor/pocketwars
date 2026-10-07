@@ -31,7 +31,10 @@ async function main() {
   const opts = parseArgs(process.argv.slice(2));
   const registry = await loadRegistry(readData);
   const leaders = registry.leaderIds;
-  const maps = (await mapList(readData, registry, await loadMapIndex(readData), opts.maps ?? '2p')).filter((m) => m.slots === 2);
+  const allMaps = (await mapList(readData, registry, await loadMapIndex(readData), opts.maps ?? '2p')).filter((m) => m.slots === 2);
+  const skipped = opts['all-maps'] ? [] : allMaps.filter((m) => m.gaps.length);
+  const maps = allMaps.filter((m) => !skipped.includes(m));
+  if (skipped.length) console.log(`skipping maps without all four producing buildings for every player: ${skipped.map((m) => m.id).join(', ')} (--all-maps to include)`);
   const seeds = Number(opts.seeds ?? 1);
   const days = Number(opts.days ?? 20);
   const engine = opts.engine ?? registry.ai.default;

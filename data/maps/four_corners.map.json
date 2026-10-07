@@ -32,11 +32,16 @@
     "w": { "terrain": "airfield", "owner": 2 },
     "x": { "terrain": "airfield", "owner": 3 },
     "y": { "terrain": "factory", "owner": 3 },
-    "z": { "terrain": "barracks", "owner": 3 }
+    "z": { "terrain": "barracks", "owner": 3 },
+    "Z": { "terrain": "shipyard", "owner": 0 },
+    "W": { "terrain": "shipyard", "owner": 1 },
+    "X": { "terrain": "shipyard", "owner": 2 },
+    "Q": { "terrain": "shipyard", "owner": 3 },
+    "~": { "terrain": "sea" }
   },
   "tiles": [
-    ".......FFFF.rr.FFFF.......",
-    ".v..o..FFFF.rr.FFFF..K..V.",
+    "...~~~~FFFF.rr.FFFF~~~~...",
+    ".v.ZoZ.FFFF.rr.FFFF.WKW.V.",
     "..OrrrrrrrrrrrrrrrrrrrrB..",
     "..r....:::..rr..:::....r..",
     ".kr.FFc:::.crrc.:::cFF.rb.",
@@ -59,8 +64,8 @@
     ".yr.FFc:::.crrc.:::cFF.rh.",
     "..r....:::..rr..:::....r..",
     "..YrrrrrrrrrrrrrrrrrrrrG..",
-    ".x..z..FFFF.rr.FFFF..g..w.",
-    ".......FFFF.rr.FFFF......."
+    ".x.QzQ.FFFF.rr.FFFF.XgX.w.",
+    "...~~~~FFFF.rr.FFFF~~~~..."
   ],
   "groundLegend": { "g": "grass", "d": "dirt" },
   "ground": [

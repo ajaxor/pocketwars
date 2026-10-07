@@ -105,7 +105,7 @@ test('two AI teams with different kits build only what their menus allow, over a
   const base = await loadRegistry(readData);
   const custom = JSON.parse(JSON.stringify(await readData('loadouts.json')));
   custom.leaders.ada = { build: { barracks: ['soldier'], factory: ['tank'] } };
-  custom.leaders.vex = { build: { barracks: ['sniper', 'mech'], factory: ['artillery', 'recon'] }, start: { hq: [{ unit: 'soldier', at: [0, 1] }], barracks: [], factory: [], airfield: [] } };
+  custom.leaders.vex = { build: { barracks: ['sniper', 'mech'], factory: ['artillery', 'recon'] }, start: { hq: [{ unit: 'soldier', at: [0, 1] }], barracks: [], factory: [], airfield: [], shipyard: [] } };
   const registry = await loadRegistry(async (p) => (p === 'loadouts.json' ? custom : readData(p)));
   const classic = await loadMap(readData, registry, 'classic');
   const rich = { ...classic, players: classic.players.map((p) => ({ ...p, controller: 'ai', funds: 40000 })) };

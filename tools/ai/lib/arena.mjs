@@ -9,12 +9,15 @@
 import { readFileSync } from 'node:fs';
 import { loadAnyMap, poolIds } from './maps.mjs';
 
+import { buildingGaps } from '../../../src/data/map-buildings.js';
+
+/** The maps of a pool, each with `gaps` (players missing a producing building; see map-buildings.js). */
 export async function mapList(readData, registry, index, which = 'all') {
   const maps = [];
   for (const id of await poolIds(readData, which)) {
     const map = await loadAnyMap(readData, registry, id);
     if (which === '2p' && map.players.length !== 2) continue;
-    maps.push({ id, slots: map.players.length });
+    maps.push({ id, slots: map.players.length, gaps: buildingGaps(map) });
   }
   return maps;
 }

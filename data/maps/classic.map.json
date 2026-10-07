@@ -22,16 +22,18 @@
     "B": { "terrain": "hq",       "owner": 1 },
     "b": { "terrain": "factory",  "owner": 1 },
     "K": { "terrain": "barracks", "owner": 1 },
-    "V": { "terrain": "airfield", "owner": 1 }
+    "V": { "terrain": "airfield", "owner": 1 },
+    "Y": { "terrain": "shipyard", "owner": 0 },
+    "Z": { "terrain": "shipyard", "owner": 1 }
   },
   "tiles": [
     "MFFVbBKFFM",
     "F.c.rr.c.F",
     "..F.r..F..",
     ".c..rr..c.",
-    "~~..rr..~~",
+    "~~Y.rr.Z~~",
     "~~~.rr.~~~",
-    "~~..rr..~~",
+    "~~Y.rr.Z~~",
     ".c..rr..c.",
     "..F.r..F..",
     "F.c.rr.c.F",

@@ -69,21 +69,24 @@
     "V": {
       "terrain": "airfield",
       "owner": 1
-    }
+    },
+    "Y": { "terrain": "shipyard", "owner": 0 },
+    "Z": { "terrain": "shipyard", "owner": 1 },
+    "~": { "terrain": "sea" }
   },
   "tiles": [
     "MM..FF...c......FF....MM",
     "M.WWWXWW...............M",
     "..W....X.F........c.....",
     "..W.k..W.F.c........FF..",
-    "c.W.Orrrrrrr..MM........",
-    "..W.o..W......MM.....c..",
-    "..W....X..WWXW....FF....",
+    "c.W.Orrrrrrr..MM.......Z",
+    "..W.o..W......MM.....c~~",
+    "..W....X..WWXW....FF.Z~~",
     "M.WWXWWW..W..W....V...MM",
     "MM...v....W..W..WWWXWW.M",
-    "....FF....WXWW..X....W..",
-    "..c.....MM......W..b.W..",
-    "........MM..rrrrrrrB.W.c",
+    "~~Y.FF....WXWW..X....W..",
+    "~~c.....MM......W..b.W..",
+    "Y.......MM..rrrrrrrB.W.c",
     "..FF........c.F.W..K.W..",
     ".....c........F.X....W..",
     "M...............WWXWWW.M",

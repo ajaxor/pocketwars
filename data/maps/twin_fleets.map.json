@@ -63,11 +63,13 @@
     "Z": {
       "terrain": "shipyard",
       "owner": 1
-    }
+    },
+    "y": { "terrain": "airfield", "owner": 0 },
+    "z": { "terrain": "airfield", "owner": 1 }
   },
   "tiles": [
     "MMkFF..rrrrrrrrrrrr..FFKMM",
-    "M.cOfrr..c......c..rrgBc.M",
+    "MycOfrr..c......c..rrgBczM",
     "..rr..~o~~~~~~~~~~o~..rr..",
     "F.r.Y~~~o~~~~~~~~o~~~Z.r.F",
     "..rc~~~~~~~~~~~~~~~~~~cr..",
