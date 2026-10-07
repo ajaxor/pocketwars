@@ -43,8 +43,8 @@ const flame = (g, s, x, y, h, w, sway, col) => {   // a teardrop standing on its
 };
 const flameTrooper = (g, o) => {
   const { s, dk, bb, sw } = body(g, o, (bb) => {   // drawn before the torso, so the tanks stand behind the body, toward the left
-    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#d4d7dc');                                          // a plain white tank, a little shaded (the far one)
-    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#d4d7dc');                                          // and the near one
+    box(g, o.s, -.27, -.23 + bb, .13, .37, .065 * o.s, '#bcc0c7');                                          // a plain white tank, a little shaded (the far one)
+    box(g, o.s, -.18, -.23 + bb, .13, .37, .065 * o.s, '#bcc0c7');                                          // and the near one
   });
   helmet(g, s, bb, dk);
   const y0 = -.01 + bb, y1 = -.07 + bb + sw;
@@ -97,8 +97,9 @@ const swordsman = (g, o) => {
   helmet(g, s, bb, dk);
   g.save(); g.translate(-.02 * s, (.04 + bb + sw * .5) * s); g.rotate(-.85 + sw * .5);
   box(g, s, -.1, -.02, .14, .04, 1, '#0d0e10');                                                                      // the grip
-  box(g, s, .04, -.05, .025, .1, 1, '#0d0e10');                                                                  // the guard
-  poly(g, s, [[.065, -.026], [.42, -.026], [.5, -.004], [.42, .026], [.065, .026]], BLADE);                  // the long, slightly curved blade
+  box(g, s, .04, -.033, .022, .066, 1, '#0d0e10');                                                                  // the guard
+  const bow = (x) => .03 * ((x - .065) / .43) ** 2, xs = [.065, .15, .24, .33, .42], top = xs.map((x) => [x, -.022 - bow(x)]);   // a slim blade bowed gently upward
+  poly(g, s, [...top, [.5, -.022 - bow(.5) + .004], [.44, .022 - bow(.44)], ...xs.slice(0, 4).reverse().map((x) => [x, .022 - bow(x)])], BLADE);   // the tip sweeps up to a point
   g.restore();
 };
 
