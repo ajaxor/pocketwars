@@ -390,6 +390,7 @@ export class Session {
       if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
       if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
       if (ev.type === 'lay') return false;   // nobody sees a mine go down
+      if (ev.type === 'capture') return this.#seesTile(ev.x, ev.y);   // no flag raised over a property in the fog
       if (ev.type === 'strike') return this.#seesTile(ev.attacker.x, ev.attacker.y) || this.#seesTile(ev.defender.x, ev.defender.y);   // a fight deep in the fog is not shown
       return true;
     });
@@ -430,15 +431,17 @@ export class Session {
     // (not for a submarine the human cannot see: the camera would point at it)
     const visible = canSee(game, viewer, unit);
     const target = order.action?.targetId ? unitById(game, order.action.targetId) : null;
-    if (visible) {
-      // only what the human can see: the camera never pans into the fog of war after a unit
+    // only what the human can see: the camera never pans into the fog of war after a unit. An attack from out of sight at something the
+    // human can see (artillery in the fog hitting their unit) still brings the victim into view, so the blow is not missed.
+    const struck = !visible && target && this.#seesTile(target.x, target.y);
+    if (visible || struck) {
       const points = [[unit.x, unit.y], [order.to.x, order.to.y], ...(target ? [[target.x, target.y]] : [])].filter(([x, y]) => this.#seesTile(x, y));
       if (points.length) this.renderer.reveal(points);
       if (this.renderer.camera.glide) await this.#pause(350);
     }
     const res = applyStep(game, step);
     const events = this.#visibleTo(viewer, res.events, visible);
-    const shown = visible || !game.state.units.includes(unit) || canSee(game, viewer, unit);   // did the human get to see it act?
+    const shown = visible || !game.state.units.includes(unit) || canSee(game, viewer, unit) || events.some((ev) => ev.type === 'strike');   // a blow the human can see is waited for, wherever it came from   // did the human get to see it act?
     presenter.present(events, { now: this.#now() });
     this.#comment(this.commentator?.react(events, this.#now(), unit.owner));
     const text = describeEvents(game, events);
