@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Every leader against every other leader, played out by the AI on a range of maps: how balanced are they?
 //
-//   npm run balance:leaders [-- --maps 2p --seeds 1 --days 20 --engine strategist --workers N --out tools/balance/out]
+//   npm run balance:leaders [-- --maps 2p --seeds 1 --days 20 --engine strategist --workers N --no-start-units --out tools/balance/out]
+//   --no-start-units   nobody starts with units (the skirmish "Starting units: Off" rule): the leaders are then only their build menus and prices
 //
 // A leader brings a build menu and starting units (data/loadouts.json); the factions are only colours. For every pair of leaders and every
 // map (two-player maps by default), the pair plays twice with the seats swapped, both seats played by the same engine and profile, so
@@ -42,14 +43,14 @@ async function main() {
       for (let i = 0; i < leaders.length; i++) {
         for (let j = i + 1; j < leaders.length; j++) {
           for (const order of [[leaders[i], leaders[j]], [leaders[j], leaders[i]]]) {
-            jobs.push({ mapId: m.id, seed: 1 + s, maxDays: days, fog: true, leaders: order, seats: [seat, seat], labels: order });
+            jobs.push({ mapId: m.id, seed: 1 + s, maxDays: days, fog: true, startUnits: !opts['no-start-units'], leaders: order, seats: [seat, seat], labels: order });
           }
         }
       }
     }
   }
   const pool = await createPool(opts.workers ? { workers: Number(opts.workers) } : {});
-  console.log(`${leaders.length} leaders, ${maps.length} maps, ${jobs.length} games with ${pool.size} workers (${engine}, ${days}-day limit)`);
+  console.log(`${opts['no-start-units'] ? 'NO STARTING UNITS: ' : ''}${leaders.length} leaders, ${maps.length} maps, ${jobs.length} games with ${pool.size} workers (${engine}, ${days}-day limit)`);
   const t0 = Date.now();
   let done = 0;
   const results = await pool.run(jobs, { onResult: () => { if (++done % 100 === 0) console.log(`  ${done}/${jobs.length}  ${((Date.now() - t0) / 60000).toFixed(1)} min`); } });
@@ -116,7 +117,7 @@ async function main() {
     ...[...new Set(stats.flatMap((s) => Object.entries(perMap[s.id] ?? {}).filter(([, p]) => p.length >= 4 && Math.abs(mean(p) - 0.5) > 0.2).map(([m, p]) => `- ${s.id} on ${m}: ${pct(mean(p))}`)))], '',
     `Per-map and per-pair numbers rest on few games (a pair on a map is ${2 * seeds} games), so treat single cells as hints; the per-leader averages (${stats[0]?.games} games each) are the ones to trust. Run again with \`--seeds 3\` to firm any of them up.`);
   if (errors.length) md.push('', `${errors.length} games ended in an engine error (counted as a loss): ${[...new Set(errors)].slice(0, 3).join('; ')}`);
-  const dir = opts.out ?? `${ROOT}tools/balance/out`;
+  const dir = opts.out ?? `${ROOT}tools/balance/out${opts['no-start-units'] ? '/no-start-units' : ''}`;
   mkdirSync(dir, { recursive: true });
   writeFileSync(`${dir}/leader-report.md`, md.join('\n') + '\n');
   writeFileSync(`${dir}/leader-matrix.csv`, [['leader', ...leaders].join(','), ...leaders.map((a) => [a, ...leaders.map((b) => (a === b ? '' : (mean(cell[`${a}>${b}`] ?? [0.5])).toFixed(3)))].join(','))].join('\n') + '\n');

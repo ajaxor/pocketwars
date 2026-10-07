@@ -11,6 +11,7 @@
 //     maxDays  a game still going after this many days is judged on worth (src/ai/evaluate.js): the leader wins if their share is at
 //              least `margin`, otherwise it is a draw
 //     fog      false takes the jammers off (default: the map as it is)
+//     startUnits  false: nobody starts with units (default true)
 //     leaders  true: random leaders from the seed (default); false: none; or a list of leader ids, one per slot
 
 import { Game } from '../../../src/engine/game.js';
@@ -34,10 +35,10 @@ export function seeded(seed) {
   };
 }
 
-export function setupMatch(registry, map, { seats, seed = 1, fog = true, leaders = true }) {
+export function setupMatch(registry, map, { seats, seed = 1, fog = true, leaders = true, startUnits = true }) {
   if (seats.length !== map.players.length) throw new Error(`map "${map.id}" has ${map.players.length} slots, got ${seats.length} seats`);
   const settings = {
-    mapId: map.id, funds: null, fog,
+    mapId: map.id, funds: null, fog, startUnits,
     players: map.players.map((p, i) => ({ faction: p.faction, controller: 'ai', leader: Array.isArray(leaders) ? leaders[i] ?? null : leaders && registry.leaderIds.length ? 'random' : null })),
   };
   const game = new Game(registry, applySkirmish(map, settings, registry, seeded(`${seed}:leaders`)));
@@ -75,8 +76,8 @@ function trackCombat(game) {
   };
 }
 
-export function playMatch(registry, map, { seats, seed = 1, maxDays = DEFAULT_MAX_DAYS, fog = true, margin = DEFAULT_MARGIN, leaders = true }) {
-  const game = setupMatch(registry, map, { seats, seed, fog, leaders });
+export function playMatch(registry, map, { seats, seed = 1, maxDays = DEFAULT_MAX_DAYS, fog = true, margin = DEFAULT_MARGIN, leaders = true, startUnits = true }) {
+  const game = setupMatch(registry, map, { seats, seed, fog, leaders, startUnits });
   const combat = trackCombat(game);
   const t0 = performance.now();
   let turns = 0;
