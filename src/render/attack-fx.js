@@ -26,6 +26,7 @@ const SPECS = {
   salvo:        { d: 800, hit: 760, impact: 'blast' },
   pods:         { d: 600, hit: 560, impact: 'blast' },
   missile:      { d: 780, hit: 740, impact: 'blast' },
+  air_missile:  { d: 760, hit: 720, impact: 'blast' },
   sam:          { d: 820, hit: 780, impact: 'blast' },
   cruise:       { d: 940, hit: 900, impact: 'blast' },
   flame:        { d: 600, hit: 420, impact: 'fire' },
@@ -55,11 +56,14 @@ const ease = (x) => x * x;                                  // accelerating
 const rnd = (n) => { const s = Math.sin(n * 12.9898 + 4.1414) * 43758.5453; return s - Math.floor(s); };   // 0..1, the same for the same n
 const lerp = (a, b, q) => a + (b - a) * q;
 
+const MUZZLE = .24;   // how far from the unit's centre a barrel's muzzle is, in tiles
+
 /** The geometry of one attack in pixels: start, end, direction, unit vectors along and across. */
 function geo(f, S) {
   const x0 = f.x0 * S, y0 = f.y0 * S, x1 = f.x1 * S, y1 = f.y1 * S;
   const dx = x1 - x0, dy = y1 - y0, len = Math.hypot(dx, dy) || 1;
-  return { x0, y0, x1, y1, len, ux: dx / len, uy: dy / len, nx: -dy / len, ny: dx / len, a: Math.atan2(dy, dx) };
+  const ux = dx / len, uy = dy / len;
+  return { x0, y0, x1, y1, len, ux, uy, nx: -uy, ny: ux, a: Math.atan2(dy, dx), mx: x0 + ux * S * MUZZLE, my: y0 + uy * S * MUZZLE };   // (mx, my): where a direct-fire shot leaves the barrel, under the muzzle flash
 }
 
 function flash(g, x, y, a, size, p, color = '#fff3b0') {
@@ -105,7 +109,7 @@ function exhaust(g, x, y, a, size, now) {
 
 // ---- the looks ----------------------------------------------------------------------------------------------------------------------
 function tracer(g, q, G, S, { len = .2, w = 2.2, color = '#ffe45c' } = {}) {
-  const x = lerp(G.x0, G.x1, q), y = lerp(G.y0, G.y1, q), l = S * len;
+  const x = lerp(G.mx, G.x1, q), y = lerp(G.my, G.y1, q), l = Math.min(S * len, q * Math.hypot(G.x1 - G.mx, G.y1 - G.my));   // the tail never reaches back past the muzzle
   g.save(); g.lineCap = 'round';
   g.strokeStyle = 'rgba(255,200,60,.55)'; g.lineWidth = w * 2.4; g.beginPath(); g.moveTo(x - G.ux * l, y - G.uy * l); g.lineTo(x, y); g.stroke();
   g.strokeStyle = color; g.lineWidth = w; g.beginPath(); g.moveTo(x - G.ux * l, y - G.uy * l); g.lineTo(x, y); g.stroke();
@@ -115,9 +119,9 @@ function tracer(g, q, G, S, { len = .2, w = 2.2, color = '#ffe45c' } = {}) {
 
 function shot(g, f, p, S, G, { r = .06, glow = '#ffcf4a', big = false } = {}) {
   const q = clamp01(p / .85);
-  const x = lerp(G.x0, G.x1, q), y = lerp(G.y0, G.y1, q);
-  flash(g, G.x0 + G.ux * S * .25, G.y0 + G.uy * S * .25, G.a, S * (big ? .5 : .32), clamp01(p / .25));
-  if (p < .55) puff(g, G.x0 + G.ux * S * .3, G.y0 + G.uy * S * .3 - S * .05 * p * 4, S * (big ? .14 : .09) * (1 + p * 3), (1 - p / .55) * .5);
+  const x = lerp(G.mx, G.x1, q), y = lerp(G.my, G.y1, q);
+  flash(g, G.mx, G.my, G.a, S * (big ? .5 : .32), clamp01(p / .25));
+  if (p < .55) puff(g, G.mx + G.ux * S * .06, G.my + G.uy * S * .06 - S * .05 * p * 4, S * (big ? .14 : .09) * (1 + p * 3), (1 - p / .55) * .5);
   if (q >= 1) return;
   g.fillStyle = glow; g.globalAlpha = .55; g.beginPath(); g.arc(x, y, S * r * 1.9, 0, 7); g.fill(); g.globalAlpha = 1;
   g.fillStyle = '#2b2f36'; g.beginPath(); g.arc(x, y, S * r, 0, 7); g.fill();
@@ -160,7 +164,7 @@ function guided(g, G, q, S, now, ctrl, { size = .3, wid = .034 } = {}) {
 }
 
 const DRAW = {
-  bullet(g, f, p, S) { const G = geo(f, S); flash(g, G.x0 + G.ux * S * .22, G.y0 + G.uy * S * .22, G.a, S * .22, clamp01(p / .3)); const q = clamp01((p - .1) / .8); if (q > 0 && q < 1) tracer(g, q, G, S, { len: .16, w: 2 }); },
+  bullet(g, f, p, S) { const G = geo(f, S); flash(g, G.mx, G.my, G.a, S * .22, clamp01(p / .3)); const q = clamp01((p - .1) / .8); if (q > 0 && q < 1) tracer(g, q, G, S, { len: .16, w: 2 }); },
 
   burst(g, f, p, S, now) {   // a machine gun: a string of tracers and a flickering muzzle flash
     const G = geo(f, S);
@@ -168,13 +172,13 @@ const DRAW = {
       const q = (p - i * .1) / .22;
       if (q > 0 && q < 1) tracer(g, clamp01(q), G, S, { len: .14, w: 1.8 });
     }
-    if (p < .75) flash(g, G.x0 + G.ux * S * .22 + G.nx * rnd(Math.floor(now / 45)) * S * .03, G.y0 + G.uy * S * .22, G.a + (rnd(Math.floor(now / 45) + 3) - .5) * .5, S * (.16 + .1 * rnd(Math.floor(now / 45) + 7)), (Math.floor(now / 45) % 2) * .35);
+    if (p < .75) flash(g, G.mx + G.nx * rnd(Math.floor(now / 45)) * S * .03, G.my + G.ny * rnd(Math.floor(now / 45)) * S * .03, G.a + (rnd(Math.floor(now / 45) + 3) - .5) * .5, S * (.16 + .1 * rnd(Math.floor(now / 45) + 7)), (Math.floor(now / 45) % 2) * .35);
   },
 
   sniper(g, f, p, S) {   // a glint in the scope, then one thin bright line
     const G = geo(f, S);
     if (p < .4) { const k = Math.sin(Math.PI * clamp01(p / .4)); g.save(); g.translate(G.x0 + G.ux * S * .15, G.y0 + G.uy * S * .15 - S * .1); g.strokeStyle = 'rgba(255,255,255,' + k + ')'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-S * .1 * k, 0); g.lineTo(S * .1 * k, 0); g.moveTo(0, -S * .1 * k); g.lineTo(0, S * .1 * k); g.stroke(); g.restore(); }
-    if (p > .4 && p < .95) { const k = 1 - (p - .4) / .55; g.save(); g.lineCap = 'round'; g.globalAlpha = k; g.strokeStyle = '#bfe3ff'; g.lineWidth = 4; g.beginPath(); g.moveTo(G.x0, G.y0); g.lineTo(G.x1, G.y1); g.stroke(); g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(G.x0, G.y0); g.lineTo(G.x1, G.y1); g.stroke(); g.restore(); flash(g, G.x0 + G.ux * S * .2, G.y0 + G.uy * S * .2, G.a, S * .2, 1 - k); }
+    if (p > .4 && p < .95) { const k = 1 - (p - .4) / .55; g.save(); g.lineCap = 'round'; g.globalAlpha = k; g.strokeStyle = '#bfe3ff'; g.lineWidth = 4; g.beginPath(); g.moveTo(G.mx, G.my); g.lineTo(G.x1, G.y1); g.stroke(); g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(G.mx, G.my); g.lineTo(G.x1, G.y1); g.stroke(); g.restore(); flash(g, G.mx, G.my, G.a, S * .2, 1 - k); }
   },
 
   cannon(g, f, p, S) { shot(g, f, p, S, geo(f, S), { r: .07, glow: '#ffb347' }); },
@@ -190,7 +194,7 @@ const DRAW = {
       puff(g, x, y, S * (.1 + .12 * s), (1 - s) * .85, '#2c2f36');
       puff(g, x, y, S * .06 * (1 - s), 1 - s, '#ff6a3d');
     }
-    if (p < .25) flash(g, G.x0 + G.ux * S * .2, G.y0 + G.uy * S * .2, G.a, S * .2, p / .25);
+    if (p < .25) flash(g, G.mx, G.my, G.a, S * .2, p / .25);
   },
 
   shell(g, f, p, S, now) { lob(g, f, p, S, geo(f, S), { h: 1.1, r: .07, now }); },
@@ -215,6 +219,28 @@ const DRAW = {
     const G = geo(f, S);
     flash(g, G.x0, G.y0 - S * .1, -Math.PI / 2, S * .35, clamp01(p / .2), '#ffd7a0');
     guided(g, G, p / .95, S, now, [lerp(G.x0, G.x1, .35) + G.nx * S * .15, Math.min(G.y0, G.y1) - S * .75]);
+  },
+
+  air_missile(g, f, p, S, now) {   // dropped from under the wing, falls a moment, then the motor lights and it flies straight at the target
+    const G = geo(f, S);
+    const DROP = .22;
+    const fall = S * .26, hold = [G.x0 + G.ux * S * .12, G.y0 + fall];           // where it is when the motor lights
+    if (p < DROP) {
+      const k = p / DROP;
+      const x = G.x0 + G.ux * S * .12 * k, y = G.y0 + S * .06 + (fall - S * .06) * k * k;
+      body(g, x, y, G.a + .35 * k, S * .3, S * .034, '#f2f4f7');                 // nose dips as it drops
+      return;
+    }
+    const q = (p - DROP) / (.96 - DROP);
+    if (q >= 1) return;
+    const e = q * q * .55 + q * .45;
+    const at = (u) => { const w = u * u * .55 + u * .45; return [lerp(hold[0], G.x1, w), lerp(hold[1], G.y1, w)]; };
+    const [x, y] = at(q), [xb, yb] = at(Math.max(0, q - .02));
+    const a = Math.atan2(y - yb, x - xb);
+    flash(g, hold[0], hold[1], G.a, S * .22, clamp01(q / .12), '#ffd7a0');       // ignition
+    smokeTrail(g, at, q, .5, S, { n: 14, r: .04, grow: 2 });
+    exhaust(g, x - Math.cos(a) * S * .12, y - Math.sin(a) * S * .12, a, S * .07, now);
+    body(g, x, y, a, S * .3, S * .034, '#f2f4f7');
   },
 
   sam(g, f, p, S, now) {      // straight up, then over onto an aircraft

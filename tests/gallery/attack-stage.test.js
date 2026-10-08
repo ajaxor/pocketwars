@@ -36,3 +36,9 @@ test('attackSpec: each look has a duration and lands its blow before it ends; un
   assert.equal(attackSpec('arc').name, 'shell');
   assert.equal(attackSpec('slash').lunge, true);
 });
+
+test('automatic weapons fire bursts, and an air-to-air missile drops from the wing before it flies', () => {
+  for (const w of ['machine_gun', 'commando_rifle', 'marine_rifle', 'bike_rifle', 'boat_mg', 'wing_guns']) assert.equal(registry.weapon(w).fx, 'burst', w);
+  for (const w of ['air_missiles', 'stealth_missiles']) assert.equal(registry.weapon(w).fx, 'air_missile', w);
+  assert.equal(registry.weapon('tank_missiles').fx, 'missile', 'ground-launched missiles still climb first');
+});
