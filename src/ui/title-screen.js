@@ -11,7 +11,7 @@
 //   setEditor(enabled)       the same for the Map editor
 //   setFailed(message)       loading failed: the menu is disabled and a Retry button appears
 //   showBackdrop(registry)   start the scrolling battlefield behind the menu (it needs the game's data, so it waits for the load)
-//   coverBackdrop(on)        pause the battlefield while another page sits on top of the menu
+//   coverBackdrop(on)        another page sits on top of the menu: drop the battlefield (and its memory); when uncovered, a new one is made
 //   showUpdate(onClick)      show the "new version available" button
 //   remove()                 take the overlay away (the game is underneath)
 //   onSkirmish / onCampaign / onEditor / onRetry   called when those buttons are pressed; set by the launcher
@@ -34,6 +34,7 @@ export class TitleScreen {
     this.ready = false;
     this.backdrop = null;
     this.covered = false;
+    this.backdropArgs = null;
     this.onSkirmish = () => {};
     this.onCampaign = () => {};
     this.onEditor = () => {};
@@ -90,12 +91,18 @@ export class TitleScreen {
   /** Start a new battlefield behind the menu (the previous one, if any, is stopped). `opts` goes to MenuBackdrop (random, raf, caf, win). */
   showBackdrop(registry, opts) {
     this.backdrop?.stop();
+    this.backdropArgs = [registry, opts];
+    this.backdrop = null;
+    if (this.covered) return;
     this.backdrop = new MenuBackdrop(this.doc, registry, opts);
-    if (this.covered) this.backdrop.pause(true);
     this.bg.append(this.backdrop.canvas);
     this.backdrop.start();
   }
-  coverBackdrop(on) { this.covered = on; this.backdrop?.pause(on); }
+  coverBackdrop(on) {
+    this.covered = on;
+    if (on) { this.backdrop?.stop(); this.backdrop = null; return; }   // the picture is big: it is not kept alive under a page that hides it
+    if (this.backdropArgs && !this.backdrop) this.showBackdrop(...this.backdropArgs);
+  }
   showUpdate(onClick) { this.onUpdate = onClick; this.upd.hidden = false; }
   remove() { this.backdrop?.stop(); this.root.remove(); }
 }

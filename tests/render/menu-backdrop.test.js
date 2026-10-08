@@ -174,6 +174,16 @@ test('the field is made on the next tick, not while the menu is first shown, the
   assert.ok(made[0].calls.length > 0);
 });
 
+test('the picture is zoomed in: a tile is at least 64 CSS pixels, so a phone sees only a handful of tiles', () => {
+  const { doc, win, timers } = stage();
+  const b = new MenuBackdrop(doc, registry, { random: seeded(8), win }).start();
+  timers.shift()();
+  const tileCss = b.world.width * b.scale / b.field.size;
+  assert.ok(tileCss >= 64, `a tile is ${tileCss}px`);
+  assert.ok(win.innerHeight / tileCss < 12, 'under a dozen tiles from top to bottom');
+  assert.ok(b.world.width <= 24 * 112, 'and the painted picture stays small');
+});
+
 test('pause stops the drift and resume carries on without a jump', () => {
   const { doc, win, timers, tick, frames } = stage();
   const b = new MenuBackdrop(doc, registry, { random: seeded(8), win }).start();
@@ -196,9 +206,12 @@ test('stop cancels the animation and takes the canvas away', () => {
   const b = new MenuBackdrop(doc, registry, { random: seeded(8), win }).start();
   slot.append(b.canvas);
   timers.shift()();
+  const world = b.world;
   b.stop();
   assert.equal(frames(), 0);
   assert.equal(slot.children.length, 0);
+  assert.equal(b.world, null, 'the painted picture is let go');
+  assert.equal(world.width, 0, 'and its pixels are freed at once');
   b.start();
   assert.equal(timers.length, 0, 'a stopped backdrop does not start again');
 });

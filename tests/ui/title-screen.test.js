@@ -78,22 +78,34 @@ test('the progress bar fades away once the game is ready, and comes back if load
   assert.ok(!title.loading.classList.contains('is-done'));
 });
 
-test('the backdrop is added on request, replaced by the next one, covered and stopped with the screen', () => {
+test('the backdrop is added on request, replaced by the next one, dropped while a page covers it and made anew after, and stopped with the screen', () => {
   const { doc, title } = make();
   const registry = {};   // the fake document has no canvas, so the backdrop never touches it
   assert.equal(title.backdrop, null);
   title.showBackdrop(registry);
   const first = title.backdrop;
   assert.equal(title.bg.children.length, 1);
-  title.coverBackdrop(true);
-  assert.equal(first.paused, true);
   title.showBackdrop(registry);
   assert.notEqual(title.backdrop, first);
+  assert.equal(first.stopped, true);
   assert.equal(title.bg.children.length, 1, 'the old canvas is gone');
-  assert.equal(title.backdrop.paused, true, 'a new one starts covered while a page sits on top');
+
+  const second = title.backdrop;
+  title.coverBackdrop(true);
+  assert.equal(second.stopped, true, 'its memory is let go while a page hides it');
+  assert.equal(title.backdrop, null);
+  assert.equal(title.bg.children.length, 0);
   title.coverBackdrop(false);
-  assert.equal(title.backdrop.paused, false);
+  assert.ok(title.backdrop && title.backdrop !== second, 'a new battlefield when the menu is uncovered');
+  assert.equal(title.bg.children.length, 1);
+
+  title.coverBackdrop(true);
+  title.showBackdrop(registry);
+  assert.equal(title.backdrop, null, 'nothing is made while covered');
+  title.coverBackdrop(false);
+  assert.ok(title.backdrop);
+  const last = title.backdrop;
   title.remove();
   assert.equal(doc.body.children.length, 0);
-  assert.equal(title.backdrop.stopped, true);
+  assert.equal(last.stopped, true);
 });

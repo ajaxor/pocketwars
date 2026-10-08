@@ -14,9 +14,11 @@ import { drawTerrainLayer } from './terrain-layer.js';
 import { drawUnit } from './unit-sprites.js';
 
 /** Tiles along each side of the battlefield. */
-export const FIELD_SIZE = 40;
+export const FIELD_SIZE = 24;
 /** How fast the picture drifts, in CSS pixels a second along each axis (so the path is a true diagonal). */
 export const DRIFT = 26;
+/** The most device pixels per CSS pixel the picture is drawn with: it is dimmed and drifting, so more would only cost memory. */
+const MAX_DPR = 1.5;
 
 const wrap = (v, n) => ((v % n) + n) % n;
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -120,7 +122,7 @@ export function generateField(registry, random = Math.random, size = FIELD_SIZE)
   const owners = grid(() => null);
   const properties = [];
   const margin = (v) => v >= 1 && v <= size - 2;
-  for (let tries = 0; tries < 400 && properties.length < 11; tries++) {
+  for (let tries = 0; tries < 400 && properties.length < 7; tries++) {
     const x = Math.floor(random() * size), y = Math.floor(random() * size);
     if (!margin(x) || !margin(y) || terrain[y][x] !== 'plain') continue;
     if (properties.some((p) => ring(p.x, x, size) + ring(p.y, y, size) < 4)) continue;
@@ -145,9 +147,9 @@ export function generateField(registry, random = Math.random, size = FIELD_SIZE)
   };
   const units = [];
   const anchors = [];
-  for (let tries = 0; tries < 200 && anchors.length < 7; tries++) {
+  for (let tries = 0; tries < 200 && anchors.length < 5; tries++) {
     const a = { x: 3 + Math.floor(random() * (size - 6)), y: 3 + Math.floor(random() * (size - 6)) };
-    if (anchors.every((b) => ring(a.x, b.x, size) + ring(a.y, b.y, size) >= 9)) anchors.push(a);
+    if (anchors.every((b) => ring(a.x, b.x, size) + ring(a.y, b.y, size) >= 7)) anchors.push(a);
   }
   for (const anchor of anchors) {
     const [a, b] = shuffled(teams, random);
@@ -249,16 +251,19 @@ export class MenuBackdrop {
     if (this.frame != null) this.caf?.(this.frame);
     this.win.removeEventListener?.('resize', this.onResize);
     this.timer = this.frame = null;
+    if (this.world) this.world.width = this.world.height = 0;   // give the picture's memory back at once rather than when the garbage collector gets to it
+    this.world = null;
+    this.canvas.width = this.canvas.height = 0;
     this.canvas.remove();
   }
 
   #build() {
     if (this.stopped) return;
     const { win, registry } = this;
-    const dpr = Math.min(win.devicePixelRatio || 1, 2);
+    const dpr = Math.min(win.devicePixelRatio || 1, MAX_DPR);
     const long = Math.max(win.innerWidth || 800, win.innerHeight || 600);
-    const tileCss = Math.max(30, Math.min(48, Math.round(long / 24)));          // how big a tile looks
-    const tile = Math.max(24, Math.min(64, Math.round(tileCss * dpr)));          // how many pixels it is painted with (capped, so the picture stays small)
+    const tileCss = Math.max(64, Math.min(120, Math.round(long / 9)));          // how big a tile looks: zoomed right in, about nine tiles along the long side
+    const tile = Math.max(24, Math.min(112, Math.round(tileCss * dpr)));         // how many pixels it is painted with (capped, so the picture stays small)
     this.scale = tileCss * dpr / tile;                                           // painted pixels -> canvas pixels
     this.field = generateField(registry, this.random);
     const world = this.doc.createElement('canvas');
@@ -275,7 +280,7 @@ export class MenuBackdrop {
   }
 
   #fit() {
-    const dpr = Math.min(this.win.devicePixelRatio || 1, 2);
+    const dpr = Math.min(this.win.devicePixelRatio || 1, MAX_DPR);
     this.dpr = dpr;
     this.canvas.width = Math.max(1, Math.round((this.win.innerWidth || 800) * dpr));
     this.canvas.height = Math.max(1, Math.round((this.win.innerHeight || 600) * dpr));
