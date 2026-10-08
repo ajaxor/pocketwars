@@ -283,6 +283,11 @@ export function goalsFor(sit, unit) {
     const tiles = repairTiles(sit, unit, mc, ids);
     if (tiles.length) return result('repair', tiles);
   }
+  // any infantry with a property to take goes and takes it, a medic or a sniper included: money comes before looking after the army
+  if (r.capture) {
+    const p = sit.captureTargets?.get(unit.id);
+    if (p) return result('capture', [[p.x, p.y, 0]]);
+  }
   if (r.healer) {
     const cfg = attributeConfig(def, 'heal');
     const mine = sit.mine.filter((u) => u !== unit && cfg.categories.includes(unitDef(game, u).category));
@@ -308,10 +313,6 @@ export function goalsFor(sit, unit) {
       const tiles = landingTiles(sit, unit);
       if (tiles.length) return result('land', tiles);
     }
-  }
-  if (r.capture) {
-    const p = sit.captureTargets?.get(unit.id);
-    if (p) return result('capture', [[p.x, p.y, 0]]);
   }
   // an armed unit: the enemy it can hurt and get to, the strategy's objective, or else home
   let tiles = [];

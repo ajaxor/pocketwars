@@ -178,3 +178,13 @@ test('a unit does not park on its own factory when it could do its job from a ne
   assert.ok(order?.order?.to, 'the medic is given a move');
   assert.notEqual(order.order.to.x, 0, 'and it leaves the factory tile');
 });
+
+test('a medic goes to take a free city rather than waiting beside a wounded friend: all infantry capture', () => {
+  const g = world(['H..c.....'], [['medic', 0, 1, 0], ['soldier', 0, 0, 0, 4], ['soldier', 1, 8, 0]]);
+  const medic = g.state.units[0];
+  const sit = situation(g);
+  assert.equal(sit.captureTargets.get(medic.id)?.x, 3, 'the medic is given the city');
+  const order = bestOrder(sit, medic);
+  assert.equal(order.goal.kind, 'capture');
+  assert.ok(order.order.to.x > 1, 'and it heads for it');
+});

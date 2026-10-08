@@ -100,7 +100,10 @@ export function typeWorth(sit, type, x, y, ctx) {
         && canGet(game, mc, ids, p.x, p.y, cargo.move + 1)
         && (range === Infinity || spots.some(([hx, hy]) => distance(p.x, p.y, hx, hy) <= range + cargo.move + 1))).length;
       const carriers = sit.mine.filter((u) => roles(unitDef(game, u)).carrier).length;
-      role += params.carrierNeed * Math.min(4, islands) / (1 + carriers) ** 2;   // two or three carriers do the job; more just queue up
+      // a ferry also speeds up the race for free cities on our own landmass that are a long walk from anything we hold
+      const far = sit.properties.filter((p) => p.owner === null && home.has(areaAt(game, cargo.moveClass, p.x, p.y)) && canGet(game, mc, ids, p.x, p.y, cargo.move + 1)
+        && Math.min(...sit.properties.filter((q) => q.owner === player).map((q) => distance(p.x, p.y, q.x, q.y)), Infinity) > cargo.move * 2).length;
+      role += params.carrierNeed * Math.min(4, islands + far * 0.5) / (1 + carriers) ** 2;   // two or three carriers do the job; more just queue up
     }
   }
   if (r.healer || r.supplier || (r.radar && !r.combat)) {

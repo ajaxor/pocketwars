@@ -263,3 +263,7 @@ The review's points and where they stand, then what the new system leaves open. 
 - The AI tuning (`data/ai.json`) is stale after recent balance changes; the ai-tune workflow re-tunes it on push.
 - Computer-vs-computer games on most maps (Whiteout, Dust Bowl, Ridgeback) mostly end undecided at the day limit, so the strategist is slow
   to finish games. Worth a look in the arena.
+- Early-game capture race (October 2026): infantry that heal (medics) now take free properties before looking after the army, and ferries
+  (transport copter, APC, troop transport) are also worth building for free cities a long walk from anything we hold, not only for islands.
+  Captures by day 8 went up on most shipped maps (headless, computer vs computer). The race is still limited by how slow foot units are on rough
+  ground (Whiteout's snow) and by one infantry per barracks per turn; no check yet that a ferry is built early enough to matter.
