@@ -116,15 +116,17 @@ test('effects.strike schedules the right animation for each attackFx', () => {
   const { effects } = rig();
   const at = (type) => ({ id: 1, type, owner: 0, x: 0, y: 0 });
   const def = { id: 2, type: 'tank', owner: 1, x: 1, y: 0 };
-  for (const [type, kind] of [['soldier', 'lunge'], ['tank', 'shot'], ['artillery', 'shot']]) {
+  for (const [type, weapon, fx] of [['soldier', 'rifle', 'bullet'], ['tank', 'tank_cannon', 'cannon'], ['artillery', 'howitzer', 'shell'], ['swordsman', 'katana', 'slash'], ['flamethrower', 'flamethrower', 'flame'], ['shock_trooper', 'shock_rifle', 'electric'], ['recon', 'machine_gun', 'burst'], ['mech', 'bazooka', 'rocket'], ['bomber', 'bombs', 'bombs']]) {
     effects.clear();
-    effects.strike({ attacker: at(type), defender: def, damage: 3, destroyed: false }, 0);
-    assert.ok(effects.list.some((f) => f.k === kind), `${type} -> ${kind}`);
+    effects.strike({ attacker: at(type), defender: def, weapon, damage: 3, destroyed: false }, 0);
+    assert.ok(effects.list.some((f) => f.k === 'fx' && f.fx === fx), `${weapon} -> ${fx}`);
   }
-  assert.ok(effects.list.find((f) => f.k === 'shot').arc, 'artillery shells arc');
   effects.clear();
-  effects.strike({ attacker: at('bomber'), defender: def, damage: 3, destroyed: false }, 0);
-  assert.ok(effects.list.some((f) => f.k === 'bomb'), 'bombers drop bombs');
+  effects.strike({ attacker: at('swordsman'), defender: def, weapon: 'katana', damage: 3, destroyed: false }, 0);
+  assert.ok(effects.list.some((f) => f.k === 'lunge'), 'a melee blow lunges');
+  effects.clear();
+  effects.strike({ attacker: at('tank'), defender: def, damage: 3, destroyed: false }, 0);
+  assert.ok(effects.list.some((f) => f.k === 'fx'), 'a strike without a weapon falls back on the unit\'s look');
   effects.clear();
   effects.strike({ attacker: at('tank'), defender: def, damage: 10, destroyed: true }, 0);
   assert.ok(effects.list.some((f) => f.k === 'die'));

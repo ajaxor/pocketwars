@@ -10,6 +10,7 @@ import { setFactions } from '../src/render/portrait-art.js';
 import { buildCatalog, GROUPS } from './catalog.js';
 import { createUnitsView } from './units-view.js';
 import { createCharactersView } from './characters-view.js';
+import { createAttacksView } from './attacks-view.js';
 import { drawOutlined, OUTLINE_THIN } from '../src/render/outline.js';
 import { BUILDINGS } from '../src/render/buildings.js';
 import { BASES, drawWall } from './structure-art.js';
@@ -23,11 +24,11 @@ export const STATES = { idle: { run: 1, speed: 1, alpha: 1 }, moving: { run: 1, 
 export const OUTLINES = { off: 0, thin: OUTLINE_THIN, medium: .024, thick: .038 };   // radius as a fraction of the tile
 export const OUTLINE_COLORS = { navy: '#161a26', black: '#000000', faction: null };            // null: the faction's dark colour
 
-export function paintTile(g, { unit, faction: team, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'plain', make }) {
+export function paintTile(g, { unit, faction: team, size, t, state, phase, bg, outline = 'off', outlineColor = 'navy', blackLines = 'plain', make, empty = false }) {
   const st = STATES[state] || STATES.idle;
   const faction = unit.fixedColors ? { ...team, color: unit.fixedColors.color, dark: unit.fixedColors.dark } : team;   // a unit that is always one colour (the tank trap) ignores the team
-  g.clearRect(0, 0, size, size);
-  g.fillStyle = bg; g.fillRect(0, 0, size, size);
+  if (bg) { g.clearRect(0, 0, size, size); g.fillStyle = bg; g.fillRect(0, 0, size, size); }   // no ground (bg null): draw on top of what is there
+  if (empty) return;   // just the ground (the Attacks tab draws the units itself)
   if (unit.kind === 'building' || unit.kind === 'wall') {                       // structures are drawn like the game's buildings, not as unit sprites
     if (unit.kind === 'wall') drawWall(g, 0, 0, size, faction.color, { links: unit.links || { e: true, w: true }, cracked: !!unit.cracked, broken: !!unit.broken });
     else (unit.concept ? BASES : BUILDINGS)[unit.sprite]?.(g, 0, 0, size, faction.color);
@@ -44,7 +45,7 @@ export function paintTile(g, { unit, faction: team, size, t, state, phase, bg, o
 }
 
 // ---- page ----------------------------------------------------------------------------------------------------
-const TABS = [...GROUPS.map((g) => ({ ...g, kind: 'units' })), { id: 'characters', label: 'Characters', kind: 'characters' }];
+const TABS = [...GROUPS.map((g) => ({ ...g, kind: 'units' })), { id: 'attacks', label: 'Attacks', kind: 'attacks' }, { id: 'characters', label: 'Characters', kind: 'characters' }];
 
 async function boot() {
   const $ = (sel) => document.querySelector(sel);
@@ -75,9 +76,11 @@ async function boot() {
     },
     paint(t) { paintTile(t.g, { unit: t.unit, faction: t.faction, size: state.size, t: clock, state: state.mode, phase: t.phase, bg: terrain[t.unit.water && state.bg === 'plain' ? 'sea' : state.bg], outline: state.outline, outlineColor: state.outlineColor, blackLines: state.blackLines }); },
   };
+  ctx.paintTile = paintTile; ctx.clock = () => clock;
   ctx.terrain = terrain; ctx.drawWall = drawWall; ctx.buildings = { game: BUILDINGS, concept: BASES };
   const units = createUnitsView(ctx, $('#view-units'));
   const characters = await createCharactersView(ctx, $('#view-chars'));
+  const attacks = createAttacksView(ctx, $('#view-attacks'));
 
   // tabs: the hash picks one (#vehicle, #characters), so a link opens on it
   const bar = $('#tabs');
@@ -92,8 +95,8 @@ async function boot() {
     const id = TABS.some((t) => t.id === location.hash.slice(1)) ? location.hash.slice(1) : TABS[0].id, tab = TABS.find((t) => t.id === id);
     bar.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === id)));
     const isUnits = tab.kind === 'units';
-    $('#view-units').hidden = !isUnits; $('#view-chars').hidden = isUnits; $('#unit-controls').hidden = !isUnits;
-    if (isUnits) units.show(id); else characters.show();
+    $('#view-units').hidden = !isUnits; $('#view-attacks').hidden = tab.kind !== 'attacks'; $('#view-chars').hidden = tab.kind !== 'characters'; $('#unit-controls').hidden = tab.kind === 'characters';
+    if (isUnits) units.show(id); else if (tab.kind === 'attacks') attacks.show(); else characters.show();
     window.scrollTo(0, 0);
   };
   addEventListener('hashchange', show);
@@ -101,12 +104,13 @@ async function boot() {
   function resize() {
     document.documentElement.style.setProperty('--s', state.size + 'px');
     for (const t of tiles.filter((x) => x.sized !== false)) ctx.sizeTile(t);
+    attacks.resize();
     draw();
   }
   function draw() { for (const t of tiles) if (t.visible && t.sized !== false) ctx.paint(t); }
   function frame(now) {
     if (!state.paused) clock += (now - last) / 1000;
-    last = now; draw(); characters.frame(now); requestAnimationFrame(frame);
+    last = now; draw(); characters.frame(now); attacks.frame(clock * 1000); requestAnimationFrame(frame);
   }
   ctx.sizeAll = resize;
 

@@ -4,6 +4,7 @@
 
 import { drawFaded } from './layer.js';
 import { font } from './font.js';
+import { attackSpec, drawAttack, drawImpact } from './attack-fx.js';
 
 const tileCentre = (u) => [u.x + .5, u.y + .5];
 
@@ -44,31 +45,17 @@ export class Effects {
     const fx = (ev.weapon && this.registry.weapon(ev.weapon).fx) || this.registry.unit(a.type).render.attackFx;
     const [x0, y0] = tileCentre(a);
     const [x1, y1] = tileCentre(d);
-    let hit;
-    if (fx === 'lunge') {
-      this.list.push({ k: 'lunge', id: a.id, dx: d.x - a.x, dy: d.y - a.y, t0, d: 360 });
-      hit = t0 + 180;
-    } else if (fx === 'drop') {
-      // bombs fall straight down onto the target from above
-      this.list.push({ k: 'bomb', x: x1, y: y1, t0, d: 520 });
-      hit = t0 + 520;
-    } else if (fx === 'torpedo') {
-      // a small dark torpedo running under the surface to the target
-      const dur = 620;
-      this.list.push({ k: 'torpedo', x0, y0, x1, y1, t0, d: dur });
-      hit = t0 + dur;
-    } else {
-      const arc = fx === 'arc';
-      const dur = arc ? 480 : 200;
-      this.list.push({ k: 'shot', x0, y0, x1, y1, arc, color: this.colorsOf(a.owner).color, t0, d: dur });
-      hit = t0 + dur;
-    }
+    // what the attack looks like is chosen by the weapon (src/render/attack-fx.js); a melee blow also sends the attacker lunging
+    const spec = attackSpec(fx);
+    this.list.push({ k: 'fx', fx: spec.name, x0, y0, x1, y1, color: this.colorsOf(a.owner).color, t0, d: spec.d });
+    if (spec.lunge) this.list.push({ k: 'lunge', id: a.id, dx: d.x - a.x, dy: d.y - a.y, t0, d: 360 });
+    const hit = t0 + spec.hit;
     const before = (u, lost) => Math.round((u.hp + lost) * 10) / 10;
     // the target shows its old HP until the blow lands; the attacker of a first blow shows its old HP until the counter (if any) lands too
     if (!destroyed) this.holds.set(d.id, { hp: before(d, damage), until: hit });
     if (!ev.counter) this.holds.set(a.id, { hp: a.hp, until: hit });
     this.list.push(
-      { k: 'burst', x: x1, y: y1, t0: hit, d: destroyed ? 700 : 420, big: destroyed },
+      { k: 'burst', x: x1, y: y1, t0: hit, d: destroyed ? 700 : 420, big: destroyed, style: spec.impact },
       { k: 'txt', x: x1, y: y1, s: '-' + damage, t0: hit, d: 900 },
       { k: 'hit', id: d.id, t0: hit, d: 300 },
     );
@@ -192,17 +179,8 @@ export class Effects {
       if ((f.k === 'txt' || f.k === 'burst' || f.k === 'cap') && !this.shownAt(Math.floor(f.x), Math.floor(f.y))) continue;   // in the fog: no numbers, no blast
       if (f.k === 'die' && !this.shownAt(f.unit.x, f.unit.y)) continue;
       const p = Math.max(0, (now - f.t0) / f.d);
-      if (f.k === 'shot') {
-        const x = (f.x0 + (f.x1 - f.x0) * p) * S;
-        const y = (f.y0 + (f.y1 - f.y0) * p) * S - (f.arc ? Math.sin(Math.PI * p) * S * 1.1 : 0);
-        if (p < .3) { g.fillStyle = 'rgba(255,240,170,' + (1 - p / .3) + ')'; g.beginPath(); g.arc(f.x0 * S, f.y0 * S, S * .18 * (1 - p / .3), 0, 7); g.fill(); }
-        g.fillStyle = '#ffe45c'; g.beginPath(); g.arc(x, y, S * .09, 0, 7); g.fill();
-        g.fillStyle = f.color; g.beginPath(); g.arc(x, y, S * .05, 0, 7); g.fill();
-      } else if (f.k === 'torpedo') {
-        const x = (f.x0 + (f.x1 - f.x0) * p) * S, y = (f.y0 + (f.y1 - f.y0) * p) * S;
-        const a = Math.atan2(f.y1 - f.y0, f.x1 - f.x0);
-        g.save(); g.translate(x, y); g.rotate(a); g.lineCap = 'round';
-        g.fillStyle = '#1d222b'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .025, 0, 0, 7); g.fill(); g.restore();
+      if (f.k === 'fx') {
+        drawAttack(g, f, p, S, now);
       } else if (f.k === 'ping') {
         g.save(); g.globalAlpha = 1 - p; g.strokeStyle = '#ff5a4d'; g.lineWidth = 3;
         for (let i = 0; i < 2; i++) { const q = Math.min(1, p * 1.4 - i * .25); if (q > 0) { g.beginPath(); g.arc(f.x * S, f.y * S, S * (.15 + .55 * q), 0, 7); g.stroke(); } }
@@ -213,19 +191,8 @@ export class Effects {
         g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, r, r * .45, 0, 0, 7); g.stroke();
         g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, r * .6, r * .27, 0, 0, 7); g.stroke();
         g.restore();
-      } else if (f.k === 'bomb') {
-        // a growing shadow on the ground and a bomb accelerating down onto it
-        const by = f.y * S - (1 - p * p) * S * 1.1;
-        g.fillStyle = 'rgba(0,0,0,' + (.1 + .25 * p) + ')'; g.beginPath(); g.ellipse(f.x * S, f.y * S + S * .1, S * (.1 + .22 * p), S * (.05 + .1 * p), 0, 0, 7); g.fill();
-        g.save(); g.translate(f.x * S, by); g.fillStyle = '#2b2f36'; g.beginPath(); g.ellipse(0, 0, S * .07, S * .12, 0, 0, 7); g.fill();
-        g.fillStyle = '#ffe45c'; g.fillRect(-S * .05, -S * .16, S * .1, S * .04); g.restore();
       } else if (f.k === 'burst') {
-        const r = S * (f.big ? .75 : .45) * (.25 + .75 * p);
-        g.save(); g.translate(f.x * S, f.y * S); g.globalAlpha = 1 - p;
-        g.fillStyle = f.c || '#ff9a2e'; g.beginPath(); g.arc(0, 0, r * .7, 0, 7); g.fill();
-        g.strokeStyle = '#fff3b0'; g.lineWidth = 3;
-        for (let i = 0; i < 8; i++) { const a = i * Math.PI / 4 + p; g.beginPath(); g.moveTo(Math.cos(a) * r * .6, Math.sin(a) * r * .6); g.lineTo(Math.cos(a) * r * 1.25, Math.sin(a) * r * 1.25); g.stroke(); }
-        g.restore();
+        drawImpact(g, f, p, S);
       } else if (f.k === 'txt') {
         // outline + digits are drawn opaque and faded as one image; per-shape alpha lets the black outline show through the fill
         const y = f.y * S - S * .3 - p * S * .5, rx = S * 1.1, ry = S * .4;

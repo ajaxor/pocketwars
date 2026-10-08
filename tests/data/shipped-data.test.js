@@ -12,7 +12,7 @@ import { Game } from '../../src/engine/game.js';
 import { canTarget } from '../../src/engine/combat.js';
 
 const registry = await loadRegistry(readData);
-const ATTACK_FX = ['lunge', 'shot', 'arc', 'drop', 'torpedo'];
+import { ATTACK_FX_NAMES as ATTACK_FX } from '../../src/render/attack-fx.js';
 
 test('shipped data passes validation', async () => {
   const raw = {};
@@ -184,4 +184,8 @@ test('transports carry each leader\'s basic infantry, and the tuning of the stea
   assert.ok(registry.unit('dreadnought').cost > 26000, 'two attacks a turn cost more');
   assert.deepEqual(registry.unitIds.filter((id) => registry.unit(id).tags?.includes('helicopter')).sort(), ['copter', 'stealth_copter', 'transport_copter']);
   assert.deepEqual(registry.unit('supply_truck').attributes.supply.fuelTags, ['helicopter']);
+});
+
+test('every weapon names an attack animation of its own, and a unit uses only known looks', () => {
+  for (const [id, w] of Object.entries(registry.weapons)) assert.ok(ATTACK_FX.includes(w.fx), `weapon ${id}: attack animation "${w.fx}"`);
 });

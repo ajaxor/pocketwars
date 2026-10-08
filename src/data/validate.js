@@ -3,6 +3,7 @@
 
 import { UNIT_ATTRIBUTES, TERRAIN_ATTRIBUTES, checkAttributes } from '../engine/attributes.js';
 import { ENGINES } from '../ai/engines.js';
+import { ATTACK_FX_NAMES } from '../render/attack-fx.js';
 import { validateStrategies } from '../ai/strategist/index.js';
 
 export class DataError extends Error {
@@ -118,6 +119,7 @@ export function validateWeapons(weapons, rules, problems) {
       }
     }
     if (w.fx !== undefined && !isStr(w.fx)) problems.push(`weapon "${id}": fx (the attack animation, overriding the unit's) must be a name`);
+    else if (w.fx !== undefined && !ATTACK_FX_NAMES.includes(w.fx)) problems.push(`weapon "${id}": unknown attack animation "${w.fx}" (known: ${ATTACK_FX_NAMES.join(', ')})`);
     if (w.ammo !== undefined && !(Number.isInteger(w.ammo) && w.ammo >= 1)) problems.push(`weapon "${id}": ammo (rounds used per shot) must be a positive whole number`);
     if (w.fromTerrain !== undefined && (!Array.isArray(w.fromTerrain) || !w.fromTerrain.length || w.fromTerrain.some((t) => !isStr(t)))) problems.push(`weapon "${id}": fromTerrain (the terrain it can be fired from) must be a non-empty list of terrain ids`);
     if (w.onlyTags !== undefined && (!Array.isArray(w.onlyTags) || !w.onlyTags.length || w.onlyTags.some((t) => !isStr(t)))) problems.push(`weapon "${id}": onlyTags (the unit tags it may hit) must be a non-empty list of names`);
