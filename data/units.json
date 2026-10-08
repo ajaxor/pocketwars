@@ -581,13 +581,13 @@
   "hover_tank": {
     "name": "Hover Tank",
     "category": "vehicle",
-    "cost": 8000,
+    "cost": 7000,
     "move": 4,
     "moveClass": "hover",
     "layer": "ground",
     "weapons": ["tank_cannon"],
-    "toughness": 1,
-    "armor": 0.7,
+    "toughness": 1.2,
+    "armor": 0.85,
     "attributes": {"ignoresTerrainDefense": true, "ignoresMines": true},
     "exclusive": true,
     "render": {"sprite": "hover_tank", "attackFx": "shot"}
