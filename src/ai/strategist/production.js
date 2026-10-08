@@ -39,14 +39,29 @@ function enemyMix(sit) {
   return mix;
 }
 
+/**
+ * Can the unit take to the water and wade ashore but no further than a tile or so (water costs 1, every dry tile costs its whole move)?
+ * Its landmass is then the shoreline of the sea, not the whole map.
+ */
+export function shoreBound(game, def) {
+  const costs = game.registry.terrainDef('plain').moveCost;
+  const sea = game.registry.terrainDef('sea').moveCost;
+  const land = costs[def.moveClass];
+  return sea[def.moveClass] != null && land != null && land >= def.move && def.moveClass !== 'naval';
+}
+
 /** The worth of building `type` at (x, y) for the player, in thousands (before the price is taken into account). */
 export function typeWorth(sit, type, x, y, ctx) {
   const { game, params, player } = sit;
   const def = game.registry.unit(type);
   const r = roles(def);
-  const mc = def.moveClass;
+  // a unit that can wade ashore but crawls there (the diver: a tile of land a turn) is only worth what lies on or next to the water
+  const shore = shoreBound(game, def);
+  const mc = shore ? 'naval' : def.moveClass;
   const ids = ctx.areas.get(mc) ?? ctx.areas.set(mc, areasAround(game, mc, x, y)).get(mc);
-  const { max: range } = reachOf(game.registry, def);
+  const reach = reachOf(game.registry, def);
+  const range = reach.max;
+  const stretch = shore ? 1 : 0;   // the one tile it can wade
   // a flier on a tank of fuel can only fight what lies within its round trip of a place it refuels, once the enemy has come a couple of
   // turns closer: worth nothing against the rest
   const trip = roundTrip(game, def);
@@ -60,7 +75,7 @@ export function typeWorth(sit, type, x, y, ctx) {
       const ed = game.registry.unit(e.type);
       total += e.weight;
       const near = !spots.length || spots.some(([hx, hy]) => distance(e.x, e.y, hx, hy) <= trip + range + (ed.move ?? 0) * 2);
-      if (range && near && canGet(game, mc, ids, e.x, e.y, range)) dealt += e.weight * Math.min(1, matchup(game, type, e.type) / sit.maxHp) * ed.cost;
+      if (range && near && canGet(game, mc, ids, e.x, e.y, range + stretch)) dealt += e.weight * Math.min(1, matchup(game, type, e.type) / sit.maxHp) * ed.cost;
       const er = reachOf(game.registry, ed).max;
       const theirs = areasAround(game, ed.moveClass, e.x, e.y);
       if (er && canGet(game, ed.moveClass, theirs, x, y, er + (ed.move ?? 0) * 2)) taken += e.weight * Math.min(1, matchup(game, e.type, type) / sit.maxHp) * costFor(game, player, type);
@@ -69,7 +84,7 @@ export function typeWorth(sit, type, x, y, ctx) {
   }
   let role = 0;
   if (r.capture) {
-    const open = sit.properties.filter((p) => p.owner !== player && canGet(game, mc, ids, p.x, p.y, 0)).length;
+    const open = sit.properties.filter((p) => p.owner !== player && canGet(game, mc, ids, p.x, p.y, stretch)).length;
     const have = sit.mine.filter((u) => roles(unitDef(game, u)).capture && [...areasAround(game, unitDef(game, u).moveClass, u.x, u.y)].some((a) => ids.has(a))).length;
     role += params.captureNeed * Math.max(0, Math.min(4, open - have * 1.5));
   }
@@ -94,7 +109,7 @@ export function typeWorth(sit, type, x, y, ctx) {
     const same = sit.mine.filter((u) => { const o = roles(unitDef(game, u)); return (r.healer && o.healer) || (r.supplier && o.supplier) || (r.radar && o.radar); }).length;
     role += params.support * Math.min(8, served) / 4 / (1 + same) ** 2;   // one or two look after an army
   }
-  if (r.layer && sit.army.some((e) => unitDef(game, e).moveClass === mc)) role += params.support;
+  if (r.layer && sit.army.some((e) => unitDef(game, e).moveClass === def.moveClass)) role += params.support;
   const owned = sit.mine.filter((u) => u.type === type).length;
   const taste = buildTaste(sit.strategy, def, r);
   return (Math.max(0, combat) + role) * taste * params.sameType ** owned;
