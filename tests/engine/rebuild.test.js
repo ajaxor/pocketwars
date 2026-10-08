@@ -86,3 +86,16 @@ test('soft ground slows wheels and bikes but not feet or tracks; cliffs stop eve
   for (const c of ['foot', 'wheels', 'tread', 'bike', 'naval', 'amphibious', 'hover']) assert.equal(cliff.moveCost[c], null, c);
   assert.equal(cliff.moveCost.air, 1);
 });
+
+test('a ford can be waded by feet and tracks (slowly) but not by wheels, bikes or ships; ice carries every ground unit and never breaks', () => {
+  const ford = registry.terrain.ford;
+  assert.equal(ford.moveCost.foot, 2);
+  assert.equal(ford.moveCost.tread, 2);
+  for (const c of ['wheels', 'bike', 'naval']) assert.equal(ford.moveCost[c], null, c);
+  assert.equal(ford.moveCost.amphibious, 1);
+  const ice = registry.terrain.ice;
+  for (const c of ['foot', 'wheels', 'tread', 'bike']) assert.ok(ice.moveCost[c] != null, c);
+  assert.equal(ice.moveCost.naval, null);
+  assert.ok(ice.moveCost.wheels > ice.moveCost.foot, 'wheels slip');
+  assert.equal(Object.keys(ice.attributes).length, 0, 'no breaking mechanic: ice is plain terrain');
+});

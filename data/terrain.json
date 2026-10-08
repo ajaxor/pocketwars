@@ -149,5 +149,19 @@
     "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 2, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": { "ruin": { "becomes": "factory", "cost": 7000 }, "blocksLineOfSight": 1 },
     "render": { "decor": "ruin_factory", "mini": "#6c6761" }
+  },
+  "ford": {
+    "name": "Ford",
+    "defense": 0,
+    "moveCost": { "foot": 2, "wheels": null, "tread": 2, "air": 1, "naval": null, "amphibious": 1, "bike": null, "diver": 1, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {},
+    "render": { "base": "#76bde6", "decor": "ford", "mini": "#76bde6" }
+  },
+  "ice": {
+    "name": "Ice",
+    "defense": 0,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": null, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {},
+    "render": { "base": "#bfdcf0", "decor": "ice", "mini": "#bfdcf0" }
   }
 }

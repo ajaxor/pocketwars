@@ -3,7 +3,7 @@ import { fetchReader, loadRegistry } from '../src/data/loader.js';
 import { drawTerrainLayer } from '../src/render/terrain-layer.js';
 
 /** Letters -> terrain ids for the sampler below. */
-export const KEY = { '.': 'plain', f: 'forest', m: 'mountain', r: 'rough', '=': 'road', '~': 'sea', s: 'shoals', c: 'city', h: 'hq', F: 'factory', k: 'cliff', d: 'snow_drift', u: 'dune', M: 'mud', x: 'ruin_city', X: 'ruin_factory' };
+export const KEY = { '.': 'plain', f: 'forest', m: 'mountain', r: 'rough', '=': 'road', '~': 'sea', s: 'shoals', c: 'city', h: 'hq', F: 'factory', k: 'cliff', d: 'snow_drift', u: 'dune', M: 'mud', w: 'ford', i: 'ice', x: 'ruin_city', X: 'ruin_factory' };
 export const SAMPLER = [
   '~~~ss..ffff..mmm.',
   '~~s..=====..mmmm.',
@@ -13,6 +13,7 @@ export const SAMPLER = [
   '.rr..=...xX.ddu..',
   'ffff.=.......uuMM',
   'ffff.======..MM..',
+  '~~wwwiiii........',
 ];
 
 /** Draw one tileset's sampler onto `canvas` at `S` pixels a tile. */

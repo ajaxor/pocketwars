@@ -22,6 +22,10 @@ opens a gallery of every tileset.
 ## New terrain (the same in every tileset)
 
 - **Soft ground** (`snow_drift`, `dune`, `mud`): wheels cost 2, bikes 3, everything else 1. Drifts and dunes draw on whatever ground is under them.
+- **Ford** (`ford`): shallow water in a river or sea. Feet and tracks wade it (cost 2), amphibious and hover units and aircraft cross freely, wheels, bikes and ships cannot.
+  It has its own pale-blue colour with stepping stones, so it reads as a crossing.
+- **Ice** (`ice`): a frozen surface (`Ice`; lakes in the tundra). Every ground unit can cross it (wheels and bikes slip: 2 and 3), ships cannot. It never breaks; it is
+  plain terrain for now, so later mechanics can build on it. Whiteout has an ice crossing in the lake, Mudslide a ford in the river.
 - **Cliff** (`cliff`): impassable to everything on the ground, at sea and on the hover; aircraft fly over (cost 1). It blocks sight and direct fire (height 2). Cliff tiles
   link up like walls: the top of a ledge with a sheer face on every side that has no cliff to its south.
 - **Ruins** (`ruin_city`, `ruin_factory`): no income, no defence of their own. A soldier (any unit with `capture`) standing on one gets a **Rebuild** order: it costs

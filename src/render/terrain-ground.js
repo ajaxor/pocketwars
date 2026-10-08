@@ -93,4 +93,23 @@ export const GROUND_DECOR = {
     }
     for (let i = 0; i < 2; i++) { const [cx, cy] = [px + (.12 + .76 * R(20 + i)) * S, py + (.8 + .12 * R(24 + i)) * S]; for (const d of [-1, 0, 1]) line(g, [[cx, cy], [cx + d * S * .03, cy - S * (.1 + .03 * R(28 + i + d))]], st.reed, S * .016); }
   },
+
+  // ---- crossings ----
+  // Ford: shallow water with a line of stepping stones and ripples; it has its own pale-blue colour, so it reads as a crossing in the sea or a river.
+  ford(g, px, py, S, at) {
+    const { x, y, now = 0 } = at, st = styled({ stone: '#b9b2a0', stoneLit: '#e0dac8', ripple: 'rgba(255,255,255,.55)' }, at), R = (i) => rnd(x, y, 720 + i), P = mapper(px, py, S);
+    for (let i = 0; i < 2; i++) { const cx = .2 + .6 * R(i), cy = .18 + .64 * R(i + 4), a = Math.max(0, Math.sin(now / 900 + R(i + 8) * 6.28)); line(g, [P(cx - .09, cy), P(cx, cy - .03), P(cx + .09, cy)], `rgba(255,255,255,${(.25 + a * .4).toFixed(2)})`, S * .02); }
+    for (let i = 0; i < 4; i++) {   // stepping stones across the tile
+      const cx = .14 + i * .24 + (R(10 + i) - .5) * .05, cy = .5 + (R(14 + i) - .5) * .14, r = S * (.055 + .02 * R(18 + i));
+      ell(g, ...P(cx, cy + .03), r * 1.3, r * .5, 'rgba(0,50,100,.22)'); ell(g, ...P(cx, cy), r * 1.15, r * .8, st.stone); ell(g, ...P(cx - .01, cy - .015), r * .7, r * .45, st.stoneLit);
+    }
+  },
+  // Ice: a frozen surface with pale cracks and a glint; it never breaks.
+  ice(g, px, py, S, at) {
+    const { x, y } = at, st = styled({ crack: 'rgba(90,140,185,.5)', sheen: 'rgba(255,255,255,.55)' }, at), R = (i) => rnd(x, y, 760 + i), P = mapper(px, py, S);
+    for (let i = 0; i < 2; i++) { const sx = .1 + .7 * R(i), sy = .15 + .6 * R(i + 3); line(g, [P(sx, sy), P(sx + .12 + R(i + 6) * .1, sy + .1), P(sx + .08 + R(i + 9) * .15, sy + .24 + R(i + 12) * .1)], st.crack, S * .018); }
+    line(g, [P(.15 + R(20) * .2, .22), P(.3 + R(20) * .2, .12)], st.sheen, S * .04);
+    line(g, [P(.55 + R(21) * .2, .8), P(.7 + R(21) * .2, .7)], st.sheen, S * .03);
+    for (let i = 0; i < 3; i++) dot(g, ...P(.1 + .8 * R(30 + i), .1 + .8 * R(34 + i)), Math.max(1, S * .014), 'rgba(255,255,255,.9)');
+  },
 };
