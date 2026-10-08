@@ -26,7 +26,7 @@ test('it loads the stylesheet before showing the title screen, then the game, th
   assert.equal(doc.getElementById('boot'), null, 'the splash is gone');
   assert.equal(doc.body.classList.contains('loading'), false);
   assert.equal(title.ready, true);
-  assert.equal(title.go.textContent, 'Quick Start');
+  assert.equal(title.status.textContent, 'Ready');
   assert.equal(title.ver.textContent, 'build abc1234 - 2026-09-30');
 });
 
@@ -50,20 +50,13 @@ test('the styles are awaited: nothing is shown before they load', async () => {
   assert.equal(doc.body.children.some((c) => c.className === 'title'), true);
 });
 
-test('Start removes the title screen once the game has loaded', async () => {
-  const { doc, opts } = setup();
-  const title = await launch(opts);
-  title.go.click();
-  assert.equal(doc.body.children.some((c) => c.className === 'title'), false);
-});
-
 test('a failed game load shows Retry, and Retry reloads the page', async () => {
   const { log, opts } = setup({ loadGame: async () => { throw new Error('boom\nstack line'); } });
   const quiet = console.error; console.error = () => {};
   const title = await launch(opts).finally(() => { console.error = quiet; });
-  assert.equal(title.go.textContent, 'Retry');
+  assert.equal(title.retry.hidden, false);
   assert.match(title.status.textContent, /boom$/);
-  title.go.click();
+  title.retry.click();
   assert.deepEqual(log.filter((l) => l === 'reload'), ['reload']);
 });
 
@@ -87,23 +80,34 @@ test('coming back to the tab offers an update only when a newer build exists', a
   assert.ok(!log.some((l) => l.startsWith('goTo')));
 });
 
-test('no update check while the tab is hidden, after Start, or on a dev build', async () => {
+test('no update check while the tab is hidden or on a dev build', async () => {
   const asked = [];
   const getVersion = async () => { asked.push(1); return { hash: 'zzz' }; };
 
   const a = setup({ getVersion }); const ta = await launch(a.opts); a.doc.hidden = true; await a.doc.fire('visibilitychange');
-  const b = setup({ getVersion }); const tb = await launch(b.opts); tb.go.click(); await b.doc.fire('visibilitychange');
   const c = setup({ getVersion, hash: 'dev', built: undefined }); const tc = await launch(c.opts); await c.doc.fire('visibilitychange');
   assert.deepEqual(asked, []);
   assert.equal(tc.ver.textContent, 'build dev');
-  assert.ok(ta && tb);
+  assert.ok(ta);
 });
 
-test('Quick Start plays a random map', async () => {
-  const played = [];
-  const maps = [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
-  const { opts } = setup({ random: () => 0.7, loadGame: async () => ({ maps, play: (m) => played.push(m.id), registry: {} }) });
+test('there is no Quick Start: the menu is Campaign, Skirmish and the map editor', async () => {
+  const { opts } = setup({ loadGame: async () => ({ maps: [{ id: 'a' }], play() {}, registry: {}, campaign: {} }) });
   const title = await launch(opts);
-  title.go.click();
-  assert.deepEqual(played, ['c']);
+  assert.equal(title.root.find((e) => /quick/i.test(e.textContent)).length, 0);
+  assert.deepEqual([title.campaign, title.skirmish, title.editor].map((b) => b.disabled), [false, false, false]);
+});
+
+test('the title screen gets a battlefield once the game has loaded, and a new one when it comes back', async () => {
+  const shown = [];
+  const registry = { unitIds: [] };
+  const { opts } = setup({ loadGame: async ({ onQuit } = {}) => ({ maps: [{ id: 'a' }], play() {}, registry }) });
+  const title = await launch(opts);
+  assert.ok(title.backdrop, 'the first title screen has one');
+  assert.equal(title.backdrop.registry, registry);
+  const none = setup({ loadGame: async () => { throw new Error('no'); } });
+  const quiet = console.error; console.error = () => {};
+  const failed = await launch(none.opts).finally(() => { console.error = quiet; });
+  assert.equal(failed.backdrop, null, 'nothing to draw it with');
+  assert.equal(shown.length, 0);
 });

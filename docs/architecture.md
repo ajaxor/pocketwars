@@ -15,10 +15,13 @@ src/ui/          controller (taps -> orders), hud (the windows), kit (buttons/wi
                  presenter (events -> animations), session (frame loop, AI pacing)
 src/fonts/       the self-hosted typeface (Fredoka, OFL); declared in style.css, named for canvas text in src/render/font.js
 src/main.js      boot(): load data + map, create Game, start Session
-src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Quick Start (a random map)
+src/launcher.js  runs after the shell: loads style.css, shows the title screen, loads the game behind it, waits for Campaign, Skirmish or the map editor and gives the menu its moving battlefield
 src/editor/      the map editor: model.js (the map being edited, undo, symmetry), palette.js, storage.js (My maps, the draft),
                  editor-screen.js (the page; draws with the game's Renderer)
-src/ui/title-screen.js  the title screen view (logo, progress, Quick Start, gallery links, update button); styles are `.title*` in style.css
+src/ui/title-screen.js  the title screen view (logo, progress, one column of equally wide buttons, Retry, update button); styles are `.title*` in style.css
+src/ui/skirmish-screen.js  the skirmish page, in three steps (Map grid, Teams, Options) with Back / Next / Start battle; styles are `.sk*`
+src/render/menu-backdrop.js  the title screen's background: a random battlefield (generateField, wraps on a torus so it tiles), painted with the game's terrain and unit art
+                 and scrolled diagonally on a canvas (MenuBackdrop). Paused while a page covers the menu; still under reduced motion
 index.html       tiny shell: the game's DOM plus a few lines that find the build folder and hand over to src/launcher.js
 tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
 tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)

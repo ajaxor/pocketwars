@@ -1,7 +1,7 @@
 // The launcher runs once the shell (index.html) has picked the build folder. It loads the stylesheet, shows the title screen
-// and loads the game behind it (src/main.js), then waits for Start (the default mission, already set up behind the title screen)
-// or Skirmish (the setup page, which starts a fresh game with the map and teams that were chosen). It also watches for a newer
-// deploy while the title screen is up. The shell stays tiny and stable so a stale cached copy of it cannot hide changes to any of this.
+// and loads the game behind it (src/main.js), then waits for Campaign, Skirmish (the setup pages, which start a fresh game with the
+// map and teams that were chosen) or the map editor. Once the game is loaded the menu gets its scrolling battlefield. It also watches
+// for a newer deploy while the title screen is up. The shell stays tiny and stable so a stale cached copy of it cannot hide changes to any of this.
 
 import { applySkirmish } from './data/skirmish.js';
 import { SkirmishScreen } from './ui/skirmish-screen.js';
@@ -56,18 +56,16 @@ export async function launch({
     started = false;
     const t = title = new TitleScreen(doc, { links: GALLERIES });
     t.setVersion(version);
-    t.onStart = () => {
-      if (!t.ready) return reload();
-      if (canSkirmish()) game.play(game.maps[Math.floor(random() * game.maps.length)]);   // Quick Start: any map, its own rules
-      started = true; t.remove();
-    };
+    t.onRetry = () => reload();
     t.onSkirmish = () => openSkirmish(t);
     t.onCampaign = () => openCampaign(t);
     t.onEditor = () => openEditor(t);
-    if (ready) { t.setReady(); t.setSkirmish(canSkirmish()); t.setCampaign(canCampaign()); t.setEditor(canSkirmish()); } else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
+    if (ready) { t.setReady(); t.setSkirmish(canSkirmish()); t.setCampaign(canCampaign()); t.setEditor(canSkirmish()); backdrop(t); } else if (failed) t.setFailed(failed); else t.setProgress(60, 'Loading game...');
     return t;
   };
   const canSkirmish = () => !!(game && game.maps && game.maps.length && game.play);
+  // the battlefield behind the menu: a new random one each time the title screen appears, once the game's data is there to draw it with
+  const backdrop = (t) => { if (game?.registry?.unitIds) t.showBackdrop(game.registry, { random, raf, caf }); };
 
   // The skirmish page sits on top of the title screen; Back removes it, Start plays the chosen setup and removes both. Leaders come
   // from the campaign (names and portraits); the one a human team starts with is the hero of the home nation.
@@ -76,10 +74,11 @@ export async function launch({
     if (!t.ready || !canSkirmish() || skirmish) return;
     const leaders = game.campaign?.leaders || [];
     if (leaders.length) portraitColors();
+    t.coverBackdrop(true);
     skirmish = new SkirmishScreen(doc, {
       registry: game.registry, maps: [...game.maps, ...customMaps(game.registry)], selectedId: game.defaultMapId,   // with the maps saved in the editor
       leaders, speech: game.campaign?.speech || {},
-      onBack: () => { skirmish.remove(); skirmish = null; },
+      onBack: () => { skirmish.remove(); skirmish = null; t.coverBackdrop(false); },
       onStart: (map, settings) => {
         skirmish.remove(); skirmish = null;
         game.play(applySkirmish(map, settings, game.registry, random));
@@ -93,9 +92,10 @@ export async function launch({
   let editor = null;
   const openEditor = (t) => {
     if (!t.ready || !canSkirmish() || editor) return;
+    t.coverBackdrop(true);
     editor = new EditorScreen(doc, {
       registry: game.registry, maps: game.maps,
-      onBack: () => { editor.remove(); editor = null; },
+      onBack: () => { editor.remove(); editor = null; t.coverBackdrop(false); },
       onPlay: (map) => { editor.remove(); editor = null; game.play(map); started = true; t.remove(); },
     });
     doc.body.append(editor.root);
@@ -108,6 +108,7 @@ export async function launch({
   const openCampaign = (t) => {
     if (!t.ready || !canCampaign() || campaignScreen) return;
     portraitColors();
+    t.coverBackdrop(true);
     const playIntro = () => {
       const intro = campaignScreen = new IntroScreen(doc, { campaign: game.campaign, colors: colorsOf, raf, caf, onDone: () => { intro.remove(); showMap(); } });
       doc.body.append(intro.root); intro.start();
@@ -115,7 +116,7 @@ export async function launch({
     const showMap = () => {
       const map = campaignScreen = new WorldMapScreen(doc, {
         campaign: game.campaign, colors: colorsOf, raf, caf,
-        onBack: () => { map.remove(); campaignScreen = null; },
+        onBack: () => { map.remove(); campaignScreen = null; t.coverBackdrop(false); },
         onReplay: () => { map.remove(); playIntro(); },
       });
       doc.body.append(map.root); map.start();
@@ -138,6 +139,7 @@ export async function launch({
     title.setSkirmish(canSkirmish());
     title.setCampaign(canCampaign());
     title.setEditor(canSkirmish());
+    backdrop(title);
   } catch (e) {
     console.error(e);
     failed = String(e.message || e).split('\n')[0].slice(0, 120);

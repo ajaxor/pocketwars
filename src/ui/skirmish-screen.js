@@ -1,10 +1,14 @@
-// The skirmish page: pick a map, then set who plays each team, in which colour and with which leader, and the starting funds. It is a
-// full-screen overlay (like the title screen) built from the UI kit; the rules for what is allowed live in src/data/skirmish.js.
+// The skirmish page: three steps, one after the other. 1 Map (a scrollable grid), 2 Teams (who plays each one, in which colour and with
+// which leader) and 3 Options (starting funds, fog, starting units, dialogue). Back and Next move between them (Back on the first step
+// leaves the page); the last step has Start battle instead of Next. It is a full-screen overlay (like the title screen) built from the UI
+// kit; the rules for what is allowed live in src/data/skirmish.js. On a wide window the picked map stays in a panel beside the steps.
 //
 //   new SkirmishScreen(doc, { registry, maps, selectedId, leaders, speech, onStart(map, settings), onBack() })
 //   screen.root         the element to add to the page
 //   screen.map          the map that is picked
 //   screen.settings     the current choices (see skirmish.js)
+//   screen.step         the step shown: 0 Map, 1 Teams, 2 Options
+//   screen.back/next/go the footer buttons (Start battle, `go`, only shows on the last step)
 //   screen.roster       the leaders that can be picked, each { id, name, faction?, tag?, ...portrait traits }
 //   screen.remove()     take it off the page
 //
@@ -14,13 +18,17 @@
 // keeps the code simple: there is no other state to fall out of step.
 
 import { drawPortrait } from '../render/portrait-art.js';
-import { drawMinimap, miniTile } from '../render/minimap.js';
+import { MINI_BOX, drawMinimap, miniTile } from '../render/minimap.js';
 import { FUNDS_CHOICES, defaultSkirmish, hasJammers, skirmishProblems, swapFaction } from '../data/skirmish.js';
 import { button, h, toggle } from './kit.js';
 
 const fmtFunds = (n) => (n === null ? 'Map default' : Number(n).toLocaleString('en-US'));
 const titleCase = (id) => id.charAt(0).toUpperCase() + id.slice(1);
 const surname = (name) => name.split(' ').slice(-1)[0];
+/** The steps, in order: the name on the step bar and the heading above the page. */
+const STEPS = [['Map', 'Choose a map'], ['Teams', 'Set up the teams'], ['Options', 'Choose the rules']];
+/** A window this wide keeps the picked map beside the steps, so its preview can be bigger. */
+const WIDE = 880;
 
 export class SkirmishScreen {
   /**
@@ -41,41 +49,45 @@ export class SkirmishScreen {
     this.settings = { ...this.#defaults(this.map), fog: this.#fogFor(this.map) };
     this.strips = [];   // the leader strip of each team, kept between redraws so a strip you scrolled stays where it was
 
+    this.step = 0;
     const head = h(doc, 'header', 'sk-head');
-    this.back = button(doc, { label: 'Back', variant: 'ghost', size: 'sm', onClick: () => this.onBack() });
-    head.append(this.back, h(doc, 'h2', 'sk-title', 'Skirmish'));
+    this.bar = h(doc, 'ol', 'sk-steps');
+    this.pips = STEPS.map(([name], i) => { const li = h(doc, 'li', 'sk-step'); li.append(h(doc, 'span', 'sk-step-n', String(i + 1)), h(doc, 'span', 'sk-step-name', name)); this.bar.append(li); return li; });
+    head.append(h(doc, 'h2', 'sk-title', 'Skirmish'), this.bar);
 
     this.el = {
       maps: h(doc, 'div', 'sk-maps'),
-      preview: h(doc, 'div', 'sk-preview'),
+      preview: h(doc, 'aside', 'sk-preview'),
       teams: h(doc, 'div', 'sk-teams'),
       rules: h(doc, 'div', 'sk-rules'),
     };
-    const body = h(doc, 'div', 'sk-body');
-    body.append(
-      this.#section('Map', this.el.maps, this.el.preview),
-      this.#section('Teams', this.el.teams),
-      this.#section('Rules', this.el.rules),
-    );
+    this.pages = [this.el.maps, this.el.teams, this.el.rules].map((content, i) => {
+      const page = h(doc, 'section', `sk-page sk-page--${['map', 'teams', 'rules'][i]}`);
+      page.append(h(doc, 'h3', 'sk-sec-title', STEPS[i][1]), content);
+      return page;
+    });
+    const main = h(doc, 'div', 'sk-main');
+    const pages = h(doc, 'div', 'sk-pages');
+    pages.append(...this.pages);
+    main.append(this.el.preview, pages);
 
     const foot = h(doc, 'footer', 'sk-foot');
     this.note = h(doc, 'div', 'sk-note');
+    const nav = h(doc, 'div', 'sk-nav');
+    this.back = button(doc, { label: 'Back', variant: 'ghost', size: 'lg', onClick: () => this.prev() });
+    this.next = button(doc, { label: 'Next', variant: 'primary', size: 'lg', onClick: () => this.advance() });
     this.go = button(doc, { label: 'Start battle', variant: 'primary', size: 'lg', onClick: () => this.#start() });
-    foot.append(this.note, this.go);
+    nav.append(this.back, this.next, this.go);
+    foot.append(this.note, nav);
 
     this.root = h(doc, 'div', 'sk');
-    this.root.append(head, body, foot);
+    this.root.append(head, main, foot);
     this.#renderMaps();
     this.#render();
+    (globalThis.requestAnimationFrame ?? globalThis.setTimeout)?.(() => this.#reveal());   // bring the picked map into view once the page is on screen
   }
 
   remove() { this.root.remove(); }
-
-  #section(title, ...kids) {
-    const s = h(this.doc, 'section', 'sk-sec');
-    s.append(h(this.doc, 'h3', 'sk-sec-title', title), ...kids);
-    return s;
-  }
 
   #defaults(map) { return this.#byColour(defaultSkirmish(map, this.roster.map((l) => l.id))); }
 
@@ -95,6 +107,19 @@ export class SkirmishScreen {
     this.quotes.clear();
     this.#render();
   }
+
+  /** Show a step (0 to 2). */
+  goTo(step) {
+    const next = Math.max(0, Math.min(STEPS.length - 1, step));
+    if (next === this.step) return;
+    this.step = next;
+    this.#render();
+    if (next === 0) this.#reveal();
+  }
+  /** Back: the step before, or off the page from the first one. */
+  prev() { if (this.step === 0) this.onBack(); else this.goTo(this.step - 1); }
+  /** Next: the step after (not past the last, and not while the teams have a problem). */
+  advance() { if (this.step === 1 && this.problems.length) return; this.goTo(this.step + 1); }
 
   setController(slot, controller) { this.settings.players[slot].controller = controller; this.#render(); }
   /** Give a team a colour (swapping with whoever had it); each team's leader follows its colour. */
@@ -122,7 +147,7 @@ export class SkirmishScreen {
   get problems() { return skirmishProblems(this.map, this.registry, this.settings); }
 
   #start() {
-    if (this.problems.length) return;
+    if (this.step !== STEPS.length - 1 || this.problems.length) return;
     this.onStart(this.map, structuredClone(this.settings));
   }
 
@@ -148,15 +173,17 @@ export class SkirmishScreen {
     }
   }
 
+  /** Scroll the map grid so the picked card is in view. */
+  #reveal() { this.cards.get(this.map.id)?.scrollIntoView?.({ block: 'nearest' }); }
+
   /** A canvas with `map` drawn on it, or null where there is no canvas (tests). */
-  #canvas(map, colorOf, cls) {
+  #canvas(map, colorOf, cls, box = MINI_BOX) {
     const c = this.doc.createElement('canvas');
     const g = c.getContext?.('2d');
     if (!g) return null;
-    const px = miniTile(map);
+    const px = miniTile(map, box);
     c.className = cls;
     c.width = map.width * px; c.height = map.height * px;
-    c.style.width = c.width + 'px'; c.style.height = c.height + 'px';
     drawMinimap(g, map, this.registry, colorOf, px);
     return c;
   }
@@ -233,11 +260,15 @@ export class SkirmishScreen {
   #render() {
     const { doc, registry, map, settings } = this;
     for (const [id, card] of this.cards) toggle(card, 'is-picked', id === map.id);
+    this.root.setAttribute('data-step', String(this.step));
+    this.pages.forEach((page, i) => { page.hidden = i !== this.step; });
+    this.pips.forEach((pip, i) => { toggle(pip, 'is-on', i === this.step); toggle(pip, 'is-done', i < this.step); if (i === this.step) pip.setAttribute('aria-current', 'step'); else pip.setAttribute('aria-current', 'false'); });
     const scrolled = this.strips.map((s) => s.scrollLeft || 0);   // replacing the rows detaches the strips, which forgets how far they were scrolled
 
     // the picked map, in the colours chosen below
     this.el.preview.replaceChildren();
-    const pic = this.#canvas(map, (o) => this.colorOf(o), 'sk-big');
+    const wide = (globalThis.innerWidth || 0) >= WIDE;
+    const pic = this.#canvas(map, (o) => this.colorOf(o), 'sk-big', wide ? { w: 320, h: 260 } : MINI_BOX);
     if (pic) this.el.preview.append(pic);
     const info = h(doc, 'div', 'sk-info');
     info.append(h(doc, 'div', 'sk-info-name', map.name), h(doc, 'div', 'sk-desc', map.description || 'No description.'));
@@ -292,8 +323,11 @@ export class SkirmishScreen {
       h(doc, 'span', 'sk-rule-note', settings.dialogue !== false ? 'The computer\'s leaders speak during the battle.' : 'Nobody speaks during the battle.'));
     this.el.rules.append(talk);
 
-    const problems = this.problems;
+    const problems = this.problems, last = this.step === STEPS.length - 1;
+    this.next.hidden = last;
+    this.go.hidden = !last;
+    this.next.disabled = this.step === 1 && problems.length > 0;
     this.go.disabled = problems.length > 0;
-    this.note.textContent = problems[0] || '';
+    this.note.textContent = this.step > 0 ? problems[0] || '' : '';
   }
 }

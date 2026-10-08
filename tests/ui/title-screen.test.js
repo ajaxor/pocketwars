@@ -6,16 +6,24 @@ import { TitleScreen } from '../../src/ui/title-screen.js';
 
 const make = (links) => { const doc = new FakeDoc(); const title = new TitleScreen(doc, { links }); return { doc, title }; };
 
-test('it mounts one overlay on the page, with Start disabled while loading', () => {
+test('it mounts one overlay on the page, with every button disabled while loading and no Quick Start', () => {
   const { doc, title } = make();
   assert.equal(doc.body.children.length, 1);
   assert.equal(doc.body.children[0], title.root);
-  assert.equal(title.go.textContent, 'Loading');
-  assert.equal(title.go.disabled, true);
+  assert.deepEqual([title.campaign, title.skirmish, title.editor].map((b) => b.disabled), [true, true, true]);
+  assert.equal(title.retry.hidden, true);
+  assert.equal(title.root.find((e) => e.tag === 'button' && /quick/i.test(e.textContent)).length, 0);
   assert.ok(title.root.find((e) => e.tag === 'h1' && e.children.map((c) => c.textContent).join(' ') === 'Pocket Wars').length === 1);
 });
 
-test('links become anchors under the Start button, in order', () => {
+test('the main buttons and the links share one menu column, so they are all as wide as the column lets them be', () => {
+  const { title } = make([{ label: 'Unit art', href: 'gallery/' }]);
+  const menu = title.root.find((e) => e.className === 'title-menu')[0];
+  assert.deepEqual(menu.children.map((c) => c.className.split(' ')[0] || c.tag), ['btn', 'btn', 'btn', 'title-links', 'btn']);
+  assert.equal(title.links.parent, menu);
+});
+
+test('links become anchors under the main buttons, in order', () => {
   const { title } = make([{ label: 'Unit art', href: 'gallery/' }]);
   const anchors = title.links.children;
   assert.deepEqual(anchors.map((a) => [a.tag, a.textContent, a.attrs.href]), [['a', 'Unit art', 'gallery/']]);
@@ -32,24 +40,26 @@ test('progress, version, ready and failed states', () => {
   assert.equal(title.ver.textContent, 'build abc1234');
 
   title.setReady();
-  assert.deepEqual([title.ready, title.go.disabled, title.go.textContent, title.fill.style.width, title.status.textContent], [true, false, 'Quick Start', '100%', 'Ready']);
+  assert.deepEqual([title.ready, title.retry.hidden, title.fill.style.width, title.status.textContent], [true, true, '100%', 'Ready']);
 
+  title.setCampaign(true); title.setSkirmish(true); title.setEditor(true);
   title.setFailed('offline');
-  assert.deepEqual([title.ready, title.go.disabled, title.go.textContent, title.fill.style.width], [false, false, 'Retry', '0%']);
+  assert.deepEqual([title.ready, title.retry.hidden, title.fill.style.width], [false, false, '0%']);
+  assert.deepEqual([title.campaign, title.skirmish, title.editor].map((b) => b.disabled), [true, true, true], 'a failed load turns the menu off');
   assert.match(title.status.textContent, /Could not load the game: offline/);
 });
 
-test('the main button calls onStart, and the update button is hidden until asked for', () => {
+test('Retry calls onRetry, and the update button is hidden until asked for', () => {
   const { title } = make();
   const calls = [];
-  title.onStart = () => calls.push('start');
-  title.go.click();
-  assert.deepEqual(calls, ['start']);
+  title.onRetry = () => calls.push('retry');
+  title.retry.click();
+  assert.deepEqual(calls, ['retry']);
   assert.equal(title.upd.hidden, true);
   title.showUpdate(() => calls.push('update'));
   assert.equal(title.upd.hidden, false);
   title.upd.click();
-  assert.deepEqual(calls, ['start', 'update']);
+  assert.deepEqual(calls, ['retry', 'update']);
 });
 
 test('remove takes the overlay off the page', () => {
@@ -66,4 +76,24 @@ test('the progress bar fades away once the game is ready, and comes back if load
   assert.ok(title.loading.classList.contains('is-done'));
   title.setFailed('x');
   assert.ok(!title.loading.classList.contains('is-done'));
+});
+
+test('the backdrop is added on request, replaced by the next one, covered and stopped with the screen', () => {
+  const { doc, title } = make();
+  const registry = {};   // the fake document has no canvas, so the backdrop never touches it
+  assert.equal(title.backdrop, null);
+  title.showBackdrop(registry);
+  const first = title.backdrop;
+  assert.equal(title.bg.children.length, 1);
+  title.coverBackdrop(true);
+  assert.equal(first.paused, true);
+  title.showBackdrop(registry);
+  assert.notEqual(title.backdrop, first);
+  assert.equal(title.bg.children.length, 1, 'the old canvas is gone');
+  assert.equal(title.backdrop.paused, true, 'a new one starts covered while a page sits on top');
+  title.coverBackdrop(false);
+  assert.equal(title.backdrop.paused, false);
+  title.remove();
+  assert.equal(doc.body.children.length, 0);
+  assert.equal(title.backdrop.stopped, true);
 });

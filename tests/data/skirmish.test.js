@@ -69,10 +69,91 @@ test('the skirmish screen lists every map, picks, edits and starts', () => {
   s.setController(0, 'human');
   assert.equal(s.go.disabled, false);
   s.go.click();
+  assert.equal(started, null, 'Start only works on the last step');
+  s.advance(); s.advance();
+  s.go.click();
   assert.equal(started[0].id, 'classic');
   assert.equal(started[1].funds, 10000);
+  s.goTo(0);
   s.back.click();
-  assert.equal(back, 1);
+  assert.equal(back, 1, 'Back on the first step leaves the page');
+});
+
+// ---- the three steps -------------------------------------------------------------------------------------------------------------------------
+const wizard = (o = {}) => {
+  const doc = new FakeDoc(); const log = { started: [], back: 0 };
+  const s = new SkirmishScreen(doc, { registry, maps, selectedId: 'classic', onStart: (m, st) => log.started.push([m, st]), onBack: () => log.back++, ...o });
+  const shown = () => s.pages.map((p) => !p.hidden);
+  return { s, log, shown, root: s.root };
+};
+
+test('the page is three steps (map, teams, options), one shown at a time, starting on the map grid', () => {
+  const { s, shown, root } = wizard();
+  assert.equal(s.step, 0);
+  assert.deepEqual(shown(), [true, false, false]);
+  assert.equal(root.attrs['data-step'], '0');
+  assert.deepEqual(s.root.find((e) => e.className === 'sk-step-name').map((e) => e.textContent), ['Map', 'Teams', 'Options']);
+  assert.ok(s.pages[0].find((e) => e.className === 'sk-maps').length === 1, 'the maps are in the first page');
+  assert.ok(s.pages[1].find((e) => e.className === 'sk-slot').length > 0, 'the teams are in the second');
+  assert.ok(s.pages[2].find((e) => e.className === 'sk-rule-name').length > 0, 'the rules are in the third');
+});
+
+test('Next and Back move between the steps; Start battle replaces Next on the last one', () => {
+  const { s, log, shown } = wizard();
+  assert.deepEqual([s.next.hidden, s.go.hidden], [false, true]);
+  s.next.click();
+  assert.deepEqual([s.step, shown()], [1, [false, true, false]]);
+  s.next.click();
+  assert.deepEqual([s.step, shown(), s.next.hidden, s.go.hidden], [2, [false, false, true], true, false]);
+  s.advance();
+  assert.equal(s.step, 2, 'there is nothing after the last step');
+  s.back.click();
+  assert.deepEqual([s.step, s.next.hidden, s.go.hidden], [1, false, true]);
+  s.back.click(); s.back.click();
+  assert.deepEqual([s.step, log.back], [0, 1], 'only Back on the first step leaves the page');
+  assert.equal(s.root.find((e) => e.className === 'sk-step is-on').length, 1);
+});
+
+test('the step bar marks the step shown and the ones done', () => {
+  const { s } = wizard();
+  const classes = () => s.pips.map((p) => p.className);
+  assert.deepEqual(classes(), ['sk-step is-on', 'sk-step', 'sk-step']);
+  s.goTo(2);
+  assert.deepEqual(classes(), ['sk-step is-done', 'sk-step is-done', 'sk-step is-on']);
+});
+
+test('the map and the teams are kept while moving between the steps, and a map picked on the first step shapes the second', () => {
+  const { s } = wizard();
+  s.pick(four.id);
+  s.next.click();
+  assert.equal(s.pages[1].find((e) => e.className === 'sk-slot').length, 4);
+  s.setFunds(15000);
+  s.back.click();
+  assert.equal(s.map.id, four.id);
+  s.next.click(); s.next.click();
+  assert.equal(s.settings.funds, 15000);
+});
+
+test('a team problem blocks Next on the teams step and Start battle on the last, and the note says why', () => {
+  const { s, log } = wizard();
+  s.next.click();
+  s.setController(0, 'ai'); s.setController(1, 'ai');
+  assert.equal(s.next.disabled, true);
+  assert.match(s.note.textContent, /human/);
+  s.advance();
+  assert.equal(s.step, 1, 'it does not move on');
+  s.setController(0, 'human');
+  assert.equal(s.next.disabled, false);
+  assert.equal(s.note.textContent, '');
+  s.advance();
+  s.go.click();
+  assert.equal(log.started.length, 1);
+});
+
+test('the note stays empty on the map step, where nothing can be wrong yet', () => {
+  const { s } = wizard();
+  s.setController(0, 'ai'); s.setController(1, 'ai');
+  assert.equal(s.note.textContent, '');
 });
 
 test('the title screen has a Skirmish button that waits for the game', () => {
@@ -100,6 +181,7 @@ test('launcher: Skirmish opens the page, Back closes it, Start plays the chosen 
   press('Back');
   assert.equal(open(), undefined);
   title.skirmish.click();
+  press('Next'); press('Next');
   press('Start battle');
   assert.equal(played.length, 1);
   assert.equal(played[0].id, 'classic');
@@ -262,6 +344,7 @@ test('picking another map gives every team the leader of its colour; funds are k
 test('Start hands the leaders on as picked by colour, as a copy', () => {
   const { s, started } = screen();
   s.setFaction(0, 'highspire');
+  s.goTo(2);
   s.go.click();
   assert.deepEqual(started[0][1].players.map((p) => [p.faction, p.leader]), [['highspire', 'lysandra'], ['vantor_reach', 'vex']]);
   started[0][1].players[0].leader = 'x';
@@ -275,6 +358,7 @@ test('without the campaign the leaders are still offered, by id; without any loa
   const s = new SkirmishScreen(doc, { registry: bare, maps, selectedId: 'classic', onStart: (m, st) => started.push(st), onBack() {} });
   assert.equal(s.root.find((e) => e.className === 'sk-leaders').length, 0);
   assert.deepEqual(s.settings.players.map((p) => p.leader), [null, null]);
+  s.goTo(2);
   s.go.click();
   assert.equal(started.length, 1);
 });
@@ -290,7 +374,8 @@ test('launcher: Skirmish offers the colour\'s leaders, and Start plays a map whe
   const open = doc.body.children.find((c) => c.className === 'sk');
   assert.ok(open.find((e) => e.className === 'sk-leader-name' && e.textContent === 'Ada').length > 0, 'names come from the campaign');
   assert.ok(open.find((e) => e.className === 'sk-leader-quote').length > 0, 'and so does the line they say');
-  open.find((e) => e.className === 'btn-label' && e.textContent === 'Start battle')[0].parent.click();
+  const press = (label) => open.find((e) => e.className === 'btn-label' && e.textContent === label)[0].parent.click();
+  press('Next'); press('Next'); press('Start battle');
   const m = played[0];
   assert.deepEqual(m.players.map((p) => p.leader), ['ada', 'vex']);
   assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'ada').length);
