@@ -6,7 +6,7 @@ import { Game } from '../../src/engine/game.js';
 import { Effects } from '../../src/render/effects.js';
 import { MoveAnimator } from '../../src/render/animator.js';
 import { Renderer } from '../../src/render/renderer.js';
-import { Arrivals, entryPath, planEntrances } from '../../src/render/arrivals.js';
+import { Arrivals, entryPath, planEntrances, buildingPath } from '../../src/render/arrivals.js';
 
 const bounds = { left: -2, top: -1, right: 12, bottom: 9 };
 
@@ -85,4 +85,17 @@ test('the renderer draws an arriving unit where it is on its way, and not on its
   const at = calls.findIndex((c, k) => c[0] === 'clip' && mapRect(calls[k - 1]));
   assert.ok(at > 0, 'an arriving unit is drawn inside a clip to the map');
   assert.ok(calls.slice(at).some((c) => c[0] === 'restore'));
+});
+
+test('buildingPath: a starting unit comes out of the nearest building of its owner that builds its kind (or the HQ), else from the edge', async () => {
+  const registry = await loadRegistry(readData);
+  const game = new Game(registry, await loadMap(readData, registry, 'classic'));
+  const tank = game.state.units.find((u) => u.owner === 0 && u.type === 'tank');
+  const [from, to] = buildingPath(game, tank, bounds);
+  assert.deepEqual(to, [tank.x, tank.y]);
+  const home = game.map.terrain[from[1]][from[0]];
+  assert.ok(game.map.owners[from[1]][from[0]] === 0 && (home === 'hq' || registry.terrain[home].attributes.property.builds.includes('vehicle')), `starts on ${home}`);
+  const lone = { id: 99, type: 'tank', owner: 1, x: 4, y: 4 };
+  const edge = buildingPath({ ...game, registry: game.registry, map: { ...game.map, owners: game.map.owners.map((r) => r.map(() => null)) } }, lone, bounds);
+  assert.deepEqual(edge[1], [4, 4], 'a team with no building still comes in');
 });

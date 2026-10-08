@@ -9,7 +9,7 @@ import { canSee } from '../engine/detection.js';
 import { isFogged, tileVisible } from '../engine/fog.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
 import { MoveAnimator } from '../render/animator.js';
-import { Arrivals, planEntrances } from '../render/arrivals.js';
+import { Arrivals, planEntrances, buildingPath } from '../render/arrivals.js';
 import { Effects } from '../render/effects.js';
 import { Renderer } from '../render/renderer.js';
 import { Controller } from './controller.js';
@@ -228,14 +228,14 @@ export class Session {
     });
   }
 
-  /** The start of a battle: the human players' units drive in from off screen while the leaders say their opening lines. */
+  /** The start of a battle: the human players' units come out of their buildings while the leaders say their opening lines. */
   async #intro() {
     const { game } = this;
     const humans = new Set(game.map.players.map((p, i) => (p.controller === 'human' ? i : -1)));
     const mine = game.state.units.filter((u) => humans.has(u.owner));
     this.busy = true;
     this.intro = true;
-    await Promise.all([this.reinforce(mine), this.commentator ? this.#opening() : null]);
+    await Promise.all([this.reinforce(mine, { from: (u) => buildingPath(game, u, this.renderer.viewBounds()) }), this.commentator ? this.#opening() : null]);
     this.intro = false;
     if (this.disposed) return;
     this.banner?.hide();

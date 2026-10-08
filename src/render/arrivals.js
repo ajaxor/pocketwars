@@ -13,7 +13,11 @@
 //   entryPath(target, bounds, { facing, margin, from })   the path for one unit: in a straight line from outside `bounds` (the tiles on
 //       screen, {left, top, right, bottom}) to its tile. Unless `from` names an edge ('left'|'right'|'top'|'bottom') it comes from the
 //       nearest edge it can drive in from without turning round, so a unit facing right enters from the left.
+//   buildingPath(game, unit, bounds)   the path of a unit that comes out of the nearest of its owner's buildings that can build it (or their HQ)
 //   planEntrances(units, bounds, { from, gap, msPerTile, maxSpread })   entries for enter(): nearest to its edge first, one every `gap` ms
+
+import { allProperties } from '../engine/queries.js';
+import { hasAttribute } from '../engine/attributes.js';
 
 export const MS_PER_TILE_IN = 95;
 
@@ -93,6 +97,22 @@ export function entryPath(target, bounds, { facing = 1, margin = 1.5, from = nul
     pick = ok.reduce((best, e) => (e.d < best.d ? e : best), ok[0]);
   }
   return [pick.start, [x, y]];
+}
+
+/**
+ * A unit that starts the battle comes out of a building: the nearest property of its owner that builds its kind (a factory for a tank,
+ * a barracks for infantry, ...) or their HQ. A unit with no such building (or already on it) comes in from the edge like a reinforcement.
+ */
+export function buildingPath(game, unit, bounds) {
+  const cat = game.registry.unit(unit.type).category;
+  let best = null;
+  for (const p of allProperties(game)) {
+    if (p.owner !== unit.owner || (p.x === unit.x && p.y === unit.y)) continue;
+    if (!(p.property.builds?.includes(cat) || hasAttribute(p.terrain, 'victoryOnCapture'))) continue;
+    const d = Math.abs(p.x - unit.x) + Math.abs(p.y - unit.y);
+    if (!best || d < best.d) best = { d, p };
+  }
+  return best ? [[best.p.x, best.p.y], [unit.x, unit.y]] : entryPath(unit, bounds, { facing: unit.facing ?? 1 });
 }
 
 /** Entries for Arrivals.enter(): `units` are game units; the whole sequence is spread over at most `maxSpread` ms. */
