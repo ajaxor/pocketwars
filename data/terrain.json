@@ -4,7 +4,7 @@
     "defense": 0,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {},
-    "render": { "mini": "#86b95c" }
+    "render": {}
   },
   "forest": {
     "name": "Forest",
