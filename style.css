@@ -261,7 +261,7 @@ canvas.unit-icon { display: block; flex: none; }
 .sk-slot-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
 .sk-slot-name { display: inline-flex; align-items: baseline; gap: 8px; font-weight: 700; font-size: 15px; }
 .sk-slot-faction { color: var(--dim); font-size: 11px; font-weight: 600; }
-.sk-swatches { display: flex; gap: 10px; }
+.sk-swatches { display: flex; flex-wrap: wrap; gap: 10px; }
 .sk-swatch { flex: none; width: 44px; height: 44px; padding: 0; border-radius: 50%; cursor: pointer; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--swatch) 70%, #fff), var(--swatch) 55%, var(--swatch-dark)); border: 3px solid var(--edge); box-shadow: 0 3px 0 var(--edge); touch-action: manipulation; }
 .sk-swatch:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--edge); }
 .sk-swatch.is-picked { box-shadow: 0 0 0 3px var(--gold), 0 3px 0 3px var(--edge); }
