@@ -31,6 +31,7 @@ reports every problem at once.
 - `ground` + `groundLegend` (both optional): a second grid of row strings under the terrain, using its own legend of glyph -> id from
   `data/ground.json` (`grass`, `dirt`). Tiles it does not cover use `rules.json -> defaultGround`. Ground is only a surface: terrain
   (rough, mountain, forest, city...) is drawn on top of it and there is no functional difference between grass and dirt yet.
+- `tileset` (optional): a tileset id from `data/tilesets.json` (`temperate`, `tundra`, `desert`, `urban`, `jungle`, `ruins`, `islands`, `highlands`, `royal`). It decides how the map is drawn (names and art, never the rules) and the ground tiles the `ground` grid leaves out use that tileset's ground. Absent: `rules.json -> defaultTileset`.
 - `units`: `type` from `data/units.json`, player `owner` (or `null` for a neutral structure: a turret or jammer nobody owns, hostile to
   everyone), `x`/`y`, optional `hp` (default max). A unit cannot start on
   terrain impassable to its move class or on an occupied tile.

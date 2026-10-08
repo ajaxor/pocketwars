@@ -50,6 +50,7 @@ wrong kind of entity, fail validation.
 | `submergible` | Deep water: `submerge` units can dive here. | `tests/engine/naval.test.js` |
 | `wall` | A wall tile, drawn as linked pipes (`render/walls.js`). `true`: solid (give it null move costs: nothing crosses, aircraft included). `{ structure }`: a breakable section: a neutral unit of that type (the cracked wall) is put on it when the game starts; once destroyed the tile is rubble with its own move costs. | `structures.test.js` |
 | `visionBonus` | Fog of war: a ground unit standing here sees this many tiles further (mountain 2). | `fog.test.js` |
+| `ruin` | `{ becomes, cost }`: the shell of a building (ruined city, ruined factory). A unit with `capture` standing on it may Rebuild: the owner pays `cost`, the tile becomes the `becomes` terrain (a property) owned by the unit's owner at once, and the unit's turn ends. Kept in `state.terrain`, so Undo and Reset see it (`engine/rebuild.js`). | `tests/engine/rebuild.test.js` |
 | `victoryOnCapture` | Capturing it knocks its owner out of the game (HQ): their units leave the board and their properties go neutral. The last player left wins. Requires `property`. | `capture.test.js`, `turns.test.js` |
 
 ## Other data-driven stats (not attributes)

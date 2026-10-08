@@ -390,7 +390,7 @@ export class Session {
       if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
       if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
       if (ev.type === 'lay') return false;   // nobody sees a mine go down
-      if (ev.type === 'capture') return this.#seesTile(ev.x, ev.y);   // no flag raised over a property in the fog
+      if (ev.type === 'capture' || ev.type === 'rebuild') return this.#seesTile(ev.x, ev.y);   // no flag raised over a property in the fog
       if (ev.type === 'strike') return this.#seesTile(ev.attacker.x, ev.attacker.y) || this.#seesTile(ev.defender.x, ev.defender.y);   // a fight deep in the fog is not shown
       return true;
     });

@@ -29,6 +29,7 @@
 // game.act(), so cancelling is free and the engine never sees half-finished moves.
 
 import { canCapture } from '../engine/capture.js';
+import { canRebuild, couldRebuild, ruinAt } from '../engine/rebuild.js';
 import { canHealAt, healPlan } from '../engine/heal.js';
 import { joinPartner } from '../engine/join.js';
 import { canTarget, forecastAttack } from '../engine/combat.js';
@@ -343,6 +344,9 @@ export class Controller {
       return;
     }
     const capture = !fresh && canCapture(game, sel, pos.x, pos.y);
+    const rebuild = !fresh && couldRebuild(game, sel, pos.x, pos.y);
+    const rebuildCost = rebuild ? ruinAt(game, pos.x, pos.y).cost : 0;
+    const rebuildOk = rebuild && canRebuild(game, sel, pos.x, pos.y);
     const heal = !fresh && canHealAt(game, sel, pos.x, pos.y);
     const healCost = heal ? healPlan(game, sel, pos.x, pos.y).reduce((a, p) => a + p.cost, 0) : 0;
     const supply = !fresh && canSupplyAt(game, sel, pos.x, pos.y);
@@ -353,6 +357,7 @@ export class Controller {
     const items = [];
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
     if (capture) items.push({ label: 'Capture', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'capture' }) });
+    if (rebuild) items.push({ label: `Rebuild ${rebuildCost.toLocaleString('en-US')}`, variant: pending || !rebuildOk ? undefined : 'primary', disabled: !rebuildOk, onClick: () => this.#commit({ type: 'rebuild' }) });
     if (heal) items.push({ label: healCost ? `Heal ${healCost.toLocaleString('en-US')}` : 'Heal', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'heal' }) });
     if (supply) items.push({ label: supplyCost ? `Supply ${supplyCost.toLocaleString('en-US')}` : 'Supply', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'supply' }) });
     if (lay) items.push({ label: `Lay mine (${layLeft} left)`, variant: pending ? undefined : 'primary', disabled: layLeft < 1, onClick: () => this.#layMode() });
@@ -362,13 +367,14 @@ export class Controller {
     // Wait becomes Resupply when the unit is short on ammo and stops next to a property that resupplies it
     const resup = !fresh && canResupplyAt(game, sel, pos.x, pos.y);
     const price = resup ? resupplyCost(game, sel) : 0;
-    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture || heal || supply ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
-      : { label: 'Wait', variant: pending || capture || heal || supply || lay ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
+    items.push(resup ? { label: price ? `Resupply ${price.toLocaleString('en-US')}` : 'Resupply', variant: pending || capture || rebuildOk || heal || supply ? undefined : 'primary', onClick: () => this.#commit({ type: 'resupply' }) }
+      : { label: 'Wait', variant: pending || capture || rebuildOk || heal || supply || lay ? undefined : 'primary', onClick: () => this.#commit({ type: 'wait' }) });
     items.push(this.#infoButton(), { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() });
     const name = game.registry.unit(pending ? pending.type : sel.type).name;
     hud.actions({
       hint: pending ? `Attack ${name}? Tap it again or press Attack.`
         : capture ? 'Capture this property, or pick another action.'
+          : rebuild ? (rebuildOk ? `Rebuild this ruin for ${rebuildCost.toLocaleString('en-US')}, or pick another action.` : `Rebuilding this ruin costs ${rebuildCost.toLocaleString('en-US')}: not enough funds.`)
           : heal ? 'Heal the damaged units next to you, or pick another action.'
           : supply ? 'Resupply the friends next to you, or pick another action.'
           : lay ? 'Lay a mine, or pick another action.'

@@ -42,6 +42,9 @@ export class Presenter {
       } else if (ev.type === 'capture') {
         this.effects.capture(ev, t);
         t += 400;
+      } else if (ev.type === 'rebuild') {
+        this.effects.rebuild(ev, t);
+        t += 700;
       } else if (ev.type === 'resupply') {
         this.effects.resupply(ev.unit, t, ev.cost);
       } else if (ev.type === 'heal') {

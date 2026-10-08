@@ -86,6 +86,49 @@ export function validateTerrain(terrain, rules, problems, hasGround = false) {
   }
 }
 
+/** The parts of a terrain's `render` a tileset may change: its look, never what is built on it or how it links. */
+const TILESET_RENDER_KEYS = ['base', 'decor', 'mini', 'style', 'group'];
+
+/**
+ * tilesets.json (optional): the looks of the land. A tileset re-skins the shared terrain (a forest is spruce in the tundra and palms on the islands; the rules
+ * stay the same) by naming, per terrain id, an optional display `name` and a partial `render` (base, decor, mini, style, group) laid over the terrain's own.
+ * It may name a home `faction` (each faction has at most one) and a default `ground` for maps that paint none.
+ */
+export function validateTilesets(tilesets, terrain, ground, factions, rules, problems) {
+  if (tilesets === undefined) return;
+  if (!isObj(tilesets) || !Object.keys(tilesets).length) return problems.push('tilesets.json must be a non-empty object');
+  const homes = new Map();
+  for (const [id, t] of Object.entries(tilesets)) {
+    const w = `tileset "${id}"`;
+    if (!isObj(t)) { problems.push(`${w} must be an object`); continue; }
+    if (!isStr(t.name)) problems.push(`${w}: name is required`);
+    if (t.description !== undefined && !isStr(t.description)) problems.push(`${w}: description must be text`);
+    if (t.faction !== undefined) {
+      if (!isObj(factions) || !factions[t.faction]) problems.push(`${w}: faction "${t.faction}" is not in factions.json`);
+      else if (homes.has(t.faction)) problems.push(`${w}: faction "${t.faction}" is already the home of tileset "${homes.get(t.faction)}"`);
+      else homes.set(t.faction, id);
+    }
+    if (t.ground !== undefined && !(isObj(ground) && ground[t.ground])) problems.push(`${w}: ground "${t.ground}" is not in ground.json`);
+    if (t.terrain === undefined) continue;
+    if (!isObj(t.terrain)) { problems.push(`${w}: terrain must be an object keyed by terrain id`); continue; }
+    for (const [tid, o] of Object.entries(t.terrain)) {
+      const ww = `${w}: terrain "${tid}"`;
+      if (!isObj(terrain) || !terrain[tid]) { problems.push(`${ww} is not in terrain.json`); continue; }
+      if (!isObj(o)) { problems.push(`${ww} must be an object`); continue; }
+      if (o.name !== undefined && !isStr(o.name)) problems.push(`${ww}: name must be text`);
+      if (o.render === undefined) continue;
+      if (!isObj(o.render)) { problems.push(`${ww}: render must be an object`); continue; }
+      for (const [k, v] of Object.entries(o.render)) {
+        if (!TILESET_RENDER_KEYS.includes(k)) problems.push(`${ww}: render.${k} cannot be changed by a tileset (allowed: ${TILESET_RENDER_KEYS.join(', ')})`);
+        else if ((k === 'base' || k === 'mini') && !isColor(v)) problems.push(`${ww}: render.${k} must be a hex color`);
+        else if ((k === 'decor' || k === 'group') && !isStr(v)) problems.push(`${ww}: render.${k} must be a name`);
+        else if (k === 'style' && !isObj(v)) problems.push(`${ww}: render.style must be an object of drawing options`);
+      }
+    }
+  }
+  if (!(rules.defaultTileset in tilesets)) problems.push(`rules: defaultTileset must name a tileset in tilesets.json (got ${JSON.stringify(rules.defaultTileset)})`);
+}
+
 /** ground.json (optional): the surface under a tile, which terrain without its own render.base is drawn on. */
 export function validateGround(ground, rules, problems) {
   if (ground === undefined) return;
@@ -326,7 +369,7 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
   }
 }
 
-/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`, `loadouts` and `ai-strategies`. */
+/** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`, `tilesets`, `loadouts` and `ai-strategies`. */
 export function validateData(raw) {
   const problems = [];
   validateRules(raw.rules, problems);
@@ -334,6 +377,11 @@ export function validateData(raw) {
   validateFactions(raw.factions, problems);
   validateTerrain(raw.terrain, rules, problems, raw.ground !== undefined);
   validateGround(raw.ground, rules, problems);
+  validateTilesets(raw.tilesets, raw.terrain, raw.ground, raw.factions, rules, problems);
+  if (isObj(raw.terrain)) for (const [id, t] of Object.entries(raw.terrain)) {   // a ruin rebuilds into a property
+    const becomes = isObj(t?.attributes?.ruin) ? t.attributes.ruin.becomes : null;
+    if (becomes && !isObj(raw.terrain[becomes]?.attributes?.property)) problems.push(`terrain "${id}": attribute "ruin" becomes "${becomes}", which is not a property terrain`);
+  }
   validateWeapons(raw.weapons, rules, problems);
   if (isObj(raw.weapons) && isObj(raw.terrain)) for (const [id, w] of Object.entries(raw.weapons)) for (const t of Array.isArray(w?.fromTerrain) ? w.fromTerrain : []) if (!raw.terrain[t]) problems.push(`weapon "${id}": fromTerrain names unknown terrain "${t}"`);
   validateUnits(raw.units, raw.terrain, rules, raw.weapons, problems);

@@ -36,7 +36,7 @@ test('roads give no speed bonus; forests and rough ground block wheels; treads p
 });
 
 test('ground: grass and dirt are separate data, with no functional difference', () => {
-  assert.deepEqual(registry.groundIds, ['grass', 'dirt']);
+  assert.deepEqual(registry.groundIds.slice(0, 2), ['grass', 'dirt']);   // the tilesets add more (snow, sand, ...), listed after
   assert.equal(registry.defaultGround, 'grass');
   assert.equal(registry.groundDef('dirt').name, 'Dirt');
   assert.equal(registry.groundDef(null), null);

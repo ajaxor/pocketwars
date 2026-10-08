@@ -75,6 +75,17 @@ export class Effects {
     this.lockUntil = Math.max(this.lockUntil, t0 + (ev.completed ? 1700 : 1400));
   }
 
+  /** A ruin rebuilt: a burst in the owner's colour and the price floating up. */
+  rebuild(ev, t0) {
+    const [cx, cy] = tileCentre(ev.unit);
+    const { color } = this.colorsOf(ev.owner);
+    this.list.push(
+      { k: 'burst', x: cx, y: cy, t0, d: 700, big: true, c: color },
+      { k: 'txt', x: cx, y: cy, s: 'Rebuilt -' + ev.cost.toLocaleString('en-US'), c: '#fff', t0: t0 + 200, d: 900 },
+    );
+    this.lockUntil = Math.max(this.lockUntil, t0 + 1100);
+  }
+
   /** A move cut short by something hidden: a red ring where the unit stopped and a call-out over what it ran into. */
   interrupt(ev, t0) {
     this.list.push(

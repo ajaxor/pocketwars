@@ -30,7 +30,7 @@ const slug = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').re
 export class EditorModel {
   constructor(registry, data) {
     this.registry = registry;
-    Object.assign(this, data);   // id, name, description, width, height, terrain, owners, ground, units, players, legend
+    Object.assign(this, data);   // id, name, description, tileset (optional), width, height, terrain, owners, ground, units, players, legend
     this.past = [];
     this.future = [];
     this.version = 0;            // bumped on every change (the screen redraws and autosaves on it)
@@ -64,7 +64,8 @@ export class EditorModel {
       funds: Number.isInteger(p?.funds) && p.funds >= 0 ? p.funds : 5000,
     }));
     while (players.length < 2) players.push({ faction: registry.factionIds.find((f) => !players.some((p) => p.faction === f)), controller: 'ai', funds: 5000 });
-    const terrain = grid(width, height, 'plain'), owners = grid(width, height, null), ground = grid(width, height, registry.defaultGround);
+    const tileset = typeof raw.tileset === 'string' && registry.tilesets?.[raw.tileset] ? raw.tileset : undefined;
+    const terrain = grid(width, height, 'plain'), owners = grid(width, height, null), ground = grid(width, height, registry.tilesetDef(tileset)?.ground ?? registry.defaultGround);
     for (let y = 0; y < height; y++) {
       for (let x = 0; x < width; x++) {
         const e = legend[rows[y][x]];
@@ -83,7 +84,7 @@ export class EditorModel {
     const seen = new Set();
     return new EditorModel(registry, {
       id: typeof raw.id === 'string' && /^[a-z0-9_-]+$/.test(raw.id) ? raw.id : slug(raw.name), name: typeof raw.name === 'string' && raw.name ? raw.name : 'Untitled',
-      description: typeof raw.description === 'string' ? raw.description : '', width, height, legend: clone(legend),
+      description: typeof raw.description === 'string' ? raw.description : '', width, height, legend: clone(legend), ...(tileset && { tileset }),
       terrain, owners, ground, players, units: units.filter((u) => { const k = `${u.x},${u.y}`; if (seen.has(k)) return false; seen.add(k); return true; }),
     });
   }
@@ -97,13 +98,13 @@ export class EditorModel {
 
   /** The map as a GameMap-shaped object (what the renderer, createState and serializeMap read). Shares the arrays: do not keep it across edits. */
   asGameMap() {
-    const { id, name, description, width, height, terrain, ground, owners, players, units, legend } = this;
-    return { id, name, description, width, height, terrain, ground, owners, players, units, legend };
+    const { id, name, description, width, height, terrain, ground, owners, players, units, legend, tileset } = this;
+    return { id, name, description, ...(tileset && { tileset }), width, height, terrain, ground, owners, players, units, legend };
   }
 
   /** The map file object. Legend glyphs of an imported map are kept where they still fit. */
   toRaw() {
-    const raw = serializeMap(this.asGameMap(), { defaultGround: this.registry.defaultGround ?? undefined });
+    const raw = serializeMap(this.asGameMap(), { defaultGround: this.registry.tilesetDef(this.tileset)?.ground ?? this.registry.defaultGround ?? undefined, defaultTileset: this.registry.defaultTileset ?? undefined });
     for (const u of raw.units) if (u.hp === undefined) delete u.hp;
     return raw;
   }
@@ -121,8 +122,8 @@ export class EditorModel {
 
   // ---- history ---------------------------------------------------------------------------------------------------------------------------
   #snapshot() {
-    const { id, name, description, width, height, terrain, owners, ground, units, players, legend } = this;
-    return JSON.stringify({ id, name, description, width, height, terrain, owners, ground, units, players, legend });
+    const { id, name, description, width, height, terrain, owners, ground, units, players, legend, tileset } = this;
+    return JSON.stringify({ id, name, description, width, height, terrain, owners, ground, units, players, legend, tileset: tileset ?? null });
   }
   #restore(json) { Object.assign(this, JSON.parse(json)); this.#changed(); }
   #changed() { this.version++; }

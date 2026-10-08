@@ -61,6 +61,7 @@ export function paintTile(g, px, py, S, terrain, ownerColor, nb, at) {
   });
   g.fillStyle = base; g.beginPath(); g.roundRect(px, py, S, S, radii); g.fill();
   at.radii = radii;
+  at.style = terrain.render.style;
   // a faint seam where two tiles of the same shape meet, so the grid stays readable for tapping
   g.strokeStyle = 'rgba(0,0,0,.07)'; g.lineWidth = 1; g.beginPath();
   if (same(K.e)) { g.moveTo(px + S, py); g.lineTo(px + S, py + S); }

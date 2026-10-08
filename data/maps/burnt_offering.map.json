@@ -1,0 +1,227 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "burnt_offering",
+  "name": "Burnt Offering",
+  "description": "A 24x14 battlefield already fought over. Ruined cities and factories line the front; a soldier with funds can rebuild them, so whoever holds the rubble holds the war.",
+  "tileset": "ruins",
+  "players": [
+    {
+      "faction": "ironvale",
+      "controller": "human",
+      "funds": 8000
+    },
+    {
+      "faction": "tidehaven",
+      "controller": "ai",
+      "funds": 8000
+    }
+  ],
+  "legend": {
+    "m": {
+      "terrain": "mountain"
+    },
+    ".": {
+      "terrain": "plain"
+    },
+    "f": {
+      "terrain": "forest"
+    },
+    "x": {
+      "terrain": "ruin_city"
+    },
+    "X": {
+      "terrain": "ruin_factory"
+    },
+    "r": {
+      "terrain": "rough"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "a": {
+      "terrain": "barracks",
+      "owner": 0
+    },
+    "A": {
+      "terrain": "barracks",
+      "owner": 1
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "=": {
+      "terrain": "road"
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "o": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "b": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "v": {
+      "terrain": "airfield",
+      "owner": 0
+    },
+    "V": {
+      "terrain": "airfield",
+      "owner": 1
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "mmm.ff..x......x..ff.mmm",
+    "mm.f.....xX..Xx.....f.mm",
+    "m...r..............r...m",
+    "..c..r..ff....ff..r..c..",
+    ".a.........xx.........A.",
+    ".O==r==============r==B.",
+    ".o.........xx.........b.",
+    "..c..r..ff....ff..r..c..",
+    "mv..r..............r..Vm",
+    "mm.f.....xX..Xx.....f.mm",
+    "mmm.ff..x......x..ff.mmm",
+    "~Y..r...c......c...r..Z~",
+    "~~r.....ff....ff.....r~~",
+    "...ff..x........x..ff..."
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 20,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 20,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 21,
+      "y": 5
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 21,
+      "y": 4
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 2,
+      "y": 6
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 21,
+      "y": 6
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 1,
+      "y": 3
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 22,
+      "y": 3
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 1,
+      "y": 7
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 22,
+      "y": 7
+    },
+    {
+      "type": "sniper",
+      "owner": 0,
+      "x": 1,
+      "y": 2
+    },
+    {
+      "type": "sniper",
+      "owner": 1,
+      "x": 22,
+      "y": 2
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 7,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 16,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 7,
+      "y": 10
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 16,
+      "y": 10
+    }
+  ]
+}

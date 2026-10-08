@@ -12,6 +12,15 @@
     "island_chain": "island_chain.map.json",
     "sky_strait": "sky_strait.map.json",
     "four_seas": "four_seas.map.json",
-    "iron_curtain": "iron_curtain.map.json"
+    "iron_curtain": "iron_curtain.map.json",
+    "ridgeback": "ridgeback.map.json",
+    "whiteout": "whiteout.map.json",
+    "dune_sea": "dune_sea.map.json",
+    "concrete_canyon": "concrete_canyon.map.json",
+    "mudslide": "mudslide.map.json",
+    "burnt_offering": "burnt_offering.map.json",
+    "atoll": "atoll.map.json",
+    "skyline_pass": "skyline_pass.map.json",
+    "garden_maze": "garden_maze.map.json"
   }
 }

@@ -10,6 +10,8 @@
 import { ammoLevel, ammoOf, canResupplyAt, resupplyCost, roundCost } from '../../engine/ammo.js';
 import { attributeConfig, hasAttribute } from '../../engine/attributes.js';
 import { canCapture } from '../../engine/capture.js';
+import { canRebuild, ruinAt } from '../../engine/rebuild.js';
+import { affordableRuin } from './goals.js';
 import { canAttackFrom, forecastAttack } from '../../engine/combat.js';
 import { canHealAt, healPlan, healsAutomatically } from '../../engine/heal.js';
 import { isMine, layConfig, layTiles } from '../../engine/mines.js';
@@ -102,6 +104,11 @@ export function bestOrder(sit, unit) {
       const hq = hasAttribute(terrainAt(game, x, y), 'victoryOnCapture') && ownerAt(game, x, y) !== null;
       const gain = (params.capture + params.captureIncome * p.income / 1000 + (hq ? params.hqCapture : 0)) * (tactics.capture ?? 1);
       if (base + gain > pick.score) pick = { score: base + gain, kind: 'capture', action: { type: 'capture' }, gain };
+    } else if (mayAct && pick.kind !== 'attack' && canRebuild(game, unit, x, y) && affordableRuin(game, player, ruinAt(game, x, y))) {
+      // a ruin it can pay for: rebuilding is worth what taking the property it becomes would be
+      const becomes = game.registry.terrainDef(ruinAt(game, x, y).becomes).attributes.property;
+      const gain = (params.capture + params.captureIncome * becomes.income / 1000) * (tactics.capture ?? 1);
+      if (base + gain > pick.score) pick = { score: base + gain, kind: 'capture', action: { type: 'rebuild' }, gain };
     } else if (prop && ownerAt(game, x, y) !== player && !canCapture(game, unit, x, y)) {
       pick.score -= params.blockCapture;   // parked on a property it cannot take: in the way of those that can
     }

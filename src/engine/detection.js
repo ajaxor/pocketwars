@@ -16,7 +16,7 @@
 // Fog of war (fog.js) adds a second rule on top: in fog a player cannot see what is out of their units' sight at all.
 
 import { attributeConfig, hasAttribute } from './attributes.js';
-import { distance, inBounds, layerIdOf, ownerAt, tileIndex, unitDef } from './queries.js';
+import { distance, inBounds, layerIdOf, ownerAt, terrainIdAt, tileIndex, unitDef } from './queries.js';
 import { isFogged, tileVisible } from './fog.js';
 import { isOutOfFuel } from './fuel.js';
 
@@ -38,7 +38,7 @@ export function isCloaked(game, unit) {
   if (!cfg || unit.revealed) return false;
   const owner = ownerAt(game, unit.x, unit.y);
   if (owner !== null && owner !== undefined && owner !== unit.owner) return false;
-  return cfg === true || cfg.terrain.includes(game.map.terrain[unit.y][unit.x]);
+  return cfg === true || cfg.terrain.includes(terrainIdAt(game, unit.x, unit.y));
 }
 /** Is `unit` hidden (submerged or cloaked)? Says nothing about who can see it: see canSee. */
 export const isHidden = (game, unit) => isSubmerged(game, unit) || isCloaked(game, unit);

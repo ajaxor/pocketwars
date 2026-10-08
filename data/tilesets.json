@@ -1,0 +1,898 @@
+{
+  "temperate": {
+    "name": "Temperate",
+    "faction": "lastholm",
+    "description": "Green fields, pine woods and grey mountains: the land the game was first drawn in.",
+    "ground": "grass",
+    "terrain": {}
+  },
+  "tundra": {
+    "name": "Tundra",
+    "faction": "deepmere",
+    "description": "Frozen fields, snow-laden spruce and ice cliffs. Snowdrifts bog down wheeled vehicles.",
+    "ground": "snow",
+    "terrain": {
+      "forest": {
+        "name": "Spruce wood",
+        "render": {
+          "style": {
+            "greens": [
+              [
+                "#2b5a4a",
+                "#3b7461"
+              ],
+              [
+                "#25503f",
+                "#336a58"
+              ],
+              [
+                "#2f5f50",
+                "#417a68"
+              ]
+            ],
+            "snow": "#f3f8fd"
+          },
+          "mini": "#4d7a6c"
+        }
+      },
+      "mountain": {
+        "name": "Glacier peak",
+        "render": {
+          "style": {
+            "rock": [
+              "#8f9cb0",
+              "#7e8ba0"
+            ],
+            "side": [
+              "#5f6b7f",
+              "#576378"
+            ]
+          },
+          "mini": "#9aa7b8"
+        }
+      },
+      "rough": {
+        "name": "Frozen scree",
+        "render": {
+          "style": {
+            "rock": "#7b8696",
+            "lit": "#b9c4d2",
+            "specks": [
+              "#e6eef7",
+              "#6f7a89"
+            ]
+          },
+          "mini": "#aab6c4"
+        }
+      },
+      "road": {
+        "name": "Plowed road",
+        "render": {
+          "base": "#8e97a6",
+          "mini": "#8e97a6",
+          "style": {
+            "specks": [
+              "#b7bfcc",
+              "#79818f"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Icy sea",
+        "render": {
+          "base": "#3c78b4",
+          "mini": "#3c78b4"
+        }
+      },
+      "shoals": {
+        "name": "Ice floes",
+        "render": {
+          "base": "#3c78b4",
+          "mini": "#3c78b4"
+        }
+      },
+      "cliff": {
+        "name": "Ice cliff",
+        "render": {
+          "base": "#cfe1f0",
+          "mini": "#9db8d0",
+          "style": {
+            "face": "#86a6c2",
+            "rim": "rgba(255,255,255,.7)",
+            "crack": "rgba(40,80,120,.4)",
+            "texture": "ice",
+            "faceH": 0.34
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#a9b0b8",
+            "dark": "#767d88"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#a9b0b8",
+            "dark": "#767d88"
+          }
+        }
+      }
+    }
+  },
+  "desert": {
+    "name": "Desert",
+    "faction": "ashmark",
+    "description": "Sand seas, banded mesas and palm oases. Dunes drag at wheels.",
+    "ground": "sand",
+    "terrain": {
+      "forest": {
+        "name": "Oasis",
+        "render": {
+          "decor": "palm",
+          "mini": "#6a9a48"
+        }
+      },
+      "mountain": {
+        "name": "Mesa",
+        "render": {
+          "decor": "mesa",
+          "mini": "#c9744a"
+        }
+      },
+      "rough": {
+        "name": "Badlands",
+        "render": {
+          "style": {
+            "rock": "#a9704a",
+            "lit": "#d8a070",
+            "specks": [
+              "#efd2a8",
+              "#8a5a3a"
+            ]
+          },
+          "mini": "#bb9060"
+        }
+      },
+      "road": {
+        "name": "Dirt track",
+        "render": {
+          "base": "#b99a72",
+          "mini": "#b99a72",
+          "style": {
+            "specks": [
+              "#d4b68e",
+              "#9a7d58"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "render": {
+          "base": "#3a87c9",
+          "mini": "#3a87c9"
+        }
+      },
+      "shoals": {
+        "render": {
+          "base": "#3a87c9",
+          "mini": "#3a87c9"
+        }
+      },
+      "cliff": {
+        "name": "Sandstone cliff",
+        "render": {
+          "base": "#e0b27a",
+          "mini": "#c0784c",
+          "style": {
+            "face": "#c0784c",
+            "bands": [
+              "#d38b5a",
+              "#c0784c",
+              "#a9653f"
+            ],
+            "rim": "rgba(255,240,200,.45)",
+            "crack": "rgba(110,60,30,.4)",
+            "texture": "strata",
+            "faceH": 0.34
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#c9b48a",
+            "dark": "#9a8660"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#c9b48a",
+            "dark": "#9a8660"
+          }
+        }
+      }
+    }
+  },
+  "urban": {
+    "name": "Urban",
+    "faction": "vantor_reach",
+    "description": "Paved plazas, parks and tower blocks. Only infantry get through the towers.",
+    "ground": "paving",
+    "terrain": {
+      "forest": {
+        "name": "Park",
+        "render": {
+          "decor": "roundwood",
+          "style": {
+            "canopy": [
+              [
+                "#3a8a4a",
+                "#5cb061"
+              ],
+              [
+                "#337a42",
+                "#52a458"
+              ]
+            ],
+            "dots": [
+              "#f4d35e",
+              "#f2a1c0"
+            ]
+          },
+          "mini": "#4d9a55"
+        }
+      },
+      "mountain": {
+        "name": "Tower blocks",
+        "render": {
+          "decor": "towers",
+          "mini": "#7b879c",
+          "style": {
+            "walls": [
+              "#7d8aa0",
+              "#8d99ae",
+              "#6b788d"
+            ]
+          }
+        }
+      },
+      "rough": {
+        "name": "Rubble",
+        "render": {
+          "style": {
+            "rock": "#797d87",
+            "lit": "#aeb2bc",
+            "specks": [
+              "#cfd2d8",
+              "#5f636d"
+            ]
+          },
+          "mini": "#8a8e98"
+        }
+      },
+      "road": {
+        "name": "Asphalt",
+        "render": {
+          "base": "#5d6470",
+          "mini": "#5d6470",
+          "style": {
+            "specks": [
+              "#8a909c",
+              "#4a505b"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Harbour",
+        "render": {
+          "base": "#3a73b0",
+          "mini": "#3a73b0"
+        }
+      },
+      "shoals": {
+        "name": "Sandbar",
+        "render": {
+          "base": "#3a73b0",
+          "mini": "#3a73b0"
+        }
+      },
+      "cliff": {
+        "name": "Concrete barrier",
+        "render": {
+          "base": "#a9aeb8",
+          "mini": "#7c818c",
+          "style": {
+            "face": "#7c818c",
+            "rim": "rgba(255,255,255,.4)",
+            "crack": "rgba(40,44,52,.4)",
+            "texture": "concrete",
+            "faceH": 0.3
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#9fa3ac",
+            "dark": "#6e727c"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#9fa3ac",
+            "dark": "#6e727c"
+          }
+        }
+      }
+    }
+  },
+  "jungle": {
+    "name": "Jungle",
+    "faction": "solace",
+    "description": "Rainforest canopy, mossy crags and mud that swallows wheels.",
+    "ground": "moss",
+    "terrain": {
+      "forest": {
+        "name": "Rainforest",
+        "render": {
+          "decor": "roundwood",
+          "style": {
+            "dense": true,
+            "canopy": [
+              [
+                "#1d5a2a",
+                "#2f8a3c"
+              ],
+              [
+                "#194f26",
+                "#2a7a38"
+              ],
+              [
+                "#256a30",
+                "#38963f"
+              ]
+            ],
+            "dots": [
+              "#f2a1c0",
+              "#f4d35e"
+            ],
+            "trunk": "#4a3420"
+          },
+          "mini": "#2a6a34"
+        }
+      },
+      "mountain": {
+        "name": "Mossy crag",
+        "render": {
+          "style": {
+            "rock": [
+              "#7e8a68",
+              "#6e7a5b"
+            ],
+            "side": [
+              "#4f5a43",
+              "#48533d"
+            ],
+            "snow": null
+          },
+          "mini": "#7a8566"
+        }
+      },
+      "rough": {
+        "name": "Thicket",
+        "render": {
+          "style": {
+            "rock": "#6f7a5e",
+            "lit": "#9fab88",
+            "specks": [
+              "#c8d4a8",
+              "#4f5a43"
+            ]
+          },
+          "mini": "#7f8a64"
+        }
+      },
+      "road": {
+        "name": "Jungle track",
+        "render": {
+          "base": "#8c7549",
+          "mini": "#8c7549",
+          "style": {
+            "specks": [
+              "#ad9565",
+              "#6f5b36"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Lagoon",
+        "render": {
+          "base": "#2f8f94",
+          "mini": "#2f8f94"
+        }
+      },
+      "shoals": {
+        "name": "Mangroves",
+        "render": {
+          "base": "#2f8f94",
+          "mini": "#2f8f94"
+        }
+      },
+      "cliff": {
+        "name": "Mossy cliff",
+        "render": {
+          "base": "#8f9c76",
+          "mini": "#6e7656",
+          "style": {
+            "face": "#6e7656",
+            "rim": "rgba(220,255,190,.35)",
+            "crack": "rgba(30,45,25,.45)",
+            "texture": "rock",
+            "faceH": 0.34
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#8d9a78",
+            "dark": "#5f6b50"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#8d9a78",
+            "dark": "#5f6b50"
+          }
+        }
+      }
+    }
+  },
+  "ruins": {
+    "name": "Ruins",
+    "faction": "ironvale",
+    "description": "Ash plains, deadwood and slag heaps: a land that has already been fought over.",
+    "ground": "ash",
+    "terrain": {
+      "forest": {
+        "name": "Deadwood",
+        "render": {
+          "decor": "deadwood",
+          "mini": "#5a554e"
+        }
+      },
+      "mountain": {
+        "name": "Slag heap",
+        "render": {
+          "style": {
+            "rock": [
+              "#6f6b66",
+              "#5f5b57"
+            ],
+            "side": [
+              "#47443f",
+              "#403d39"
+            ],
+            "snow": null
+          },
+          "mini": "#66625d"
+        }
+      },
+      "rough": {
+        "name": "Wreckage",
+        "render": {
+          "style": {
+            "rock": "#5d5852",
+            "lit": "#8f887d",
+            "specks": [
+              "#b6afa2",
+              "#3d3934"
+            ]
+          },
+          "mini": "#6d6860"
+        }
+      },
+      "road": {
+        "name": "Cracked road",
+        "render": {
+          "base": "#54565c",
+          "mini": "#54565c",
+          "style": {
+            "specks": [
+              "#7b7e86",
+              "#3f4146"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Murky sea",
+        "render": {
+          "base": "#44688a",
+          "mini": "#44688a"
+        }
+      },
+      "shoals": {
+        "name": "Sunken wrecks",
+        "render": {
+          "base": "#44688a",
+          "mini": "#44688a"
+        }
+      },
+      "cliff": {
+        "name": "Broken wall",
+        "render": {
+          "base": "#8c877d",
+          "mini": "#6c675f",
+          "style": {
+            "face": "#6c675f",
+            "rim": "rgba(255,255,255,.25)",
+            "crack": "rgba(25,22,20,.5)",
+            "texture": "wall",
+            "faceH": 0.32
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#8a857b",
+            "dark": "#5b5750"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#8a857b",
+            "dark": "#5b5750"
+          }
+        }
+      }
+    }
+  },
+  "islands": {
+    "name": "Islands",
+    "faction": "tidehaven",
+    "description": "Sunlit beaches, palm groves and turquoise reefs. Soft sand slows wheels.",
+    "ground": "sand",
+    "terrain": {
+      "forest": {
+        "name": "Palm grove",
+        "render": {
+          "decor": "palm",
+          "mini": "#4e9a50"
+        }
+      },
+      "mountain": {
+        "name": "Volcanic peak",
+        "render": {
+          "style": {
+            "rock": [
+              "#8b8a76",
+              "#79786a"
+            ],
+            "side": [
+              "#56564a",
+              "#4f4f44"
+            ],
+            "snow": null
+          },
+          "mini": "#7f7e6c"
+        }
+      },
+      "rough": {
+        "name": "Reef rock",
+        "render": {
+          "style": {
+            "rock": "#968c78",
+            "lit": "#cbbfa6",
+            "specks": [
+              "#efe6cf",
+              "#7a705c"
+            ]
+          },
+          "mini": "#b0a58a"
+        }
+      },
+      "road": {
+        "name": "Boardwalk",
+        "render": {
+          "base": "#b99f74",
+          "mini": "#b99f74",
+          "style": {
+            "specks": [
+              "#d6bd92",
+              "#977d55"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Lagoon",
+        "render": {
+          "base": "#2fa3d6",
+          "mini": "#2fa3d6"
+        }
+      },
+      "shoals": {
+        "name": "Reef",
+        "render": {
+          "base": "#2fa3d6",
+          "mini": "#2fa3d6"
+        }
+      },
+      "cliff": {
+        "name": "Sea cliff",
+        "render": {
+          "base": "#b0a58c",
+          "mini": "#7d7468",
+          "style": {
+            "face": "#7d7468",
+            "rim": "rgba(255,255,255,.4)",
+            "crack": "rgba(50,42,34,.45)",
+            "texture": "rock",
+            "faceH": 0.34
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#cfc3a6",
+            "dark": "#9d9176"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#cfc3a6",
+            "dark": "#9d9176"
+          }
+        }
+      }
+    }
+  },
+  "highlands": {
+    "name": "Highlands",
+    "faction": "skyreach",
+    "description": "Heather moor, dark pines and granite crags above the cloud line.",
+    "ground": "heath",
+    "terrain": {
+      "forest": {
+        "name": "Pine wood",
+        "render": {
+          "style": {
+            "greens": [
+              [
+                "#25503a",
+                "#33684c"
+              ],
+              [
+                "#1f4632",
+                "#2d5d44"
+              ],
+              [
+                "#2a5a42",
+                "#3a7556"
+              ]
+            ]
+          },
+          "mini": "#33684c"
+        }
+      },
+      "mountain": {
+        "name": "Granite peak",
+        "render": {
+          "style": {
+            "rock": [
+              "#a0a4ac",
+              "#8c9099"
+            ],
+            "side": [
+              "#6a6e78",
+              "#61656f"
+            ]
+          },
+          "mini": "#9094a0"
+        }
+      },
+      "rough": {
+        "name": "Boulder field",
+        "render": {
+          "style": {
+            "rock": "#8a8c8a",
+            "lit": "#bdbfbc",
+            "specks": [
+              "#d6d8d4",
+              "#6c6e6c"
+            ]
+          },
+          "mini": "#9a9c88"
+        }
+      },
+      "road": {
+        "name": "Gravel road",
+        "render": {
+          "base": "#8b8e94",
+          "mini": "#8b8e94",
+          "style": {
+            "specks": [
+              "#b0b3b9",
+              "#72757b"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Loch",
+        "render": {
+          "base": "#3b6fb0",
+          "mini": "#3b6fb0"
+        }
+      },
+      "shoals": {
+        "name": "Shallows",
+        "render": {
+          "base": "#3b6fb0",
+          "mini": "#3b6fb0"
+        }
+      },
+      "cliff": {
+        "name": "Granite cliff",
+        "render": {
+          "base": "#adb2bc",
+          "mini": "#7a7f8a",
+          "style": {
+            "face": "#7a7f8a",
+            "rim": "rgba(255,255,255,.4)",
+            "crack": "rgba(35,38,46,.45)",
+            "texture": "rock",
+            "faceH": 0.34
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#a4a8b0",
+            "dark": "#72767f"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#a4a8b0",
+            "dark": "#72767f"
+          }
+        }
+      }
+    }
+  },
+  "royal": {
+    "name": "Royal gardens",
+    "faction": "highspire",
+    "description": "Manicured lawns, blossom orchards, castle spires and hedge walls.",
+    "ground": "lawn",
+    "terrain": {
+      "forest": {
+        "name": "Blossom orchard",
+        "render": {
+          "decor": "roundwood",
+          "style": {
+            "canopy": [
+              [
+                "#e48fb4",
+                "#f3b8d0"
+              ],
+              [
+                "#d97fa6",
+                "#f0a8c6"
+              ]
+            ],
+            "dots": [
+              "#ffffff",
+              "#ffe3ee"
+            ],
+            "trunk": "#6b4a3a"
+          },
+          "mini": "#e89ab8"
+        }
+      },
+      "mountain": {
+        "name": "Castle spires",
+        "render": {
+          "decor": "spires",
+          "mini": "#a79ec0"
+        }
+      },
+      "rough": {
+        "name": "Flagstones",
+        "render": {
+          "style": {
+            "rock": "#a79bb5",
+            "lit": "#d3c9de",
+            "specks": [
+              "#efe9f5",
+              "#8a7f98"
+            ]
+          },
+          "mini": "#b8aec4"
+        }
+      },
+      "road": {
+        "name": "Cobbles",
+        "render": {
+          "base": "#b9ab97",
+          "mini": "#b9ab97",
+          "style": {
+            "specks": [
+              "#d6c9b5",
+              "#9a8d79"
+            ]
+          }
+        }
+      },
+      "sea": {
+        "name": "Moat",
+        "render": {
+          "base": "#4a90d9",
+          "mini": "#4a90d9"
+        }
+      },
+      "shoals": {
+        "name": "Lily pond",
+        "render": {
+          "base": "#4a90d9",
+          "mini": "#4a90d9"
+        }
+      },
+      "cliff": {
+        "name": "Hedge wall",
+        "render": {
+          "base": "#4f8a3f",
+          "mini": "#3f7a35",
+          "style": {
+            "face": "#3f7a35",
+            "rim": "rgba(220,255,190,.3)",
+            "crack": "rgba(20,50,20,.35)",
+            "texture": "hedge",
+            "faceH": 0.34,
+            "bloom": "#f4d6e4"
+          }
+        }
+      },
+      "ruin_city": {
+        "render": {
+          "style": {
+            "stone": "#c3bccf",
+            "dark": "#8f88a0"
+          }
+        }
+      },
+      "ruin_factory": {
+        "render": {
+          "style": {
+            "stone": "#c3bccf",
+            "dark": "#8f88a0"
+          }
+        }
+      }
+    }
+  }
+}

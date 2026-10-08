@@ -22,7 +22,7 @@ import { attributeConfig, hasAttribute } from './attributes.js';
 import { hasLineOfSight } from './sight.js';
 import { canSee } from './detection.js';
 import { isOutOfFuel } from './fuel.js';
-import { distance, layerIdOf, removeUnit, round1, snapshotUnit, terrainAt, unitDef } from './queries.js';
+import { distance, layerIdOf, removeUnit, round1, snapshotUnit, terrainAt, terrainIdAt, unitDef } from './queries.js';
 
 /** Is `weapon` of `unit` an indirect-fire weapon (artillery style: fires from where the unit started, never counters or is countered)? */
 export const isIndirect = (game, unit, weapon) => !!weapon.indirect || hasAttribute(unitDef(game, unit), 'indirect');
@@ -43,7 +43,7 @@ const layerOf = (game, unit) => layerIdOf(game, unit);
 /** May `weapon` hit this unit at all, as far as tags go (`onlyTags`: the hunter sub's torpedoes only hit units tagged `sub`)? */
 const tagOk = (game, weapon, defender) => !weapon.onlyTags || weapon.onlyTags.some((t) => unitDef(game, defender).tags?.includes(t));
 /** May `weapon` be fired from tile `from` at all (`fromTerrain`: the marine's boarding rifle only works from the water)? */
-const standingOk = (game, weapon, from) => !weapon.fromTerrain || weapon.fromTerrain.includes(game.map.terrain[from.y][from.x]);
+const standingOk = (game, weapon, from) => !weapon.fromTerrain || weapon.fromTerrain.includes(terrainIdAt(game, from.x, from.y));
 
 /** Could `attacker` ever damage `defender`? (Some weapon has a target mode for the defender's layer and may hit its tags; position is ignored.) */
 export function canTarget(game, attacker, defender) {

@@ -1,7 +1,7 @@
 // Game: the single entry point for changing game state. UI, AI and tests all go through these methods.
 //
 //   const game = new Game(registry, map);
-//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'heal' | 'supply' | 'lay' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId, at } })
+//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'rebuild' | 'heal' | 'supply' | 'lay' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId, at } })
 //   game.build(x, y, unitType)
 //   game.setSubmerged({ unitId, submerged })   a submarine dives or surfaces for free before it moves
 //   game.deploy({ unitId, to })        a carrier (transport copter) puts a unit down, apart from its own order
@@ -9,7 +9,7 @@
 //   game.undo()
 //
 // Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, detonate, dive, surface, strike,
-// capture, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver; endTurn may start with the 'strike' events of neutral
+// capture, rebuild, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver; endTurn may start with the 'strike' events of neutral
 // turrets firing by themselves, marked `auto: true`) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
 //
@@ -34,6 +34,7 @@ import { canResupplyAt, resupply } from './ammo.js';
 import { canHealAt, healPlan, healsAutomatically, resolveHeal } from './heal.js';
 import { joinPartner, resolveJoin } from './join.js';
 import { canCapture, resolveCapture } from './capture.js';
+import { rebuildProblem, resolveRebuild } from './rebuild.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
 import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
@@ -105,6 +106,10 @@ export class Game {
     if (action.type === 'wait') return { ok: true, unit, reach };
     if (action.type === 'capture') {
       return canCapture(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-capture');
+    }
+    if (action.type === 'rebuild') {
+      const problem = rebuildProblem(this, unit, to.x, to.y);
+      return problem ? fail(problem) : { ok: true, unit, reach };
     }
     if (action.type === 'submerge') {
       return canSubmergeAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-submerge');
@@ -202,6 +207,7 @@ export class Game {
     }
     if (action.type === 'join') events.push(...resolveJoin(this, unit, joinPartner(this, unit, unit.x, unit.y)));
     else if (action.type === 'capture') events.push(...resolveCapture(this, unit));
+    else if (action.type === 'rebuild') events.push(...resolveRebuild(this, unit));
     else if (action.type === 'heal') events.push(...resolveHeal(this, unit));
     else if (action.type === 'supply') events.push(...resolveSupply(this, unit));
     else if (action.type === 'lay') events.push(...resolveLay(this, unit, action.at));

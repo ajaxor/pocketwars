@@ -15,8 +15,9 @@ import { ammoOf } from '../../engine/ammo.js';
 import { deployConfig, deployCost } from '../../engine/deploy.js';
 import { fuelHomes, fuelOf, usesFuel } from '../../engine/fuel.js';
 import { supplyConfig } from '../../engine/supply.js';
-import { deployedType, distance, inBounds, unitDef } from '../../engine/queries.js';
+import { deployedType, distance, inBounds, terrainAt, unitDef } from '../../engine/queries.js';
 import { isStructure } from '../../engine/structures.js';
+import { ruinAt } from '../../engine/rebuild.js';
 import { areaAt, areas, gapTo, inRangeOf } from './analysis.js';
 import { matchup, reachOf, roles } from './knowledge.js';
 
@@ -67,12 +68,27 @@ export const fuelSpots = (sit, def) => sit.properties.filter((p) => p.owner === 
 
 const propertyValue = (sit, p) => p.property.income / 1000 + (p.property.builds?.length ? 1.5 : 0) + (isHq(p) && p.owner !== null ? 4 : 0);
 
+/** The computer only rebuilds a ruin when it keeps a reserve afterwards (a quarter of the price), so it does not spend the money its factories need. */
+export const affordableRuin = (game, player, ruin) => !!ruin && game.state.funds[player] >= ruin.cost * 1.25;
+
+/** The ruins on the board the player could pay for, as property-like targets: { x, y, owner: null, terrain, property }. */
+function rebuildTargets(sit) {
+  const { game, player } = sit, out = [];
+  for (let y = 0; y < game.map.height; y++) for (let x = 0; x < game.map.width; x++) {
+    const ruin = ruinAt(game, x, y);
+    if (!ruin || !affordableRuin(game, player, ruin)) continue;
+    const to = game.registry.terrainDef(ruin.becomes);
+    out.push({ x, y, owner: null, terrain: terrainAt(game, x, y), property: to.attributes.property, rebuild: true });
+  }
+  return out;
+}
+
 /** Give every capturer its own property to take this turn (sit.captureTargets: unitId -> property). */
 export function planCaptures(sit) {
   const { game, player } = sit;
   sit.captureTargets = new Map();
   const capturers = sit.mine.filter((u) => roles(unitDef(game, u)).capture && !isStructure(game, u));
-  const wanted = sit.properties.filter((p) => p.owner !== player);
+  const wanted = [...sit.properties.filter((p) => p.owner !== player), ...rebuildTargets(sit)];
   const taken = new Map();   // tile -> number of capturers on it
   const free = [];
   for (const u of capturers) {

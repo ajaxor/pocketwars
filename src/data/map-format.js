@@ -8,6 +8,9 @@
 
 import { hasAttribute } from '../engine/attributes.js';
 
+/** The id of the tileset a map is drawn in: its own, or the registry's default (null when the data has no tilesets). */
+export const tilesetOf = (map, registry) => map.tileset ?? registry.defaultTileset ?? null;
+
 export const MAP_FORMAT = 'pocketwars-map';
 export const MAP_VERSION = 1;
 export const CONTROLLERS = ['human', 'ai'];
@@ -28,7 +31,7 @@ const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
  * @typedef {{faction:string, controller:'human'|'ai', funds:number, leader?:string}} PlayerSetup
  * @typedef {{type:string, owner:number|null, x:number, y:number, hp?:number}} UnitSetup   owner null: a neutral structure
  * @typedef {{id:string,name:string,description:string,width:number,height:number,
- *   terrain:string[][], ground:(string|null)[][], owners:(number|null)[][], players:PlayerSetup[], units:UnitSetup[],
+ *   tileset?:string, terrain:string[][], ground:(string|null)[][], owners:(number|null)[][], players:PlayerSetup[], units:UnitSetup[],
  *   legend:Object<string,{terrain:string,owner?:number}>}} GameMap
  */
 
@@ -110,8 +113,12 @@ export function parseMap(raw, registry) {
     });
   }
 
+  // tileset (optional): the look of the land (data/tilesets.json). A tileset may also name the ground tiles take when the map paints none.
+  if (raw.tileset !== undefined && !(typeof raw.tileset === 'string' && registry.tilesets?.[raw.tileset])) err(`unknown tileset ${JSON.stringify(raw.tileset)}${registry.tilesetIds?.length ? ` (known: ${registry.tilesetIds.join(', ')})` : ''}`);
+  const tileset = typeof raw.tileset === 'string' && registry.tilesets?.[raw.tileset] ? raw.tileset : null;   // absent: the registry's default tileset (see tilesetOf)
+
   // ground (optional): a second grid under the terrain, with its own legend. Anything it does not cover is the default ground.
-  const dflt = registry.defaultGround ?? null;
+  const dflt = registry.tilesetDef?.(tileset)?.ground ?? registry.defaultGround ?? null;
   const ground = terrain.map((row) => row.map(() => dflt));
   if (raw.ground !== undefined || raw.groundLegend !== undefined) {
     const gl = {};
@@ -163,7 +170,7 @@ export function parseMap(raw, registry) {
   if (problems.length) throw new MapError(id, problems);
   return deepFreeze({
     id: raw.id, name: raw.name, description: typeof raw.description === 'string' ? raw.description : '',
-    width, height, terrain, ground, owners, players, units, legend,
+    ...(tileset && { tileset }), width, height, terrain, ground, owners, players, units, legend,
   });
 }
 
@@ -180,7 +187,7 @@ const PREFERRED = { plain: '.', forest: 'F', mountain: 'M', rough: ':', road: 'r
  * Inverse of parseMap. Reuses the map's legend glyphs and assigns new ones for any new (terrain, owner) pair. `defaultGround` (the registry's)
  * lets a map that is all one other ground (all dirt) keep it; without it, a map with a single ground writes none.
  */
-export function serializeMap(map, { defaultGround } = {}) {
+export function serializeMap(map, { defaultGround, defaultTileset } = {}) {
   const key = (t, o) => `${t}|${o ?? ''}`;
   const glyphFor = new Map(Object.entries(map.legend || {}).map(([g, e]) => [key(e.terrain, e.owner), g]));
   const used = new Set(glyphFor.values());
@@ -200,6 +207,7 @@ export function serializeMap(map, { defaultGround } = {}) {
   }).join(''));
   const out = {
     format: MAP_FORMAT, version: MAP_VERSION, id: map.id, name: map.name, description: map.description,
+    ...(map.tileset && map.tileset !== defaultTileset && { tileset: map.tileset }),   // `defaultTileset` (the registry's): a map in it need not say so
     players: map.players.map((p) => ({ ...p })), legend, tiles, units: map.units.map((u) => ({ ...u })),
   };
   // ground is only written when some tile is not the default ground (the first id in the grid's most common value)

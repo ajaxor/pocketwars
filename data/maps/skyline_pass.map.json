@@ -1,0 +1,224 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "skyline_pass",
+  "name": "Skyline Pass",
+  "description": "A 24x14 moor above the clouds. Granite cliff plateaus fence the high ground and a single pass in each cliff line is the only way through for wheels and tracks.",
+  "tileset": "highlands",
+  "players": [
+    {
+      "faction": "skyreach",
+      "controller": "human",
+      "funds": 8000
+    },
+    {
+      "faction": "highspire",
+      "controller": "ai",
+      "funds": 8000
+    }
+  ],
+  "legend": {
+    "m": {
+      "terrain": "mountain"
+    },
+    ".": {
+      "terrain": "plain"
+    },
+    "f": {
+      "terrain": "forest"
+    },
+    "^": {
+      "terrain": "cliff"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "=": {
+      "terrain": "road"
+    },
+    "a": {
+      "terrain": "barracks",
+      "owner": 0
+    },
+    "r": {
+      "terrain": "rough"
+    },
+    "A": {
+      "terrain": "barracks",
+      "owner": 1
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "o": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "b": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "v": {
+      "terrain": "airfield",
+      "owner": 0
+    },
+    "V": {
+      "terrain": "airfield",
+      "owner": 1
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "mmm.ff..^^^^^^^^..ff.mmm",
+    "mm..f...^^^^^^^^...f..mm",
+    "m...c...^......^...c...m",
+    "........=......=........",
+    ".a..r...=.^^^^.=...r..A.",
+    ".O=======.^^^^.=======B.",
+    ".o..r...=.^^^^.=...r..b.",
+    "........=......=........",
+    "mv..c...^......^...c..Vm",
+    "mm..f...^^^^^^^^...f..mm",
+    "mmm.ff..^^^^^^^^..ff.mmm",
+    "~Y..r..............r..Z~",
+    "~~f.....c......c.....f~~",
+    "...ff....r....r....ff..."
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 20,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 21,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 21,
+      "y": 4
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 2,
+      "y": 6
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 21,
+      "y": 6
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 2,
+      "y": 3
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 21,
+      "y": 3
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 1,
+      "y": 3
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 22,
+      "y": 3
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 1,
+      "y": 7
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 22,
+      "y": 7
+    },
+    {
+      "type": "sniper",
+      "owner": 0,
+      "x": 1,
+      "y": 2
+    },
+    {
+      "type": "sniper",
+      "owner": 1,
+      "x": 22,
+      "y": 2
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 6,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 17,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 6,
+      "y": 10
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 17,
+      "y": 10
+    }
+  ]
+}

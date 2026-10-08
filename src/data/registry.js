@@ -38,17 +38,20 @@ export function createRegistry(raw) {
   const units = deepFreeze(withDefaults(withIds(structuredClone(raw.units))));
   const weapons = deepFreeze(Object.fromEntries(Object.entries(structuredClone(raw.weapons)).map(([id, w]) => [id, { armorPiercing: 0, ...w, id }])));
   const ground = deepFreeze(withIds(structuredClone(raw.ground || {})));
+  const tilesets = deepFreeze(withIds(structuredClone(raw.tilesets || {})));
   const ai = deepFreeze(structuredClone(raw.ai));
   const aiStrategies = deepFreeze(structuredClone(raw['ai-strategies']?.strategies ?? []));   // the strategist's game plans (optional)
   const unitIds = Object.keys(units); // JSON order = build-menu order
   const terrainIds = Object.keys(terrain);
   const groundIds = Object.keys(ground);
+  const tilesetIds = Object.keys(tilesets);
+  const skins = new Map();   // `${tileset}|${terrain}` -> the terrain as that tileset draws it
   const factionIds = Object.keys(factions); // JSON order = the order colours are offered in
   const loadouts = deepFreeze(resolveLoadouts(structuredClone(raw.loadouts)));
   const leaderIds = Object.keys(loadouts.leaders); // JSON order = the order leaders are offered in
 
   return Object.freeze({
-    rules, factions, terrain, ground, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds,
+    rules, factions, terrain, ground, tilesets, tilesetIds, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds,
     /** The kit a leader brings: { build, start } (see resolveLoadouts). No leader (null) gets the default kit. */
     loadoutFor: (leaderId) => {
       if (leaderId == null) return loadouts.default;
@@ -59,6 +62,25 @@ export function createRegistry(raw) {
     /** The ground under every tile that a map does not say otherwise about (null when the data has no ground at all). */
     defaultGround: groundIds.includes(rules.defaultGround) ? rules.defaultGround : null,
     groundDef: (id) => (id == null ? null : ground[id] || null),
+    /** The tileset a map without one is drawn in (null when the data has no tilesets). */
+    defaultTileset: tilesets[rules.defaultTileset] ? rules.defaultTileset : null,
+    /** The tileset with this id, or the default one for null/unknown (null when the data has no tilesets). */
+    tilesetDef: (id) => tilesets[id] ?? tilesets[rules.defaultTileset] ?? null,
+    /** The home tileset of a faction (the land it fights on in the campaign), or null. */
+    homeTileset: (factionId) => tilesetIds.find((t) => tilesets[t].faction === factionId) ?? null,
+    /**
+     * Terrain `terrainId` as `tilesetId` draws it: the terrain with the tileset's display name and its render options laid over its own (rules never change).
+     * Only the renderer, the map preview and the info cards ask; the engine reads `terrain` directly.
+     */
+    skin: (tilesetId, terrainId) => {
+      const t = terrain[terrainId];
+      if (!t) throw new Error(`Unknown terrain "${terrainId}"`);
+      const o = (tilesets[tilesetId] ?? tilesets[rules.defaultTileset])?.terrain?.[terrainId];
+      if (!o) return t;
+      const key = `${tilesetId}|${terrainId}`;
+      if (!skins.has(key)) skins.set(key, Object.freeze({ ...t, name: o.name ?? t.name, render: Object.freeze({ ...t.render, ...(o.render ?? {}) }) }));
+      return skins.get(key);
+    },
     unit: (id) => { const u = units[id]; if (!u) throw new Error(`Unknown unit "${id}"`); return u; },
     terrainDef: (id) => { const t = terrain[id]; if (!t) throw new Error(`Unknown terrain "${id}"`); return t; },
     weapon: (id) => { const w = weapons[id]; if (!w) throw new Error(`Unknown weapon "${id}"`); return w; },

@@ -211,7 +211,8 @@ export class EditorScreen {
         continue;
       }
       const grass = registry.groundDef(registry.defaultGround);
-      const tdef = it.kind === 'terrain' ? registry.terrainDef(it.id) : registry.terrainDef('plain');
+      const set = this.model?.tileset ?? registry.defaultTileset;
+      const tdef = registry.skin(set, it.kind === 'terrain' ? it.id : 'plain');
       const gdef = it.kind === 'ground' ? registry.groundDef(it.id) : grass;
       const ownerColor = tdef.attributes.property ? (owner === null ? registry.rules.neutralColor : this.#colors(owner).color) : null;
       drawTerrainLayer(g, { width: 1, height: 1, S: ICON, now, terrainAt: () => tdef, ownerColorAt: () => ownerColor, groundAt: () => gdef });
@@ -647,7 +648,7 @@ export class EditorScreen {
 
     body.append(this.#heading('Game maps (open a copy)'));
     const gameList = h(doc, 'div', 'ed-maps');
-    for (const map of this.maps) gameList.append(this.#mapCard(map.name, `${map.width} x ${map.height} - ${map.players.length} players`, () => this.#openRaw(serializeMap(map, { defaultGround: registry.defaultGround ?? undefined })), map));
+    for (const map of this.maps) gameList.append(this.#mapCard(map.name, `${map.width} x ${map.height} - ${map.players.length} players`, () => this.#openRaw(serializeMap(map, { defaultGround: registry.tilesetDef(map.tileset)?.ground ?? registry.defaultGround ?? undefined, defaultTileset: registry.defaultTileset ?? undefined })), map));
     body.append(gameList);
 
     body.append(this.#heading('Import'));

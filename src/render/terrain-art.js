@@ -10,7 +10,14 @@
 import { SHOAL_STYLES } from './shoal-styles.js';
 
 import { rnd } from './rnd.js';
+import { WOOD_DECOR } from './terrain-wood.js';
+import { RELIEF_DECOR } from './terrain-relief.js';
+import { GROUND_DECOR } from './terrain-ground.js';
+import { RUIN_DECOR } from './terrain-ruins.js';
 export { rnd };
+
+/** `defaults` with the tile's own style (a tileset's render.style for this terrain) laid over it. */
+const styled = (defaults, at) => (at?.style ? { ...defaults, ...at.style } : defaults);
 
 const poly = (g, pts, fill) => {
   g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath();
@@ -63,8 +70,9 @@ export const TERRAIN_DECOR = {
     },
     // Mid-grey road (light enough for units to stand out) with a dashed centre line that runs
     // through each tile in the same rhythm (two dashes a tile, gaps at the tile edges) so it carries on from tile to tile.
-    road(g, px, py, S, { x, y, link = NO_LINKS }) {
-      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, i % 2 ? '#a3a8b1' : '#7f848d');
+    road(g, px, py, S, at) {
+      const { x, y, link = NO_LINKS } = at, RD = styled({ specks: ['#a3a8b1', '#7f848d'] }, at);
+      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, RD.specks[i % 2]);
       if (!ROAD_LINES) return;
       if (!ROAD_CENTRE_LINE) return;
       const { shape, arms } = roadShape(link);
@@ -88,7 +96,8 @@ export const TERRAIN_DECOR = {
       }
     },
     // A few shaded boulders and pebbles; what they lie on (grass or dirt) is the ground under the tile.
-    rough(g, px, py, S, { x, y }) {
+    rough(g, px, py, S, at) {
+      const { x, y } = at, RS = styled({ rock: '#857c6c', lit: '#b3a997', specks: ['#cfc9bb', '#7d7667'] }, at);
       const rock = (cx, cy, r, seed) => {
         const pts = [], lit = [];
         for (let k = 0; k < 7; k++) {
@@ -97,27 +106,29 @@ export const TERRAIN_DECOR = {
           lit.push([cx - r * .1 + Math.cos(a) * rr * .72, cy - r * .16 + Math.sin(a) * rr * .56]);
         }
         g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(cx + r * .12, cy + r * .62, r * .95, r * .3, 0, 0, 7); g.fill();
-        poly(g, pts, '#857c6c');
-        poly(g, lit, '#b3a997');
+        poly(g, pts, RS.rock);
+        poly(g, lit, RS.lit);
       };
       rock(px + (.26 + .1 * rnd(x, y, 1)) * S, py + (.36 + .08 * rnd(x, y, 2)) * S, S * .15, 1);
       rock(px + (.68 + .08 * rnd(x, y, 3)) * S, py + (.62 + .08 * rnd(x, y, 4)) * S, S * .2, 2);
       rock(px + (.36 + .1 * rnd(x, y, 5)) * S, py + (.82 + .05 * rnd(x, y, 6)) * S, S * .09, 3);
-      for (let i = 0; i < 4; i++) dot(g, px + (.1 + .8 * rnd(x, y, i + 40)) * S, py + (.1 + .8 * rnd(x, y, i + 44)) * S, S * .02, i % 2 ? '#cfc9bb' : '#7d7667');
+      for (let i = 0; i < 4; i++) dot(g, px + (.1 + .8 * rnd(x, y, i + 40)) * S, py + (.1 + .8 * rnd(x, y, i + 44)) * S, S * .02, i % 2 ? RS.specks[0] : RS.specks[1]);
     },
     // Pines: how many, where, how big, how many tiers and which green all come from the tile's position (rnd), so every forest
     // tile differs but each one looks the same every time it is drawn.
-    forest(g, px, py, S, { x, y }) {
-      const GREENS = [['#2f6b34', '#3d8443'], ['#2a6330', '#37793e'], ['#37733a', '#47904b'], ['#2c6a3c', '#3b8450']];
+    forest(g, px, py, S, at) {
+      const { x, y } = at, FS = styled({ greens: [['#2f6b34', '#3d8443'], ['#2a6330', '#37793e'], ['#37733a', '#47904b'], ['#2c6a3c', '#3b8450']], snow: null, trunk: '#5a4028' }, at);
+      const GREENS = FS.greens;
       const pine = (cx, by, s, k) => {
         const u = S * s, ax = px + cx * S, ay = py + by * S;
         const [dark, lit] = GREENS[Math.floor(rnd(x, y, 90 + k) * GREENS.length)];
         g.fillStyle = 'rgba(0,0,0,.14)'; g.beginPath(); g.ellipse(ax, ay, u * .2, u * .05, 0, 0, 7); g.fill();
-        g.fillStyle = '#5a4028'; g.fillRect(ax - u * .03, ay - u * .1, u * .06, u * .1);
+        g.fillStyle = FS.trunk; g.fillRect(ax - u * .03, ay - u * .1, u * .06, u * .1);
         const tiers = rnd(x, y, 100 + k) < .35 ? [[.2, .06, .3], [.15, .2, .44], [.1, .34, .6]] : [[.19, .08, .34], [.14, .24, .52]];
         for (const [hw, y0, y1] of tiers) {
           poly(g, [[ax - hw * u, ay - y0 * u], [ax + hw * u, ay - y0 * u], [ax, ay - y1 * u]], dark);
           poly(g, [[ax - hw * u, ay - y0 * u], [ax, ay - y0 * u], [ax, ay - y1 * u]], lit);
+          if (FS.snow) poly(g, [[ax - hw * u * .62, ay - (y0 + (y1 - y0) * .38) * u], [ax + hw * u * .62, ay - (y0 + (y1 - y0) * .38) * u], [ax, ay - y1 * u]], FS.snow);   // snow laid on the tier
         }
       };
       // three or four slots, each nudged, drawn back to front
@@ -128,7 +139,8 @@ export const TERRAIN_DECOR = {
     },
     // One rounded mountain, centred in its tile. Its width, height, summit position, snow and a smaller companion peak all come
     // from the tile's position (rnd), so a range of them is varied but never changes between draws.
-    mountain(g, px, py, S, { x, y }) {
+    mountain(g, px, py, S, at) {
+      const { x, y } = at, MS = styled({ rock: ['#a39b8c', '#928a7c'], side: ['#72695e', '#6c655a'], snow: ['#f2efe6', '#dcd9d0'], snowSide: ['#d9d6cc', '#bdbab1'] }, at);
       const r = (i) => rnd(x, y, 60 + i);
       const P = (a, b) => [px + a * S, py + b * S];
       // one peak: centre cx, half-width w, summit height `top`, foot line `yb`; `shade` darkens a peak that stands behind
@@ -145,18 +157,20 @@ export const TERRAIN_DECOR = {
         };
         g.fillStyle = 'rgba(0,0,0,.15)'; g.beginPath(); g.ellipse(...P(cx, yb + .02), w * S * 1.02, S * .05, 0, 0, 7); g.fill();
         g.save(); outline(); g.clip();
-        g.fillStyle = shade ? '#928a7c' : '#a39b8c'; g.fillRect(...P(xl - .05, top - .05), (w * 2 + .1) * S, (h + .2) * S);
+        g.fillStyle = MS.rock[shade ? 1 : 0]; g.fillRect(...P(xl - .05, top - .05), (w * 2 + .1) * S, (h + .2) * S);
         // the shaded right face, split by a ridge that runs down from the summit with a little kink
         const kink = pkx + .05 + (r(9) - .5) * .05;
-        poly(g, [P(pkx, top - .03), P(xr + .05, top - .03), P(xr + .05, yb + .12), P(cx + .02, yb + .12), P(kink, yb - h * .4)], shade ? '#6c655a' : '#72695e');
+        poly(g, [P(pkx, top - .03), P(xr + .05, top - .03), P(xr + .05, yb + .12), P(cx + .02, yb + .12), P(kink, yb - h * .4)], MS.side[shade ? 1 : 0]);
         g.strokeStyle = 'rgba(60,54,46,.22)'; g.lineWidth = Math.max(1, S * .025); g.lineCap = 'round'; g.beginPath();
         for (let i = 0; i < 2; i++) { const cx2 = pkx - w * (.3 + i * .25) - r(10 + i) * .03; g.moveTo(...P(cx2, top + h * (.38 + i * .12))); g.lineTo(...P(cx2 - .05, top + h * (.55 + i * .14))); }
         g.stroke();
         // snow: from the summit down to a scalloped line, deeper on taller peaks
         const sy = top + h * (.26 + r(12) * .14);
         const snow = [P(pkx - .2, sy + .02), P(pkx - .11, sy - .035), P(pkx - .03, sy + .03), P(pkx + .05, sy - .03), P(pkx + .12, sy + .02), P(pkx + .22, sy + .02)];
-        poly(g, [P(pkx - .25, top - .04), P(pkx + .25, top - .04), ...snow.reverse()], shade ? '#dcd9d0' : '#f2efe6');
-        poly(g, [P(pkx, top - .04), P(pkx + .25, top - .04), P(pkx + .22, sy + .02), P(pkx + .12, sy + .02), P(pkx + .05, sy - .03), P(pkx, sy + .01)], shade ? '#bdbab1' : '#d9d6cc');
+        if (MS.snow) {
+          poly(g, [P(pkx - .25, top - .04), P(pkx + .25, top - .04), ...snow.reverse()], MS.snow[shade ? 1 : 0]);
+          poly(g, [P(pkx, top - .04), P(pkx + .25, top - .04), P(pkx + .22, sy + .02), P(pkx + .12, sy + .02), P(pkx + .05, sy - .03), P(pkx, sy + .01)], MS.snowSide[shade ? 1 : 0]);
+        }
         g.restore();
       };
       const cx = .5 + (r(1) - .5) * .06, w = .33 + r(0) * .12, yb = .82 + r(2) * .06, top = .1 + r(3) * .1, pkx = cx + (r(4) - .5) * .14;
@@ -178,3 +192,5 @@ export const TERRAIN_DECOR = {
       }
     },
   };
+
+Object.assign(TERRAIN_DECOR, WOOD_DECOR, RELIEF_DECOR, GROUND_DECOR, RUIN_DECOR);

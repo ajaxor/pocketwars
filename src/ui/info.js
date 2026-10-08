@@ -6,7 +6,7 @@ import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } fr
 import { ammoConfig, ammoOf } from '../engine/ammo.js';
 import { fuelConfig, fuelOf } from '../engine/fuel.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
-import { factionOf, layerInfo, ownerAt, propertyAt, terrainAt, unitDef } from '../engine/queries.js';
+import { factionOf, layerInfo, ownerAt, propertyAt, skinAt, terrainAt, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', naval: 'Naval', amphibious: 'Amphibious', hover: 'Hover', amphibious_tread: 'Amphibious tread' };
@@ -59,7 +59,7 @@ export function terrainInfo(game, x, y) {
   const owner = prop ? ownerAt(game, x, y) : undefined;
   const notes = Object.entries(t.attributes).filter(([name]) => name !== 'property').map(([name, cfg]) => tagOf(TERRAIN_ATTRIBUTES, name, cfg, registry));
   return {
-    x, y, name: t.name, color: t.render.base ?? registry.groundDef(game.map.ground?.[y]?.[x])?.render.base ?? '#86b95c', defense: t.defense,
+    x, y, name: skinAt(game, x, y).name, color: skinAt(game, x, y).render.base ?? registry.groundDef(game.map.ground?.[y]?.[x])?.render.base ?? '#86b95c', defense: t.defense,
     moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),
     property: prop ? {
       income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel),

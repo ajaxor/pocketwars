@@ -107,5 +107,47 @@
     "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 2, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": { "wall": { "structure": "cracked_wall" } },
     "render": { "wall": true, "mini": "#8a7d6a" }
+  },
+  "snow_drift": {
+    "name": "Snowdrift",
+    "defense": 0,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {},
+    "render": { "decor": "drift", "mini": "#cfdceb" }
+  },
+  "dune": {
+    "name": "Dunes",
+    "defense": 0,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {},
+    "render": { "decor": "dune", "mini": "#dcbf7a" }
+  },
+  "mud": {
+    "name": "Mud",
+    "defense": 0,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {},
+    "render": { "base": "#7a5d3b", "decor": "mud", "mini": "#7a5d3b" }
+  },
+  "cliff": {
+    "name": "Cliff",
+    "defense": 0,
+    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": null, "bike": null, "diver": null, "hover": null, "amphibious_tread": null },
+    "attributes": { "blocksLineOfSight": 2 },
+    "render": { "base": "#a39d8e", "decor": "cliff", "mini": "#8a8478" }
+  },
+  "ruin_city": {
+    "name": "Ruined City",
+    "defense": 2,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 2, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": { "ruin": { "becomes": "city", "cost": 4000 }, "blocksLineOfSight": 1 },
+    "render": { "decor": "ruin_city", "mini": "#77726a" }
+  },
+  "ruin_factory": {
+    "name": "Ruined Factory",
+    "defense": 2,
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 2, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": { "ruin": { "becomes": "factory", "cost": 7000 }, "blocksLineOfSight": 1 },
+    "render": { "decor": "ruin_factory", "mini": "#6c6761" }
   }
 }

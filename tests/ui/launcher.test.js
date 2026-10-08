@@ -33,8 +33,8 @@ test('it loads the stylesheet before showing the title screen, then the game, th
 test('the title screen carries the gallery links', async () => {
   const { opts } = setup();
   const title = await launch(opts);
-  assert.deepEqual(title.links.children.map((a) => a.attrs.href), ['gallery/']);
-  assert.deepEqual(GALLERIES.map((g) => g.label), ['Unit art']);
+  assert.deepEqual(title.links.children.map((a) => a.attrs.href), ['gallery/', 'gallery/terrain.html']);
+  assert.deepEqual(GALLERIES.map((g) => g.label), ['Unit art', 'Terrain']);
 });
 
 test('the styles are awaited: nothing is shown before they load', async () => {

@@ -1,0 +1,217 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "atoll",
+  "name": "Atoll",
+  "description": "A 24x14 reef atoll. The two islands are joined by a sand causeway through the shallows; sea cliffs guard the shore, palm groves hold the beaches, and both sides can launch ships.",
+  "tileset": "islands",
+  "players": [
+    {
+      "faction": "tidehaven",
+      "controller": "human",
+      "funds": 8000
+    },
+    {
+      "faction": "skyreach",
+      "controller": "ai",
+      "funds": 8000
+    }
+  ],
+  "legend": {
+    "~": {
+      "terrain": "sea"
+    },
+    "f": {
+      "terrain": "forest"
+    },
+    ".": {
+      "terrain": "plain"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "^": {
+      "terrain": "cliff"
+    },
+    "s": {
+      "terrain": "shoals"
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "a": {
+      "terrain": "barracks",
+      "owner": 0
+    },
+    "A": {
+      "terrain": "barracks",
+      "owner": 1
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "=": {
+      "terrain": "road"
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "o": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "b": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "v": {
+      "terrain": "airfield",
+      "owner": 0
+    },
+    "V": {
+      "terrain": "airfield",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "~~~f.f..~~~~~~~~..f.f~~~",
+    "~~f..c...^~~~~^...c..f~~",
+    "~~...ff..^s~~s^..ff...~~",
+    "~Y.a....^s~~~~s^....A.Z~",
+    "~~.O======....======B.~~",
+    "~~.o....^s~~~~s^....b.~~",
+    "~Yv.....^s~~~~s^.....VZ~",
+    "~~f..c...^~~~~^...c..f~~",
+    "~~~f.f..~~~~~~~~..f.f~~~",
+    "~~~~..~~~~~~~~~~~~..~~~~"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 5,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 18,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 4,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 19,
+      "y": 4
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 4,
+      "y": 3
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 19,
+      "y": 3
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 4,
+      "y": 5
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 19,
+      "y": 5
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 4,
+      "y": 2
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 19,
+      "y": 2
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 3,
+      "y": 2
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 20,
+      "y": 2
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 3,
+      "y": 6
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 20,
+      "y": 6
+    },
+    {
+      "type": "sniper",
+      "owner": 0,
+      "x": 3,
+      "y": 1
+    },
+    {
+      "type": "sniper",
+      "owner": 1,
+      "x": 20,
+      "y": 1
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 6,
+      "y": 2
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 17,
+      "y": 2
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 6,
+      "y": 8
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 17,
+      "y": 8
+    }
+  ]
+}

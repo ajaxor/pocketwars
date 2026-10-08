@@ -4,7 +4,7 @@ import { attributeConfig } from './attributes.js';
 import { isHidden } from './detection.js';
 import { refuelAtTurnStart } from './fuel.js';
 import { healAtTurnStart } from './heal.js';
-import { costFor, distance, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
+import { costFor, distance, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, terrainIdAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -96,7 +96,7 @@ export function menuFor(game, player, x, y) {
   if (!property) return [];
   const { registry, map } = game;
   const leader = player == null ? null : map.players[player].leader ?? null;
-  const ids = registry.loadoutFor(leader).build[map.terrain[y][x]];
+  const ids = registry.loadoutFor(leader).build[terrainIdAt(game, x, y)];   // the terrain NOW: a rebuilt ruin builds what its new building builds
   return ids ? ids.map((id) => registry.unit(id)) : [...registry.unitsInCategories(property.builds)].sort((a, b) => a.cost - b.cost);   // the cheapest at the top, like every kit's menu
 }
 

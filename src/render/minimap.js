@@ -19,7 +19,7 @@ export function drawMinimap(g, map, registry, colorOf, px = miniTile(map)) {
   const groundColor = (x, y) => { const gr = registry.groundDef(map.ground?.[y]?.[x]); return gr ? gr.render.mini || gr.render.base : '#86b95c'; };
   for (let y = 0; y < map.height; y++) {
     for (let x = 0; x < map.width; x++) {
-      const t = registry.terrainDef(map.terrain[y][x]);
+      const t = registry.skin(map.tileset ?? registry.defaultTileset, map.terrain[y][x]);
       const isProperty = !!t.attributes.property;
       // a property sits on its ground, unless the terrain paints its own base (a shipyard on the water)
       g.fillStyle = isProperty && !t.render.base ? groundColor(x, y) : t.render.mini || t.render.base || groundColor(x, y);

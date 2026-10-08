@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pocket Wars: terrain tilesets</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #16181d; color: #e9e6dc; font: 15px/1.5 system-ui, sans-serif; }
+  header, main { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  header { padding-top: 20px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  h2 { font-size: 18px; margin: 28px 0 2px; padding-top: 18px; border-top: 1px solid #2a2d35; }
+  p { margin: 4px 0 10px; color: #b9b5a8; }
+  a { color: #8fc2ee; }
+  .tag { display: inline-block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: #101216; background: #8fc2ee; border-radius: 6px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; }
+  .sheet { overflow-x: auto; background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 10px; }
+  canvas { display: block; max-width: 100%; height: auto; border-radius: 8px; }
+  .names { font-size: 12px; color: #8a877c; margin-top: 6px; }
+  .ctl { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #b9b5a8; padding: 10px 0; }
+  input[type=range] { width: 160px; accent-color: #e8712c; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Terrain tilesets</h1>
+  <p>Each army has a home tileset: the same rules, drawn in its own land. Every sheet below is drawn with the game's own terrain code. Soft ground (drifts, dunes, mud) slows wheels, cliffs are walls to everything on the ground, and ruined cities and factories can be rebuilt by a soldier for a price. <a href="./">Unit gallery</a> · <a href="../">Back to the game</a></p>
+  <div class="ctl"><label for="size">Tile size</label><input id="size" type="range" min="24" max="72" value="44"><span id="sizeOut">44</span></div>
+</header>
+<main id="sets"></main>
+<script type="module">
+// Same cache-busting as the other gallery pages: find the current build via version.json, then load that build's copy of the code.
+let base = './terrain.js?t=' + Date.now();
+try {
+  const r = await fetch('../version.json', { cache: 'no-store' });
+  if (r.ok) base = '../v/' + (await r.json()).hash + '/gallery/terrain.js';
+} catch {}
+await import(base);
+</script>
+</body>
+</html>

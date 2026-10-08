@@ -6,5 +6,37 @@
   "dirt": {
     "name": "Dirt",
     "render": { "base": "#b59d6b", "decor": "dirt", "mini": "#b59d6b" }
+  },
+  "snow": {
+    "name": "Snowfield",
+    "render": { "base": "#e4edf5", "decor": "snow", "mini": "#e4edf5" }
+  },
+  "sand": {
+    "name": "Sand",
+    "render": { "base": "#e3cf9c", "decor": "sand", "mini": "#e3cf9c" }
+  },
+  "hardpan": {
+    "name": "Hardpan",
+    "render": { "base": "#cf9f66", "decor": "hardpan", "mini": "#cf9f66" }
+  },
+  "paving": {
+    "name": "Paving",
+    "render": { "base": "#a7aab0", "decor": "paving", "mini": "#a7aab0" }
+  },
+  "moss": {
+    "name": "Jungle floor",
+    "render": { "base": "#62a14a", "decor": "moss", "mini": "#62a14a" }
+  },
+  "ash": {
+    "name": "Ash",
+    "render": { "base": "#8f8c84", "decor": "ash", "mini": "#8f8c84" }
+  },
+  "heath": {
+    "name": "Heath",
+    "render": { "base": "#a1a77a", "decor": "heath", "mini": "#a1a77a" }
+  },
+  "lawn": {
+    "name": "Lawn",
+    "render": { "base": "#9ad167", "decor": "lawn", "mini": "#9ad167" }
   }
 }

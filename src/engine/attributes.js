@@ -275,6 +275,16 @@ export const TERRAIN_ATTRIBUTES = {
       if (!v || typeof v !== 'object' || Array.isArray(v) || typeof v.structure !== 'string' || !v.structure) fail('must be true or { "structure": "<unit id>" }');
     },
   },
+  ruin: {
+    label: (v, registry) => `Ruin: rebuild for ${v.cost.toLocaleString('en-US')}`,
+    help: (v, registry) => `The shell of a ${registry ? registry.terrain[v.becomes]?.name.toLowerCase() ?? v.becomes : v.becomes}. A soldier standing here can rebuild it for ${v.cost.toLocaleString('en-US')}, and it becomes a ${registry ? registry.terrain[v.becomes]?.name.toLowerCase() ?? v.becomes : v.becomes} that belongs to them.`,
+    doc: 'A ruin that can be rebuilt (rebuild.js). Config: { becomes: <terrain id of a property>, cost: funds }. A unit with the `capture` attribute standing on the tile, whose owner can pay `cost`, may take the Rebuild order (in place of Capture): the funds are spent, the tile turns into the `becomes` terrain, which belongs to the unit\'s owner at once, and the unit\'s turn ends. The terrain change lives in `state.terrain`, so Undo, Reset and snapshots all see it (queries.terrainIdAt); the map itself is never changed.',
+    check: (v, e, fail) => {
+      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "becomes": "city", "cost": 4000 }');
+      if (typeof v.becomes !== 'string' || !v.becomes) fail('becomes must name a terrain (a property)');
+      if (!Number.isInteger(v.cost) || v.cost < 1) fail('cost must be a positive whole number of funds');
+    },
+  },
   visionBonus: {
     label: (v) => `Sight +${v}`,
     help: (v) => `In fog of war, a ground unit standing here sees ${v} tiles further.`,

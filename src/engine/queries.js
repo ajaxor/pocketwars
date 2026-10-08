@@ -12,7 +12,11 @@ export const tileIndex = (map, x, y) => y * map.width + x;
 export const unitAt = (game, x, y) => game.state.units.find((u) => u.x === x && u.y === y);
 export const unitById = (game, id) => game.state.units.find((u) => u.id === id);
 export const unitDef = (game, unit) => game.registry.unit(unit.type);
-export const terrainAt = (game, x, y) => game.registry.terrainDef(game.map.terrain[y][x]);
+/** The id of the terrain on (x, y) right now. The map's terrain never changes, but a ruin that has been rebuilt does (state.terrain; see rebuild.js), so every rule reads the tile through here. */
+export const terrainIdAt = (game, x, y) => game.state.terrain?.[y]?.[x] ?? game.map.terrain[y][x];
+export const terrainAt = (game, x, y) => game.registry.terrainDef(terrainIdAt(game, x, y));
+/** The terrain on (x, y) as the map's tileset draws it (display name and render options only; the rules are the plain terrain's). */
+export const skinAt = (game, x, y) => game.registry.skin(game.map.tileset ?? game.registry.defaultTileset, terrainIdAt(game, x, y));
 export const ownerAt = (game, x, y) => game.state.owners[y][x];
 export const removeUnit = (game, unit) => { game.state.units = game.state.units.filter((u) => u !== unit); };
 

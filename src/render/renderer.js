@@ -24,7 +24,7 @@ import { canAttackFrom } from '../engine/combat.js';
 import { Camera } from './camera.js';
 import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { isMine } from '../engine/mines.js';
-import { facingAlong, terrainAt, tileIndex, unitById } from '../engine/queries.js';
+import { facingAlong, skinAt, terrainAt, terrainIdAt, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
 import { drawWalls } from './walls.js';
 import { isFogged, rememberedStructures, tileExplored, tileVisible } from '../engine/fog.js';
@@ -99,7 +99,7 @@ export class Renderer {
    */
   wallAt(x, y) {
     const { game } = this;
-    const cfg = attributeConfig(game.registry.terrainDef(game.map.terrain[y][x]), 'wall');
+    const cfg = attributeConfig(game.registry.terrainDef(terrainIdAt(game, x, y)), 'wall');
     if (!cfg) return null;
     if (cfg === true) return 'wall';
     if (this.viewer !== null && isFogged(game, this.viewer) && !tileVisible(game, this.viewer, x, y)) {   // out of sight: as last seen
@@ -387,7 +387,7 @@ export class Renderer {
     g.clearRect(0, 0, W, H);
     g.setTransform(d, 0, 0, d, ox * d, oy * d);
 
-    const terrainAt = (x, y) => game.registry.terrainDef(map.terrain[y][x]);
+    const terrainAt = (x, y) => skinAt(game, x, y);
     const dimmed = this.dimmedTiles(view);
     drawTerrainLayer(g, {
       width: map.width, height: map.height, S, now, terrainAt,

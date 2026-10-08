@@ -15,6 +15,7 @@ import { setFactions } from './render/portrait-art.js';
 /** Extra buttons on the title screen. */
 export const GALLERIES = [
   { label: 'Unit art', href: 'gallery/' },
+  { label: 'Terrain', href: 'gallery/terrain.html' },
 ];
 
 const defaultLoadCss = (doc, href) => new Promise((ok, no) => {

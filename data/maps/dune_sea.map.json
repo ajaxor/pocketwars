@@ -1,0 +1,224 @@
+{
+  "format": "pocketwars-map",
+  "version": 1,
+  "id": "dune_sea",
+  "name": "Dune Sea",
+  "description": "A 24x14 sand sea. Dunes drag at wheels, a sandstone canyon runs through the middle with a road in its floor, and palm oases hold the water.",
+  "tileset": "desert",
+  "players": [
+    {
+      "faction": "ashmark",
+      "controller": "human",
+      "funds": 8000
+    },
+    {
+      "faction": "vantor_reach",
+      "controller": "ai",
+      "funds": 8000
+    }
+  ],
+  "legend": {
+    "m": {
+      "terrain": "mountain"
+    },
+    ".": {
+      "terrain": "plain"
+    },
+    "f": {
+      "terrain": "forest"
+    },
+    "u": {
+      "terrain": "dune"
+    },
+    "c": {
+      "terrain": "city"
+    },
+    "=": {
+      "terrain": "road"
+    },
+    "^": {
+      "terrain": "cliff"
+    },
+    "a": {
+      "terrain": "barracks",
+      "owner": 0
+    },
+    "A": {
+      "terrain": "barracks",
+      "owner": 1
+    },
+    "O": {
+      "terrain": "hq",
+      "owner": 0
+    },
+    "B": {
+      "terrain": "hq",
+      "owner": 1
+    },
+    "o": {
+      "terrain": "factory",
+      "owner": 0
+    },
+    "b": {
+      "terrain": "factory",
+      "owner": 1
+    },
+    "v": {
+      "terrain": "airfield",
+      "owner": 0
+    },
+    "V": {
+      "terrain": "airfield",
+      "owner": 1
+    },
+    "~": {
+      "terrain": "sea"
+    },
+    "Y": {
+      "terrain": "shipyard",
+      "owner": 0
+    },
+    "Z": {
+      "terrain": "shipyard",
+      "owner": 1
+    }
+  },
+  "tiles": [
+    "mmm.f.uuuu.ff.uuuu.f.mmm",
+    "mm.ff.uuu..ff..uuu.ff.mm",
+    "m.c..=.mm.uuuu.mm.=..c.m",
+    ".....=.mm......mm.=.....",
+    "..=..=.^^^^^^^^^^.=..=..",
+    ".a=..=..uuuuuuuu..=..=A.",
+    ".O====================B.",
+    ".o=..=..uuuuuuuu..=..=b.",
+    "..=..=..uuuuuuuu..=..=..",
+    ".v=..=.^^^^^^^^^^.=..=V.",
+    "mm...=.mm......mm.=...mm",
+    "~Yc..=.mm.uuuu.mm.=..cZ~",
+    "~~.ff.uuu..ff..uuu.ff.~~",
+    "mmm.f.uuuu.ff.uuuu.f.mmm"
+  ],
+  "units": [
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 3,
+      "y": 6
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 20,
+      "y": 6
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 6
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 21,
+      "y": 6
+    },
+    {
+      "type": "soldier",
+      "owner": 0,
+      "x": 2,
+      "y": 5
+    },
+    {
+      "type": "soldier",
+      "owner": 1,
+      "x": 21,
+      "y": 5
+    },
+    {
+      "type": "mech",
+      "owner": 0,
+      "x": 2,
+      "y": 7
+    },
+    {
+      "type": "mech",
+      "owner": 1,
+      "x": 21,
+      "y": 7
+    },
+    {
+      "type": "tank",
+      "owner": 0,
+      "x": 2,
+      "y": 4
+    },
+    {
+      "type": "tank",
+      "owner": 1,
+      "x": 21,
+      "y": 4
+    },
+    {
+      "type": "recon",
+      "owner": 0,
+      "x": 1,
+      "y": 4
+    },
+    {
+      "type": "recon",
+      "owner": 1,
+      "x": 22,
+      "y": 4
+    },
+    {
+      "type": "artillery",
+      "owner": 0,
+      "x": 1,
+      "y": 8
+    },
+    {
+      "type": "artillery",
+      "owner": 1,
+      "x": 22,
+      "y": 8
+    },
+    {
+      "type": "sniper",
+      "owner": 0,
+      "x": 1,
+      "y": 3
+    },
+    {
+      "type": "sniper",
+      "owner": 1,
+      "x": 22,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 6,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 17,
+      "y": 3
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 6,
+      "y": 10
+    },
+    {
+      "type": "jammer",
+      "owner": null,
+      "x": 17,
+      "y": 10
+    }
+  ]
+}
