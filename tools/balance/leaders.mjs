@@ -126,6 +126,7 @@ async function main() {
   mkdirSync(dir, { recursive: true });
   writeFileSync(`${dir}/leader-report.md`, md.join('\n') + '\n');
   writeFileSync(`${dir}/leader-matrix.csv`, [['leader', ...leaders].join(','), ...leaders.map((a) => [a, ...leaders.map((b) => (a === b ? '' : (mean(cell[`${a}>${b}`] ?? [0.5])).toFixed(3)))].join(','))].join('\n') + '\n');
+  writeFileSync(`${dir}/leader-units.csv`, ['leader,unit,units,fielded,dealt,lost,never_attacked_share', ...Object.entries(credits).flatMap(([l, ts]) => Object.entries(ts).map(([t, c]) => [l, t, c.units, c.fielded, Math.round(c.dealt), Math.round(c.lost), (idle(c)).toFixed(3)].join(',')))].join('\n') + '\n');
   console.log(`\n${md.join('\n')}\n\nwrote ${dir}/leader-report.md and leader-matrix.csv  [${((Date.now() - t0) / 60000).toFixed(1)} min]`);
 }
 
