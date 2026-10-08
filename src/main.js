@@ -57,7 +57,7 @@ export async function boot({ onQuit } = {}) {
     // the computer players remember which of their game plans have worked against this player before (src/ai/history.js)
     const history = loadHistory();
     game.aiSetup = current.players.map((p) => (p.controller === 'ai' ? { history } : null));
-    session = new Session(game, { canvas, doc: document, restart: launch, quit, leaderName, voices });
+    session = new Session(game, { canvas, doc: document, restart: launch, quit, leaderName, voices: current.dialogue === false ? null : voices });
     session.start();
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());

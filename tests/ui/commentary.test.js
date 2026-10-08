@@ -4,12 +4,14 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { makeGame } from '../helpers/fixtures.js';
-import { Commentator, MIN_GAP } from '../../src/campaign/commentary.js';
+import { Commentator as Real, MIN_GAP } from '../../src/campaign/commentary.js';
 import { CPS, CommentaryBanner } from '../../src/ui/commentary-banner.js';
 import { Pacer } from '../../src/ui/pacing.js';
 import { Gestures } from '../../src/ui/gestures.js';
 
-const players = (a, b) => [{ faction: 'red', controller: 'human', funds: 0, ...(a && { leader: a }) }, { faction: 'blue', controller: 'ai', funds: 0, ...(b && { leader: b }) }];
+// the older tests below are about milestones, not about whose turn it is: both teams are the computer's and may speak any number of times a turn
+class Commentator extends Real { constructor(g, v, o = { perTurn: Infinity }) { super(g, v, o); } }
+const players = (a, b, ctl = 'ai') => [{ faction: 'red', controller: ctl, funds: 0, ...(a && { leader: a }) }, { faction: 'blue', controller: 'ai', funds: 0, ...(b && { leader: b }) }];
 const voices = (log = []) => ({ say: (id, situation) => { log.push([id, situation]); return `${id}:${situation}`; } });
 const loadouts = { default: { build: {}, start: {} }, leaders: { x: {}, y: {} } };
 const game = (a, b, unitsOnMap = [['a', 0, 1, 1], ['a', 1, 3, 1]]) => makeGame({ rows: ['a..b.', '.....'], loadouts, unitsOnMap, players: players(a, b) });
@@ -237,4 +239,25 @@ test('when nothing uses the hold, a long press is a tap as before', () => {
   const plain = new Gestures({ onTap: () => log.push('plain-tap'), onPan: () => {}, onZoom: () => {} });
   plain.down(ev(1, 1, 1)); plain.up(ev(1, 1, 1));
   assert.equal(log.at(-1), 'plain-tap', 'no onHold: nothing changes');
+});
+
+test('a human player\'s leader stays silent: no opening, reaction or ending line', () => {
+  const g = makeGame({ rows: ['a..b.', '.....'], loadouts, unitsOnMap: [['a', 0, 1, 1], ['a', 1, 3, 1]], players: players('x', 'y', 'human').map((p, i) => (i ? { ...p, controller: 'ai' } : p)) });
+  const c = new Real(g, voices());
+  assert.deepEqual(c.opening().map((o) => o.owner), [1], 'only the computer\'s leader opens');
+  const said = [];
+  for (let i = 1; i < 12; i++) { c.turnStart(i % 2, t(i)); const r = c.react([kill(0, 1), kill(1, 0)], t(i) + 1, 0); if (r) said.push(r.owner); }
+  assert.ok(said.length && said.every((o) => o === 1), 'only owner 1 ever speaks');
+  assert.deepEqual(c.ending(0).map((o) => o.owner), [1], 'and only its defeat line is available');
+});
+
+test('a leader speaks at most once a turn', () => {
+  const c = new Real(game('x', 'y'), voices());   // both teams are the computer's
+  c.turnStart(0, t(1));
+  const first = c.react([kill(1, 0), kill(0, 1)], t(2), 0);
+  assert.ok(first);
+  const again = c.react([kill(1, 0)], t(3), 0);
+  assert.ok(!again || again.owner !== first.owner, 'the same leader is not heard twice in one turn');
+  c.turnStart(1, t(4));
+  assert.ok(c.react([kill(1, 0)], t(5), 1), 'next turn they may speak again');
 });

@@ -318,3 +318,15 @@ test('the skirmish screen keeps the starting-units choice across maps', () => {
   s.pick('dust_bowl');
   assert.equal(s.settings.startUnits, false);
 });
+
+test('dialogue: on by default, and off puts dialogue: false on the map and survives picking another map', () => {
+  const s = defaultSkirmish(classic);
+  assert.equal(s.dialogue, true);
+  assert.equal(applySkirmish(classic, s, registry).dialogue, undefined, 'on leaves the map alone');
+  assert.equal(applySkirmish(classic, { ...s, dialogue: false }, registry).dialogue, false);
+  assert.ok(skirmishProblems(classic, registry, { ...s, dialogue: 'no' }).length);
+  const screen = new SkirmishScreen(new FakeDoc(), { registry, maps, selectedId: 'classic', leaders: [], speech: {}, onBack() {}, onStart() {} });
+  screen.setDialogue(false);
+  screen.pick(maps.find((m) => m.id !== 'classic').id);
+  assert.equal(screen.settings.dialogue, false, 'kept across maps');
+});

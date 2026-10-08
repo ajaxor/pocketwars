@@ -319,7 +319,7 @@ export class Session {
     const winner = game.state.winner;
     const faction = winner === 'draw' || winner === null ? null : factionOf(game, winner);
     hud.clear();
-    const parting = this.commentator?.ending(winner).find((c) => c.situation === 'victory');   // the winner has the last word
+    const parting = this.commentator?.ending(winner).find((c) => c.situation === 'victory');   // the winner has the last word (a computer leader; the player's stays silent)
     if (parting) { this.banner.setSide('top'); this.banner.say(this.#line(parting)); this.bannerUntil = 0; }
     hud.gameOver({ title: faction ? 'Victory' : 'Draw', text: faction ? `${faction.name} wins!` : 'Nobody wins.', color: faction?.color, onClick: () => this.restart() });
   }

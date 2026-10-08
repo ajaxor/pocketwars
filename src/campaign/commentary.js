@@ -12,6 +12,9 @@
 // third loss, the first building lost, an enemy starting to capture their HQ, being outnumbered... Each milestone is a situation of the
 // speech file (so the line is picked by the Talker, which never repeats one soon). After any comment the leader keeps quiet for MIN_GAP ms;
 // a milestone that comes true meanwhile simply waits for the next chance. A comment is { owner, leader, situation, line }.
+//
+// WHO SPEAKS. Only the computer's leaders: a human player's leader stays silent (the player is the one watching), and a leader says at most
+// one thing per turn (turnStart counts the turns, whoever's they are).
 
 export const MIN_GAP = 3200;
 
@@ -34,20 +37,26 @@ export const MILESTONES = [
 ];
 
 export class Commentator {
-  constructor(game, voices) {
+  /** `perTurn`: the most a leader says in one turn (default 1). */
+  constructor(game, voices, { perTurn = 1 } = {}) {
     this.game = game;
+    this.perTurn = perTurn;
     this.voices = voices;
     this.owners = game.map.players.map(() => ({
       tally: { attacks: 0, kills: 0, losses: 0, captures: 0, buildingsLost: 0 },
-      turns: 0, hqThreat: false, fired: new Set(), quietUntil: 0,
+      turns: 0, hqThreat: false, fired: new Set(), quietUntil: 0, spokeOn: -1, spoke: 0,
     }));
+    this.turnNo = 0;   // turns begun so far, anyone's
   }
+
+  /** Does this team's leader speak? Not a human's. */
+  speaks(owner) { return this.game.map.players[owner]?.controller !== 'human'; }
 
   leaderOf(owner) { return this.game.map.players[owner]?.leader ?? null; }
 
   #line(owner, situation) {
     const leader = this.leaderOf(owner);
-    if (!leader) return null;
+    if (!leader || !this.speaks(owner)) return null;
     const line = this.voices.say(leader, situation);
     return line ? { owner, leader, situation, line } : null;
   }
@@ -77,7 +86,7 @@ export class Commentator {
 
   #due(owner, now) {
     const me = this.owners[owner];
-    if (!this.leaderOf(owner) || now < me.quietUntil) return null;
+    if (!this.leaderOf(owner) || !this.speaks(owner) || now < me.quietUntil || (me.spokeOn === this.turnNo && me.spoke >= this.perTurn)) return null;
     const units = this.game.state.units;
     const count = (o) => units.filter((u) => u.owner === o).length;
     const ctx = {
@@ -90,6 +99,8 @@ export class Commentator {
       if (!c) continue;
       me.fired.add(m.id);
       me.quietUntil = now + MIN_GAP;
+      me.spoke = me.spokeOn === this.turnNo ? me.spoke + 1 : 1;
+      me.spokeOn = this.turnNo;
       return c;
     }
     return null;
@@ -102,6 +113,7 @@ export class Commentator {
 
   turnStart(owner, now) {
     this.owners[owner].turns++;
+    this.turnNo++;
     return this.#due(owner, now);
   }
 

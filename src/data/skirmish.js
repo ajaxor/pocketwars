@@ -3,6 +3,7 @@
 //
 //   settings = { mapId, funds, fog, players: [{ faction, controller, leader }, ...] }   one player entry per slot on the map
 //     fog     false takes every jammer off the map, so there is no fog of war (fog.js); true (the default) keeps the map as it is
+//     dialogue    false switches the leaders' battle dialogue off (the map gets `dialogue: false`); true (the default) keeps it
 //     startUnits  false starts every team with no units (only buildings and map structures); true (the default) keeps the starting units
 //     funds   null to keep each player's own starting funds from the map file, or a number every player starts with
 //     players the colour (faction) and who plays it ('human' or 'ai'); slots keep the map's order, so slot 0 moves first
@@ -32,6 +33,7 @@ export const defaultSkirmish = (map, leaderIds = [], starter = leaderIds[0] ?? n
   funds: null,
   fog: true,
   startUnits: true,
+  dialogue: true,
   players: map.players.map((p) => ({
     faction: p.faction,
     controller: p.controller,
@@ -59,6 +61,7 @@ export function skirmishProblems(map, registry, s) {
   if (s.funds !== null && !(Number.isInteger(s.funds) && s.funds >= 0)) problems.push('starting funds must be a whole number or the map default');
   if (s.fog !== undefined && typeof s.fog !== 'boolean') problems.push('fog of war must be on or off');
   if (s.startUnits !== undefined && typeof s.startUnits !== 'boolean') problems.push('starting units must be on or off');
+  if (s.dialogue !== undefined && typeof s.dialogue !== 'boolean') problems.push('dialogue must be on or off');
   return problems;
 }
 
@@ -100,6 +103,7 @@ export function applySkirmish(map, s, registry, random = Math.random) {
     players: map.players.map((p, i) => ({ faction: s.players[i].faction, controller: s.players[i].controller, funds: s.funds ?? p.funds })),
     units: s.fog === false ? map.units.filter((u) => !isJammer(registry, u)) : map.units,   // no jammer, no fog
   };
+  if (s.dialogue === false) set.dialogue = false;   // the battle screen keeps the leaders quiet
   if (s.startUnits === false) {
     if (!registry) throw new Error('applySkirmish needs the registry to leave the starting units off');
     const bare = { ...set, units: set.units.filter((u) => u.owner === null || registry.unit(u.type).attributes?.structure) };   // map structures (turrets, jammers) stay
