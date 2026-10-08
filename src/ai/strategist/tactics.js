@@ -76,7 +76,7 @@ export function bestOrder(sit, unit) {
     for (const f of sit.mine) if (f !== unit && Math.abs(f.x - x) + Math.abs(f.y - y) <= 2 && ++friends >= 3) break;
     base += friends * params.guard;
     const prop = propertyAt(game, x, y);
-    if (prop && ownerAt(game, x, y) === player && prop.builds?.length && menuFor(game, player, x, y).length && moved) base -= BLOCK_BUILD;
+    if (prop && ownerAt(game, x, y) === player && prop.builds?.length && menuFor(game, player, x, y).length) base -= BLOCK_BUILD;   // staying put blocks it as much as arriving
 
     let pick = { score: base, kind: 'move', action: { type: 'wait' }, gain: 0 };
     // attacks from here

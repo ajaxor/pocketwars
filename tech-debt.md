@@ -252,3 +252,14 @@ The review's points and where they stand, then what the new system leaves open. 
 - **Shared header classes.** The world map (`.wm`) and the editor reuse `.sk-head` and `.sk-title`, so a change to the skirmish header can leak into them (the step bar is scoped to `.sk .sk-head` for that reason). A neutral `.screen-head` would separate them.
 - **The skirmish page rebuilds everything on each change.** Preview canvas, team rows (with portrait canvases) and rule cards are all redrawn when any choice changes, including on steps that are not showing. Only the visible step and the preview need it.
 - **Generated field quality has no guard.** The generator is tested for validity (units on legal ground, wrapping, variety) but not for looks: a seed can still give a lake-heavy or building-poor picture. A few tuned thresholds and the 40x40 size are magic numbers in `menu-backdrop.js`.
+
+## Computer opponent (October 2026)
+
+- Reported: on Whiteout the blue computer player only kept building units and left them in its base. Found and fixed one cause: a unit that was
+  already standing on one of its own factories or barracks was not discouraged from staying there (the penalty applied only to arriving on one),
+  so idle support units (medics, supply trucks) parked on them and blocked builds while money piled up. Whether that was the whole of what
+  was seen is not confirmed: in headless games the computer does leave its base and capture, so a second cause (for example how it reacts to a
+  human's units it can see) is still possible.
+- The AI tuning (`data/ai.json`) is stale after recent balance changes; the ai-tune workflow re-tunes it on push.
+- Computer-vs-computer games on most maps (Whiteout, Dust Bowl, Ridgeback) mostly end undecided at the day limit, so the strategist is slow
+  to finish games. Worth a look in the arena.

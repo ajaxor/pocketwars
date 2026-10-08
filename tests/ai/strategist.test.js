@@ -170,3 +170,11 @@ test('a medic (which heals by itself) ends its move next to wounded friends, and
   assert.equal(order.kind, 'support');
   assert.ok(Math.abs(order.order.to.x - 3) <= 1 && order.order.to.y === 0, `next to the wounded soldier, not at ${order.order.to.x},${order.order.to.y}`);
 });
+
+test('a unit does not park on its own factory when it could do its job from a neighbouring tile', () => {
+  // the medic stands on the factory beside a wounded soldier: it could heal from there, but staying put would block every build that turn
+  const g = world(['F.......h'], [['medic', 0, 0, 0], ['soldier', 0, 1, 0, 4], ['soldier', 1, 8, 0]]);
+  const order = bestOrder(situation(g), g.state.units[0]);
+  assert.ok(order?.order?.to, 'the medic is given a move');
+  assert.notEqual(order.order.to.x, 0, 'and it leaves the factory tile');
+});
