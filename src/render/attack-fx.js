@@ -1,4 +1,4 @@
-// What an attack looks like, matched to the weapon: tracers for rifles and machine guns, a muzzle flash and a shell for cannons, lobbed
+// What an attack looks like, matched to the weapon: tracers for rifles, snipers and machine guns, a muzzle flash and a shell for cannons, lobbed
 // shells for artillery, smoke-trailed rockets and guided missiles, a stream of fire, a bolt of lightning, a slash, a harpoon on its line,
 // a torpedo with a bubbly wake, a depth charge that sinks, bombs that fall. Pure drawing: no DOM, no game state.
 //
@@ -15,7 +15,7 @@ export const ALIASES = { shot: 'bullet', arc: 'shell', drop: 'bombs' };
 const SPECS = {
   bullet:       { d: 220, hit: 200, impact: 'spark' },
   burst:        { d: 580, hit: 540, impact: 'spark' },
-  sniper:       { d: 360, hit: 300, impact: 'spark' },
+  laser:        { d: 360, hit: 300, impact: 'spark' },   // a glint, then one thin bright line (no weapon uses it yet)
   cannon:       { d: 330, hit: 300, impact: 'blast' },
   heavy_cannon: { d: 390, hit: 350, impact: 'blast' },
   flak:         { d: 500, hit: 430, impact: 'flak' },
@@ -175,7 +175,7 @@ const DRAW = {
     if (p < .75) flash(g, G.mx + G.nx * rnd(Math.floor(now / 45)) * S * .03, G.my + G.ny * rnd(Math.floor(now / 45)) * S * .03, G.a + (rnd(Math.floor(now / 45) + 3) - .5) * .5, S * (.16 + .1 * rnd(Math.floor(now / 45) + 7)), (Math.floor(now / 45) % 2) * .35);
   },
 
-  sniper(g, f, p, S) {   // a glint in the scope, then one thin bright line
+  laser(g, f, p, S) {   // a glint at the emitter, then one thin bright line: kept for laser weapons to come
     const G = geo(f, S);
     if (p < .4) { const k = Math.sin(Math.PI * clamp01(p / .4)); g.save(); g.translate(G.x0 + G.ux * S * .15, G.y0 + G.uy * S * .15 - S * .1); g.strokeStyle = 'rgba(255,255,255,' + k + ')'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(-S * .1 * k, 0); g.lineTo(S * .1 * k, 0); g.moveTo(0, -S * .1 * k); g.lineTo(0, S * .1 * k); g.stroke(); g.restore(); }
     if (p > .4 && p < .95) { const k = 1 - (p - .4) / .55; g.save(); g.lineCap = 'round'; g.globalAlpha = k; g.strokeStyle = '#bfe3ff'; g.lineWidth = 4; g.beginPath(); g.moveTo(G.mx, G.my); g.lineTo(G.x1, G.y1); g.stroke(); g.strokeStyle = '#fff'; g.lineWidth = 1.6; g.beginPath(); g.moveTo(G.mx, G.my); g.lineTo(G.x1, G.y1); g.stroke(); g.restore(); flash(g, G.mx, G.my, G.a, S * .2, 1 - k); }

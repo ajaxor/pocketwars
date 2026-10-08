@@ -41,7 +41,7 @@ Results under 1 HP keep one decimal; otherwise they round to whole HP.
 A unit can carry several weapons. When it attacks, every weapon whose target mode, range and line of sight fit the defender from
 the tile it stands on is a candidate, and the one that would do the **most damage** to that defender wins (ties go to the weapon
 listed first). That weapon is fired, named in the damage preview, and used for the counterattack. Every weapon sets `fx`, its attack
-animation (`src/render/attack-fx.js`): `bullet`, `burst` (machine gun), `sniper`, `cannon`, `heavy_cannon`, `flak`, `shell`, `mortar`,
+animation (`src/render/attack-fx.js`): `bullet`, `burst` (machine gun), `laser` (no weapon uses it yet), `cannon`, `heavy_cannon`, `flak`, `shell`, `mortar`,
 `naval_shell`, `rocket`, `salvo`, `pods`, `missile`, `air_missile` (dropped under the wing, then flies), `sam`, `cruise`, `flame`, `electric`, `slash`, `wrench`, `harpoon`, `torpedo`, `depth`,
 `bombs`, `light_bombs` (the old `shot`, `arc` and `drop` still work). A weapon with none falls back on the unit's `render.attackFx`. The
 gallery's Attacks tab plays every weapon.
