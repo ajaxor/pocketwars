@@ -539,7 +539,7 @@
   "shock_trooper": {
     "name": "Shock Trooper",
     "category": "infantry",
-    "cost": 1500,
+    "cost": 1700,
     "move": 2,
     "moveClass": "foot",
     "layer": "ground",
