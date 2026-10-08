@@ -104,7 +104,7 @@ export function menuFor(game, player, x, y) {
 export const buildOptions = (game, x, y) => menuFor(game, ownerAt(game, x, y), x, y);
 
 /** Has the property at (x, y) already built a unit this turn? (Each property builds at most one.) */
-export const builtThisTurn = (game, x, y) => game.state.builtThisTurn.includes(tileIndex(game.map, x, y));
+export const builtThisTurn = (game, x, y) => !propertyAt(game, x, y)?.unlimitedBuilds && game.state.builtThisTurn.includes(tileIndex(game.map, x, y));
 
 /**
  * Why a build request is invalid, or null when it is fine. The new unit appears on the property itself whatever the terrain

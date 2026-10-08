@@ -531,7 +531,7 @@
     "layer": "ground",
     "weapons": ["rifle"],
     "toughness": 1,
-    "armor": 0.35,
+    "armor": 0.55,
     "attributes": { "capture": true },
     "exclusive": true,
     "render": { "sprite": "royal_guard", "facing": false, "attackFx": "shot" }
@@ -728,7 +728,7 @@
     "weapons": ["dreadnought_guns", "dreadnought_secondary"],
     "toughness": 3.4,
     "armor": 0.85,
-    "attributes": { "attacksPerTurn": 2 },
+    "attributes": {},
     "exclusive": true,
     "render": {"sprite": "dreadnought", "attackFx": "arc"}
   },

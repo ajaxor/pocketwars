@@ -53,7 +53,7 @@ test('attributes are assigned to the intended units', () => {
   const tank = (id) => registry.unit(id).attributes.fuel.max;
   const planes = registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter'));
   for (const id of registry.unitIds.filter((i) => registry.unit(i).tags?.includes('helicopter'))) assert.ok(planes.every((p) => tank(id) > tank(p)), `${id} carries more fuel than any plane`);
-  assert.deepEqual(withAttr('attacksPerTurn'), ['dreadnought']);
+  assert.deepEqual(withAttr('attacksPerTurn'), [], 'the dreadnought no longer attacks twice (the attribute stays available)');
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
   assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);
   assert.deepEqual(withAttr('reloads'), ['sam_launcher']);
@@ -181,7 +181,8 @@ test('transports carry each leader\'s basic infantry, and the tuning of the stea
   assert.deepEqual(registry.weapon('marine_deck_rifle').fromTerrain, ['sea', 'shoals']);
   assert.ok(registry.weapon('stealth_bombs').ammo >= 1 && registry.unit('stealth_bomber').attributes.ammo.max >= 1, 'the stealth bomber has a limited load');
   assert.equal(registry.rules.ambushMultiplier, 1.5);
-  assert.ok(registry.unit('dreadnought').cost > 26000, 'two attacks a turn cost more');
+  assert.ok(registry.weapon('dreadnought_guns').damage > registry.weapon('main_guns').damage && registry.weapon('dreadnought_guns').armorPiercing > registry.weapon('main_guns').armorPiercing, 'the dreadnought out-hits the battleship');
+  assert.ok(registry.weapon('dreadnought_secondary').damage >= registry.weapon('secondary_guns').damage, 'and so does its secondary battery');
   assert.deepEqual(registry.unitIds.filter((id) => registry.unit(id).tags?.includes('helicopter')).sort(), ['copter', 'stealth_copter', 'transport_copter']);
   assert.deepEqual(registry.unit('supply_truck').attributes.supply.fuelTags, ['helicopter']);
 });
