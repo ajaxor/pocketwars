@@ -1,15 +1,30 @@
 # Tech debt and architecture notes
 
+## Status after the cleanup pass (October 2026)
+
+Fixed in this pass (and removed from the list below):
+- **Boot waste**: `boot()` no longer starts a hidden session under the menu; `play()` creates it.
+- **Launcher routing**: a `ScreenStack` (`src/ui/screen-stack.js`) now owns skirmish, editor and campaign pages.
+- **Skirmish redraw**: pages render lazily, only the visible step; the 880px breakpoint is shared with CSS and guarded by a test.
+- **Engine-level spawn**: `Game.spawn({type, owner, x, y})` exists, so reinforcements are no longer visual-only.
+- **Mines**: a per-player cap (`maxMinesPerPlayer`), no leak of hidden units when laying, and laying is interrupted by a hidden unit on the tile.
+- **AI**: a refused order is replanned once instead of wasting the unit's turn.
+- **Engine picker**: skirmish can choose the computer opponent when more than one engine is registered.
+- **Exclusive units**: a test fails if a leader dropped from the loadouts strands an exclusive unit.
+- **Art**: the `ground` shadow and the infantry body/helmet are shared through `parts.js`; a test draws every gallery concept sprite.
+- **Browser smoke test** (`npm run smoke`, `tools/smoke`): headless Chromium at phone and desktop sizes covers the title, skirmish, editor, campaign, galleries, a full round with and without fog, the build menu, and sideways-scroll checks. It found and fixed a real touch bug: the ghost-click guard let a synthetic click (detail 0) through.
+
+Deliberately not done:
+- **AI and fog of war**: fog is a player-only feature by design; the computer sees the whole board.
+
+Still open (needs design decisions, tuning runs or much larger work): deeper AI look-ahead, coordinated amphibious operations, AI joining units, support-unit danger weighting, leader balance numbers and starting-army fairness, a per-unit move-cost override, concept unit stats kept as free text, and hand-tuned art offsets (ships, missiles, mechs, hover). They are listed below.
+
 - **AI build rules are global.** `data/ai.json` has one rule set per category. A leader menu that adds a category the profile has no rules for is never built by the computer. Leader-specific AI rules (or a per-leader profile) will be needed once kits really differ.
 - **Kit drift.** The default kit mirrors the category menus by hand. A test guards it, but every new unit must also be added to `data/loadouts.json`.
 - **Leader identity is split.** Names/portraits live in `campaign.json`, loadouts in `loadouts.json`. Skirmish depends on the campaign data only for names and portraits (fallback: title-cased id). Consider one source.
 - **Cramped maps.** On `classic` the formation pushes some units to odd spots (artillery ends up ahead); on `tri_point` properties on the row ahead displace five units. Naval fleets now come from the shipyard set, so they no longer vanish, but they are one default destroyer per shipyard rather than the map author's fleet. A map with no factories (`river_run`) gives only the HQ and airfield sets. Maps may need hand-authored formation hints.
-- **The default mission still boots behind the title screen.** Quick Start is gone, but `boot()` in `src/main.js` still builds a `Game` and a running `Session` (frame loop, AI) under the menu, and Quit to title rebuilds it. Nothing plays it any more, so it wastes CPU and battery; `boot()` could start with no session and only `play()` create one. The default map id is still used as the skirmish page's first pick.
 - **`Session.leaderName`** is an ad hoc hook for the intro matchup line; there is no Session/UI test for it.
-- **Skirmish screen** re-renders every portrait canvas on each change.
 - **Leaders are independent of team colour**; they could be tied together later.
-- **Not visually verified in CI.** The title screen, its moving background and the three skirmish steps (phone and desktop widths) were checked by eye in a browser after deploy (phone and desktop widths; the short-landscape layout was not); no automated test renders them, only unit tests with a fake DOM and a recording canvas context. A headless-browser smoke test with screenshots at 390x844 and 1440x900 would catch layout regressions.
-- **Session has no automated test.** The commentary logic, banner, pacer and hold gesture are unit-tested, but the Session wiring (opening cards, the banner during the computer's turn, fast-forward) was only checked with a throwaway headless-browser script. A small browser smoke test in `tools/` would pay for itself.
 - **Some situations are unused in battle.** Milestones now have dedicated situations (`first_blood`, `hq_threat`, `killing_spree`, ...), but `greeting`, `praise` and `tech` are still never used in battle, and milestone-to-situation links live in code rather than data.
 - **The banner covers the bottom of the map** during opening cards and the computer's turn; it could move to the side of the screen away from the action, like the dock.
 - **Portrait colours follow the leader's own faction**, while the banner accent and the units follow the team colour, so a leader can look mismatched with their army.
@@ -20,20 +35,17 @@
 - **Parts library is a first cut.** `src/render/parts.js` covers wheels, treads, legs, hover, hulls, propellers, turrets, tubes, dishes and effects, but the static defences' pads and sandbags, the ship deck `mount`, the hand-drawn radar dishes and the medic cross are still per-file (listed in `docs/render-parts.md`). The game sprites in `unit-art.js` still build some wheels/tracks by hand where they differ from `wheel`/`treads`.
 
 - **Gallery pipeline statuses are hand-edited** in `gallery/status.json`. The 17 original units were marked `solid` by assumption (rocket launcher `draft`); nothing checks that `balanced`/`ready` match the damage baselines or the interface.
-- **Gallery has no browser test.** It was checked once with a headless Chromium script (all tabs, dialogue tester, phone width); `tests/gallery/catalog.test.js` covers only the data. `portraits.html` is still a separate design lab, and the kit icons are static (not animated).
 - **Stealth tank still has no cloak.** The `cloak` attribute now exists (used by the stealth fighter/bomber); the stealth tank could adopt it with a data change, but it is untested for ground play.
 - **Some structures are still concept-only.** Labs, bunker, radar station, supply depot, the gun turret, watchtower and tank traps exist only as gallery art plus prose. Walls, cracked walls, the cannon/SAM/artillery turrets and the jammer are in the game (October 2026).
 - **Gallery structure art is separate from the game's** `src/render/buildings.js` (`gallery/structure-art.js` borrows its `kit` helpers); if structures ship, merge them so there is one drawing path.
 - **APC** is art only; the APC reuses the transport's carry mechanic in prose, not in data.
 
-- **New units are `exclusive`** (kept off default and category menus) and reachable only through leader loadouts; the default kit guard test does not cover them, so a leader dropped from `data/loadouts.json` silently strands its unit.
 - **Support-unit AI ignores danger.** Medics, mechanics, radar planes and spies path toward goals (wounded allies, the army, enemy properties) without weighing threats, and will walk into fire.
 - **Mechanic has no mines.** The concept's mine laying was not built; it is a repair/heal unit only.
 - **Only the sniper is revealed by firing.** The always-cloaked units (spy, stealth fighter/bomber/copter) stay hidden after they shoot unless an enemy is adjacent or has radar; `cloak.revealedByFiring` exists if that should change.
 - **The AI does not use the sniper's forest cloak:** it picks tiles by cover and distance, not by whether the tile hides it.
 - **A carried unit that was halted by a hidden enemy** used to crash the AI (no tile to choose); fixed with a size check, but `carriedBy` handling in `chooseOrder` is fragile.
 - **Radar adds no fog sight.** Radar only finds cloaked units; the radar plane just has a long `vision` (6) in fog of war.
-- **Heal visuals were not verified in a browser** (the Heal button label and the +HP call-outs); only engine tests cover them.
 - **Sprites moved from `gallery/` to `src/render/art-*.js`** so the deploy build includes them; the gallery imports them back. Older gallery art files may still want the same treatment.
 - **No damage-baseline cases for the new units** (spy, medic pistol, RPG trooper, stealth copter); the baseline tool covers only the original units.
 - **RPG trooper has no weakness against infantry:** its armor piercing gives it full damage on everything; only its single round limits it.
@@ -48,8 +60,6 @@
 - **The amphibious tank's propeller depends on `waterSprite`.** The land sprite has no propeller and `amphibious_tank_swim` adds it; the gallery shows this through `concepts.json` `waterSprite`. When the unit moves into `data/units.json` it must set `render.waterSprite` (the marine and diver already do), and the swim art has to move out of the gallery with it.
 - **The drop pod is now filed under Air but is drawn hovering** (altitude 0.08, air shadow, legs out). Its mechanic (it lands, then stays on the board as a bunker) needs a landed pose or a second sprite; today it only shows the descent.
 - **Six walkers, no engine support.** Strider, titan and the four new mechs (rocket, scout, flame, bulwark) are art plus prose in `concepts.json`; their stats are guesses and nothing checks them against damage baselines. The flame walker's explosion and the bulwark's frontal shield are not expressible with today's attributes. "Walker" is used to avoid confusion with the existing Mech infantry unit.
-- **The `ground` shadow helper is copied** into `concept-art.js`, `concept-art-vehicles.js` and `concept-art-mechs.js` (and elsewhere); it belongs in `parts.js` next to the other drawing helpers.
-- **Gallery changes were checked headlessly only** (sprite-lab PNG sheets at several animation times and a bounds script, plus the unit tests); the live gallery page, including the third "on water" tile for the amphibious tank and the drop pod's new Air tab, was not opened in a browser.
 - **The regular submarine and the missile sub draw their dive separately.** `surfacing` (parts.js) copies the waterline, dip and foam logic that is inline in `unit-art.js` `submarine`; the game's sub should switch to the part so there is one dive. The hunter sub and abyss sub are still always drawn dived in the underwater shade and never surface.
 - **Ship art has hard-coded scale wrappers.** Each ship is shrunk by a magic factor (`under(…, .86)`, `scale(.77)`) and the stern foam and propeller bubbles still poke outside the tile on the carrier, dreadnought, landing craft and mine layer; the bounds are not enforced by any test.
 - **The carrier's perspective deck is hand-placed.** The deck, runway and parked planes use a small local `P(t, v)` mapping; if more ships want a 3/4 deck (a second carrier class, a hover carrier) it should become a shared part. Parked planes are drawn in the sprite, not as real units, so they cannot show a launch or an empty deck.
