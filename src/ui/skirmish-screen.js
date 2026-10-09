@@ -28,7 +28,8 @@ const surname = (name) => name.split(' ').slice(-1)[0];
 /** The steps, in order: the name on the step bar and the heading above the page. */
 const STEPS = [['Map', 'Choose a map'], ['Teams', 'Set up the teams'], ['Options', 'Choose the rules']];
 /** A window this wide keeps the picked map beside the steps, so its preview can be bigger. */
-const WIDE = 880;
+export const WIDE = 880;   // keep in step with the (min-width: 880px) media query in style.css (a test checks)
+const ALL = ['preview', 'teams', 'rules'];
 
 export class SkirmishScreen {
   /**
@@ -47,13 +48,14 @@ export class SkirmishScreen {
     this.quotes = new Map();   // the line each team's leader says in the selection box, drawn again whenever the colour changes
     this.map = maps.find((m) => m.id === selectedId) || maps[0];
     this.settings = { ...this.#defaults(this.map), fog: this.#fogFor(this.map) };
+    this.stale = new Set();   // the parts (preview, teams, rules) that need redrawing before they next show
     this.strips = [];   // the leader strip of each team, kept between redraws so a strip you scrolled stays where it was
 
     this.step = 0;
-    const head = h(doc, 'header', 'sk-head');
+    const head = h(doc, 'header', 'screen-head');
     this.bar = h(doc, 'ol', 'sk-steps');
     this.pips = STEPS.map(([name], i) => { const li = h(doc, 'li', 'sk-step'); li.append(h(doc, 'span', 'sk-step-n', String(i + 1)), h(doc, 'span', 'sk-step-name', name)); this.bar.append(li); return li; });
-    head.append(h(doc, 'h2', 'sk-title', 'Skirmish'), this.bar);
+    head.append(h(doc, 'h2', 'screen-title', 'Skirmish'), this.bar);
 
     this.el = {
       maps: h(doc, 'div', 'sk-maps'),
@@ -83,11 +85,15 @@ export class SkirmishScreen {
     this.root = h(doc, 'div', 'sk');
     this.root.append(head, main, foot);
     this.#renderMaps();
-    this.#render();
+    this.#render(ALL);
+    // crossing the wide breakpoint (a rotation, a resized window) changes the preview's resolution, so it is drawn again
+    this.wide = this.#isWide();
+    this.onResize = () => { const w = this.#isWide(); if (w !== this.wide) { this.wide = w; this.#render('preview'); } };
+    globalThis.addEventListener?.('resize', this.onResize);
     (globalThis.requestAnimationFrame ?? globalThis.setTimeout)?.(() => this.#reveal());   // bring the picked map into view once the page is on screen
   }
 
-  remove() { this.root.remove(); }
+  remove() { globalThis.removeEventListener?.('resize', this.onResize); this.root.remove(); }
 
   #defaults(map) { return this.#byColour(defaultSkirmish(map, this.roster.map((l) => l.id))); }
 
@@ -105,7 +111,7 @@ export class SkirmishScreen {
     this.map = map;
     this.settings = { ...this.#defaults(map), funds, startUnits, dialogue, fog: this.#fogFor(map) };
     this.quotes.clear();
-    this.#render();
+    this.#render(ALL);
   }
 
   /** Show a step (0 to 2). */
@@ -113,7 +119,7 @@ export class SkirmishScreen {
     const next = Math.max(0, Math.min(STEPS.length - 1, step));
     if (next === this.step) return;
     this.step = next;
-    this.#render();
+    this.#render();   // a part that changed while its page was hidden is built now that it shows
     if (next === 0) this.#reveal();
   }
   /** Back: the step before, or off the page from the first one. */
@@ -121,24 +127,24 @@ export class SkirmishScreen {
   /** Next: the step after (not past the last, and not while the teams have a problem). */
   advance() { if (this.step === 1 && this.problems.length) return; this.goTo(this.step + 1); }
 
-  setController(slot, controller) { this.settings.players[slot].controller = controller; this.#render(); }
+  setController(slot, controller) { this.settings.players[slot].controller = controller; this.#render('teams'); }
   /** Give a team a colour (swapping with whoever had it); each team's leader follows its colour. */
   setFaction(slot, faction) {
     this.settings = this.#byColour({ ...this.settings, players: swapFaction(this.settings.players, slot, faction) });
     this.quotes.clear();
-    this.#render();
+    this.#render('preview', 'teams');
   }
-  setFunds(funds) { this.settings.funds = funds; this.#render(); }
+  setFunds(funds) { this.settings.funds = funds; this.#render('rules'); }
   /** Start with each team's starting units (on) or with none, only what the buildings can build (off). */
-  setStartUnits(on) { this.settings.startUnits = on; this.#render(); }
+  setStartUnits(on) { this.settings.startUnits = on; this.#render('rules'); }
   /** The leaders talk during the battle (on) or stay silent (off). */
-  setDialogue(on) { this.settings.dialogue = on; this.#render(); }
+  setDialogue(on) { this.settings.dialogue = on; this.#render('rules'); }
   /** Fog of war on (the map's jammers stay) or off (they are taken off the map). A map without jammers has no fog: it stays off. */
   setFog(on) {
     if (!hasJammers(this.map, this.registry)) return;
     this.fogWanted = on;
     this.settings.fog = on;
-    this.#render();
+    this.#render('rules');
   }
 
   /** The fog setting for `map`: the player's last choice (on to begin with), or off when the map has no jammer to cause fog. */
@@ -257,23 +263,47 @@ export class SkirmishScreen {
     return box;
   }
 
-  #render() {
-    const { doc, registry, map, settings } = this;
+  /**
+   * Redraw what changed. Parts named here are marked stale; a stale part is rebuilt only while it shows (the preview always, the
+   * teams on step 2, the rules on step 3), so a change on one step does not redraw the others and a rules toggle does not repaint
+   * the portraits. A page is built the first time it is shown after a change.
+   */
+  #render(...parts) {
+    for (const p of parts.flat()) this.stale.add(p);
+    const { map } = this;
     for (const [id, card] of this.cards) toggle(card, 'is-picked', id === map.id);
     this.root.setAttribute('data-step', String(this.step));
     this.pages.forEach((page, i) => { page.hidden = i !== this.step; });
     this.pips.forEach((pip, i) => { toggle(pip, 'is-on', i === this.step); toggle(pip, 'is-done', i < this.step); if (i === this.step) pip.setAttribute('aria-current', 'step'); else pip.setAttribute('aria-current', 'false'); });
-    const scrolled = this.strips.map((s) => s.scrollLeft || 0);   // replacing the rows detaches the strips, which forgets how far they were scrolled
+    if (this.stale.delete('preview')) this.#drawPreview();
+    if (this.step === 1 && this.stale.delete('teams')) this.#drawTeams();
+    if (this.step === 2 && this.stale.delete('rules')) this.#drawRules();
+    const problems = this.problems, last = this.step === STEPS.length - 1;
+    this.next.hidden = last;
+    this.go.hidden = !last;
+    this.next.disabled = this.step === 1 && problems.length > 0;
+    this.go.disabled = problems.length > 0;
+    this.note.textContent = this.step > 0 ? problems[0] || '' : '';
+  }
 
+  #isWide() { return (globalThis.innerWidth || 0) >= WIDE; }
+
+  #drawPreview() {
+    const { doc, map } = this;
     // the picked map, in the colours chosen below
     this.el.preview.replaceChildren();
-    const wide = (globalThis.innerWidth || 0) >= WIDE;
+    const wide = this.#isWide();
     const pic = this.#canvas(map, (o) => this.colorOf(o), 'sk-big', wide ? { w: 320, h: 260 } : MINI_BOX);
     if (pic) this.el.preview.append(pic);
     const info = h(doc, 'div', 'sk-info');
     info.append(h(doc, 'div', 'sk-info-name', map.name), h(doc, 'div', 'sk-desc', map.description || 'No description.'));
     this.el.preview.append(info);
 
+  }
+
+  #drawTeams() {
+    const { doc, registry, settings } = this;
+    const scrolled = this.strips.map((s) => s.scrollLeft || 0);   // replacing the rows detaches the strips, which forgets how far they were scrolled
     // one row per team: who plays it, a colour and a leader
     this.el.teams.replaceChildren();
     this.strips.length = settings.players.length;
@@ -303,6 +333,10 @@ export class SkirmishScreen {
     });
     this.strips.forEach((s, i) => { s.scrollLeft = scrolled[i] ?? 0; });
 
+  }
+
+  #drawRules() {
+    const { doc, registry, map, settings } = this;
     // rules
     this.el.rules.replaceChildren();
     const funds = h(doc, 'div', 'sk-rule');
@@ -323,11 +357,5 @@ export class SkirmishScreen {
       h(doc, 'span', 'sk-rule-note', settings.dialogue !== false ? 'The computer\'s leaders speak during the battle.' : 'Nobody speaks during the battle.'));
     this.el.rules.append(talk);
 
-    const problems = this.problems, last = this.step === STEPS.length - 1;
-    this.next.hidden = last;
-    this.go.hidden = !last;
-    this.next.disabled = this.step === 1 && problems.length > 0;
-    this.go.disabled = problems.length > 0;
-    this.note.textContent = this.step > 0 ? problems[0] || '' : '';
   }
 }

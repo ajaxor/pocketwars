@@ -56,7 +56,9 @@ test('the skirmish screen lists every map, picks, edits and starts', () => {
   assert.equal(s.map.id, 'classic');
   s.pick(four.id);
   assert.equal(s.settings.players.length, 4);
+  s.goTo(1);   // a page is built when it shows
   assert.equal(s.root.find((e) => e.className === 'sk-slot').length, 4);
+  s.goTo(0);
   s.setFunds(10000);
   s.pick('classic');
   assert.equal(s.settings.funds, 10000, 'funds survive picking another map');
@@ -94,7 +96,10 @@ test('the page is three steps (map, teams, options), one shown at a time, starti
   assert.equal(root.attrs['data-step'], '0');
   assert.deepEqual(s.root.find((e) => e.className === 'sk-step-name').map((e) => e.textContent), ['Map', 'Teams', 'Options']);
   assert.ok(s.pages[0].find((e) => e.className === 'sk-maps').length === 1, 'the maps are in the first page');
+  assert.equal(s.pages[1].find((e) => e.className === 'sk-slot').length, 0, 'the teams are built when their step first shows');
+  s.goTo(1);
   assert.ok(s.pages[1].find((e) => e.className === 'sk-slot').length > 0, 'the teams are in the second');
+  s.goTo(2);
   assert.ok(s.pages[2].find((e) => e.className === 'sk-rule-name').length > 0, 'the rules are in the third');
 });
 
@@ -299,6 +304,7 @@ test('every map plays with every leader pairing the shipped kits allow (no unit 
 const screen = (o = {}) => {
   const doc = new FakeDoc(); const started = [];
   const s = new SkirmishScreen(doc, { registry, maps, selectedId: 'classic', leaders: campaign.leaders, speech: campaign.speech, onStart: (m, st) => started.push([m, st]), onBack() {}, ...o });
+  s.goTo(1);   // the teams (and their leaders) are built when their step shows
   const text = (cls) => s.root.find((e) => e.className === cls).map((e) => e.textContent);
   return { s, started, strips: () => s.root.find((e) => e.className === 'sk-leaders'), who: () => text('sk-leader-who'), quotes: () => text('sk-leader-quote') };
 };
@@ -372,10 +378,11 @@ test('launcher: Skirmish offers the colour\'s leaders, and Start plays a map whe
   const title = await launch({ doc, base: '', tag: 't', hash: 't', getVersion: async () => ({ hash: 't' }), goTo() {}, reload() {}, loadCss: async () => {}, loadGame: async () => game, random: () => 0 });
   title.skirmish.click();
   const open = doc.body.children.find((c) => c.className === 'sk');
+  const press = (label) => open.find((e) => e.className === 'btn-label' && e.textContent === label)[0].parent.click();
+  press('Next');
   assert.ok(open.find((e) => e.className === 'sk-leader-name' && e.textContent === 'Ada').length > 0, 'names come from the campaign');
   assert.ok(open.find((e) => e.className === 'sk-leader-quote').length > 0, 'and so does the line they say');
-  const press = (label) => open.find((e) => e.className === 'btn-label' && e.textContent === label)[0].parent.click();
-  press('Next'); press('Next'); press('Start battle');
+  press('Next'); press('Start battle');
   const m = played[0];
   assert.deepEqual(m.players.map((p) => p.leader), ['ada', 'vex']);
   assert.equal(m.units.filter((u) => u.owner === 0).length, armyOf(played[0], 0, 'ada').length);

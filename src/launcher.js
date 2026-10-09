@@ -8,6 +8,7 @@ import { SkirmishScreen } from './ui/skirmish-screen.js';
 import { EditorScreen } from './editor/editor-screen.js';
 import { customMaps } from './editor/storage.js';
 import { TitleScreen } from './ui/title-screen.js';
+import { ScreenStack } from './ui/screen-stack.js';
 import { IntroScreen } from './ui/intro-screen.js';
 import { WorldMapScreen } from './ui/world-map-screen.js';
 import { setFactions } from './render/portrait-art.js';
@@ -49,7 +50,9 @@ export async function launch({
   doc.body.classList.remove('loading');
 
   const version = 'build ' + (hash === 'dev' ? 'dev' : hash + (built ? ' - ' + built.slice(0, 10) : ''));
-  let title = null, started = false, ready = false, failed = null, game = null, skirmish = null, campaignScreen = null;
+  let title = null, started = false, ready = false, failed = null, game = null;
+  // the pages that sit on top of the title screen (skirmish, editor, campaign); the stack covers and uncovers its battlefield
+  const pages = new ScreenStack(doc, { onCover: () => title?.coverBackdrop(true), onUncover: () => title?.coverBackdrop(false) });
 
   // The title screen can come back (Quit to title), so it is built by a function.
   const show = () => {
@@ -70,35 +73,23 @@ export async function launch({
   // The skirmish page sits on top of the title screen; Back removes it, Start plays the chosen setup and removes both. Leaders come
   // from the campaign (names and portraits); the one a human team starts with is the hero of the home nation.
   const portraitColors = () => setFactions([...Object.values(game.registry.factions), { id: 'chorus', ...game.campaign?.chorus }]);
+  const startGame = (t, map) => { pages.clear(); game.play(map); started = true; t.remove(); };
   const openSkirmish = (t) => {
-    if (!t.ready || !canSkirmish() || skirmish) return;
+    if (!t.ready || !canSkirmish() || pages.active) return;
     const leaders = game.campaign?.leaders || [];
     if (leaders.length) portraitColors();
-    t.coverBackdrop(true);
-    skirmish = new SkirmishScreen(doc, {
+    pages.push(new SkirmishScreen(doc, {
       registry: game.registry, maps: [...game.maps, ...customMaps(game.registry)], selectedId: game.defaultMapId,   // with the maps saved in the editor
       leaders, speech: game.campaign?.speech || {},
-      onBack: () => { skirmish.remove(); skirmish = null; t.coverBackdrop(false); },
-      onStart: (map, settings) => {
-        skirmish.remove(); skirmish = null;
-        game.play(applySkirmish(map, settings, game.registry, random));
-        started = true; t.remove();
-      },
-    });
-    doc.body.append(skirmish.root);
+      onBack: () => pages.pop(),
+      onStart: (map, settings) => startGame(t, applySkirmish(map, settings, game.registry, random)),
+    }));
   };
 
   // The map editor sits on top of the title screen like the skirmish page; Back removes it, Play starts the map being edited.
-  let editor = null;
   const openEditor = (t) => {
-    if (!t.ready || !canSkirmish() || editor) return;
-    t.coverBackdrop(true);
-    editor = new EditorScreen(doc, {
-      registry: game.registry, maps: game.maps,
-      onBack: () => { editor.remove(); editor = null; t.coverBackdrop(false); },
-      onPlay: (map) => { editor.remove(); editor = null; game.play(map); started = true; t.remove(); },
-    });
-    doc.body.append(editor.root);
+    if (!t.ready || !canSkirmish() || pages.active) return;
+    pages.push(new EditorScreen(doc, { registry: game.registry, maps: game.maps, onBack: () => pages.pop(), onPlay: (map) => startGame(t, map) }));
   };
 
   // The campaign: the intro cutscene (skippable) and then the world map. Both sit on top of the title screen; Back on the map
@@ -106,22 +97,19 @@ export async function launch({
   const canCampaign = () => !!(game && game.campaign);
   const colorsOf = (id) => (id === 'chorus' ? game.campaign.chorus : game.registry.factions[id]);
   const openCampaign = (t) => {
-    if (!t.ready || !canCampaign() || campaignScreen) return;
+    if (!t.ready || !canCampaign() || pages.active) return;
     portraitColors();
-    t.coverBackdrop(true);
-    const playIntro = () => {
-      const intro = campaignScreen = new IntroScreen(doc, { campaign: game.campaign, colors: colorsOf, raf, caf, onDone: () => { intro.remove(); showMap(); } });
-      doc.body.append(intro.root); intro.start();
+    const playIntro = (swap) => {
+      const intro = new IntroScreen(doc, { campaign: game.campaign, colors: colorsOf, raf, caf, onDone: showMap });
+      swap ? pages.replace(intro) : pages.push(intro);
+      intro.start();
     };
     const showMap = () => {
-      const map = campaignScreen = new WorldMapScreen(doc, {
-        campaign: game.campaign, colors: colorsOf, raf, caf,
-        onBack: () => { map.remove(); campaignScreen = null; t.coverBackdrop(false); },
-        onReplay: () => { map.remove(); playIntro(); },
-      });
-      doc.body.append(map.root); map.start();
+      const map = new WorldMapScreen(doc, { campaign: game.campaign, colors: colorsOf, raf, caf, onBack: () => pages.pop(), onReplay: () => playIntro(true) });
+      pages.replace(map);
+      map.start();
     };
-    playIntro();
+    playIntro(false);
   };
   show();
 

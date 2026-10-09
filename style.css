@@ -240,8 +240,8 @@ canvas.unit-icon { display: block; flex: none; }
 
 /* ---- skirmish page (src/ui/skirmish-screen.js) ------------------------------------------------------------------------------- */
 .sk { position: fixed; inset: 0; z-index: 11; display: flex; flex-direction: column; background: linear-gradient(#2a3a3a, #1d2436 30%); color: var(--ink); }
-.sk-head { flex: none; display: flex; align-items: center; gap: 12px; padding: calc(10px + var(--safe-t)) calc(12px + var(--safe-r)) 10px calc(12px + var(--safe-l)); background: linear-gradient(180deg, #2a3553, #1f2742); border-bottom: 3px solid var(--accent); box-shadow: 0 4px 0 rgba(0, 0, 0, .3); }
-.sk-title { margin: 0; font: 700 22px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; }
+.screen-head { flex: none; display: flex; align-items: center; gap: 12px; padding: calc(10px + var(--safe-t)) calc(12px + var(--safe-r)) 10px calc(12px + var(--safe-l)); background: linear-gradient(180deg, #2a3553, #1f2742); border-bottom: 3px solid var(--accent); box-shadow: 0 4px 0 rgba(0, 0, 0, .3); }
+.screen-title { margin: 0; font: 700 22px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; }
 .sk-sec-title { margin: 0; color: var(--dim); font: 700 12px/1 var(--font); letter-spacing: .14em; text-transform: uppercase; }
 .sk-note { min-height: 1.2em; color: var(--gold); font-size: 13px; font-weight: 600; }
 .sk-note:empty { display: none; }
@@ -288,7 +288,7 @@ canvas.unit-icon { display: block; flex: none; }
 .sk-opt:focus-visible { outline: 3px solid var(--gold); outline-offset: -3px; }
 
 /* the steps: Map, Teams, Options. The head carries a step bar; the footer has Back and Next (Start battle on the last step) */
-.sk .sk-head { justify-content: space-between; }
+.sk .screen-head { justify-content: space-between; }
 .sk-steps { list-style: none; margin: 0; padding: 0; display: flex; gap: 6px; }
 .sk-step { display: flex; align-items: center; gap: 6px; padding: 5px 11px 5px 6px; border-radius: 999px; background: rgba(0, 0, 0, .28); color: var(--dim); font: 700 12px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; }
 .sk-step-n { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; background: rgba(243, 236, 214, .14); font-size: 12px; }
@@ -346,8 +346,8 @@ canvas.unit-icon { display: block; flex: none; }
 .cine-canvas { display: block; width: 100%; height: 100%; }
 .cine-skip { position: absolute; top: calc(10px + var(--safe-t)); right: calc(12px + var(--safe-r)); background: rgba(10, 16, 34, .6); }
 .wm { position: fixed; inset: 0; z-index: 11; display: flex; flex-direction: column; background: #0a1226; color: var(--ink); }
-.wm .sk-head { justify-content: space-between; }
-.wm .sk-title { flex: 1; text-align: center; }
+.wm .screen-head { justify-content: space-between; }
+.wm .screen-title { flex: 1; text-align: center; }
 .wm-canvas { flex: 1 1 auto; min-height: 0; width: 100%; display: block; touch-action: manipulation; }
 .wm-card { flex: none; margin: 0 calc(12px + var(--safe-r)) calc(14px + var(--safe-b)) calc(12px + var(--safe-l)); padding: 12px; border-radius: 12px; background: rgba(10, 16, 34, .94); border: 3px solid var(--accent); display: flex; flex-direction: column; gap: 10px; }
 .wm-card.is-taken { border-color: #4fd3e6; }

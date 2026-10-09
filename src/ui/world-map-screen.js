@@ -19,10 +19,10 @@ export class WorldMapScreen {
     this.talker = new Talker(campaign.speech || {});
     this.assim = Object.fromEntries(campaign.nations.map((n) => [n.id, n.home ? 0 : 1]));
 
-    const head = h(doc, 'header', 'sk-head');
+    const head = h(doc, 'header', 'screen-head');
     this.back = button(doc, { label: 'Back', variant: 'ghost', size: 'sm', onClick: () => onBack() });
     this.replay = button(doc, { label: 'Replay intro', variant: 'ghost', size: 'sm', cls: 'wm-replay', onClick: () => onReplay() });
-    head.append(this.back, h(doc, 'h2', 'sk-title', 'Campaign'), this.replay);
+    head.append(this.back, h(doc, 'h2', 'screen-title', 'Campaign'), this.replay);
 
     this.canvas = h(doc, 'canvas', 'wm-canvas');
     this.canvas.addEventListener('click', (e) => this.tap(e));
