@@ -13,3 +13,5 @@ tools/ai/out/
 
 # balance tool output (reports, CSVs)
 tools/balance/out/
+tools/smoke/out/
+tools/smoke/node_modules/

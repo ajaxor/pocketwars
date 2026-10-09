@@ -60,3 +60,12 @@ test('the session arms the guard when a press on the map ends and checks clicks 
   assert.match(src, /addEventListener\?\.\('click', this\.onDocClick, true\)/, 'capture phase');
   assert.match(src, /removeEventListener\?\.\('click', this\.onDocClick, true\)/, 'and removed again on dispose');
 });
+
+test('a touch click that arrives with a click count of 0 but a pointer type is still the ghost; a keyboard or scripted click is not', () => {
+  const g = new GhostClickGuard();
+  g.press(); g.mapRelease();
+  assert.equal(g.swallows({ target: row, detail: 0, pointerType: 'touch' }, map), true, 'Chromium touch emulation sends detail 0 with pointerType touch');
+  g.press(); g.mapRelease();
+  assert.equal(g.swallows({ target: row, detail: 0, pointerType: '' }, map), false, 'Enter or Space on a button has no pointer type');
+  assert.equal(g.swallows({ target: row, detail: 0 }, map), false, 'a scripted click.click() has neither');
+});

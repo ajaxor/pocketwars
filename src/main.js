@@ -20,6 +20,7 @@ import { ENGINES, engineIds } from './ai/engines.js';
 import { Session } from './ui/session.js';
 import { Talker } from './campaign/speech.js';
 import { setFactions } from './render/portrait-art.js';
+import { propertiesOwnedBy } from './engine/queries.js';
 
 export async function boot({ onQuit } = {}) {
   const readJson = fetchReader(new URL('../data/', import.meta.url));
@@ -62,6 +63,7 @@ export async function boot({ onQuit } = {}) {
     game.aiSetup = current.players.map((p) => (p.controller === 'ai' ? { history, engine } : null));
     session = new Session(game, { canvas, doc: document, restart: launch, quit, leaderName, voices: current.dialogue === false ? null : voices });
     session.start();
+    if (params.has('smoke')) exposeSmokeHooks(game, session);
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   return {
@@ -69,5 +71,29 @@ export async function boot({ onQuit } = {}) {
     engines: engineIds.map((id) => ({ id, name: ENGINES[id].name, description: ENGINES[id].description })),
     defaultEngine: registry.ai.default,
     play(next) { current = next; launch(); },
+  };
+}
+
+/**
+ * Hooks for the browser smoke tests (tools/smoke): only present when the page is opened with ?smoke, so a normal game exposes nothing.
+ *   showBuilding(id)       scroll the map to the current player's first building of that terrain id ('factory', 'barracks')
+ *   buildingSpot(id)       where it is on screen, in window pixels (ask a moment after showBuilding: the layout updates on the next frame)
+ *   unitCount()            how many units are on the board
+ *   ready()                the opening is over and the player's input is idle
+ */
+function exposeSmokeHooks(game, session) {
+  window.__pocketwars = {
+    unitCount: () => game.state.units.length,
+    ready: () => !session.intro && session.controller.mode === 'idle',
+    showBuilding(id) {
+      const p = propertiesOwnedBy(game, game.state.turn).find((q) => q.terrain.id === id);
+      if (p) session.renderer.camera.centerOn(p.x, p.y);
+    },
+    buildingSpot(id) {
+      const p = propertiesOwnedBy(game, game.state.turn).find((q) => q.terrain.id === id);
+      if (!p) return null;
+      const r = session.renderer.tileRect(p.x, p.y);
+      return { x: r.left + r.size / 2, y: r.top + r.size / 2 };
+    },
   };
 }

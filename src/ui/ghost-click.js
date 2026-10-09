@@ -7,7 +7,9 @@
 //
 // The rule that tells a ghost from a real click: a real click is preceded by a press (pointerdown) of its own. So the map arms the guard
 // when a press on it ends, any new press disarms it, and a click that arrives while it is still armed, from a pointer, aimed at anything but
-// the map itself, is the ghost. A click from the keyboard or from code (detail 0) is never one.
+// the map itself, is the ghost. A click from the keyboard or from code is never one. A pointer's click is told by its click count
+// (`detail`, 1 or more) or, for browsers that send touch clicks with a count of 0 (Chromium's touch emulation), by its `pointerType`
+// ('touch', 'mouse', 'pen'); a keyboard or scripted click has neither.
 
 export class GhostClickGuard {
   constructor() { this.armed = false; }
@@ -19,12 +21,13 @@ export class GhostClickGuard {
   mapRelease() { this.armed = true; }
 
   /**
-   * @param {{detail?:number, target?:any}} e a click event
+   * @param {{detail?:number, pointerType?:string, target?:any}} e a click event
    * @param {any} map the map's element: a click that is aimed at it (browsers that keep it on the pressed element) is simply used up
    * @returns {boolean} true when this click is the ghost and must not reach its target
    */
   swallows(e, map) {
-    if (!this.armed || !(e.detail > 0)) return false;   // not waiting for a ghost, or a keyboard / programmatic click
+    const fromPointer = e.detail > 0 || !!e.pointerType;
+    if (!this.armed || !fromPointer) return false;   // not waiting for a ghost, or a keyboard / programmatic click
     this.armed = false;                                  // one press sends one click
     return e.target !== map;
   }

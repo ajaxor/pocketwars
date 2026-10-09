@@ -1,0 +1,8 @@
+{
+  "name": "pocketwars-smoke",
+  "private": true,
+  "type": "module",
+  "description": "Browser smoke tests: drives the real game in headless Chromium. Not part of the game build.",
+  "scripts": { "smoke": "node smoke.mjs" },
+  "dependencies": { "playwright-core": "1.56.1" }
+}

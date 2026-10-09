@@ -19,6 +19,7 @@
     "balance:units": "node tools/balance/units.mjs",
     "balance:leaders": "node tools/balance/leaders.mjs",
     "ai:sweep": "node tools/ai/sweep.mjs",
-    "ai:ratchet": "node tools/ai/ratchet.mjs"
+    "ai:ratchet": "node tools/ai/ratchet.mjs",
+    "smoke": "node tools/smoke/smoke.mjs"
   }
 }
