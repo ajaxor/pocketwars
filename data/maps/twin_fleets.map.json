@@ -106,7 +106,7 @@
     { "type": "submarine", "owner": 1, "x": 20, "y": 5 },
     { "type": "submarine", "owner": 1, "x": 20, "y": 9 },
     { "type": "cruiser", "owner": 1, "x": 20, "y": 3 },
-    { "type": "jammer", "owner": null, "x": 11, "y": 1 },
-    { "type": "jammer", "owner": null, "x": 14, "y": 1 }
+    { "type": "jammer", "owner": null, "x": 12, "y": 1 },
+    { "type": "jammer", "owner": null, "x": 25, "y": 2 }
   ]
 }

@@ -25,11 +25,12 @@ export const moveCostAt = (game, moveClass, x, y) => terrainAt(game, x, y).moveC
  * `prev` covers every tile the search crossed, so paths can pass through friendly units.
  */
 export class ReachMap {
-  constructor(width, origin, cost, prev) {
+  constructor(width, origin, cost, prev, trail = null) {
     this.width = width;
     this.origin = origin; // [x, y]
     this.cost = cost; // Map<tileIndex, movePointsSpent>
     this.prev = prev; // Map<tileIndex, tileIndex>
+    this.trail = trail; // { best: Map<tileIndex, state>, back: Map<state, state>, tile: (state) => tileIndex } when terrain penalties make a path's cost depend on the way taken
   }
 
   has(x, y) { return this.cost.has(y * this.width + x); }
@@ -42,15 +43,44 @@ export class ReachMap {
 
   /** Path from the origin to (x, y) as [[x, y], ...] including both ends, or null when unreachable. */
   pathTo(x, y) {
-    let k = y * this.width + x;
-    if (!this.prev.has(k) && !(x === this.origin[0] && y === this.origin[1])) return null;
+    const k0 = y * this.width + x;
+    const own = x === this.origin[0] && y === this.origin[1];
+    const { trail } = this;
     const out = [[x, y]];
+    if (trail) {   // follow the states (tile + penalty paid so far) the cheapest way in went through, so the path costs what the search said
+      let st = trail.best.get(k0);
+      if (st === undefined) return own ? out : null;
+      while (trail.back.has(st)) {
+        st = trail.back.get(st);
+        const k = trail.tile(st);
+        out.unshift([k % this.width, Math.floor(k / this.width)]);
+      }
+      return out;
+    }
+    let k = k0;
+    if (!this.prev.has(k) && !own) return null;
     while (this.prev.has(k)) {
       k = this.prev.get(k);
       out.unshift([k % this.width, Math.floor(k / this.width)]);
     }
     return out;
   }
+}
+
+/**
+ * What a move costs: one point for every tile entered, plus ONE penalty for the whole move, the biggest any tile on the way asks for.
+ * A tile's `moveCost` is 1 plus its penalty (a wheeled unit on open ground: 2, a penalty of 1), so crossing a mile of sand costs the
+ * wheels one extra point, not one a tile. Roads and anything costing 1 have no penalty.
+ */
+export const stepPenalty = (step) => Math.max(0, step - 1);
+
+const LEVELS = new WeakMap();   // registry -> { moveClass: levels }
+
+/** The distinct penalties (see stepPenalty) a move class meets on this ruleset's terrain, smallest first (0 included). */
+function penaltyLevels(game, moveClass) {
+  let cache = LEVELS.get(game.registry);
+  if (!cache) LEVELS.set(game.registry, (cache = {}));
+  return cache[moveClass] ??= [...new Set([0, ...Object.values(game.registry.terrain).map((t) => t.moveCost[moveClass]).filter((c) => c != null).map(stepPenalty)])].sort((a, b) => a - b);
 }
 
 /** Every tile `unit` can move to this turn (including its own tile), as a ReachMap. */
@@ -66,11 +96,18 @@ export function computeReach(game, unit, { join = false } = {}) {   // `join`: a
   // who stands where, looked up once (the first unit listed on a tile, as unitAt finds it)
   const occupants = new Map();
   for (const u of game.state.units) { const k = tileIndex(map, u.x, u.y); if (!occupants.has(k)) occupants.set(k, u); }
+  // The search runs over states: a tile plus the biggest terrain penalty paid so far (an index into `levels`).
+  const levels = penaltyLevels(game, def.moveClass), L = levels.length;
+  const tileOf = (st) => Math.floor(st / L);
+  const best = new Map(), back = new Map(), seen = new Map();   // best: tile -> its cheapest state; back: state -> the state before; seen: state -> cost
   const queue = new PathHeap();
-  queue.push(unit.x, unit.y, 0);
+  seen.set(start * L, 0);
+  best.set(start, start * L);
+  queue.push(unit.x, unit.y, 0, 0);
   while (queue.length) {
-    const [x, y, c] = queue.pop();
-    if (c > cost.get(tileIndex(map, x, y))) continue; // stale queue entry
+    const [x, y, c, , lv] = queue.pop();
+    const here = tileIndex(map, x, y) * L + lv;
+    if (c > seen.get(here)) continue; // stale queue entry
     for (const [dx, dy] of DIRS) {
       const nx = x + dx;
       const ny = y + dy;
@@ -80,13 +117,15 @@ export function computeReach(game, unit, { join = false } = {}) {   // `join`: a
       if (occupant && occupant.owner !== unit.owner && canSee(game, unit.owner, occupant) && !passesOverMines(game, unit, occupant)) continue;   // a hidden enemy does not block the plan (nor does a mine for a unit that floats or flies over it)
       const step = moveCostAt(game, def.moveClass, nx, ny);
       if (step === null) continue;
-      const nc = c + step;
+      const nlv = Math.max(lv, levels.indexOf(stepPenalty(step)));
+      const nc = c + 1 + levels[nlv] - levels[lv];   // a tile, and whatever the penalty has grown by
       if (nc > allowance) continue;
-      const k = tileIndex(map, nx, ny);
-      if (!cost.has(k) || nc < cost.get(k)) {
-        cost.set(k, nc);
-        prev.set(k, tileIndex(map, x, y));
-        queue.push(nx, ny, nc);
+      const k = tileIndex(map, nx, ny), st = k * L + nlv;
+      if (!seen.has(st) || nc < seen.get(st)) {
+        seen.set(st, nc);
+        back.set(st, here);
+        if (!cost.has(k) || nc < cost.get(k)) { cost.set(k, nc); best.set(k, st); prev.set(k, tileOf(here)); }
+        queue.push(nx, ny, nc, nlv);
       }
     }
   }
@@ -95,7 +134,7 @@ export function computeReach(game, unit, { join = false } = {}) {   // `join`: a
     const occupant = occupants.get(k);
     if (occupant && occupant !== unit && !(join && canJoin(game, unit, occupant)) && (occupant.owner === unit.owner || canSee(game, unit.owner, occupant))) cost.delete(k);   // a damaged friend of the same kind stays on offer: the unit may join it
   }
-  return new ReachMap(map.width, [unit.x, unit.y], cost, prev);
+  return new ReachMap(map.width, [unit.x, unit.y], cost, prev, { best, back, tile: tileOf });
 }
 
 /**

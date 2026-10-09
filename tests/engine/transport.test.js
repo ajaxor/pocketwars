@@ -203,3 +203,14 @@ test('the AI does not buy ammo it cannot pay for', () => {
   const order = chooseOrder(g, copter);
   assert.equal(order.action.type, 'wait');
 });
+
+test('a transport built this turn cannot deploy even after its free move', () => {
+  const g = world(['H....h', '......'], [['transport_copter', 0, 1, 0], ['recon', 1, 5, 1]]);
+  const copter = g.state.units[0];
+  copter.fresh = true; copter.builtNow = true;
+  g.act({ unitId: copter.id, to: { x: 2, y: 1 }, action: { type: 'wait' } });
+  assert.equal(copter.fresh, undefined, 'the free move is over');
+  assert.equal(g.deploy({ unitId: copter.id }).error, 'just-built');
+  g.endTurn(); g.endTurn();
+  assert.equal(g.deploy({ unitId: copter.id }).ok, true, 'next turn it can');
+});

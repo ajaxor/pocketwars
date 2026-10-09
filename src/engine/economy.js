@@ -58,7 +58,7 @@ export function startTurn(game, player) {
     u.done = isInertDef(unitDef(game, u));   // a mine never acts
     u.halted = null;
     delete u.attacks;
-    delete u.fresh;
+    delete u.fresh; delete u.builtNow;
     delete u.deployed;
     delete u.carriedBy;
   }

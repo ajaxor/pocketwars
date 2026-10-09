@@ -65,7 +65,7 @@
     { "type": "recon", "owner": 1, "x": 29, "y": 9 },
     { "type": "destroyer", "owner": 1, "x": 20, "y": 7 },
     { "type": "copter", "owner": 1, "x": 28, "y": 5 },
-    { "type": "jammer", "owner": null, "x": 14, "y": 0 },
-    { "type": "jammer", "owner": null, "x": 17, "y": 15 }
+    { "type": "jammer", "owner": null, "x": 15, "y": 8 },
+    { "type": "jammer", "owner": null, "x": 31, "y": 8 }
   ]
 }

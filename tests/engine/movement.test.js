@@ -13,7 +13,7 @@ test('move classes use their own terrain costs: forest is cheap for foot, dear f
   assert.equal(cost('walker').costAt(2, 0), 2, 'two forests at cost 1 each');
   assert.equal(cost('walker').has(3, 0), true);
   assert.equal(cost('roller').costAt(1, 0), 2, 'forest costs wheels 2');
-  assert.equal(cost('roller').has(2, 0), false, 'a second forest exceeds the budget');
+  assert.equal(cost('roller').costAt(2, 0), 3, 'a second forest adds a tile but not a second penalty');
   assert.equal(cost('flyer').has(3, 0), true);
 });
 
@@ -55,11 +55,20 @@ test('pathTo returns the origin-to-destination path (through friends), null when
   assert.equal(reachOf(blocked, 0).pathTo(2, 0), null);
 });
 
-test('the search chooses the cheapest route, detouring around expensive terrain', () => {
+test('the search chooses the cheapest route, taking a penalty only when the detour costs more', () => {
   const game = makeGame({ units: { roller: { move: 6, moveClass: 'wheel' } }, rows: ['.FFF.', '.....'], unitsOnMap: [['roller', 0, 0, 0]] });
   const reach = reachOf(game, 0);
-  assert.equal(reach.costAt(4, 0), 6, 'around (1+4+1) beats through three forests (2+2+2+1)');
-  assert.ok(reach.pathTo(4, 0).every(([, y], i, p) => i === 0 || i === p.length - 1 || y === 1), 'path runs along the bottom row');
+  assert.equal(reach.costAt(4, 0), 5, 'straight through the forests (4 tiles + one penalty) beats the open row (6 tiles)');
+  assert.equal(reach.pathTo(4, 0).length - 1, 4, 'so the path runs along the forested row');
+});
+
+test('a terrain penalty is paid once per move, not once per tile', () => {
+  const game = makeGame({ units: { roller: { move: 9, moveClass: 'wheel' } }, rows: ['.FFF.'], unitsOnMap: [['roller', 0, 0, 0]] });
+  const reach = reachOf(game, 0);
+  assert.equal(reach.costAt(1, 0), 2);
+  assert.equal(reach.costAt(3, 0), 4, 'three forests: three tiles plus one penalty');
+  assert.equal(reach.costAt(4, 0), 5, 'and the open tile after them is one more');
+  assert.equal(reach.pathTo(4, 0).length - 1, 4);
 });
 
 test('distanceField: cost from goals outward using the move class, impassable tiles excluded', () => {

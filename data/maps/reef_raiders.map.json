@@ -99,6 +99,6 @@
     { "type": "submarine", "owner": 1, "x": 11, "y": 7 },
     { "type": "cruiser", "owner": 1, "x": 12, "y": 7 },
     { "type": "jammer", "owner": null, "x": 7, "y": 2 },
-    { "type": "jammer", "owner": null, "x": 10, "y": 2 }
+    { "type": "jammer", "owner": null, "x": 17, "y": 2 }
   ]
 }

@@ -21,8 +21,6 @@
     "O": { "terrain": "hq", "owner": 0 },
     "V": { "terrain": "airfield", "owner": 1 },
     "v": { "terrain": "airfield", "owner": 0 },
-    "Y": { "terrain": "shipyard", "owner": 0 },
-    "Z": { "terrain": "shipyard", "owner": 1 },
     "y": { "terrain": "factory", "owner": 0 },
     "z": { "terrain": "factory", "owner": 1 }
   },
@@ -32,12 +30,12 @@
     "FF......FFFF~~FFFF......FF",
     "FF......FFFF~~FFFF......FF",
     "FF....rrrrrrrrrrrrrr....FF",
-    "...rc.r....Y~~Z....r.c....",
+    "...rc.r....c~~c....r.c....",
     ".k.r..rMM...~~...MMr..r.V.",
     ".OrrrrrMM...~~...MMr..r.z.",
     ".y.r..rMM...~~...MMrrrrrB.",
     ".v.r..rMM...~~...MMr..r.K.",
-    "....c.r....Y~~Z....r.cr...",
+    "....c.r....c~~c....r.cr...",
     "FF....rrrrrrrrrrrrrr....FF",
     "FF......FFFF~~FFFF......FF",
     "FF......FFFF~~FFFF......FF",
@@ -80,7 +78,7 @@
     { "type": "artillery", "owner": 1, "x": 23, "y": 8 },
     { "type": "sniper", "owner": 0, "x": 5, "y": 8 },
     { "type": "sniper", "owner": 1, "x": 20, "y": 7 },
-    { "type": "jammer", "owner": null, "x": 14, "y": 3 },
-    { "type": "jammer", "owner": null, "x": 11, "y": 12 }
+    { "type": "jammer", "owner": null, "x": 11, "y": 7 },
+    { "type": "jammer", "owner": null, "x": 25, "y": 9 }
   ]
 }

@@ -10,9 +10,9 @@ export class PathHeap {
 
   get length() { return this.items.length; }
 
-  push(x, y, cost) {
+  push(x, y, cost, tag) {   // `tag`: anything the search wants back with the entry (comes out as the fifth element)
     const a = this.items;
-    a.push([x, y, cost, this.seq++]);
+    a.push([x, y, cost, this.seq++, tag]);
     let i = a.length - 1;
     while (i > 0) {
       const p = (i - 1) >> 1;
@@ -22,7 +22,7 @@ export class PathHeap {
     }
   }
 
-  /** The entry with the lowest cost (the earliest pushed among equals), as [x, y, cost]. */
+  /** The entry with the lowest cost (the earliest pushed among equals), as [x, y, cost, seq, tag]. */
   pop() {
     const a = this.items;
     const top = a[0];

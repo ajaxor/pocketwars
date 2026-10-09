@@ -12,6 +12,7 @@
 //                           unit: the unit has used its move and still has to act (moved = it got at least one tile before being stopped);
 //                           deployed: true on a carrier that has already deployed this turn (see deploy.js), cleared at the start of its owner's turn;
 //                           fresh: true on a unit built this turn: it is ready, but its one order can only be a move and a Wait (a free
+//                           builtNow: true on the same unit, kept until its owner's next turn (fresh goes after its first order): a carrier cannot deploy while it is set
 //                           move off the property that built it; no attack, capture or dive). Cleared when it acts and at the start of its
 //                           owner's next turn; absent otherwise;
 //                           ammo: rounds left, only on a unit type with the `ammo` attribute (see ammo.js)
@@ -41,7 +42,7 @@ export function makeUnit(registry, map, id, { type, owner, x, y, hp, done = fals
   const under = hiddenLayer || (!!dive?.auto && !!registry.terrainDef(map.terrain[y][x]).attributes?.submergible);
   return {
     id, type, owner, x, y, hp: hp ?? registry.rules.maxHp, done: done || isInertDef(def), capture: 0, submerged: under, halted: null, facing: facingToCentre(map, x),
-    ...(fresh && { fresh: true }), ...(ammo !== undefined && { ammo }), ...(fuel !== undefined && { fuel }),
+    ...(fresh && { fresh: true, builtNow: true }), ...(ammo !== undefined && { ammo }), ...(fuel !== undefined && { fuel }),
   };
 }
 

@@ -38,7 +38,7 @@
     "~Yv.....^s~~~~s^.....VZ~",
     "~~f..c...^~~~~^...c..f~~",
     "~~~f.f..~~~~~~~~..f.f~~~",
-    "~~~~..~~~~~~~~~~~~..~~~~"
+    "~~~~~~~~~~~~~~~~~~~~~~~~"
   ],
   "units": [
     { "type": "soldier", "owner": 0, "x": 5, "y": 4 },
@@ -57,9 +57,7 @@
     { "type": "artillery", "owner": 1, "x": 20, "y": 6 },
     { "type": "sniper", "owner": 0, "x": 3, "y": 1 },
     { "type": "sniper", "owner": 1, "x": 20, "y": 1 },
-    { "type": "jammer", "owner": null, "x": 6, "y": 2 },
-    { "type": "jammer", "owner": null, "x": 17, "y": 2 },
-    { "type": "jammer", "owner": null, "x": 6, "y": 8 },
-    { "type": "jammer", "owner": null, "x": 17, "y": 8 }
+    { "type": "jammer", "owner": null, "x": 11, "y": 4 },
+    { "type": "jammer", "owner": null, "x": 21, "y": 3 }
   ]
 }

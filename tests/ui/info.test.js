@@ -44,7 +44,7 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   const game = fresh();
   const tank = unitStats(game, registry.unit('tank'));
   assert.deepEqual([tank.name, tank.cost, tank.move, tank.armor, tank.toughness], ['Tank', 7000, 3, 85, 1.3]);
-  assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air'] }]);
+  assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air', 'Surface'] }]);
   assert.deepEqual(tank.tags, []);
 
   assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures']);
@@ -52,9 +52,9 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   const sniper = unitStats(game, registry.unit('sniper'));
   assert.deepEqual(sniper.tags.map((t) => t.label), ['Captures', 'Indirect fire', 'Cloaked']);
   assert.deepEqual([sniper.weapons[0].min, sniper.weapons[0].max], [2, 3]);
-  assert.deepEqual(unitStats(game, registry.unit('artillery')).weapons[0].hits, ['Ground']);
+  assert.deepEqual(unitStats(game, registry.unit('artillery')).weapons[0].hits, ['Ground', 'Surface']);
   assert.deepEqual(unitStats(game, registry.unit('fighter')).weapons[0].hits, ['Low air', 'High air']);
-  assert.deepEqual(unitStats(game, registry.unit('flak')).weapons[0].hits, ['Ground', 'Low air', 'High air']);
+  assert.deepEqual(unitStats(game, registry.unit('flak')).weapons[0].hits, ['Ground', 'Low air', 'High air', 'Surface']);
   assert.equal(unitStats(game, registry.unit('copter')).layer, 'Low air');
   assert.equal(unitStats(game, registry.unit('tank')).layer, null);
 });

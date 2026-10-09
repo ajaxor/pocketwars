@@ -84,3 +84,7 @@ Also resolved earlier and removed from the lists: the mine hidden-tile leak, the
 
 - **Dead drawings after the jungle removal.** `roundwood`/rainforest canopy, moss ground and mossy crag art are no longer used by any tileset (as are some towers, spires, paving, heath and lawn drawings); delete or archive them under `src/render/unused/` once it is clear they will not come back.
 - **Road dead-end fade is cosmetic only.** `roadShape` still reports a lone or dead-end tile as a straight through-road; the fade is derived in the drawing from the raw `link` flags, so any other consumer of `arms` sees the full-length road.
+
+- **Balance runs skip most skirmish maps.** Shipyards on ponds were replaced by neutral cities (see the map house rules), so every map without a big sea now lacks a shipyard for each player and `buildingGaps` marks it incomplete; the AI balance runs only use gap-free maps. Teach `buildingGaps` (src/data/map-buildings.js) that a landlocked map needs no shipyard.
+- **The AI's distance field ignores the once-a-move terrain penalty.** `distanceField` still sums the per-tile costs, so the strategist over-estimates how far wheels are across open ground. Only matters for goal ordering, but it should share `stepPenalty` with `computeReach`.
+- **`computeReach` now searches tile-and-penalty states** (src/engine/movement.js); it is a little slower per call than the old one-state search. Measure before optimising.

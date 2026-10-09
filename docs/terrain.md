@@ -19,6 +19,7 @@ opens a gallery of every tileset.
 
 ## Ground costs
 
+- **Penalties are paid once per move.** A tile's `moveCost` is 1 plus a penalty (open ground is 2 for wheels, so a penalty of 1). A move costs one point per tile entered plus the single biggest penalty among them, not one per tile: a wheeled unit crossing ten tiles of open ground pays 11, not 20 (`computeReach` in `src/engine/movement.js`). The AI's distance field still sums the per-tile costs.
 - **Open ground** (`plain`) costs **wheeled vehicles 2**; a **road** costs them 1 (and every class pays the same on both otherwise), so wheels want the road.
   Forests block wheels, mountains block wheels and treads.
 - Rough ground, cliffs and the soft ground (snowdrift, dune, mud) were removed in October 2026. Their drawings are kept, unused, in `src/render/unused/removed-terrain.js`.

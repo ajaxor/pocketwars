@@ -6,7 +6,7 @@
   "description": "The original 10x11 demo map: a river crossing with a central road, cities on both flanks, and mountain-guarded bases.",
   "players": [
     { "faction": "ashmark", "controller": "human", "funds": 8000 },
-    { "faction": "vantor_reach",   "controller": "ai",    "funds": 8000 }
+    { "faction": "vantor_reach", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
     ".": { "terrain": "plain" },
@@ -15,39 +15,37 @@
     "r": { "terrain": "road" },
     "~": { "terrain": "sea" },
     "c": { "terrain": "city" },
-    "O": { "terrain": "hq",       "owner": 0 },
-    "o": { "terrain": "factory",  "owner": 0 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "o": { "terrain": "factory", "owner": 0 },
     "k": { "terrain": "barracks", "owner": 0 },
     "v": { "terrain": "airfield", "owner": 0 },
-    "B": { "terrain": "hq",       "owner": 1 },
-    "b": { "terrain": "factory",  "owner": 1 },
+    "B": { "terrain": "hq", "owner": 1 },
+    "b": { "terrain": "factory", "owner": 1 },
     "K": { "terrain": "barracks", "owner": 1 },
-    "V": { "terrain": "airfield", "owner": 1 },
-    "Y": { "terrain": "shipyard", "owner": 0 },
-    "Z": { "terrain": "shipyard", "owner": 1 }
+    "V": { "terrain": "airfield", "owner": 1 }
   },
   "tiles": [
     "MFFVbBKFFM",
     "F.c.rr.c.F",
     "..F.r..F..",
     ".c..rr..c.",
-    "~~Y.rr.Z~~",
+    "~~c.rr.c~~",
     "~~~.rr.~~~",
-    "~~Y.rr.Z~~",
+    "~~c.rr.c~~",
     ".c..rr..c.",
     "..F.r..F..",
     "F.c.rr.c.F",
     "MFFvoOkFFM"
   ],
   "units": [
-    { "type": "soldier",  "owner": 0, "x": 3, "y": 9 },
-    { "type": "soldier",  "owner": 1, "x": 3, "y": 1 },
-    { "type": "soldier",  "owner": 0, "x": 6, "y": 9 },
-    { "type": "soldier",  "owner": 1, "x": 6, "y": 1 },
-    { "type": "soldier",  "owner": 0, "x": 5, "y": 8 },
-    { "type": "soldier",  "owner": 1, "x": 5, "y": 2 },
-    { "type": "tank",      "owner": 0, "x": 4, "y": 9 },
-    { "type": "tank",      "owner": 1, "x": 4, "y": 1 },
+    { "type": "soldier", "owner": 0, "x": 3, "y": 9 },
+    { "type": "soldier", "owner": 1, "x": 3, "y": 1 },
+    { "type": "soldier", "owner": 0, "x": 6, "y": 9 },
+    { "type": "soldier", "owner": 1, "x": 6, "y": 1 },
+    { "type": "soldier", "owner": 0, "x": 5, "y": 8 },
+    { "type": "soldier", "owner": 1, "x": 5, "y": 2 },
+    { "type": "tank", "owner": 0, "x": 4, "y": 9 },
+    { "type": "tank", "owner": 1, "x": 4, "y": 1 },
     { "type": "artillery", "owner": 0, "x": 5, "y": 9 },
     { "type": "artillery", "owner": 1, "x": 5, "y": 1 }
   ]

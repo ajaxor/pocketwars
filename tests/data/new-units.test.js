@@ -55,6 +55,17 @@ test('infantry attack ladder: soldier < marine < commando; the commando moves 2 
 
 test('AT infantry cannot shoot aircraft; the sniper can capture', () => {
   assert.equal(unit('mech').name, 'AT Infantry');
-  assert.deepEqual(weaponsOf('mech')[0].targets, ['direct_ground']);
+  assert.deepEqual(weaponsOf('mech')[0].targets, ['direct_ground', 'surface']);
   assert.ok(hasAttribute(unit('sniper'), 'capture'));
+});
+
+test('every infantry and vehicle weapon that can hit ground units can also hit ships', () => {
+  for (const id of registry.unitIds) {
+    const def = registry.unit(id);
+    if (!['infantry', 'vehicle', 'amphibious'].includes(def.category) || def.layer !== 'ground') continue;
+    for (const w of def.weapons ?? []) {
+      const targets = registry.weapon(w).targets;
+      if (targets.some((t) => t === 'direct_ground' || t === 'indirect_ground')) assert.ok(targets.includes('surface'), `${id}'s ${w} cannot hit ships`);
+    }
+  }
 });

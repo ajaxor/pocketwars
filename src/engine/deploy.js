@@ -3,7 +3,7 @@
 // carrier's tile (`carriedBy` names the carrier) and spends config.ammo (default 1) of the carrier's ammo; the player then orders that
 // unit like any other: it moves off the carrier's tile (it has to leave it) and may attack, capture or wait. The new unit is at full HP.
 // If the player cancels before ordering it, `undoDeploy` puts it back in the carrier. A carrier deploys once per turn (`unit.deployed`,
-// cleared when its owner's turn starts), may deploy before or after its own move, and cannot deploy while it was just built (`fresh`).
+// cleared when its owner's turn starts), may deploy before or after its own move, and cannot deploy on the turn it was built (`fresh`, then `builtNow`, which lasts the whole turn).
 // A deploy needs somewhere to go: at least one tile the new unit could reach from the carrier's tile.
 
 import { attributeConfig } from './attributes.js';
@@ -34,7 +34,7 @@ export function deployReach(game, carrier) {
 export function deployProblem(game, carrier) {
   const cfg = deployConfig(game, carrier);
   if (!cfg) return 'cannot-deploy';
-  if (carrier.fresh) return 'just-built';
+  if (carrier.fresh || carrier.builtNow) return 'just-built';   // built this turn: even after its free move it cannot drop anything until its owner's next turn
   if (carrier.deployed) return 'already-deployed';
   if (ammoOf(game, carrier) < deployCost(cfg)) return 'out-of-ammo';
   if (!deployReach(game, carrier).tiles.length) return 'no-room';

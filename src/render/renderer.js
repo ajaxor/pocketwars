@@ -479,6 +479,10 @@ export class Renderer {
     const atk = view.attackTiles;
     if (atk) {   // the same joined outline as the movement area, in red
       const ring = outlineLoops([...atk].map((k) => ({ x: k % map.width, y: Math.floor(k / map.width) })));
+      // a translucent fringe just inside the ring, so the outer (max range) and inner (min range) lines read as the edges of one band
+      g.save(); g.beginPath(); tracePath(g, ring, S, { radius: this.face(0, 0)[4] }); g.clip('evenodd');
+      for (const [a, wd] of [[.14, .5], [.17, .32], [.2, .16]]) this.strokeRing(g, ring, [[`rgba(255,59,59,${a})`, S * wd]]);
+      g.restore();
       this.strokeRing(g, ring, [['rgba(90,0,0,.6)', Math.max(4, S * .1)], ['#ff3b3b', Math.max(2, S * .05)]]);
     }
     if (atk && sel) {
