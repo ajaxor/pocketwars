@@ -50,7 +50,7 @@ export function trade(game, a, d) {
       const indirect = !!w.indirect || hasAttribute(registry.unit(from), 'indirect');
       if (counter && indirect) continue;
       const attacker = { ...ghost(from, -1), hp: BIG };
-      const perHp = weaponDamage(game, w, attacker, ghost(to, -2), !counter && !indirect) / BIG;   // a direct-fire unit usually moves before it fires
+      const perHp = weaponDamage(game, w, attacker, ghost(to, -2)) / BIG;   // a direct-fire unit usually moves before it fires
       if (!best || perHp > best.perHp) best = { perHp, indirect, noCounter: !!w.noCounter };
     }
     return best;

@@ -48,7 +48,7 @@ export function matchup(game, a, b) {
       if (w.onlyTags && !w.onlyTags.some((t) => db.tags?.includes(t))) continue;
       if (!w.targets.some((m) => registry.rules.targetModes[m].layer === layer)) continue;
       const indirect = !!w.indirect || hasAttribute(da, 'indirect');
-      v = Math.max(v, weaponDamage(game, w, attacker, defender, !indirect));   // a direct-fire unit usually moves before it fires
+      v = Math.max(v, weaponDamage(game, w, attacker, defender));   // a direct-fire unit usually moves before it fires
     }
   }
   s.damage.set(key, v);

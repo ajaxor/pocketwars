@@ -58,7 +58,7 @@ const k9Team = (g, o) => {
 // ---- vehicles ------------------------------------------------------------------------------------------------------------------
 // Remote technical: the technical with nobody in it: a radio mast on the cab with a blinking light.
 const remoteTechnical = (g, o) => {
-  VEHICLES.SPRITES.technical(g, o);
+  VEHICLES.SPRITES.recon(g, o);
   const { s, j, w, ph, run } = o, jj = j / s, on = !run || Math.sin(w * 6 + ph) > 0;
   stroke(g, s, .12, -.14 + jj, .12, -.3 + jj, Math.max(1.5, s * .02), '#555a64');                               // the mast
   stroke(g, s, .07, -.25 + jj, .17, -.25 + jj, Math.max(1.5, s * .02), '#555a64');                              // its crossbar

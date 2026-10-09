@@ -12,7 +12,7 @@ import { dot, ell, line, mapper, pick, poly, rnd, styled } from './terrain-kit.j
 const MESA = { top: '#e8b27c', bands: ['#cf7c4c', '#bd6a40', '#da9060', '#b05f3b'], dark: .22, shadow: 'rgba(0,0,0,.15)' };
 const TOWERS = { walls: ['#7d8aa0', '#8896ab', '#6b788d'], glass: null };
 const SPIRES = { stone: '#c3bccf', roof: '#8a56c4', flag: '#f0c94a' };
-const CLIFF = { face: '#7c7668', rim: 'rgba(255,255,255,.22)', crack: 'rgba(52,47,40,.38)', texture: 'rock', bands: null, faceH: .32, top2: null };
+const CLIFF = { face: '#7c7668', rim: 'rgba(255,255,255,.22)', crack: 'rgba(52,47,40,.38)', texture: 'rock', bands: null, faceH: .32, top2: null, bloom: '#f4d6e4' };
 
 /** One butte: foot line yb, centre cx, half-width w (at the foot) and summit height top. */
 function butte(g, P, S, st, cx, w, top, yb, back) {
@@ -43,7 +43,7 @@ function cliffTop(g, P, S, st, x, y, base) {
     line(g, [P(.45 + R(8) * .2, .1), P(.55 + R(8) * .2, .3), P(.5 + R(9) * .2, .42)], 'rgba(90,130,170,.35)', S * .018);
   } else if (st.texture === 'hedge') {
     for (let i = 0; i < 12; i++) dot(g, ...P(.06 + .88 * R(i), .06 + .64 * R(i + 20)), S * (.035 + .02 * R(i + 40)), i % 3 ? shade(base, .14) : shade(base, -.16));
-    for (let i = 0; i < 2; i++) dot(g, ...P(.15 + .7 * R(60 + i), .12 + .5 * R(70 + i)), S * .017, st.bloom ?? '#f4d6e4');
+    for (let i = 0; i < 2; i++) dot(g, ...P(.15 + .7 * R(60 + i), .12 + .5 * R(70 + i)), S * .017, st.bloom);
   } else if (st.texture === 'wall') {   // a stone coping: two courses of blocks
     g.strokeStyle = st.crack; g.lineWidth = Math.max(1, S * .02); g.beginPath();
     g.moveTo(...P(0, .34)); g.lineTo(...P(1, .34));

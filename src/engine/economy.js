@@ -88,7 +88,8 @@ export function startTurn(game, player) {
 
 /**
  * The menu of the production building at (x, y) for `player`: the units their leader's loadout lists for that kind of building
- * (data/loadouts.json), in the loadout's order (cheapest first: tools/sort-build-menus.mjs keeps the data so). A building the loadout says nothing
+ * (data/loadouts.json), cheapest first for that player (a troop carrier's price moves with their leader's infantry, so the order is worked out here
+ * rather than kept in the data; ties keep the loadout's order). A building the loadout says nothing
  * about (a lab, say) gives the same menu to everyone: the units of the categories its `builds` names, cheapest first. No player (a neutral building) gets the standard menu.
  */
 export function menuFor(game, player, x, y) {
@@ -97,8 +98,11 @@ export function menuFor(game, player, x, y) {
   const { registry, map } = game;
   const leader = player == null ? null : map.players[player].leader ?? null;
   const ids = registry.loadoutFor(leader).build[terrainIdAt(game, x, y)];   // the terrain NOW: a rebuilt ruin builds what its new building builds
-  return ids ? ids.map((id) => registry.unit(id)) : [...registry.unitsInCategories(property.builds)].sort((a, b) => a.cost - b.cost);   // the cheapest at the top, like every kit's menu
+  return menuByPrice(game, player, ids ? ids.map((id) => registry.unit(id)) : [...registry.unitsInCategories(property.builds)]);
 }
+
+/** `defs` cheapest first for `player` (what each costs them, see costFor); units that cost the same keep their order. */
+export const menuByPrice = (game, player, defs) => defs.map((def, i) => ({ def, i, cost: costFor(game, player, def.id) })).sort((a, b) => a.cost - b.cost || a.i - b.i).map((x) => x.def);
 
 /** Unit definitions that the property at (x, y) can produce for the player who owns it, in menu order. */
 export const buildOptions = (game, x, y) => menuFor(game, ownerAt(game, x, y), x, y);

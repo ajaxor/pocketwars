@@ -33,4 +33,4 @@ Units flagged `"exclusive": true` in `data/units.json` stay off the default kit 
 
 ## Troop carriers and menus
 
-A carrier that drops infantry (`deploy.basic`: transport copter, APC, troop transport and the like) costs its base price plus all (`rules.carrierCargoRate`, 1) of what the leader's basic infantry costs over the soldier, per drop: Dmitri's conscripts make carriers cheaper, Ada's commandos dearer. `costFor` in `src/engine/queries.js` is the one place that works it out (build, menu, AI). Every build menu is listed cheapest first for that leader; `node tools/sort-build-menus.mjs` sorts them and `tests/data/leaders.test.js` checks.
+A carrier that drops infantry (`deploy.basic`: transport copter, APC, troop transport and the like) costs its base price plus all (`rules.carrierCargoRate`, 1) of what the leader's basic infantry costs over the soldier, per drop: Dmitri's conscripts make carriers cheaper, Ada's commandos dearer. `costFor` in `src/engine/queries.js` is the one place that works it out (build, menu, AI). Every build menu is shown cheapest first for that leader (`menuFor` sorts by `costFor`, so the order in `data/loadouts.json` does not matter).

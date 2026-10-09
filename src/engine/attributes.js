@@ -196,15 +196,6 @@ export const UNIT_ATTRIBUTES = {
     doc: 'Detects cloaked (`cloak`) enemy units within this many tiles. Adjacent units are always noticed, as with sonar; sonar is the same for submerged units. The number is the range in tiles.',
     check: (v, e, fail) => { if (!Number.isInteger(v) || v < 2) fail('must be a whole number of tiles, at least 2 (adjacent units are always noticed)'); },
   },
-  moveFirePenalty: {
-    label: (v) => `Moving: x${v.multiplier}`,
-    help: (v) => `Its weapon does ${Math.round(v.multiplier * 100)}% damage when it moved this turn before firing; standing still it hits at full strength. Counterattacks are never reduced.`,
-    doc: 'Config: { multiplier } (0 to 1). When the unit fires after changing tile this turn (`unit.moved`, or a hypothetical firing tile that differs from where it stands) its weapon damage is multiplied by `multiplier`. A counterattack is never reduced. See combat.js.',
-    check: (v, e, fail) => {
-      if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object like { "multiplier": 0.5 }');
-      if (typeof v.multiplier !== 'number' || !(v.multiplier > 0 && v.multiplier <= 1)) fail('multiplier must be a number above 0 and up to 1');
-    },
-  },
   heal: {
     label: (v) => `Heals ${v.amount}`,
     help: (v) => v.auto ? `Heals by itself after every order: each damaged ${[...v.categories, ...(v.self ? ['(itself included)'] : [])].join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ', free'}.` : `Heal order (after moving, instead of Wait): each damaged friendly ${v.categories.join(' or ')} unit next to it regains up to ${v.amount} HP${v.costRate ? `, for ${Math.round(v.costRate * 100)}% of the unit's price per HP` : ''}.`,

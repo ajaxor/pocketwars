@@ -10,7 +10,7 @@ import { validateData } from '../../src/data/validate.js';
 import { Game } from '../../src/engine/game.js';
 import { calcDamage, canCounter, forecastAttack } from '../../src/engine/combat.js';
 import { costFor, unitCost } from '../../src/engine/queries.js';
-import { menuFor } from '../../src/engine/economy.js';
+import { menuByPrice, menuFor } from '../../src/engine/economy.js';
 import { buildMenuModel } from '../../src/ui/build-menu.js';
 
 const registry = await loadRegistry(readData);
@@ -204,11 +204,12 @@ test('Lysandra can still cross water without her marines', () => {
   assert.ok(Object.values(kit('lysandra').build).flat().some((id) => crossing.includes(id)));
 });
 
-test('every build menu lists the cheapest unit first (node tools/sort-build-menus.mjs sorts them)', () => {
+test('every build menu is listed cheapest first for its leader, whatever order the data lists the units in', () => {
   for (const leader of [null, ...registry.leaderIds]) {
     const g = gameFor(leader);
     for (const [building, ids] of Object.entries(kit(leader).build)) {
-      const costs = ids.map((id) => costFor(g, 0, id));
+      const shuffled = [...ids].reverse().map((id) => registry.unit(id));
+      const costs = menuByPrice(g, 0, shuffled).map((d) => costFor(g, 0, d.id));
       assert.deepEqual(costs, [...costs].sort((a, b) => a - b), `${leader ?? 'default'} ${building}: ${ids.join(', ')}`);
     }
   }

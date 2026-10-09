@@ -25,11 +25,11 @@ const players = (l0, l1, funds = 5000) => [
 ];
 const game = (l0, l1, o = {}) => makeGame({ units, terrain: { lab: LAB }, loadouts, legend, rows: ['aH.hb', 'l...L', '..n..'], players: players(l0, l1, o.funds), ...o });
 
-test('each player\'s buildings build what their leader\'s loadout lists, in its order', () => {
+test('each player\'s buildings build what their leader\'s loadout lists, cheapest first', () => {
   const g = game('x', 'y');
   assert.deepEqual(buildOptions(g, 0, 0).map((u) => u.id), ['b']);
   assert.deepEqual(buildOptions(g, 4, 0).map((u) => u.id), ['a'], 'a leader with an empty kit gets the default menu');
-  assert.deepEqual(game('z', 'y').state && buildOptions(game('z', 'y'), 0, 0).map((u) => u.id), ['b', 'c'], 'a menu can name units of a category the building does not list');
+  assert.deepEqual(game('z', 'y').state && buildOptions(game('z', 'y'), 0, 0).map((u) => u.id), ['c', 'b'], 'a menu can name units of a category the building does not list; c (2000) is cheaper than b (3000)');
 });
 
 test('a player without a leader, and a building nobody owns, get the standard menu', () => {
@@ -81,7 +81,7 @@ test('a lab counts too: it can be the cheapest thing a player is able to build',
 test('the build menu window lists the leader\'s units', () => {
   const g = game('z', 'y');
   const m = buildMenuModel(g, 0, 0, 0);
-  assert.deepEqual(m.options.map((o) => o.id), ['b', 'c']);
+  assert.deepEqual(m.options.map((o) => o.id), ['c', 'b'], 'cheapest first');
   assert.deepEqual(m.options.map((o) => o.affordable), [true, true]);
 });
 

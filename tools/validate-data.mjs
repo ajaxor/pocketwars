@@ -6,11 +6,15 @@ import { loadRegistry, loadMapIndex, loadMap } from '../src/data/loader.js';
 import { loadCampaign } from '../src/data/campaign.js';
 import { placeStart } from '../src/data/formation.js';
 import { buildingGaps } from '../src/data/map-buildings.js';
+import { validateShippedKit } from '../src/data/validate.js';
 
 let failed = false;
 try {
   const registry = await loadRegistry(readData);
   console.log(`data ok: ${registry.unitIds.length} units, ${Object.keys(registry.terrain).length} terrain types, ${registry.leaderIds.length} leader loadouts`);
+  const kitProblems = [];
+  validateShippedKit(await readData('loadouts.json'), await readData('units.json'), await readData('terrain.json'), kitProblems);
+  if (kitProblems.length) throw new Error(`loadout kits drifted:\n - ${kitProblems.join('\n - ')}`);
   try {
     const campaign = await loadCampaign(readData, registry);
     console.log(`campaign ok: ${campaign.leaders.length} leaders, ${campaign.nations.length} nations`);

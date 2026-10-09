@@ -370,6 +370,38 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
   }
 }
 
+/**
+ * Extra checks for the SHIPPED loadouts (tools/validate-data.mjs and the test suite, not the registry: tests build small synthetic data sets):
+ * the standard kit lists what every building's categories give, and no exclusive unit is stranded.
+ */
+export function validateShippedKit(loadouts, units, terrain, problems) {
+  if (!isObj(loadouts) || !isObj(units) || !isObj(terrain)) return;
+  // the standard kit must list what each building's categories give: a unit added to units.json has to be added to it as well
+  if (isObj(loadouts.default?.build)) {
+    for (const [tid, t] of Object.entries(terrain)) {
+      const builds = t?.attributes?.property?.builds;
+      if (!Array.isArray(builds) || !builds.length) continue;
+      const want = Object.entries(units).filter(([, u]) => isObj(u) && builds.includes(u.category) && !u.exclusive).map(([id]) => id).sort();
+      const have = Array.isArray(loadouts.default.build[tid]) ? [...loadouts.default.build[tid]].sort() : [];
+      const missing = want.filter((id) => !have.includes(id));
+      const extra = have.filter((id) => !want.includes(id));
+      if (missing.length) problems.push(`loadouts.default: build.${tid} is missing ${missing.join(', ')} (a unit of a category the building builds)`);
+      if (extra.length) problems.push(`loadouts.default: build.${tid} lists ${extra.join(', ')}, which the building's categories do not give`);
+    }
+  }
+  // an exclusive unit is only built where a leader's kit lists it: one on no menu and in no starting army can never be fielded
+  const used = new Set();
+  for (const kit of [loadouts.default, ...Object.values(isObj(loadouts.leaders) ? loadouts.leaders : {})]) {
+    if (!isObj(kit)) continue;
+    for (const menu of Object.values(isObj(kit.build) ? kit.build : {})) if (Array.isArray(menu)) menu.forEach((id) => used.add(id));
+    for (const group of Object.values(isObj(kit.start) ? kit.start : {})) if (Array.isArray(group)) group.forEach((e) => used.add(e?.unit));
+    if (kit.infantry) used.add(kit.infantry);
+  }
+  for (const [id, u] of Object.entries(units)) {
+    if (isObj(u) && u.exclusive && !u.attributes?.structure && !u.attributes?.mine && !used.has(id)) problems.push(`unit "${id}" is exclusive but on no leader's menu or starting army, so it can never be built`);
+  }
+}
+
 /** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`, `tilesets`, `loadouts` and `ai-strategies`. */
 export function validateData(raw) {
   const problems = [];

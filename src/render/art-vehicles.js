@@ -1,4 +1,4 @@
-// Vehicle art: the APC, the amphibious tank (on land and swimming), the SAM launcher, the rocket buggy and the technical (the Recon). unit-art.js takes them by name.
+// Vehicle art: the APC, the amphibious tank (on land and swimming), the SAM launcher, the rocket buggy and the Recon (a technical: a pickup with a gun). unit-art.js takes them by name.
 // Same conventions as unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
 // centred on (0, 0), +x forward, sizes are tile fractions; the ground is at about y = .29.
 import { box, disc, poly, stroke, mix, wheel, wheels, treads, propeller, afloat, UNDER_SHADE, INK, STEEL, SKIN, GLASS, ground } from './parts.js';
@@ -123,7 +123,7 @@ const darkInterior = (dk) => mix(dk, '#000000', .72);
 
 // Technical (the Recon's art): a battered pickup with a machine gun on a post in its bed and a rusty door.
 const RUST = '#9a5a2e';
-const technical = (g, { s, c, dk, w, ph, run, j }) => {
+const recon = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s;
   box(g, s, -.36, .0 + jj, .74, .13, 3, c);                                                   // the body
   box(g, s, .02, -.14 + jj, .2, .15, 4, c);                                                   // the cab
@@ -157,8 +157,8 @@ const missileTank = (g, { s, c, w, run, j }) => {
   faintRect(g, s, .049, -.142 + jj, .18, .05, .66);                                                            // the missile port, along the turret's sloped front edge
 };
 
-export const SPRITES = { missile_tank: missileTank, apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, technical, ...CYCLE.SPRITES };
+export const SPRITES = { missile_tank: missileTank, apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, recon, ...CYCLE.SPRITES };
 
 export const SHADOWS = {
-  missile_tank: ground(.4, .05, .285), apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), technical: ground(.38, .05, .285), ...CYCLE.SHADOWS,
+  missile_tank: ground(.4, .05, .285), apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), recon: ground(.38, .05, .285), ...CYCLE.SHADOWS,
 };

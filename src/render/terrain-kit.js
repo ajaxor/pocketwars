@@ -21,4 +21,10 @@ export const mapper = (px, py, S) => (a, b) => [px + a * S, py + b * S];
 /** One of `list` chosen by r in [0, 1). */
 export const pick = (list, r) => list[Math.min(list.length - 1, Math.floor(r * list.length))];
 /** The tile's own style object merged over `defaults` (a tileset gives it through render.style). */
-export const styled = (defaults, at) => (at?.style ? { ...defaults, ...at.style } : defaults);
+export const styled = (defaults, at) => {
+  if (!at?.style) return defaults;
+  styleAudit.onStyle?.(defaults, at.style);
+  return { ...defaults, ...at.style };
+};
+/** A test hook: called with every (defaults, tileset style) pair a drawing merges, so unknown style keys can be reported. */
+export const styleAudit = { onStyle: null };

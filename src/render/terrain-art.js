@@ -10,14 +10,13 @@
 import { SHOAL_STYLES } from './shoal-styles.js';
 
 import { rnd } from './rnd.js';
+import { styled } from './terrain-kit.js';
 import { WOOD_DECOR } from './terrain-wood.js';
 import { RELIEF_DECOR } from './terrain-relief.js';
 import { GROUND_DECOR } from './terrain-ground.js';
 import { RUIN_DECOR } from './terrain-ruins.js';
 export { rnd };
 
-/** `defaults` with the tile's own style (a tileset's render.style for this terrain) laid over it. */
-const styled = (defaults, at) => (at?.style ? { ...defaults, ...at.style } : defaults);
 
 const poly = (g, pts, fill) => {
   g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath();
