@@ -22,7 +22,7 @@ Computer opponent pass (9 October 2026):
 Deliberately not done:
 - **AI and fog of war**: fog is a player-only feature by design; the computer sees the whole board.
 
-Still open (needs design decisions, tuning runs or much larger work): deeper AI look-ahead, coordinated amphibious operations, AI joining units, support-unit danger weighting, leader balance numbers and starting-army fairness, a per-unit move-cost override, concept unit stats kept as free text, and hand-tuned art offsets (ships, missiles, mechs, hover). They are listed below.
+Still open (needs design decisions, tuning runs or much larger work): a real look-ahead of the enemy's reply in the AI, coordinated amphibious operations, tuning noise, leader balance (including the carrier price change) and starting-army fairness, a per-unit move-cost override, concept unit stats kept as free text, and hand-tuned art offsets (ships, missiles, mechs, hover). They are listed below.
 
 - **Greedy-engine build rules are global.** `data/ai.json` has one rule set per category for the greedy engine (the baseline). The strategist, which is the default, values every menu from unit stats and needs no lists, so leader menus work with it unchanged.
 - **Kit drift.** The default kit mirrors the category menus by hand. A test guards it, but every new unit must also be added to `data/loadouts.json`.
