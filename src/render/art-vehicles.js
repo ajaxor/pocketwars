@@ -1,7 +1,7 @@
 // Vehicle art: the APC, the amphibious tank (on land and swimming), the SAM launcher, the rocket buggy and the technical (the Recon). unit-art.js takes them by name.
 // Same conventions as unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })
 // centred on (0, 0), +x forward, sizes are tile fractions; the ground is at about y = .29.
-import { box, disc, poly, stroke, mix, wheel, wheels, treads, propeller, afloat, UNDER_SHADE, INK, STEEL, SKIN, GLASS } from './parts.js';
+import { box, disc, poly, stroke, mix, wheel, wheels, treads, propeller, afloat, UNDER_SHADE, INK, STEEL, SKIN, GLASS, ground } from './parts.js';
 
 import * as CYCLE from './art-cycle.js';
 
@@ -159,7 +159,6 @@ const missileTank = (g, { s, c, w, run, j }) => {
 
 export const SPRITES = { missile_tank: missileTank, apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, technical, ...CYCLE.SPRITES };
 
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
   missile_tank: ground(.4, .05, .285), apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), technical: ground(.38, .05, .285), ...CYCLE.SHADOWS,
 };

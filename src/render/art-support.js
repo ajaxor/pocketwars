@@ -1,6 +1,6 @@
 // Support art: the supply truck, the hover tank, the mine layer and the sea mine. unit-art.js takes them by name.
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })   SHADOWS[name](g, { s, alt, w, ph, run })
-import { box, disc, oval, poly, stroke, wheel, mix, afloat, hullPath, propeller, hoverTubes, GLASS, INK, STEEL, UNDER_SHADE } from './parts.js';
+import { box, disc, oval, poly, stroke, wheel, mix, afloat, hullPath, propeller, hoverTubes, GLASS, INK, STEEL, UNDER_SHADE, ground } from './parts.js';
 
 // Supply truck: a dark box body for the cargo, a faction-coloured cab and chassis with a window, three wheels.
 const supplyTruck = (g, { s, c, dk, w, run, j }) => {
@@ -70,6 +70,5 @@ export const SPRITES = {
   sea_mine: (g, o) => { g.save(); g.scale(.9, .9); seaMine(g, { ...o, dk: mix(o.c, o.dk, .75) }); g.restore(); },
 };
 
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 const none = () => {};
 export const SHADOWS = { supply_truck: ground(.35, .05, .285), hover_tank: ground(.38, .05, .295), mine_layer: none, sea_mine: none };

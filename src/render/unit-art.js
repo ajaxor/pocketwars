@@ -364,7 +364,7 @@ export const SPRITES = {
 };
 
 // ---- shadows: each shape matches its unit's footprint ---------------------------------------------------------
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
+const ground = LIB.ground;
 const none = () => {};
 const airShadow = (outline) => (g, { s, alt = 0 }) => {
   g.save(); g.translate(0, s * (.25 + alt * .35)); g.scale(s, s * .3);

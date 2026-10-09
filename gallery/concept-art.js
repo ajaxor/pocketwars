@@ -2,7 +2,7 @@
 // gallery's "Experimental" section. Same conventions as src/render/unit-art.js (which supplies the drawing helpers):
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 //   SHADOWS[name](g, { s, alt, w, ph, run })
-import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, hoverTubes, sheen, bubbles, GLOW } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mirror, wheel, treads, mix, afloat, hullPath, propeller, skyClip, seaClip, GLASS, INK, STEEL, SKIN, UNDER_SHADE, walkerLeg, pillarLeg, antigrav, hoverTubes, sheen, bubbles, GLOW, ground } from '../src/render/parts.js';
 import * as INFANTRY from '../src/render/art-infantry.js';
 import * as STATIC from '../src/render/art-defences.js';
 import * as AIR from '../src/render/art-air.js';
@@ -209,7 +209,6 @@ const OWN_SPRITES = {
 };
 
 // ---- shadows ----------------------------------------------------------------------------------------------------------------
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 const none = () => {};
 /** A shadow thrown below a flying (or hovering) unit: the outline flattened and dropped. */
 const airShadow = (outline, k = 1) => (g, { s, alt = 0 }) => {

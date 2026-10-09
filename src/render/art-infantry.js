@@ -3,7 +3,7 @@
 // Same conventions as src/render/unit-art.js: SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j }), centred on (0, 0), +x forward.
 // The rule for this group (and the guideline in docs/unit-art-lessons.md): every specialist is the game's plain soldier (legs, torso,
 // head, helmet, the same walk cycle) plus ONE thing that tells it apart: a bandanna, a launcher, a wrench, a case, a fur hat.
-import { box, disc, oval, poly, stroke, mix, afloat, skyClip, seaClip, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome } from './parts.js';
+import { box, disc, oval, poly, stroke, mix, afloat, skyClip, seaClip, INK, STEEL, SKIN, UNDER_SHADE, legs, torso, head, dome, ground } from './parts.js';
 import { shade } from './color.js';
 
 const RED = '#d4442e', WHITE = '#f4f4ee', WOOD = '#7a4e2a', FUR = '#8a7a66';
@@ -14,7 +14,7 @@ const gait = (s, { w, ph, run, moving, b }) => {
   return { l: k * s * .05 * walk, sw: k * s * .02 * walk, bb: b / s };
 };
 /** The soldier's body, up to and including the head. */
-const body = (g, o, { pack = null } = {}) => {
+export const body = (g, o, { pack = null } = {}) => {
   const { s, c, dk } = o, { l, sw, bb } = gait(s, o);
   legs(g, s, l, dk);
   if (pack) box(g, s, -.24, -.1 + bb, .09, .2, 3, pack);
@@ -23,7 +23,7 @@ const body = (g, o, { pack = null } = {}) => {
   return { s, c, dk, bb, sw: sw / s };
 };
 /** The soldier's helmet: a dome and a rim. */
-const helmet = (g, s, bb, col, r = .11) => { dome(g, s, bb, r, col); g.fillStyle = col; g.fillRect(-s * (r + .02), (-.22 + bb) * s, s * (r + .02) * 2, s * .03); };
+export const helmet = (g, s, bb, col, r = .11) => { dome(g, s, bb, r, col); g.fillStyle = col; g.fillRect(-s * (r + .02), (-.22 + bb) * s, s * (r + .02) * 2, s * .03); };
 /** The soldier's rifle line (the game's: a thick dark stroke from the hip up and forward). */
 const rifle = (g, s, bb, sw) => stroke(g, s, -.1, .04 + bb, .26, -.12 + bb + sw, Math.max(2, s * .05), INK);
 
@@ -253,7 +253,6 @@ const swordsman = (g, o) => {
 export const SPRITES = { flamethrower, royal_guard: royalGuard, shock_trooper: shockTrooper, swordsman, commando, rpg_trooper: rpgTrooper, mechanic, medic, mortar_team: mortarTeam, conscript, spy, diver, diver_swim: diverSwim };
 
 // ---- shadows ------------------------------------------------------------------------------------------------------------------------------
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 const none = () => {};
 export const SHADOWS = {
   flamethrower: ground(.22, .04, .3), royal_guard: ground(.2, .04, .3), shock_trooper: ground(.2, .04, .3), swordsman: ground(.2, .04, .3),

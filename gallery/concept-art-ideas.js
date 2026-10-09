@@ -4,20 +4,14 @@
 //   SPRITES[name](g, { s, c, dk, w, ph, run, moving, b, j })  centred on (0, 0), +x forward, +y down, sizes are fractions of the tile s
 // Infantry follow the training-ground rule (art-infantry.js): the plain soldier plus ONE thing. Vehicles are the game's flat blocks.
 // The new static defences use the units' flat style and the footing from src/render/art-defences.js.
-import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hullPath, propeller, propDisc, legs, torso, head, dome, INK, STEEL, GLASS, RED } from '../src/render/parts.js';
+import { box, disc, oval, poly, stroke, mix, wheel, wheels, treads, afloat, hullPath, propeller, propDisc, dome, INK, STEEL, GLASS, RED, ground } from '../src/render/parts.js';
 import { shade } from '../src/render/color.js';
 import { footing, footShadow } from '../src/render/art-defences.js';
 import * as VEHICLES from '../src/render/art-vehicles.js';
+import { body, helmet } from '../src/render/art-infantry.js';
 const WOOD = '#7a4e2a', HAZARD = '#ffc531', RUST = '#9a5a2e', ARC = '#9fe8ff';
 
 // ---- infantry ------------------------------------------------------------------------------------------------------------------
-const gait = (s, { w, ph, run, moving, b }) => { const walk = run && moving ? 1 : 0, k = Math.sin(w * 8 + ph); return { l: k * s * .05 * walk, sw: k * .02 * walk, bb: b / s }; };
-const body = (g, o, pack) => {
-  const { s, c, dk } = o, { l, sw, bb } = gait(s, o);
-  legs(g, s, l, dk); if (pack) pack(bb); torso(g, s, bb, c); head(g, s, bb);
-  return { s, c, dk, bb, sw };
-};
-const helmet = (g, s, bb, col, r = .11) => { dome(g, s, bb, r, col); g.fillStyle = col; g.fillRect(-s * (r + .02), (-.22 + bb) * s, s * (r + .02) * 2, s * .03); };
 
 // Engineer: a soldier in a yellow hard hat with a shovel over the shoulder.
 const engineer = (g, o) => {
@@ -274,7 +268,6 @@ export const SPRITES = {
 };
 
 // ---- shadows ------------------------------------------------------------------------------------------------------------------
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 const air = (rx, ry) => (g, { s, alt = 0 }) => { g.fillStyle = 'rgba(0,0,0,.22)'; g.beginPath(); g.ellipse(0, s * (.25 + alt * .35), rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
   engineer: ground(.2, .04, .3), fanatic: ground(.2, .04, .3), k9_team: ground(.3, .045, .3, .05),

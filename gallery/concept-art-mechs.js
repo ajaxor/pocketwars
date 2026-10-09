@@ -4,7 +4,7 @@
 // stacked boxes they are built from angled plates: a hunched, sloped torso, pauldrons over the shoulders, a wedge helmet with a slanted visor,
 // tapered two-segment limbs and reverse-knee legs ending in claw feet. Weapons are PORTS at the end of an arm (a wedge-shaped pod with a barrel and
 // muzzle brake) or MOUNTED ROCKETS on a shoulder, never a free-standing gun. Legs and arms move only while the unit walks; the body never bobs and, idle, only the visor's red scanner light moves. Shading is kept to two tones (body and dark) so the shapes read.
-import { box, disc, poly, stroke, mix, tubes, INK, STEEL, RED } from '../src/render/parts.js';
+import { box, disc, poly, stroke, mix, tubes, INK, STEEL, RED, ground } from '../src/render/parts.js';
 
 const ORANGE = '#ff9a2e', VISOR = '#ffd45a', PORT = '#2c2f36';
 const gait = (run, moving) => (run && moving ? 1 : 0);
@@ -152,7 +152,6 @@ const bulwark = (g, { s, c, dk, ph, w, run, moving, b }) => {
 
 export const SPRITES = { strider: sprite(strider), titan: sprite(titan, .88), rocket_walker: sprite(rocketWalker, .9), scout_walker: sprite(scoutWalker), flame_walker: sprite(flameWalker), bulwark: sprite(bulwark, .93) };
 
-const ground = (rx, ry, y, dx = 0) => (g, { s }) => { g.fillStyle = 'rgba(0,0,0,.26)'; g.beginPath(); g.ellipse(dx * s, y * s, rx * s, ry * s, 0, 0, 7); g.fill(); };
 export const SHADOWS = {
   strider: ground(.27, .045, .295, .02), titan: ground(.36, .055, .295), rocket_walker: ground(.26, .045, .295),
   scout_walker: ground(.2, .04, .295), flame_walker: ground(.3, .045, .295), bulwark: ground(.32, .055, .295, .03),
