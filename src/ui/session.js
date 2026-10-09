@@ -314,7 +314,7 @@ export class Session {
     this.effects.clear();
     this.animator.clear();
     controller.cancelAll();
-    hud.message('Move undone.');
+    hud.message('Undone.');
   }
 
   #handleEvents(events) {

@@ -1,5 +1,5 @@
 // Ruins and soft terrain on a real map: a soldier rebuilds a ruined city or factory for a price, the change is kept in the game state (so Undo
-// and the build menu see it), only builders can do it, and the soft ground and cliffs cost what terrain.json says.
+// and the build menu see it), only builders can do it, and ground costs what terrain.json says.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
@@ -74,17 +74,11 @@ test('only a capturer can rebuild, and only with the money', async () => {
   assert.equal(rebuildProblem(plain.game, plain.unit, 0, 0), 'not-a-ruin');
 });
 
-test('soft ground slows wheels and bikes but not feet or tracks; cliffs stop everything on the ground; mud and dunes are not blocked', () => {
-  for (const id of ['snow_drift', 'dune', 'mud']) {
-    const t = registry.terrain[id];
-    assert.equal(t.moveCost.wheels, 2, id);
-    assert.equal(t.moveCost.foot, 1, id);
-    assert.equal(t.moveCost.tread, 1, id);
-    assert.ok(t.moveCost.bike > t.moveCost.foot, id);
-  }
-  const cliff = registry.terrain.cliff;
-  for (const c of ['foot', 'wheels', 'tread', 'bike', 'naval', 'amphibious', 'hover']) assert.equal(cliff.moveCost[c], null, c);
-  assert.equal(cliff.moveCost.air, 1);
+test('open ground slows wheels (2) but a road does not (1); feet and tracks pay the same on both', () => {
+  const plain = registry.terrain.plain, road = registry.terrain.road;
+  assert.equal(plain.moveCost.wheels, 2);
+  assert.equal(road.moveCost.wheels, 1);
+  for (const c of ['foot', 'tread']) assert.equal(plain.moveCost[c], road.moveCost[c], c);
 });
 
 test('a ford can be waded by feet and tracks (slowly) but not by wheels, bikes or ships; ice carries every ground unit and never breaks', () => {

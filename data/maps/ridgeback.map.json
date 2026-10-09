@@ -3,222 +3,67 @@
   "version": 1,
   "id": "ridgeback",
   "name": "Ridgeback",
-  "description": "A 24x14 field split by a double cliff ridge. Only the roads cut through; wheels stay on the passes, infantry hold the ruined factories in the middle, and a rebuilt factory is worth a fight.",
+  "description": "A 24x14 field split by a double mountain ridge. Only the roads cut through; wheels stay on the passes, infantry hold the ruined factories in the middle, and a rebuilt factory is worth a fight.",
   "tileset": "temperate",
   "players": [
-    {
-      "faction": "lastholm",
-      "controller": "human",
-      "funds": 8000
-    },
-    {
-      "faction": "deepmere",
-      "controller": "ai",
-      "funds": 8000
-    }
+    { "faction": "lastholm", "controller": "human", "funds": 8000 },
+    { "faction": "deepmere", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
-    "m": {
-      "terrain": "mountain"
-    },
-    ".": {
-      "terrain": "plain"
-    },
-    "f": {
-      "terrain": "forest"
-    },
-    "^": {
-      "terrain": "cliff"
-    },
-    "c": {
-      "terrain": "city"
-    },
-    "=": {
-      "terrain": "road"
-    },
-    "a": {
-      "terrain": "barracks",
-      "owner": 0
-    },
-    "A": {
-      "terrain": "barracks",
-      "owner": 1
-    },
-    "O": {
-      "terrain": "hq",
-      "owner": 0
-    },
-    "B": {
-      "terrain": "hq",
-      "owner": 1
-    },
-    "o": {
-      "terrain": "factory",
-      "owner": 0
-    },
-    "X": {
-      "terrain": "ruin_factory"
-    },
-    "b": {
-      "terrain": "factory",
-      "owner": 1
-    },
-    "v": {
-      "terrain": "airfield",
-      "owner": 0
-    },
-    "V": {
-      "terrain": "airfield",
-      "owner": 1
-    },
-    "~": {
-      "terrain": "sea"
-    },
-    "Y": {
-      "terrain": "shipyard",
-      "owner": 0
-    },
-    "Z": {
-      "terrain": "shipyard",
-      "owner": 1
-    }
+    "m": { "terrain": "mountain" },
+    ".": { "terrain": "plain" },
+    "f": { "terrain": "forest" },
+    "c": { "terrain": "city" },
+    "=": { "terrain": "road" },
+    "a": { "terrain": "barracks", "owner": 0 },
+    "A": { "terrain": "barracks", "owner": 1 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "B": { "terrain": "hq", "owner": 1 },
+    "o": { "terrain": "factory", "owner": 0 },
+    "X": { "terrain": "ruin_factory" },
+    "b": { "terrain": "factory", "owner": 1 },
+    "v": { "terrain": "airfield", "owner": 0 },
+    "V": { "terrain": "airfield", "owner": 1 },
+    "~": { "terrain": "sea" },
+    "Y": { "terrain": "shipyard", "owner": 0 },
+    "Z": { "terrain": "shipyard", "owner": 1 }
   },
   "tiles": [
-    "mmm.ff....^^^^....ff.mmm",
-    "mm..f..c..^^^^..c..f..mm",
-    "m...ff....^^^^....ff...m",
+    "mmm.ff....mmmm....ff.mmm",
+    "mm..f..c..mmmm..c..f..mm",
+    "m...ff....mmmm....ff...m",
     "..c.....========.....c..",
-    "..........^^^^..........",
-    ".=.....f..^^^^..f.....=.",
-    ".=a....f..^^^^..f....A=.",
+    "..........mmmm..........",
+    ".=.....f..mmmm..f.....=.",
+    ".=a....f..mmmm..f....A=.",
     ".O====================B.",
-    ".=o....fX.^^^^.Xf....b=.",
-    ".v.......c^^^^c.......V.",
+    ".=o....fX.mmmm.Xf....b=.",
+    ".v.......cmmmmc.......V.",
     "........========........",
-    "~Y..ff....^^^^....ff..Z~",
-    "~~..f..c..^^^^..c..f..~~",
-    "mmm.ff....^^^^....ff.mmm"
+    "~Y..ff....mmmm....ff..Z~",
+    "~~..f..c..mmmm..c..f..~~",
+    "mmm.ff....mmmm....ff.mmm"
   ],
   "units": [
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 3,
-      "y": 7
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 20,
-      "y": 7
-    },
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 3,
-      "y": 6
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 20,
-      "y": 6
-    },
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 2,
-      "y": 7
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 21,
-      "y": 7
-    },
-    {
-      "type": "mech",
-      "owner": 0,
-      "x": 2,
-      "y": 5
-    },
-    {
-      "type": "mech",
-      "owner": 1,
-      "x": 21,
-      "y": 5
-    },
-    {
-      "type": "tank",
-      "owner": 0,
-      "x": 1,
-      "y": 6
-    },
-    {
-      "type": "tank",
-      "owner": 1,
-      "x": 22,
-      "y": 6
-    },
-    {
-      "type": "recon",
-      "owner": 0,
-      "x": 1,
-      "y": 8
-    },
-    {
-      "type": "recon",
-      "owner": 1,
-      "x": 22,
-      "y": 8
-    },
-    {
-      "type": "artillery",
-      "owner": 0,
-      "x": 1,
-      "y": 5
-    },
-    {
-      "type": "artillery",
-      "owner": 1,
-      "x": 22,
-      "y": 5
-    },
-    {
-      "type": "sniper",
-      "owner": 0,
-      "x": 1,
-      "y": 4
-    },
-    {
-      "type": "sniper",
-      "owner": 1,
-      "x": 22,
-      "y": 4
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 8,
-      "y": 4
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 15,
-      "y": 4
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 8,
-      "y": 9
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 15,
-      "y": 9
-    }
+    { "type": "soldier", "owner": 0, "x": 3, "y": 7 },
+    { "type": "soldier", "owner": 1, "x": 20, "y": 7 },
+    { "type": "soldier", "owner": 0, "x": 3, "y": 6 },
+    { "type": "soldier", "owner": 1, "x": 20, "y": 6 },
+    { "type": "soldier", "owner": 0, "x": 2, "y": 7 },
+    { "type": "soldier", "owner": 1, "x": 21, "y": 7 },
+    { "type": "mech", "owner": 0, "x": 2, "y": 5 },
+    { "type": "mech", "owner": 1, "x": 21, "y": 5 },
+    { "type": "tank", "owner": 0, "x": 1, "y": 6 },
+    { "type": "tank", "owner": 1, "x": 22, "y": 6 },
+    { "type": "recon", "owner": 0, "x": 1, "y": 8 },
+    { "type": "recon", "owner": 1, "x": 22, "y": 8 },
+    { "type": "artillery", "owner": 0, "x": 1, "y": 5 },
+    { "type": "artillery", "owner": 1, "x": 22, "y": 5 },
+    { "type": "sniper", "owner": 0, "x": 1, "y": 4 },
+    { "type": "sniper", "owner": 1, "x": 22, "y": 4 },
+    { "type": "jammer", "owner": null, "x": 8, "y": 4 },
+    { "type": "jammer", "owner": null, "x": 15, "y": 4 },
+    { "type": "jammer", "owner": null, "x": 8, "y": 9 },
+    { "type": "jammer", "owner": null, "x": 15, "y": 9 }
   ]
 }

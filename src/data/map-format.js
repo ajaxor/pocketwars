@@ -181,7 +181,7 @@ function deepFreeze(o) {
 
 const GLYPH_POOL = '.FMr~cobkvOBKVabdefghijlmnpqstuwxyzACDEGHIJLNPQRSTUWXYZ0123456789';
 /** Glyphs a new legend entry tries first, so a written map stays readable: the shipped maps' habits for the common terrain. */
-const PREFERRED = { plain: '.', forest: 'F', mountain: 'M', rough: ':', road: 'r', sea: '~', shoals: '*', wall: 'W', wall_breach: 'X', city: 'c' };
+const PREFERRED = { plain: '.', forest: 'F', mountain: 'M', road: 'r', sea: '~', shoals: '*', wall: 'W', wall_breach: 'X', city: 'c' };
 
 /**
  * Inverse of parseMap. Reuses the map's legend glyphs and assigns new ones for any new (terrain, owner) pair. `defaultGround` (the registry's)

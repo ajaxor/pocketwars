@@ -21,18 +21,24 @@ test('movement classes: wheels, treads, foot and air', () => {
   for (const u of ['tank', 'heavy_tank', 'flak']) assert.equal(registry.unit(u).moveClass, 'tread', u);
   assert.equal(registry.unit('artillery').moveClass, 'wheels');
   for (const u of ['recon', 'tank', 'heavy_tank', 'artillery', 'flak']) assert.ok(registry.unit(u).move <= 6, `${u} is slow enough`);
-  for (const t of ['plain', 'forest', 'mountain', 'rough', 'city']) assert.equal(registry.terrainDef(t).render.base, undefined, `${t} is drawn on the ground under it`);
+  for (const t of ['plain', 'forest', 'mountain', 'road', 'city']) assert.equal(registry.terrainDef(t).render.base, undefined, `${t} is drawn on the ground under it`);
 });
 
-test('roads give no speed bonus; forests and rough ground block wheels; treads pay extra in forests', () => {
-  for (const moveClass of Object.keys(registry.terrainDef('plain').moveCost)) assert.equal(cost('road', moveClass), cost('plain', moveClass), `${moveClass}: a road is no faster than open ground`);
+test('clear ground costs wheels one more than a road; every other class pays the same on both; forests block wheels and slow treads', () => {
+  for (const moveClass of Object.keys(registry.terrainDef('plain').moveCost)) {
+    if (moveClass === 'wheels') continue;
+    assert.equal(cost('road', moveClass), cost('plain', moveClass), `${moveClass}: a road is no faster than open ground`);
+  }
+  assert.equal(cost('plain', 'wheels'), 2, 'wheels crawl across open ground');
+  assert.equal(cost('road', 'wheels'), 1, 'and run on a road');
   assert.equal(cost('road', 'tread'), 1);
   assert.equal(cost('forest', 'wheels'), null);
   assert.equal(cost('forest', 'tread'), 2);
   assert.ok(cost('forest', 'tread') > cost('plain', 'tread'));
-  assert.equal(cost('rough', 'wheels'), null);
-  assert.equal(cost('rough', 'tread'), 1);
-  assert.ok(cost('rough', 'foot') > 0);
+});
+
+test('the cliff, rough ground and the soft ground (snowdrift, dune, mud) are gone from the terrain data', () => {
+  for (const id of ['cliff', 'rough', 'snow_drift', 'dune', 'mud']) assert.equal(registry.terrain[id], undefined, id);
 });
 
 test('ground: grass and dirt are separate data, with no functional difference', () => {
@@ -57,8 +63,7 @@ test('maps carry a ground layer: any tile can be dirt or grass, and a map withou
   assert.throws(() => parseMap({ ...raw, ground: ['g'] }, registry), /ground must be an array/);
 });
 
-test('rough ground gives no defense; only foot (and air) enter mountains', () => {
-  assert.equal(registry.terrainDef('rough').defense, 0);
+test('only foot (and air) enter mountains', () => {
   assert.equal(cost('mountain', 'foot'), 2);
   assert.equal(cost('mountain', 'wheels'), null);
   assert.equal(cost('mountain', 'tread'), null);
@@ -74,11 +79,12 @@ test('road shapes: straight, corner and junction; wide roads use lanes, not arms
   assert.deepEqual([lane.shape, lane.arms.e], ['straight', false]);
 });
 
-test('every road and rough decor draws without throwing', () => {
+test('every road shape draws without throwing', () => {
   const noop = new Proxy({}, { get: () => () => ({ addColorStop() {} }), set: () => true });
   const at = { x: 1, y: 1, now: 0, link: { n: 1, e: 1, s: 0, w: 0, ne: 0, se: 0, sw: 0, nw: 0 }, radii: [0, 0, 0, 0] };
-  TERRAIN_DECOR.road(noop, 0, 0, 40, at);
-  TERRAIN_DECOR.rough(noop, 0, 0, 40, at);
+  TERRAIN_DECOR.road(noop, 0, 0, 40, at);                                                                                       // a bend
+  TERRAIN_DECOR.road(noop, 0, 0, 40, { ...at, link: { ...at.link, s: 1, w: 1 } });                                              // a crossing
+  TERRAIN_DECOR.road(noop, 0, 0, 40, { ...at, link: { n: 0, e: 0, s: 0, w: 0, ne: 0, se: 0, sw: 0, nw: 0 } });                  // a lone tile
 });
 
 for (const id of ids) {

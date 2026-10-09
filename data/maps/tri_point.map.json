@@ -11,7 +11,6 @@
   ],
   "legend": {
     ".": { "terrain": "plain" },
-    ":": { "terrain": "rough" },
     "F": { "terrain": "forest" },
     "M": { "terrain": "mountain" },
     "c": { "terrain": "city" },
@@ -40,17 +39,17 @@
     "FF..~~Y...O........FF",
     "FF..c...c.o.c...c..FF",
     "FF........k........FF",
-    "..:::rrrrrrrrrrr:::..",
-    "..:::r::MMrMM::r:::..",
-    "..:::c::MMrMM::c:::..",
-    "...z.r::..r..::r.W...",
+    ".....rrrrrrrrrrr.....",
+    ".....r..MMrMM..r.....",
+    ".....c..MMrMM..c.....",
+    "...z.r....r....r.W...",
     ".V.BrrrrrrrrrrrrrG.w.",
     "....r...........r....",
     "..K.rZFFFF.FFFFyr.h..",
     ".c.Z~~FFFF.FFFF~~y.c.",
-    "...:~~FFFF.FFFF~~:...",
-    "MM.:::.c.....c.:::.MM",
-    "MMM:::.........:::MMM"
+    "....~~FFFF.FFFF~~....",
+    "MM.....c.....c.....MM",
+    "MMM...............MMM"
   ],
   "groundLegend": { "g": "grass", "d": "dirt" },
   "ground": [

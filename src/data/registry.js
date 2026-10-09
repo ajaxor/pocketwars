@@ -67,7 +67,7 @@ export function createRegistry(raw) {
     /** The tileset with this id, or the default one for null/unknown (null when the data has no tilesets). */
     tilesetDef: (id) => tilesets[id] ?? tilesets[rules.defaultTileset] ?? null,
     /** The home tileset of a faction (the land it fights on in the campaign), or null. */
-    homeTileset: (factionId) => tilesetIds.find((t) => tilesets[t].faction === factionId) ?? null,
+    homeTileset: (factionId) => tilesetIds.find((t) => tilesets[t].factions?.includes(factionId)) ?? null,
     /**
      * Terrain `terrainId` as `tilesetId` draws it: the terrain with the tileset's display name and its render options laid over its own (rules never change).
      * Only the renderer, the map preview and the info cards ask; the engine reads `terrain` directly.

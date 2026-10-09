@@ -80,18 +80,17 @@ export function generateField(registry, random = Math.random, size = FIELD_SIZE)
   const tileset = grid(() => biome);
   const ground = grid((x, y) => registry.tilesetDef?.(tileset[y][x])?.ground ?? registry.defaultGround ?? null);
 
-  // land and water, woods, mountains and rough ground, each by thresholds on smooth noise so the shares are the same for every seed
-  const big = noiseField(size, size / 4, random), mid = noiseField(size, size / 8, random), small = noiseField(size, size / 8, random), rough = noiseField(size, size / 5, random);
+  // land and water, woods and mountains, each by thresholds on smooth noise so the shares are the same for every seed
+  const big = noiseField(size, size / 4, random), mid = noiseField(size, size / 8, random), small = noiseField(size, size / 8, random);
   const height = grid((x, y) => 0.65 * big(x, y) + 0.35 * mid(x, y));
   const flat = height.flat();
   const seaLevel = quantile(flat, 0.08 + random() * 0.14), peakLevel = quantile(flat, 0.93 - random() * 0.04);
-  const woodLevel = quantile(grid((x, y) => small(x, y)).flat(), 0.78 - random() * 0.12), roughLevel = quantile(grid((x, y) => rough(x, y)).flat(), 0.92);
+  const woodLevel = quantile(grid((x, y) => small(x, y)).flat(), 0.78 - random() * 0.12);
   const terrain = grid((x, y) => {
     const h = height[y][x];
     if (h < seaLevel) return terrainId('sea');
     if (h > peakLevel) return terrainId('mountain');
     if (small(x, y) > woodLevel) return terrainId('forest');
-    if (rough(x, y) > roughLevel) return terrainId('rough');
     return terrainId('plain');
   });
   const isSea = (x, y) => !!registry.terrain[terrain[wrap(y, size)][wrap(x, size)]]?.render?.water;

@@ -13,7 +13,7 @@ import { canSubmergeAt, canSurface } from '../../src/engine/submerge.js';
 import { chooseOrder } from '../../src/ai/greedy.js';
 
 const registry = await loadRegistry(readData);
-const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' }, F: { terrain: 'forest' }, R: { terrain: 'rough' }, M: { terrain: 'mountain' }, r: { terrain: 'road' }, c: { terrain: 'city' },
+const legend = { '~': { terrain: 'sea' }, o: { terrain: 'shoals' }, '.': { terrain: 'plain' }, F: { terrain: 'forest' }, M: { terrain: 'mountain' }, r: { terrain: 'road' }, c: { terrain: 'city' },
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 } };
 const players = [{ faction: 'ashmark', controller: 'human', funds: 10000 }, { faction: 'vantor_reach', controller: 'human', funds: 10000 }];
 const game = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
@@ -67,15 +67,15 @@ test('diver: its harpoon reaches ships and other submerged units; a destroyer is
 });
 
 // ---- motorcycle ----------------------------------------------------------------------------------------------------------------
-test('motorcycle: fast on open ground, nearly stuck in forest and rough ground, and no mountains', () => {
-  const g = game(['H.F..', '.....', 'M....', '.R...', '....h'], [['motorcycle', 0, 0, 3], ['soldier', 1, 4, 0]]);
+test('motorcycle: fast on open ground, nearly stuck in forest, and no mountains', () => {
+  const g = game(['H.F..', '.....', 'M....', '.F...', '....h'], [['motorcycle', 0, 0, 3], ['soldier', 1, 4, 0]]);
   const reach = computeReach(g, g.state.units[0]);
   assert.equal(reach.has(2, 4), true, 'three tiles of plain');
   assert.equal(reach.has(3, 4), false, 'a fourth is too far: the bike moves 3');
-  assert.equal(reach.has(1, 3), false, 'a rough tile costs more than the bike’s whole move');
+  assert.equal(reach.has(1, 3), false, 'a forest tile costs more than the bike’s whole move');
   assert.equal(reach.has(0, 2), false, 'mountains are closed');
   const cost = (t) => registry.terrainDef(t).moveCost.bike;
-  assert.ok(cost('forest') >= 3 && cost('rough') >= 3, 'a severe penalty');
+  assert.ok(cost('forest') >= 3, 'a severe penalty');
   assert.equal(cost('road'), cost('plain'), 'no road bonus');
   assert.equal(cost('mountain'), null);
 });

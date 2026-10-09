@@ -69,6 +69,7 @@ export const snapshotState = (state) => ({
   funds: [...state.funds],
   defeated: [...state.defeated],
   nextUnitId: state.nextUnitId,
+  builtThisTurn: [...(state.builtThisTurn ?? [])],   // so taking a build back frees the property to build on again
 });
 
 export function restoreState(state, snap) {
@@ -78,4 +79,5 @@ export function restoreState(state, snap) {
   state.funds = [...snap.funds];
   state.defeated = [...snap.defeated];
   state.nextUnitId = snap.nextUnitId;
+  if (snap.builtThisTurn) state.builtThisTurn = [...snap.builtThisTurn];
 }

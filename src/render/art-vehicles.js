@@ -121,14 +121,12 @@ const apc = (g, { s, c, dk, w, run, j }) => {
 };
 const darkInterior = (dk) => mix(dk, '#000000', .72);
 
-// Technical (the Recon's art): a battered pickup with a machine gun on a post in its bed and a rusty door.
-const RUST = '#9a5a2e';
+// Technical (the Recon's art): a battered pickup with a machine gun on a post in its bed.
 const recon = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s;
   box(g, s, -.36, .0 + jj, .74, .13, 3, c);                                                   // the body
   box(g, s, .02, -.14 + jj, .2, .15, 4, c);                                                   // the cab
   box(g, s, .07, -.11 + jj, .12, .07, 2, GLASS);
-  box(g, s, .04, .02 + jj, .12, .08, 2, RUST);                                                // a mismatched rusty door
   box(g, s, -.36, -.03 + jj, .34, .04, 1, dk);                                                // the bed's rail
   stroke(g, s, -.2, -.02 + jj, -.2, -.17 + jj, Math.max(2, s * .03), '#555a64');              // the gun post
   const sw = run ? Math.sin(w * 1.3 + ph) * .05 : 0;

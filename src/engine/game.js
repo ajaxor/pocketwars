@@ -325,8 +325,16 @@ export class Game {
   /** Current player builds `unitType` on the property at (x, y): it appears there with a free move (see above). */
   build(x, y, unitType) {
     if (this.isOver) return fail('game-over');
-    const result = buildUnit(this, this.state.turn, x, y, unitType);
-    if (result.ok) { this.undoSnapshot = null; this.touch(); } // spending funds can't be undone
+    const player = this.state.turn;
+    const snapshot = this.controllerOf(player) === 'human' ? snapshotState(this.state) : null;
+    const sightBefore = isFogged(this, player) ? visibleTiles(this, player) : null;
+    const result = buildUnit(this, player, x, y, unitType);
+    if (result.ok) {
+      this.undoSnapshot = snapshot;   // a build can be taken back: the unit goes, the price comes back and the property can build again
+      this.touch();
+      // In fog of war the new unit may see tiles nobody saw before; taking it back would be free scouting.
+      if (sightBefore && revealsNew(sightBefore, visibleTiles(this, player))) this.undoSnapshot = null;
+    }
     return result;
   }
 
@@ -357,7 +365,7 @@ export class Game {
     return { ok: true, events };
   }
 
-  // UNDO (single level): a snapshot is taken just before each human order and cleared on build / end of turn.
+  // UNDO (single level): a snapshot is taken just before each human order (a build included: the price comes back and the property can build again) and cleared on end of turn.
   // HIDDEN UNITS: a move could show the player something they did not know (it bumps into a hidden submarine, or ends next to one),
   // and undoing it would make that free scouting. So an order that reveals a hidden unit, or is interrupted by one, clears the
   // snapshot (see act) and the Undo button goes dark. A move that finds nothing can still be taken back. In fog of war (fog.js) the same

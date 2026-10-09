@@ -51,7 +51,7 @@ test('move events carry the walked path', () => {
   assert.deepEqual(moved.events[0], { type: 'move', unitId: game2.state.units[0].id, path: [[0, 0], [1, 0]] });
 });
 
-test('undo restores the state before the last human order, once, and is cleared by build / end turn', () => {
+test('undo restores the state before the last human order, once, and is cleared by end turn', () => {
   const game = makeGame({
     units: { walker: { move: 3 } }, rows: ['a....'], unitsOnMap: [['walker', 0, 1, 0], ['walker', 1, 4, 0]],
     players: [{ faction: 'red', controller: 'human', funds: 5000 }, { faction: 'blue', controller: 'ai', funds: 0 }],
@@ -67,12 +67,33 @@ test('undo restores the state before the last human order, once, and is cleared 
   game.act(ordersFor(game, 0, { x: 3, y: 0 }));
   game.state.units[0].done = false;
   assert.equal(game.build(0, 0, 'walker').ok, true);
-  assert.equal(game.canUndo, false, 'spending funds clears undo');
+  assert.equal(game.canUndo, true, 'a build can be taken back');
 
   game.act(ordersFor(game, 0, { x: 2, y: 0 }));
   assert.equal(game.canUndo, true);
   game.endTurn();
   assert.equal(game.canUndo, false, 'ending the turn clears undo');
+});
+
+test('a build can be taken back: the unit goes, the price comes back and the property can build again', () => {
+  const players = [{ faction: 'red', controller: 'human', funds: 5000 }, { faction: 'blue', controller: 'ai', funds: 0 }];
+  const game = makeGame({ units: { walker: { move: 3 } }, rows: ['a....'], unitsOnMap: [['walker', 1, 4, 0]], players });
+  const before = JSON.stringify(game.state);
+  assert.equal(game.build(0, 0, 'walker').ok, true);
+  assert.ok(game.state.funds[0] < 5000, 'the price was paid');
+  assert.equal(game.canUndo, true);
+  assert.equal(game.undo(), true);
+  assert.equal(JSON.stringify(game.state), before, 'the unit, the funds and the one-build-a-turn mark are all back');
+  assert.equal(game.build(0, 0, 'walker').ok, true, 'the property builds again');
+  game.endTurn();
+  assert.equal(game.canUndo, false, 'ending the turn makes it final');
+});
+
+test('a build by the computer is never undoable', () => {
+  const players = [{ faction: 'red', controller: 'ai', funds: 5000 }, { faction: 'blue', controller: 'ai', funds: 0 }];
+  const game = makeGame({ units: { walker: { move: 3 } }, rows: ['a....'], unitsOnMap: [['walker', 1, 4, 0]], players });
+  assert.equal(game.build(0, 0, 'walker').ok, true);
+  assert.equal(game.canUndo, false);
 });
 
 test('undo also reverts captures, kills and funds', () => {

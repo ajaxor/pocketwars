@@ -93,7 +93,7 @@ const TILESET_RENDER_KEYS = ['base', 'decor', 'mini', 'style', 'group'];
 /**
  * tilesets.json (optional): the looks of the land. A tileset re-skins the shared terrain (a forest is spruce in the tundra and palms on the islands; the rules
  * stay the same) by naming, per terrain id, an optional display `name` and a partial `render` (base, decor, mini, style, group) laid over the terrain's own.
- * It may name a home `faction` (each faction has at most one) and a default `ground` for maps that paint none.
+ * It may name its home `factions` (a list: several armies share a biome and tell it apart by how their maps are laid out; each faction is at home in at most one tileset) and a default `ground` for maps that paint none.
  */
 export function validateTilesets(tilesets, terrain, ground, factions, rules, problems) {
   if (tilesets === undefined) return;
@@ -104,10 +104,13 @@ export function validateTilesets(tilesets, terrain, ground, factions, rules, pro
     if (!isObj(t)) { problems.push(`${w} must be an object`); continue; }
     if (!isStr(t.name)) problems.push(`${w}: name is required`);
     if (t.description !== undefined && !isStr(t.description)) problems.push(`${w}: description must be text`);
-    if (t.faction !== undefined) {
-      if (!isObj(factions) || !factions[t.faction]) problems.push(`${w}: faction "${t.faction}" is not in factions.json`);
-      else if (homes.has(t.faction)) problems.push(`${w}: faction "${t.faction}" is already the home of tileset "${homes.get(t.faction)}"`);
-      else homes.set(t.faction, id);
+    if (t.factions !== undefined) {
+      if (!Array.isArray(t.factions) || !t.factions.length) problems.push(`${w}: factions must be a non-empty list of faction ids`);
+      else for (const f of t.factions) {
+        if (!isObj(factions) || !factions[f]) problems.push(`${w}: faction "${f}" is not in factions.json`);
+        else if (homes.has(f)) problems.push(`${w}: faction "${f}" is already the home of tileset "${homes.get(f)}"`);
+        else homes.set(f, id);
+      }
     }
     if (t.ground !== undefined && !(isObj(ground) && ground[t.ground])) problems.push(`${w}: ground "${t.ground}" is not in ground.json`);
     if (t.terrain === undefined) continue;

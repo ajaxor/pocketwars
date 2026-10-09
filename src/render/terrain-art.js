@@ -24,6 +24,9 @@ const poly = (g, pts, fill) => {
 };
 const dot = (g, x, y, r, fill) => { g.fillStyle = fill; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); };
 
+/** How wide the asphalt strip is, as a fraction of the tile (the ground shows either side, which keeps roads apart from the grey of fog of war). */
+const ROAD_WIDTH = .42;
+
 /** Paint the dashed centre line on roads (off for now, to see the plain look). */
 const ROAD_LINES = false;
 
@@ -58,8 +61,7 @@ export function roadShape(link = NO_LINKS) {
   return { shape: 'straight', arms };
 }
 
-// Pointed pine trees, shaded two-tone mountains with jagged snow, calm water with twinkling glints, paved roads with a painted
-// dashed centre line, and rough ground of dry dirt and scattered rocks.
+// Pointed pine trees, shaded two-tone mountains with jagged snow, calm water with twinkling glints and narrow asphalt roads laid over the ground.
 export const TERRAIN_DECOR = {
     grass(g, px, py, S, { x, y }) {
       for (let i = 0; i < 3; i++) {
@@ -67,15 +69,32 @@ export const TERRAIN_DECOR = {
         g.fillStyle = i % 2 ? '#93c668' : '#76a94d'; g.beginPath(); g.ellipse(cx, cy, S * .09, S * .035, 0, 0, 7); g.fill();
       }
     },
-    // Mid-grey road (light enough for units to stand out) with a dashed centre line that runs
-    // through each tile in the same rhythm (two dashes a tile, gaps at the tile edges) so it carries on from tile to tile.
+    // A narrow strip of mid-grey asphalt laid over the ground (the ground shows either side, so a road never reads as a grey field of its own, and it
+    // stays apart from the grey of fog of war). The strip runs out of the tile by each arm roadShape finds, round at a bend, with a darker edge. The
+    // tile's `style` may recolour it (`color`, `edge`, `specks`) or change its `width` (a fraction of the tile).
     road(g, px, py, S, at) {
-      const { x, y, link = NO_LINKS } = at, RD = styled({ specks: ['#a3a8b1', '#7f848d'] }, at);
-      for (let i = 0; i < 3; i++) dot(g, px + (.14 + .72 * rnd(x, y, i)) * S, py + (.14 + .72 * rnd(x, y, i + 5)) * S, S * .022, RD.specks[i % 2]);
-      if (!ROAD_LINES) return;
-      if (!ROAD_CENTRE_LINE) return;
+      const { x, y, link = NO_LINKS } = at, RD = styled({ color: '#7d838e', edge: 'rgba(0,0,0,.2)', specks: ['#a3a8b1', '#7f848d'], width: ROAD_WIDTH }, at);
       const { shape, arms } = roadShape(link);
-      const cx = px + S / 2, cy = py + S / 2;
+      const c = S / 2, edgePx = Math.max(1, S * .035);
+      const strip = (half, fill) => {   // the centre block (rounded, so a bend has a round outside corner) and one bar out to the tile edge per arm
+        g.fillStyle = fill; g.beginPath();
+        g.roundRect(px + c - half, py + c - half, half * 2, half * 2, half * .7);
+        if (arms.n) g.rect(px + c - half, py, half * 2, c);
+        if (arms.s) g.rect(px + c - half, py + c, half * 2, c);
+        if (arms.w) g.rect(px, py + c - half, c, half * 2);
+        if (arms.e) g.rect(px + c, py + c - half, c, half * 2);
+        g.fill();
+      };
+      const half = S * RD.width / 2;
+      strip(half + edgePx, RD.edge);
+      strip(half, RD.color);
+      for (let i = 0; i < 3; i++) {   // a few specks, kept on the strip (along it on a straight, inside the centre block at a bend or junction)
+        const reach = shape === 'straight' ? .36 : RD.width * .3, across = (rnd(x, y, i + 5) - .5) * RD.width * .7 * S, along = (rnd(x, y, i) - .5) * 2 * reach * S;
+        const vertical = shape === 'straight' && (arms.n || arms.s);
+        dot(g, px + c + (vertical ? across : along), py + c + (vertical ? along : across), S * .022, RD.specks[i % 2]);
+      }
+      if (!ROAD_LINES || !ROAD_CENTRE_LINE) return;
+      const cx = px + c, cy = py + c;
       // a dash on one arm, from `a` to `b` tiles out from the centre
       const dash = (dx, dy, a, b) => { g.moveTo(cx + dx * a * S, cy + dy * a * S); g.lineTo(cx + dx * b * S, cy + dy * b * S); };
       g.strokeStyle = '#ffffff'; g.lineWidth = Math.max(1.5, S * .06); g.lineCap = 'butt'; g.beginPath();
@@ -93,25 +112,6 @@ export const TERRAIN_DECOR = {
         const cx = px + (.2 + .6 * rnd(x, y, i + 20)) * S, cy = py + (.2 + .6 * rnd(x, y, i + 24)) * S;
         g.fillStyle = i % 2 ? '#a88f5e' : '#c2ab7a'; g.beginPath(); g.ellipse(cx, cy, S * (.13 + .05 * rnd(x, y, i + 28)), S * .055, 0, 0, 7); g.fill();
       }
-    },
-    // A few shaded boulders and pebbles; what they lie on (grass or dirt) is the ground under the tile.
-    rough(g, px, py, S, at) {
-      const { x, y } = at, RS = styled({ rock: '#857c6c', lit: '#b3a997', specks: ['#cfc9bb', '#7d7667'] }, at);
-      const rock = (cx, cy, r, seed) => {
-        const pts = [], lit = [];
-        for (let k = 0; k < 7; k++) {
-          const a = (k / 7) * 6.2832 + seed, rr = r * (.78 + .22 * rnd(x, y, seed * 11 + k));
-          pts.push([cx + Math.cos(a) * rr, cy + Math.sin(a) * rr * .78]);
-          lit.push([cx - r * .1 + Math.cos(a) * rr * .72, cy - r * .16 + Math.sin(a) * rr * .56]);
-        }
-        g.fillStyle = 'rgba(0,0,0,.18)'; g.beginPath(); g.ellipse(cx + r * .12, cy + r * .62, r * .95, r * .3, 0, 0, 7); g.fill();
-        poly(g, pts, RS.rock);
-        poly(g, lit, RS.lit);
-      };
-      rock(px + (.26 + .1 * rnd(x, y, 1)) * S, py + (.36 + .08 * rnd(x, y, 2)) * S, S * .15, 1);
-      rock(px + (.68 + .08 * rnd(x, y, 3)) * S, py + (.62 + .08 * rnd(x, y, 4)) * S, S * .2, 2);
-      rock(px + (.36 + .1 * rnd(x, y, 5)) * S, py + (.82 + .05 * rnd(x, y, 6)) * S, S * .09, 3);
-      for (let i = 0; i < 4; i++) dot(g, px + (.1 + .8 * rnd(x, y, i + 40)) * S, py + (.1 + .8 * rnd(x, y, i + 44)) * S, S * .02, i % 2 ? RS.specks[0] : RS.specks[1]);
     },
     // Pines: how many, where, how big, how many tiers and which green all come from the tile's position (rnd), so every forest
     // tile differs but each one looks the same every time it is drawn.

@@ -18,18 +18,18 @@ const S = +opt('S', 48), out = opt('out', 'out-terrain');
 const ids = args.filter((a) => !a.startsWith('--'));
 const sets = ids.length ? ids : reg.tilesetIds;
 
-// the sampler: letters -> terrain ids (. plain, f forest, m mountain, r rough, = road, ~ sea, s shoals, c city, h hq, F factory, k cliff, d drift, u dune, M mud, x ruin_city, X ruin_factory, w wall)
-const KEY = { '.': 'plain', f: 'forest', m: 'mountain', r: 'rough', '=': 'road', '~': 'sea', s: 'shoals', c: 'city', h: 'hq', F: 'factory', k: 'cliff', d: 'snow_drift', u: 'dune', M: 'mud', w: 'ford', i: 'ice', x: 'ruin_city', X: 'ruin_factory' };
+// the sampler: letters -> terrain ids (. plain, f forest, m mountain, = road, ~ sea, s shoals, c city, h hq, F factory, w ford, i ice, x ruin_city, X ruin_factory)
+const KEY = { '.': 'plain', f: 'forest', m: 'mountain', '=': 'road', '~': 'sea', s: 'shoals', c: 'city', h: 'hq', F: 'factory', w: 'ford', i: 'ice', x: 'ruin_city', X: 'ruin_factory' };
 const SAMPLER = [
   '~~~ss..ffff..mmm.',
   '~~s..=====..mmmm.',
-  '~~...=.c.F..kkkk.',
-  '.....=..f...kkkk.',
-  '.rr..=..hf..kkkk.',
-  '.rr..=...xX.ddu..',
-  'ffff.=.......uuMM',
-  'ffff.======..MM..',
-  '~~wwwiiii........',
+  '~~...=.c.F..mmmm.',
+  '.....=..f...mmmm.',
+  '.....=..hf.......',
+  '.....=...xX......',
+  'ffff.=.......=...',
+  'ffff.======..=...',
+  '~~wwwiiii...=====',
 ];
 
 mkdirSync(out, { recursive: true });

@@ -2,97 +2,42 @@
   "format": "pocketwars-map",
   "version": 1,
   "id": "concrete_canyon",
-  "name": "Concrete Canyon",
-  "description": "A 24x14 city grid. Tower blocks only infantry can enter, concrete barriers that close the side streets, parks, and a shattered city centre waiting to be rebuilt.",
-  "tileset": "urban",
+  "name": "Frozen Canyon",
+  "description": "A 24x14 frozen canyon. Glacier walls only infantry can climb close the side streets, pine stands hide the flanks, and a shattered middle waits to be rebuilt.",
+  "tileset": "tundra",
   "players": [
-    {
-      "faction": "vantor_reach",
-      "controller": "human",
-      "funds": 8000
-    },
-    {
-      "faction": "solace",
-      "controller": "ai",
-      "funds": 8000
-    }
+    { "faction": "vantor_reach", "controller": "human", "funds": 8000 },
+    { "faction": "solace", "controller": "ai", "funds": 8000 }
   ],
   "legend": {
-    "m": {
-      "terrain": "mountain"
-    },
-    ".": {
-      "terrain": "plain"
-    },
-    "=": {
-      "terrain": "road"
-    },
-    "f": {
-      "terrain": "forest"
-    },
-    "c": {
-      "terrain": "city"
-    },
-    "^": {
-      "terrain": "cliff"
-    },
-    "a": {
-      "terrain": "barracks",
-      "owner": 0
-    },
-    "x": {
-      "terrain": "ruin_city"
-    },
-    "A": {
-      "terrain": "barracks",
-      "owner": 1
-    },
-    "O": {
-      "terrain": "hq",
-      "owner": 0
-    },
-    "B": {
-      "terrain": "hq",
-      "owner": 1
-    },
-    "o": {
-      "terrain": "factory",
-      "owner": 0
-    },
-    "b": {
-      "terrain": "factory",
-      "owner": 1
-    },
-    "v": {
-      "terrain": "airfield",
-      "owner": 0
-    },
-    "V": {
-      "terrain": "airfield",
-      "owner": 1
-    },
-    "~": {
-      "terrain": "sea"
-    },
-    "Y": {
-      "terrain": "shipyard",
-      "owner": 0
-    },
-    "Z": {
-      "terrain": "shipyard",
-      "owner": 1
-    }
+    "m": { "terrain": "mountain" },
+    ".": { "terrain": "plain" },
+    "=": { "terrain": "road" },
+    "f": { "terrain": "forest" },
+    "c": { "terrain": "city" },
+    "a": { "terrain": "barracks", "owner": 0 },
+    "x": { "terrain": "ruin_city" },
+    "A": { "terrain": "barracks", "owner": 1 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "B": { "terrain": "hq", "owner": 1 },
+    "o": { "terrain": "factory", "owner": 0 },
+    "b": { "terrain": "factory", "owner": 1 },
+    "v": { "terrain": "airfield", "owner": 0 },
+    "V": { "terrain": "airfield", "owner": 1 },
+    "~": { "terrain": "sea" },
+    "Y": { "terrain": "shipyard", "owner": 0 },
+    "Z": { "terrain": "shipyard", "owner": 1 }
   },
   "tiles": [
     "mmm.=...fc.mm.cf...=.mmm",
     "mmm.=...f..mm..f...=.mmm",
-    "..c.=.^^^^....^^^^.=.c..",
+    "..c.=.mmmm....mmmm.=.c..",
     "....=..............=....",
     ".a..=..f.x....x.f..=..A.",
     ".O====================B.",
     ".o..=..f.x....x.f..=..b.",
     "....=..............=....",
-    ".vc.=.^^^^....^^^^.=.cV.",
+    ".vc.=.mmmm....mmmm.=.cV.",
     "mmm.=...f..mm..f...=.mmm",
     "mmm.=...fc.mm.cf...=.mmm",
     "~Y..=..............=..Z~",
@@ -100,125 +45,25 @@
     "....=.mm.c....c.mm.=...."
   ],
   "units": [
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 3,
-      "y": 5
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 20,
-      "y": 5
-    },
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 2,
-      "y": 5
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 21,
-      "y": 5
-    },
-    {
-      "type": "soldier",
-      "owner": 0,
-      "x": 2,
-      "y": 4
-    },
-    {
-      "type": "soldier",
-      "owner": 1,
-      "x": 21,
-      "y": 4
-    },
-    {
-      "type": "mech",
-      "owner": 0,
-      "x": 2,
-      "y": 6
-    },
-    {
-      "type": "mech",
-      "owner": 1,
-      "x": 21,
-      "y": 6
-    },
-    {
-      "type": "tank",
-      "owner": 0,
-      "x": 2,
-      "y": 3
-    },
-    {
-      "type": "tank",
-      "owner": 1,
-      "x": 21,
-      "y": 3
-    },
-    {
-      "type": "recon",
-      "owner": 0,
-      "x": 1,
-      "y": 3
-    },
-    {
-      "type": "recon",
-      "owner": 1,
-      "x": 22,
-      "y": 3
-    },
-    {
-      "type": "artillery",
-      "owner": 0,
-      "x": 1,
-      "y": 7
-    },
-    {
-      "type": "artillery",
-      "owner": 1,
-      "x": 22,
-      "y": 7
-    },
-    {
-      "type": "sniper",
-      "owner": 0,
-      "x": 1,
-      "y": 2
-    },
-    {
-      "type": "sniper",
-      "owner": 1,
-      "x": 22,
-      "y": 2
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 7,
-      "y": 3
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 16,
-      "y": 3
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 7,
-      "y": 10
-    },
-    {
-      "type": "jammer",
-      "owner": null,
-      "x": 16,
-      "y": 10
-    }
+    { "type": "soldier", "owner": 0, "x": 3, "y": 5 },
+    { "type": "soldier", "owner": 1, "x": 20, "y": 5 },
+    { "type": "soldier", "owner": 0, "x": 2, "y": 5 },
+    { "type": "soldier", "owner": 1, "x": 21, "y": 5 },
+    { "type": "soldier", "owner": 0, "x": 2, "y": 4 },
+    { "type": "soldier", "owner": 1, "x": 21, "y": 4 },
+    { "type": "mech", "owner": 0, "x": 2, "y": 6 },
+    { "type": "mech", "owner": 1, "x": 21, "y": 6 },
+    { "type": "tank", "owner": 0, "x": 2, "y": 3 },
+    { "type": "tank", "owner": 1, "x": 21, "y": 3 },
+    { "type": "recon", "owner": 0, "x": 1, "y": 3 },
+    { "type": "recon", "owner": 1, "x": 22, "y": 3 },
+    { "type": "artillery", "owner": 0, "x": 1, "y": 7 },
+    { "type": "artillery", "owner": 1, "x": 22, "y": 7 },
+    { "type": "sniper", "owner": 0, "x": 1, "y": 2 },
+    { "type": "sniper", "owner": 1, "x": 22, "y": 2 },
+    { "type": "jammer", "owner": null, "x": 7, "y": 3 },
+    { "type": "jammer", "owner": null, "x": 16, "y": 3 },
+    { "type": "jammer", "owner": null, "x": 7, "y": 10 },
+    { "type": "jammer", "owner": null, "x": 16, "y": 10 }
   ]
 }

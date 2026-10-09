@@ -208,7 +208,7 @@ test('the picture is zoomed in: a tile is at least 64 CSS pixels, so a phone see
 
 test('the units are drawn afresh on every frame, so they animate, and the terrain picture is not touched', () => {
   const { doc, win, made, timers, tick } = stage();
-  const b = new MenuBackdrop(doc, registry, { random: seeded(8), win }).start();
+  const b = new MenuBackdrop(doc, registry, { random: seeded(1), win }).start();
   timers.shift()();
   tick(0); tick(100);
   const calls = made[0].calls;

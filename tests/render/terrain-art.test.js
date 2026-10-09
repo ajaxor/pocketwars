@@ -180,3 +180,26 @@ test('shoals are open sea with a small islet: same colour as the sea, so the wat
   paintTile(ctx, 0, 0, 40, registry.terrainDef('shoals'), null, { n: '#3d7ec7', e: '#3d7ec7', s: '#3d7ec7', w: '#3d7ec7', ne: '#3d7ec7', se: '#3d7ec7', sw: '#3d7ec7', nw: '#3d7ec7' }, { x: 3, y: 4, now: 0 });
   assert.ok(calls.filter((c) => c.op === 'ellipse' || c.op === 'lineTo').length >= 4);
 });
+
+test('a road is a narrow strip over the ground, not a grey field: it runs out of the tile only by its arms', async () => {
+  const { TERRAIN_DECOR } = await import('../../src/render/terrain-art.js');
+  const none = { n: 0, e: 0, s: 0, w: 0, ne: 0, se: 0, sw: 0, nw: 0 };
+  const draw = (link) => {
+    const rects = [], g = new Proxy({}, { get: (_, p) => (...a) => { if (p === 'rect' || p === 'roundRect') rects.push(a); }, set: () => true });
+    TERRAIN_DECOR.road(g, 0, 0, 100, { x: 3, y: 4, now: 0, link: { ...none, ...link } });
+    return rects;
+  };
+  const across = (rects, horizontal) => Math.max(...rects.map((r) => (horizontal ? r[3] : r[2])));
+  const eastWest = draw({ e: 1, w: 1 });
+  assert.ok(eastWest.length >= 3, 'a centre block and a bar for each arm, edge and fill');
+  assert.ok(across(eastWest, true) < 60, 'well under the tile: the ground shows on both sides');
+  assert.ok(eastWest.some((r) => r[0] === 0) && eastWest.some((r) => r[0] + r[2] === 100), 'it reaches both tile edges');
+  const bend = draw({ n: 1, e: 1 });
+  assert.ok(!bend.some((r) => r[0] === 0) && !bend.some((r) => r[1] + r[3] === 100), 'a bend does not reach the west or south edge');
+});
+
+test('the archived drawings for removed terrain still load (they are kept for later, not wired in)', async () => {
+  const archive = await import('../../src/render/unused/removed-terrain.js');
+  for (const [name, decor] of Object.entries({ rough: archive.ROUGH_DECOR.rough, drift: archive.SOFT_DECOR.drift, dune: archive.SOFT_DECOR.dune, mud: archive.SOFT_DECOR.mud, cliff: archive.CLIFF_DECOR.cliff })) assert.equal(typeof decor, 'function', name);
+  for (const id of ['rough', 'drift', 'dune', 'mud', 'cliff']) assert.equal(TERRAIN_DECOR[id], undefined, `${id} is not in the live drawings`);
+});

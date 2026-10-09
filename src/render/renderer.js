@@ -80,6 +80,62 @@ export class Renderer {
     return { W: this.camera.W, H: this.camera.H, ox, oy, d: this.dpr };
   }
 
+  /**
+   * The tiles the selected unit can reach: a blue tint with light bands drifting across it, a twinkle on each tile and a two-tone outline round
+   * the whole area. Blue shimmer rather than a flat white wash, so it shows against grass, snow, sand and water alike (the bands and the dark
+   * and light outline carry it where the tint alone would vanish, on the sea for one).
+   */
+  drawReach(g, tiles, now) {
+    if (!tiles.length) return;
+    const map = this.game.map, S = this.S;
+    const has = new Set(tiles.map(({ x, y }) => y * map.width + x));
+    const at = (x, y) => x >= 0 && y >= 0 && x < map.width && y < map.height && has.has(y * map.width + x);
+    const r = this.face(0, 0)[4];
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    g.save();
+    g.beginPath();
+    for (const { x, y } of tiles) {
+      // only the outer corners of the merged shape are rounded (order: top-left, top-right, bottom-right, bottom-left)
+      const round = (a, b) => (!a && !b ? r : 0);
+      const n = at(x, y - 1), e = at(x + 1, y), sd = at(x, y + 1), w = at(x - 1, y);
+      g.roundRect(x * S, y * S, S, S, [round(n, w), round(n, e), round(sd, e), round(sd, w)]);
+      x0 = Math.min(x0, x * S); y0 = Math.min(y0, y * S); x1 = Math.max(x1, (x + 1) * S); y1 = Math.max(y1, (y + 1) * S);
+    }
+    g.fillStyle = `rgba(36,118,255,${(.34 + .07 * Math.sin(now / 550)).toFixed(3)})`;
+    g.fill();
+    g.clip();   // the bands and twinkles stay inside the shape
+    const w = x1 - x0, h = y1 - y0, period = S * 1.7, band = S * .5, off = ((now * S) / 1500) % period;
+    g.fillStyle = 'rgba(190,228,255,.26)';
+    for (let d = -h - period; d < w + period; d += period) {   // slanted bands drifting right
+      const bx = x0 + d + off;
+      g.beginPath(); g.moveTo(bx, y1); g.lineTo(bx + band, y1); g.lineTo(bx + band + h, y0); g.lineTo(bx + h, y0); g.closePath(); g.fill();
+    }
+    for (const { x, y } of tiles) {   // one twinkle a tile, each on its own beat
+      const k = (x * 73 + y * 151) % 97, a = Math.max(0, Math.sin(now / 380 + k));
+      if (a < .15) continue;
+      const cx = x * S + (.2 + .6 * ((k * 37) % 100) / 100) * S, cy = y * S + (.2 + .6 * ((k * 61) % 100) / 100) * S, u = S * (.035 + .035 * a);
+      g.fillStyle = `rgba(255,255,255,${(.85 * a).toFixed(2)})`;
+      g.beginPath(); g.moveTo(cx - u * 2, cy); g.lineTo(cx, cy - u); g.lineTo(cx + u * 2, cy); g.lineTo(cx, cy + u); g.closePath(); g.fill();
+    }
+    g.restore();
+    // the outline: only the sides that face out of the area, dark under light so it reads on pale ground and on water
+    g.save(); g.lineCap = 'round';
+    const edges = [];
+    for (const { x, y } of tiles) {
+      const px = x * S, py = y * S, i = Math.max(1, S * .03);
+      if (!at(x, y - 1)) edges.push([px + r * .5, py + i, px + S - r * .5, py + i]);
+      if (!at(x, y + 1)) edges.push([px + r * .5, py + S - i, px + S - r * .5, py + S - i]);
+      if (!at(x - 1, y)) edges.push([px + i, py + r * .5, px + i, py + S - r * .5]);
+      if (!at(x + 1, y)) edges.push([px + S - i, py + r * .5, px + S - i, py + S - r * .5]);
+    }
+    for (const [color, lw] of [['rgba(8,40,120,.65)', Math.max(3, S * .09)], ['rgba(170,222,255,.95)', Math.max(1.5, S * .04)]]) {
+      g.strokeStyle = color; g.lineWidth = lw; g.beginPath();
+      for (const [ax, ay, bx, by] of edges) { g.moveTo(ax, ay); g.lineTo(bx, by); }
+      g.stroke();
+    }
+    g.restore();
+  }
+
   /** [x, y, w, h, radius] of tile (x, y), for outlines and highlights that follow the rounded tiles. */
   face(x, y, margin = 0) { return faceRect(x, y, this.S, margin); }
 
@@ -403,20 +459,7 @@ export class Renderer {
       view: seen,
     });
     drawWalls(g, { width: map.width, height: map.height, S, wallAt: (x, y) => this.wallAt(x, y), view: seen });
-    if (view.reach) {
-      g.fillStyle = 'rgba(255,255,255,.38)'; g.beginPath();
-      const tiles = [...view.reach.tiles()];
-      const has = new Set(tiles.map(({ x, y }) => y * map.width + x));
-      const at = (x, y) => x >= 0 && y >= 0 && x < map.width && y < map.height && has.has(y * map.width + x);
-      const r = this.face(0, 0)[4];
-      for (const { x, y } of tiles) {
-        // only the outer corners of the merged shape are rounded (order: top-left, top-right, bottom-right, bottom-left)
-        const round = (a, b) => (!a && !b ? r : 0);
-        const n = at(x, y - 1), e = at(x + 1, y), s = at(x, y + 1), w = at(x - 1, y);
-        g.roundRect(x * S, y * S, S, S, [round(n, w), round(n, e), round(s, e), round(s, w)]);
-      }
-      g.fill();
-    }
+    if (view.reach) this.drawReach(g, [...view.reach.tiles()], now);
     if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a small sonar mark on every empty water tile (deep sea or shoals) it listens to
       g.save(); g.lineCap = 'round';
       const pulse = .55 + .25 * Math.sin(now / 350);

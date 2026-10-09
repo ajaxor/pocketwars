@@ -2,7 +2,7 @@
   "plain": {
     "name": "Plain",
     "defense": 0,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {},
     "render": {}
   },
@@ -20,19 +20,12 @@
     "attributes": { "blocksLineOfSight": 2, "vantage": 2, "visionBonus": 2 },
     "render": { "decor": "mountain", "mini": "#8f877a" }
   },
-  "rough": {
-    "name": "Rough",
-    "defense": 0,
-    "moveCost": { "foot": 1, "wheels": null, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 4, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": {},
-    "render": { "decor": "rough", "mini": "#9a8559" }
-  },
   "road": {
     "name": "Road",
     "defense": 0,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {},
-    "render": { "base": "#7d838e", "decor": "road", "inlay": true, "mini": "#7d838e" }
+    "render": { "decor": "road", "mini": "#7d838e" }
   },
   "sea": {
     "name": "Sea",
@@ -107,34 +100,6 @@
     "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 2, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": { "wall": { "structure": "cracked_wall" } },
     "render": { "wall": true, "mini": "#8a7d6a" }
-  },
-  "snow_drift": {
-    "name": "Snowdrift",
-    "defense": 0,
-    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": {},
-    "render": { "decor": "drift", "mini": "#cfdceb" }
-  },
-  "dune": {
-    "name": "Dunes",
-    "defense": 0,
-    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": {},
-    "render": { "decor": "dune", "mini": "#dcbf7a" }
-  },
-  "mud": {
-    "name": "Mud",
-    "defense": 0,
-    "moveCost": { "foot": 1, "wheels": 2, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 3, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": {},
-    "render": { "base": "#7a5d3b", "decor": "mud", "mini": "#7a5d3b" }
-  },
-  "cliff": {
-    "name": "Cliff",
-    "defense": 0,
-    "moveCost": { "foot": null, "wheels": null, "tread": null, "air": 1, "naval": null, "amphibious": null, "bike": null, "diver": null, "hover": null, "amphibious_tread": null },
-    "attributes": { "blocksLineOfSight": 2 },
-    "render": { "base": "#a39d8e", "decor": "cliff", "mini": "#8a8478" }
   },
   "ruin_city": {
     "name": "Ruined City",

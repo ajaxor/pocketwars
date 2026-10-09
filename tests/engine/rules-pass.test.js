@@ -1,4 +1,4 @@
-// Rules settled in one pass: infantry speed and rough ground, docks, diving on the build turn, mines versus sonar, spies on enemy buildings.
+// Rules settled in one pass: infantry speed, docks, diving on the build turn, mines versus sonar, spies on enemy buildings.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
@@ -12,7 +12,7 @@ import { startTurn } from '../../src/engine/economy.js';
 
 const registry = await loadRegistry(readData);
 const legend = {
-  '~': { terrain: 'sea' }, '.': { terrain: 'plain' }, ':': { terrain: 'rough' }, M: { terrain: 'mountain' },
+  '~': { terrain: 'sea' }, '.': { terrain: 'plain' }, M: { terrain: 'mountain' },
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, Z: { terrain: 'shipyard', owner: 1 },
 };
 const players = [{ faction: 'ashmark', controller: 'human', funds: 30000 }, { faction: 'vantor_reach', controller: 'human', funds: 30000 }];
@@ -25,12 +25,12 @@ test('every infantry unit except the motorcycle moves 2 (the motorcycle moves 3)
   }
 });
 
-test('rough ground costs infantry nothing extra, a mountain still does', () => {
-  const g = world(['H.:.:.h', 'M:M....'], [['sniper', 0, 1, 0]]);
+test('open ground costs infantry nothing extra, a mountain still does', () => {
+  const g = world(['H.....h', 'M.M....'], [['sniper', 0, 1, 0]]);
   const reach = computeReach(g, g.state.units[0]);
-  assert.ok(reach.has(3, 0), 'two tiles across the rough');
+  assert.ok(reach.has(3, 0), 'two tiles across the plain');
   assert.equal(registry.terrainDef('mountain').moveCost.foot, 2);
-  assert.equal(registry.terrainDef('rough').moveCost.foot, 1);
+  assert.equal(registry.terrainDef('plain').moveCost.foot, 1);
 });
 
 test('a shipyard is land: a ship is built on it and sails off, cannot sail back onto it, and are repaired from the water next to it', () => {
