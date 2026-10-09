@@ -12,7 +12,7 @@ import { attributeConfig, hasAttribute } from '../../engine/attributes.js';
 import { canSee } from '../../engine/detection.js';
 import { isIndirect, weaponsOf } from '../../engine/combat.js';
 import { computeReach, distanceField } from '../../engine/movement.js';
-import { allProperties, inBounds, terrainAt, unitDef } from '../../engine/queries.js';
+import { allProperties, inBounds, terrainAt, unitCost, unitDef } from '../../engine/queries.js';
 import { isNeutral, isStructure } from '../../engine/structures.js';
 import { matchup, reachOf, roles } from './knowledge.js';
 
@@ -38,7 +38,7 @@ export class Situation {
     this.enemies = game.state.units.filter((e) => e.owner !== player && (e.owner !== null || isStructure(game, e)) && !hasAttribute(unitDef(game, e), 'jammer') && canSee(game, player, e));   // a jammer only fogs the human: the computer never attacks, hunts or fears it
     this.army = this.enemies.filter((e) => !isNeutral(e) && !isStructure(game, e) && !hasAttribute(unitDef(game, e), 'mine'));
     // the balance of forces: our army's worth over the enemy's (both at their HP). Stronger, we press on; weaker, we are careful
-    const worth = (list) => list.reduce((a, u) => a + (unitDef(game, u).weapons.length ? unitDef(game, u).cost * u.hp / game.registry.rules.maxHp : 0), 0);
+    const worth = (list) => list.reduce((a, u) => a + (unitDef(game, u).weapons.length ? unitCost(game, u) * u.hp / game.registry.rules.maxHp : 0), 0);
     const ours = worth(this.mine.filter((u) => !isStructure(game, u) && !hasAttribute(unitDef(game, u), 'mine')));
     this.strength = ours / Math.max(1000, worth(this.army));
   }
@@ -59,7 +59,7 @@ export class Situation {
       if (!t.mask[k] || !game.state.units.includes(t.unit)) continue;
       hp += matchup(game, t.unit.type, unit.type) * (t.unit.hp / this.maxHp) * cover;
     }
-    return Math.min(unit.hp, hp) / this.maxHp * def.cost / 1000;
+    return Math.min(unit.hp, hp) / this.maxHp * unitCost(game, unit) / 1000;
   }
 
   field(moveClass, goals) {

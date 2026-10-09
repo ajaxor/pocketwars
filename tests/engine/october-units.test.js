@@ -118,6 +118,20 @@ test('a troop carrier costs more for a leader whose basic infantry costs more th
   for (const carrier of ['apc', 'troop_transport']) assert.ok(price('lysandra', carrier) > price('dmitri', carrier), carrier);
 });
 
+test('a carrier is priced for what it carries: the listed price plus the full cost difference of every drop it holds', () => {
+  assert.equal(registry.rules.carrierCargoRate, 1, 'the whole difference is passed on, so dearer infantry gains no discount');
+  for (const id of ['transport_copter', 'apc', 'troop_transport']) {
+    const def = unit(id);
+    const cfg = def.attributes.deploy;
+    const drops = Math.floor(def.attributes.ammo.max / (cfg.ammo ?? 1));
+    for (const leader of ['harlan', 'ada', 'dmitri', 'lysandra', 'hiroshi']) {
+      const cargo = registry.unit(registry.loadoutFor(leader).infantry);
+      const expected = def.cost + (cargo.cost - registry.unit(cfg.unit).cost) * drops;
+      assert.equal(costFor(gameFor(leader), 0, id), Math.round(expected / 100) * 100, `${id} for ${leader}`);
+    }
+  }
+});
+
 test('only troop carriers have a leader-dependent price', () => {
   const g = gameFor('lysandra');
   for (const id of registry.unitIds) if (!registry.unit(id).attributes.deploy) assert.equal(costFor(g, 0, id), registry.unit(id).cost, id);

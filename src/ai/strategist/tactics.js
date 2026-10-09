@@ -16,7 +16,7 @@ import { canAttackFrom, forecastAttack } from '../../engine/combat.js';
 import { canHealAt, healPlan, healsAutomatically } from '../../engine/heal.js';
 import { isMine, layConfig, layTiles } from '../../engine/mines.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from '../../engine/movement.js';
-import { distance, propertyAt, ownerAt, terrainAt, terrainIdAt, tileIndex, unitDef } from '../../engine/queries.js';
+import { distance, propertyAt, ownerAt, terrainAt, terrainIdAt, tileIndex, unitCost, unitDef } from '../../engine/queries.js';
 import { isNeutral } from '../../engine/structures.js';
 import { joinPartner } from '../../engine/join.js';
 import { canSubmergeAt } from '../../engine/submerge.js';
@@ -63,7 +63,7 @@ export function bestOrder(sit, unit) {
   const mayFire = (moved) => mayAct && (!(moved || movedAlready) || canFireAfterMoving(game, unit));
   const aggression = tactics.aggression ?? 1;
   const caution = (tactics.caution ?? 1) / aggression * Math.min(2, Math.max(0.35, 1 / sit.strength) ** params.balance);
-  const value = def.cost / 1000;
+  const value = unitCost(game, unit) / 1000;
   const { max: range } = reachOf(game.registry, def);
   const fallback = (x, y) => params.unreachable + Math.min(...goal.tiles.map(([gx, gy]) => distance(x, y, gx, gy))) * 0.1;
   const targets = mayAct ? sit.enemies.filter((e) => game.state.units.includes(e) && distance(unit.x, unit.y, e.x, e.y) <= def.move + range + 1) : [];
@@ -102,7 +102,7 @@ export function bestOrder(sit, unit) {
         }
         const f = forecastAttack(game, unit, e, { x, y });
         if (f.damage <= 0) continue;
-        let gain = f.damage / sit.maxHp * unitDef(game, e).cost / 1000 * params.attack * aggression;
+        let gain = f.damage / sit.maxHp * unitCost(game, e) / 1000 * params.attack * aggression;
         if (f.destroyed) gain += params.kill;
         else if (e.hp - f.damage <= finishPotential(sit, e, unit)) gain += params.focus;
         gain -= (f.counter ?? 0) / sit.maxHp * value * params.attack * params.counter;

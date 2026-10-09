@@ -6,7 +6,7 @@ import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } fr
 import { ammoConfig, ammoOf } from '../engine/ammo.js';
 import { fuelConfig, fuelOf } from '../engine/fuel.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
-import { factionOf, layerInfo, ownerAt, propertyAt, skinAt, terrainAt, unitDef } from '../engine/queries.js';
+import { factionOf, layerInfo, ownerAt, propertyAt, skinAt, terrainAt, unitCost, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', naval: 'Naval', amphibious: 'Amphibious', hover: 'Hover', amphibious_tread: 'Amphibious tread' };
@@ -81,6 +81,7 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
   const weapon = attacker ? weaponFor(game, attacker, where, attackerAt) : null;
   return {
     ...unitStats(game, def),
+    cost: unitCost(game, unit),   // what its owner pays for it: a troop carrier costs by the infantry its leader loads it with
     unitId: unit.id, owner: unit.owner,
     faction: faction ? { name: faction.name, color: faction.color, dark: faction.dark } : null,
     hp: Math.ceil(unit.hp - 1e-9), maxHp: game.registry.rules.maxHp,

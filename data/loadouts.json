@@ -51,7 +51,7 @@
       "build": {
         "barracks": ["mechanic", "commando", "rpg_trooper"],
         "factory": ["rocket_buggy", "supply_truck", "missile_tank", "rocket_launcher", "sam_launcher"],
-        "airfield": ["transport_copter", "copter", "bomber", "fighter"],
+        "airfield": ["copter", "transport_copter", "bomber", "fighter"],
         "shipyard": ["gun_boat", "mine_layer", "hunter_sub", "cruiser", "battleship"]
       },
       "start": {

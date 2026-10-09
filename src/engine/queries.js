@@ -59,7 +59,7 @@ export function deployedType(game, unit) {
 /**
  * What `typeId` costs `player` to build. Normally the unit's own `cost`. A troop carrier (the `deploy` attribute with `basic`: transport copter, APC,
  * troop transport) is priced in data for a carrier of plain soldiers; the owner's leader carries a different basic infantry, so the price moves by
- * `rules.carrierCargoRate` (default 0.5) of the price difference for every drop it holds: a Royal Guard carrier costs more than a Conscript one.
+ * `rules.carrierCargoRate` (default 1: all of it, so the carrier is priced for what it carries) of the price difference for every drop it holds: a Royal Guard carrier costs more than a Conscript one.
  * Rounded to the nearest 100.
  */
 export function costFor(game, player, typeId) {
@@ -71,7 +71,7 @@ export function costFor(game, player, typeId) {
   const cargo = registry.unit(registry.loadoutFor(leader).infantry || cfg.unit);
   const reference = registry.unit(cfg.unit);
   const drops = Math.max(1, Math.floor((attributeConfig(def, 'ammo')?.max ?? 1) / (cfg.ammo ?? 1)));
-  const rate = registry.rules.carrierCargoRate ?? 0.5;
+  const rate = registry.rules.carrierCargoRate ?? 1;
   return Math.max(100, Math.round((def.cost + (cargo.cost - reference.cost) * drops * rate) / 100) * 100);
 }
 /** What the unit on the board is worth to its owner (see costFor). */
