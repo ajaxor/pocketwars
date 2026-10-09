@@ -80,7 +80,7 @@ export async function launch({
     if (leaders.length) portraitColors();
     pages.push(new SkirmishScreen(doc, {
       registry: game.registry, maps: [...game.maps, ...customMaps(game.registry)], selectedId: game.defaultMapId,   // with the maps saved in the editor
-      leaders, speech: game.campaign?.speech || {},
+      leaders, speech: game.campaign?.speech || {}, engines: game.engines || [], defaultEngine: game.defaultEngine,
       onBack: () => pages.pop(),
       onStart: (map, settings) => startGame(t, applySkirmish(map, settings, game.registry, random)),
     }));

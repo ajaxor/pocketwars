@@ -105,6 +105,7 @@ export function* turn(game, ctx) {
   const wants = (u) => game.state.units.includes(u) && u.owner === player && !u.done && !isStructure(game, u);
   let pending = game.state.units.filter((u) => wants(u) && !u.fresh);
   const cache = new Map();
+  const refused = new Map();   // unit id -> orders the engine turned down this turn: one is planned again, a second gives the unit up
   let sight = new Set(sit.enemies.map((e) => e.id));
 
   for (let guard = 0; guard < 500 && !game.isOver; guard++) {
@@ -146,6 +147,12 @@ export function* turn(game, ctx) {
     const at = target ? [target.x, target.y] : null;
     const res = yield { type: 'order', order: c.order };
     cache.delete(unit.id);
+    if (!res.ok && !res.interrupted) {   // the board changed under a plan stillGood trusted (a route now blocked): plan from scratch once, then let the unit be
+      const n = (refused.get(unit.id) ?? 0) + 1;
+      refused.set(unit.id, n);
+      if (n > 1) pending = pending.filter((u) => u !== unit);
+      continue;
+    }
     // a move spoils no other plan (friends can be walked through; a taken tile is caught by stillGood); a fight changes what is
     // worth doing around the target, and a death changes where everyone is heading
     if (at) {

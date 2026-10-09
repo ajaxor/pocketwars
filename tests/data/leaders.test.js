@@ -311,3 +311,18 @@ test('a leader\'s units fit every shipped map: nobody skipped, none on a propert
 });
 
 test('LEGEND sanity: the fixture legend used above', () => assert.deepEqual([LEGEND.a, LEGEND.H], [{ terrain: 'base', owner: 0 }, { terrain: 'hq', owner: 0 }]));
+
+test('no exclusive unit is stranded: each one a leader could field is on some leader\'s menu or in some starting army (structures and mines come from maps and mine layers)', async () => {
+  const loadouts = await readData('loadouts.json');
+  const used = new Set();
+  for (const kit of [loadouts.default, ...Object.values(loadouts.leaders)]) {
+    for (const menu of Object.values(kit.build ?? {})) menu.forEach((id) => used.add(id));
+    for (const group of Object.values(kit.start ?? {})) group.forEach((s) => used.add(s.unit));
+    if (kit.infantry) used.add(kit.infantry);
+  }
+  const stranded = registry.unitIds.filter((id) => {
+    const def = registry.unit(id);
+    return def.exclusive && !def.attributes?.structure && !def.attributes?.mine && !used.has(id);
+  });
+  assert.deepEqual(stranded, [], 'these units can never be built: add them to a leader menu, or drop `exclusive`');
+});

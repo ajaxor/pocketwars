@@ -12,6 +12,7 @@
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { ammoOf, spendAmmo } from './ammo.js';
 import { distance, inBounds, layerIdOf, propertyAt, removeUnit, round1, snapshotUnit, terrainAt, unitAt, unitDef } from './queries.js';
+import { canSee } from './detection.js';
 import { makeUnit } from './state.js';
 
 export const mineConfigOf = (def) => attributeConfig(def, 'mine');
@@ -41,7 +42,17 @@ export function detonate(game, mine, mover) {
 /** `{ unit, range }` for a unit that lays mines, or undefined. */
 export const layConfig = (game, unit) => attributeConfig(unitDef(game, unit), 'layMines');
 
-/** Tiles where `unit`, standing on (x, y), could lay a mine now: [{ x, y }]. */
+/** How many mines `player` has laid and not yet lost (each is a unit that every board scan has to step over, so the rules cap them). */
+export const minesOf = (game, player) => game.state.units.filter((u) => u.owner === player && isMine(game, u)).length;
+
+const visibleUnitAt = (game, player, x, y) => { const u = unitAt(game, x, y); return u && canSee(game, player, u) ? u : null; };
+
+/** The unit standing on `at` that was hidden from the layer's owner when the order was given (ids in `hiddenBefore`, taken before the
+ *  layer moved: arriving next to it shows it, too late for the plan): the lay is interrupted by it instead of putting a mine there. */
+export const hiddenAt = (game, at, hiddenBefore) => { const u = unitAt(game, at.x, at.y); return u && hiddenBefore.includes(u.id) ? u : null; };
+
+/** Tiles where `unit`, standing on (x, y), could lay a mine now: [{ x, y }]. A unit the layer cannot see (a hidden submarine) does not
+ *  block the plan, so the highlighted tiles never give it away; laying there is interrupted instead (see `hiddenAt`). */
 export function layTiles(game, unit, x = unit.x, y = unit.y) {
   const cfg = layConfig(game, unit);
   if (!cfg) return [];
@@ -53,19 +64,21 @@ export function layTiles(game, unit, x = unit.x, y = unit.y) {
       const ty = y + dy;
       if (!dx && !dy) continue;
       if (Math.abs(dx) + Math.abs(dy) > cfg.range || !inBounds(game.map, tx, ty)) continue;
-      if (terrainAt(game, tx, ty).moveCost[mineDef.moveClass] == null || propertyAt(game, tx, ty) || unitAt(game, tx, ty)) continue;
+      if (terrainAt(game, tx, ty).moveCost[mineDef.moveClass] == null || propertyAt(game, tx, ty) || visibleUnitAt(game, unit.owner, tx, ty)) continue;
       out.push({ x: tx, y: ty });
     }
   }
   return out;
 }
 
-/** Why `unit`, standing on (x, y), cannot lay a mine on `at`, or null when it can: 'cannot-lay', 'bad-lay-tile', 'out-of-mines'. */
+/** Why `unit`, standing on (x, y), cannot lay a mine on `at`, or null when it can: 'cannot-lay', 'bad-lay-tile', 'out-of-mines', 'too-many-mines'. */
 export function layProblem(game, unit, x, y, at) {
   const cfg = layConfig(game, unit);
   if (!cfg) return 'cannot-lay';
   if (!at || !layTiles(game, unit, x, y).some((t) => t.x === at.x && t.y === at.y)) return 'bad-lay-tile';
   if ((ammoOf(game, unit) ?? 1) < 1) return 'out-of-mines';
+  const cap = game.registry.rules.maxMinesPerPlayer;
+  if (cap && minesOf(game, unit.owner) >= cap) return 'too-many-mines';
   return null;
 }
 

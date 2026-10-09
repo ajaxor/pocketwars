@@ -4,6 +4,7 @@
 //   settings = { mapId, funds, fog, players: [{ faction, controller, leader }, ...] }   one player entry per slot on the map
 //     fog     false takes every jammer off the map, so there is no fog of war (fog.js); true (the default) keeps the map as it is
 //     dialogue    false switches the leaders' battle dialogue off (the map gets `dialogue: false`); true (the default) keeps it
+//     computer    the id of the computer opponent's engine (src/ai/engines.js; the map gets `aiEngine`), or null/absent for the data's default
 //     startUnits  false starts every team with no units (only buildings and map structures); true (the default) keeps the starting units
 //     funds   null to keep each player's own starting funds from the map file, or a number every player starts with
 //     players the colour (faction) and who plays it ('human' or 'ai'); slots keep the map's order, so slot 0 moves first
@@ -34,6 +35,7 @@ export const defaultSkirmish = (map, leaderIds = [], starter = leaderIds[0] ?? n
   fog: true,
   startUnits: true,
   dialogue: true,
+  computer: null,
   players: map.players.map((p) => ({
     faction: p.faction,
     controller: p.controller,
@@ -62,6 +64,7 @@ export function skirmishProblems(map, registry, s) {
   if (s.fog !== undefined && typeof s.fog !== 'boolean') problems.push('fog of war must be on or off');
   if (s.startUnits !== undefined && typeof s.startUnits !== 'boolean') problems.push('starting units must be on or off');
   if (s.dialogue !== undefined && typeof s.dialogue !== 'boolean') problems.push('dialogue must be on or off');
+  if (s.computer != null && !(typeof s.computer === 'string' && s.computer)) problems.push('the computer opponent must be an engine id or the default');
   return problems;
 }
 
@@ -104,6 +107,7 @@ export function applySkirmish(map, s, registry, random = Math.random) {
     units: s.fog === false ? map.units.filter((u) => !isJammer(registry, u)) : map.units,   // no jammer, no fog
   };
   if (s.dialogue === false) set.dialogue = false;   // the battle screen keeps the leaders quiet
+  if (s.computer) set.aiEngine = s.computer;       // the engine that plays the computer teams (main.js)
   if (s.startUnits === false) {
     if (!registry) throw new Error('applySkirmish needs the registry to leave the starting units off');
     const bare = { ...set, units: set.units.filter((u) => u.owner === null || registry.unit(u.type).attributes?.structure) };   // map structures (turrets, jammers) stay

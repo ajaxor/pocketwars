@@ -191,6 +191,32 @@ test('a mine is hidden from the enemy until one of their units is next to it, an
   assert.equal(mine.done, true, 'still inert after turn start');
 });
 
+test('a hidden enemy submarine on a lay tile is not given away by the highlights; laying there is interrupted and lays nothing', () => {
+  const g = harbour([['submarine', 1, 5, 0]]);
+  const sub = first(g, 'submarine', 1);
+  g.setSubmerged?.({ unitId: sub.id, submerged: true });
+  sub.submerged = true;
+  const layer = first(g, 'mine_layer');
+  layer.x = 2;   // two tiles from the sub: the layer plans to sail up beside it and lay
+  assert.equal(canSee(g, 0, sub), false, 'the layer cannot see it');
+  assert.ok(layTiles(g, layer, 4, 0).some((t) => t.x === 5 && t.y === 0), 'its tile is offered like any free one');
+  const res = g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 5, y: 0 } } });
+  assert.equal(res.ok, true);
+  assert.equal(res.events[0].type, 'interrupt');
+  assert.equal(g.state.units.filter((u) => u.type === 'sea_mine').length, 0, 'no mine was laid');
+  assert.equal(layer.ammo, registry.unit('mine_layer').attributes.ammo.max, 'and no round was spent');
+  assert.equal(layer.done, false, 'the layer has used its move but may still act');
+});
+
+test('a player may only have rules.maxMinesPerPlayer mines out at once', () => {
+  const g = harbour();
+  const cap = registry.rules.maxMinesPerPlayer;
+  assert.ok(cap >= 1);
+  for (let i = 0; i < cap; i++) g.state.units.push({ ...first(g, 'mine_layer'), id: 900 + i, type: 'sea_mine', x: 8, y: 1 - (i % 2), done: true });
+  const layer = first(g, 'mine_layer');
+  assert.equal(g.act({ unitId: layer.id, to: { x: 4, y: 0 }, action: { type: 'lay', at: { x: 5, y: 0 } } }).error, 'too-many-mines');
+});
+
 function mined(moverType, moverAt = [1, 0], mineAt = [4, 0]) {
   const g = world(['H~~~~~~~~~~h', '............'], [[moverType, 1, ...moverAt], ['sea_mine', 0, ...mineAt]]);
   g.state.turn = 1;

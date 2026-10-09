@@ -36,7 +36,7 @@ export class SkirmishScreen {
    * @param {Document} doc
    * @param {{registry:object, maps:object[], selectedId?:string, leaders?:object[], speech?:object, onStart:(map:object, settings:object)=>void, onBack:()=>void}} o
    */
-  constructor(doc, { registry, maps, selectedId, leaders = [], speech = {}, onStart, onBack }) {
+  constructor(doc, { registry, maps, selectedId, leaders = [], speech = {}, engines = [], defaultEngine = null, onStart, onBack }) {
     this.doc = doc;
     this.registry = registry;
     this.maps = maps;
@@ -48,6 +48,8 @@ export class SkirmishScreen {
     this.quotes = new Map();   // the line each team's leader says in the selection box, drawn again whenever the colour changes
     this.map = maps.find((m) => m.id === selectedId) || maps[0];
     this.settings = { ...this.#defaults(this.map), fog: this.#fogFor(this.map) };
+    this.engines = engines;            // the computer opponents to choose between (none: the rule is not shown)
+    this.defaultEngine = defaultEngine;
     this.stale = new Set();   // the parts (preview, teams, rules) that need redrawing before they next show
     this.strips = [];   // the leader strip of each team, kept between redraws so a strip you scrolled stays where it was
 
@@ -107,9 +109,9 @@ export class SkirmishScreen {
   pick(mapId) {
     const map = this.maps.find((m) => m.id === mapId);
     if (!map || map === this.map) return;
-    const { funds, startUnits, dialogue } = this.settings;
+    const { funds, startUnits, dialogue, computer } = this.settings;
     this.map = map;
-    this.settings = { ...this.#defaults(map), funds, startUnits, dialogue, fog: this.#fogFor(map) };
+    this.settings = { ...this.#defaults(map), funds, startUnits, dialogue, computer, fog: this.#fogFor(map) };
     this.quotes.clear();
     this.#render(ALL);
   }
@@ -127,7 +129,7 @@ export class SkirmishScreen {
   /** Next: the step after (not past the last, and not while the teams have a problem). */
   advance() { if (this.step === 1 && this.problems.length) return; this.goTo(this.step + 1); }
 
-  setController(slot, controller) { this.settings.players[slot].controller = controller; this.#render('teams'); }
+  setController(slot, controller) { this.settings.players[slot].controller = controller; this.#render('teams', 'rules'); }
   /** Give a team a colour (swapping with whoever had it); each team's leader follows its colour. */
   setFaction(slot, faction) {
     this.settings = this.#byColour({ ...this.settings, players: swapFaction(this.settings.players, slot, faction) });
@@ -139,6 +141,8 @@ export class SkirmishScreen {
   setStartUnits(on) { this.settings.startUnits = on; this.#render('rules'); }
   /** The leaders talk during the battle (on) or stay silent (off). */
   setDialogue(on) { this.settings.dialogue = on; this.#render('rules'); }
+  /** Which engine plays the computer teams (an id from `engines`). */
+  setComputer(id) { this.settings.computer = id; this.#render('rules'); }
   /** Fog of war on (the map's jammers stay) or off (they are taken off the map). A map without jammers has no fog: it stays off. */
   setFog(on) {
     if (!hasJammers(this.map, this.registry)) return;
@@ -356,6 +360,13 @@ export class SkirmishScreen {
     talk.append(h(doc, 'span', 'sk-rule-name', 'Dialogue'), this.#segmented([[true, 'On'], [false, 'Off']], settings.dialogue !== false, (v) => this.setDialogue(v), 'Dialogue'),
       h(doc, 'span', 'sk-rule-note', settings.dialogue !== false ? 'The computer\'s leaders speak during the battle.' : 'Nobody speaks during the battle.'));
     this.el.rules.append(talk);
+    if (this.engines.length > 1 && settings.players.some((p) => p.controller === 'ai')) {
+      const chosen = settings.computer ?? this.defaultEngine ?? this.engines[0].id;
+      const opp = h(doc, 'div', 'sk-rule');
+      opp.append(h(doc, 'span', 'sk-rule-name', 'Computer'), this.#segmented(this.engines.map((e) => [e.id, e.name]), chosen, (v) => this.setComputer(v), 'Computer opponent'),
+        h(doc, 'span', 'sk-rule-note', this.engines.find((e) => e.id === chosen)?.description ?? ''));
+      this.el.rules.append(opp);
+    }
 
   }
 }

@@ -5,11 +5,12 @@
 //   game.build(x, y, unitType)
 //   game.setSubmerged({ unitId, submerged })   a submarine dives or surfaces for free before it moves
 //   game.deploy({ unitId, to })        a carrier (transport copter) puts a unit down, apart from its own order
+//   game.spawn({ type, owner, x, y })  a unit arrives from outside the rules (a campaign script's reinforcements): free, ready to act, not undoable
 //   game.endTurn()
 //   game.undo()
 //
 // Every mutating method returns { ok, error?, events }. `events` describe what happened (move, interrupt, detonate, dive, surface, strike,
-// capture, rebuild, heal, supply, lay, build, deploy, resupply, turnStart, eliminated, gameOver; endTurn may start with the 'strike' events of neutral
+// capture, rebuild, heal, supply, lay, build, deploy, spawn, resupply, turnStart, eliminated, gameOver; endTurn may start with the 'strike' events of neutral
 // turrets firing by themselves, marked `auto: true`) so the presentation layer can animate it without the engine
 // knowing anything about drawing.
 //
@@ -38,14 +39,14 @@ import { rebuildProblem, resolveRebuild } from './rebuild.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
 import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
-import { detonate, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
+import { detonate, hiddenAt, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
 import { attacksPerTurn } from './combat.js';
 import { canSupplyAt, resolveSupply } from './supply.js';
 import { burnFuel } from './fuel.js';
 import { buildUnit, startTurn } from './economy.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from './movement.js';
-import { facingAlong, inBounds, snapshotUnit, unitAt, unitById } from './queries.js';
-import { createState, restoreState, snapshotState } from './state.js';
+import { facingAlong, inBounds, snapshotUnit, terrainAt, unitAt, unitById } from './queries.js';
+import { createState, makeUnit, restoreState, snapshotState } from './state.js';
 import { canDive, canSubmergeAt, canSurface, divesByItself, submergibleAt, surfacesToFire } from './submerge.js';
 import { evaluateVictory } from './victory.js';
 import { isStructure, structureFire } from './structures.js';
@@ -210,7 +211,16 @@ export class Game {
     else if (action.type === 'rebuild') events.push(...resolveRebuild(this, unit));
     else if (action.type === 'heal') events.push(...resolveHeal(this, unit));
     else if (action.type === 'supply') events.push(...resolveSupply(this, unit));
-    else if (action.type === 'lay') events.push(...resolveLay(this, unit, action.at));
+    else if (action.type === 'lay') {
+      const blocker = hiddenAt(this, action.at, hiddenBefore);   // something unseen is on the tile: the lay is interrupted like a move, no mine is laid
+      if (blocker) {
+        unit.halted = { moved: !!unit.moved };
+        this.undoSnapshot = null;
+        const found = { unitId: unit.id, at: { x: unit.x, y: unit.y }, blocker: snapshotUnit(blocker) };
+        return { ok: true, events: [{ type: 'interrupt', ...found }], interrupted: found };
+      }
+      events.push(...resolveLay(this, unit, action.at));
+    }
     else if (action.type === 'attack') {
       events.push(...resolveAttack(this, unit, target));
       if (revealsWhenFiring(this, unit)) unit.revealed = true;   // muzzle flash: visible until its owner's next turn starts
@@ -274,6 +284,26 @@ export class Game {
     const events = resolveDeploy(this, carrier);
     this.touch();
     return { ok: true, events, deployed: { unitId: events[0].dropped.id } };
+  }
+
+  /**
+   * A unit arrives from outside the rules (a script's reinforcements, a test's set-up): it appears on a free tile its kind of movement
+   * can stand on, ready to act at once, for nothing. Unlike pushing onto `state.units` this keeps sight, the undo history and the
+   * events honest, so a save or an undo knows about the arrival. `owner: null` spawns a neutral structure.
+   */
+  spawn({ type, owner = this.state.turn, x, y }) {
+    if (this.isOver) return fail('game-over');
+    const def = this.registry.unitIds.includes(type) ? this.registry.unit(type) : null;
+    if (!def) return fail('unknown-unit');
+    if (!inBounds(this.map, x, y)) return fail('out-of-bounds');
+    if (unitAt(this, x, y)) return fail('tile-occupied');
+    const cost = terrainAt(this, x, y).moveCost[def.moveClass];
+    if (cost == null) return fail('bad-terrain');
+    const unit = makeUnit(this.registry, this.map, this.state.nextUnitId++, { type, owner, x, y });
+    this.state.units.push(unit);
+    this.undoSnapshot = null;
+    this.touch();
+    return { ok: true, unit, events: [{ type: 'spawn', unit: snapshotUnit(unit) }] };
   }
 
   /** Take a just-deployed unit that has not been ordered yet back into its carrier (the ammo and the turn's deploy are returned). */

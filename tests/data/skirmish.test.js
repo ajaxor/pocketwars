@@ -422,3 +422,20 @@ test('dialogue: on by default, and off puts dialogue: false on the map and survi
   screen.pick(maps.find((m) => m.id !== 'classic').id);
   assert.equal(screen.settings.dialogue, false, 'kept across maps');
 });
+
+test('computer opponent: chosen on the options step when a team is the computer, put on the map as aiEngine, and kept across maps', () => {
+  const engines = [{ id: 'strategist', name: 'Strategist', description: 'plans' }, { id: 'greedy', name: 'Greedy', description: 'simple' }];
+  const doc = new FakeDoc();
+  const s = new SkirmishScreen(doc, { registry, maps, selectedId: 'classic', engines, defaultEngine: 'strategist', onStart() {}, onBack() {} });
+  s.goTo(2);
+  const names = () => s.pages[2].find((e) => e.className === 'sk-rule-name').map((e) => e.textContent);
+  assert.ok(names().includes('Computer'), 'a team is the computer, so the choice is offered');
+  s.setComputer('greedy');
+  s.pick(four.id);
+  assert.equal(s.settings.computer, 'greedy', 'kept across maps');
+  assert.equal(applySkirmish(maps.find((m) => m.id === 'classic'), s.settings, registry).aiEngine, 'greedy');
+  assert.equal(applySkirmish(maps.find((m) => m.id === 'classic'), { ...s.settings, computer: null }, registry).aiEngine, undefined, 'null keeps the data default');
+  const solo = new SkirmishScreen(new FakeDoc(), { registry, maps, selectedId: 'classic', onStart() {}, onBack() {} });
+  solo.goTo(2);
+  assert.ok(!solo.pages[2].find((e) => e.className === 'sk-rule-name').some((e) => e.textContent === 'Computer'), 'no engines offered, no rule');
+});

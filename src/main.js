@@ -5,7 +5,8 @@
 //   boot({onQuit})    onQuit() is called when the player leaves to the title screen; resolves once the data is loaded
 //   ?map=<id>         URL parameter to pick another map from data/maps/index.json as the skirmish page's first pick
 //
-// boot() resolves to { registry, map, maps, defaultMapId, campaign, play(map) }:
+// boot() resolves to { registry, map, maps, defaultMapId, campaign, engines, defaultEngine, play(map) }:
+//   engines / defaultEngine   the computer opponents on offer ([{ id, name, description }]) and the one the data plays by default
 //   campaign          the parsed campaign data (data/campaign.json), or null if it could not be loaded
 //   map / maps        the default map (the skirmish page's first pick) / every map in the index (parsed, in index order)
 //   play(map)         throw away the running game, if any, and start a fresh one on `map` (a GameMap, e.g. from applySkirmish)
@@ -15,6 +16,7 @@ import { loadCampaign } from './data/campaign.js';
 import { parseMap } from './data/map-format.js';
 import { Game } from './engine/game.js';
 import { loadHistory } from './ai/history.js';
+import { ENGINES, engineIds } from './ai/engines.js';
 import { Session } from './ui/session.js';
 import { Talker } from './campaign/speech.js';
 import { setFactions } from './render/portrait-art.js';
@@ -56,13 +58,16 @@ export async function boot({ onQuit } = {}) {
     const game = new Game(registry, current);
     // the computer players remember which of their game plans have worked against this player before (src/ai/history.js)
     const history = loadHistory();
-    game.aiSetup = current.players.map((p) => (p.controller === 'ai' ? { history } : null));
+    const engine = current.aiEngine && ENGINES[current.aiEngine] ? current.aiEngine : undefined;   // a skirmish may choose the opponent; unknown ids fall back to the default
+    game.aiSetup = current.players.map((p) => (p.controller === 'ai' ? { history, engine } : null));
     session = new Session(game, { canvas, doc: document, restart: launch, quit, leaderName, voices: current.dialogue === false ? null : voices });
     session.start();
   };
   document.addEventListener('gesturestart', (e) => e.preventDefault());
   return {
     registry, map, maps, defaultMapId, campaign,
+    engines: engineIds.map((id) => ({ id, name: ENGINES[id].name, description: ENGINES[id].description })),
+    defaultEngine: registry.ai.default,
     play(next) { current = next; launch(); },
   };
 }

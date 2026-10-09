@@ -2,6 +2,7 @@
   "maxHp": 10,
   "ambushMultiplier": 1.5,
   "carrierCargoRate": 0.5,
+  "maxMinesPerPlayer": 8,
   "repairCostRate": 1,
   "structureDamage": { "siege": 1.5, "other": 0.25 },
   "neutralColor": "#b9b9b9",
