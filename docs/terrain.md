@@ -12,8 +12,8 @@ a map without one is drawn in the default (`temperate`).
 | ruins | Ironvale, Solace | ash | deadwood | slag heap |
 | islands | Tidehaven | sand | palm grove | volcanic peak |
 
-The pairing is provisional (the campaign will lean on it through `registry.homeTileset(faction)`): nine armies over six biomes, so three biomes have one army
-for now. The urban, royal gardens and highlands tilesets were removed in October 2026. Skirmish maps showing the biomes: Ridgeback and Garden Maze (temperate),
+The pairing is provisional (the campaign will lean on it through `registry.homeTileset(faction)`): nine armies over five biomes, so islands has one army
+for now. The urban, royal gardens, highlands and jungle tilesets were removed in October 2026. Skirmish maps showing the biomes: Ridgeback and Garden Maze (temperate),
 Whiteout and Frozen Canyon (tundra), Dune Sea and Skyline Pass (desert), Mudslide (ruins), Burnt Offering (ruins), Atoll (islands). The title screen's **Terrain** link
 opens a gallery of every tileset.
 
