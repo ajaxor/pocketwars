@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { readData } from '../helpers/node-io.js';
 import { FakeDoc } from '../helpers/fake-dom.js';
 import { loadRegistry } from '../../src/data/loader.js';
-import { DRIFT, FIELD_SIZE, MenuBackdrop, generateField, paintField } from '../../src/render/menu-backdrop.js';
+import { DRIFT, FIELD_SIZE, MenuBackdrop, generateField, paintField, paintUnits } from '../../src/render/menu-backdrop.js';
 
 const registry = await loadRegistry(readData);
 
@@ -24,6 +24,18 @@ test('a field is a square grid of known terrain, tilesets and ground', () => {
     for (const id of new Set(f.tileset.flat())) assert.ok(registry.tilesetIds.includes(id), `tileset ${id}`);
     for (const id of new Set(f.ground.flat())) assert.ok(registry.ground[id], `ground ${id}`);
   }
+});
+
+test('the whole field is one biome, and different seeds pick different ones', () => {
+  const chosen = new Set();
+  for (const seed of SEEDS) {
+    const f = generateField(registry, seeded(seed));
+    const sets = new Set(f.tileset.flat());
+    assert.equal(sets.size, 1, `seed ${seed}: one tileset, not ${[...sets]}`);
+    assert.equal(new Set(f.ground.flat()).size, 1, 'and one ground');
+    chosen.add([...sets][0]);
+  }
+  assert.ok(chosen.size >= 3, `several biomes come up: ${[...chosen]}`);
 });
 
 test('the same seed gives the same field, and different seeds give different ones', () => {
@@ -126,6 +138,16 @@ test('paintField draws the terrain layer and then every unit without crashing', 
   assert.ok(calls.includes('drawImage') || calls.includes('save'), 'the units were drawn');
 });
 
+test('paintField can leave the units out, and paintUnits draws just them', () => {
+  const f = generateField(registry, seeded(2));
+  const all = recorder(), bare = recorder(), only = recorder();
+  paintField(all.ctx, f, registry, 32);
+  paintField(bare.ctx, f, registry, 32, { units: false });
+  paintUnits(only.ctx, f, registry, 32, 500);
+  assert.ok(bare.calls.length < all.calls.length, 'the units add drawing');
+  assert.ok(only.calls.length > 0 && only.calls.length < all.calls.length);
+});
+
 // ---- the scrolling canvas ------------------------------------------------------------------------------------------------------------------
 /** A document whose canvases have a recording 2D context, and a window with a manual animation clock. */
 function stage() {
@@ -182,6 +204,20 @@ test('the picture is zoomed in: a tile is at least 64 CSS pixels, so a phone see
   assert.ok(tileCss >= 64, `a tile is ${tileCss}px`);
   assert.ok(win.innerHeight / tileCss < 12, 'under a dozen tiles from top to bottom');
   assert.ok(b.world.width <= 24 * 112, 'and the painted picture stays small');
+});
+
+test('the units are drawn afresh on every frame, so they animate, and the terrain picture is not touched', () => {
+  const { doc, win, made, timers, tick } = stage();
+  const b = new MenuBackdrop(doc, registry, { random: seeded(8), win }).start();
+  timers.shift()();
+  tick(0); tick(100);
+  const calls = made[0].calls;
+  const before = calls.length;
+  tick(200);
+  const frame = calls.slice(before);
+  assert.ok(frame.includes('drawImage'), 'the terrain is copied over');
+  assert.ok(frame.filter((c) => c === 'save').length > 1, 'and the units are drawn on top of it');
+  assert.ok(b.clock > 0, 'the animation clock runs');
 });
 
 test('pause stops the drift and resume carries on without a jump', () => {

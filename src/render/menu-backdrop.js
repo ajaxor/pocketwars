@@ -1,11 +1,13 @@
 // The main menu's moving background: a random battlefield, drawn with the game's own terrain and unit art, drifting diagonally.
 //
 // The battlefield is generated on a TORUS (every noise field and road wraps round the edges), so the picture tiles with no seam
-// and can scroll for ever. It is split into a few regions, each in a random tileset (grass, snow, sand...), with lakes, woods,
-// mountains, a couple of roads, scattered buildings and clashes: small groups of two colours' units facing each other.
+// and can scroll for ever. It is one biome, a tileset chosen at random (grass, snow, sand...), with lakes, woods, mountains, a couple
+// of roads, scattered buildings and clashes: small groups of two colours' units facing each other. The units are animated.
 //
 //   generateField(registry, random?, size?)   -> a plain-data field: { size, terrain, tileset, ground, owners, units, teams }
-//   paintField(g, field, registry, S)         draw a field with S pixels a tile (terrain first, then the units, back to front)
+//   paintField(g, field, registry, S, opts)   draw a field with S pixels a tile (terrain first, then the units, back to front);
+//                                             opts.units false leaves the units out, opts.now sets the animation clock
+//   paintUnits(g, field, registry, S, now)    just the units, for drawing them afresh every frame over a painted terrain
 //   new MenuBackdrop(doc, registry, opts)     the canvas that does both and scrolls; .canvas goes on the page, .start() and .stop()
 //
 // generateField needs no canvas, so tests can check what it makes. The class does nothing where there is no 2D context (tests).
@@ -19,6 +21,8 @@ export const FIELD_SIZE = 24;
 export const DRIFT = 26;
 /** The most device pixels per CSS pixel the picture is drawn with: it is dimmed and drifting, so more would only cost memory. */
 const MAX_DPR = 1.5;
+/** The shortest time between two drawn frames, in ms (about 30 a second). */
+const FRAME_MS = 30;
 
 const wrap = (v, n) => ((v % n) + n) % n;
 const smooth = (t) => t * t * (3 - 2 * t);
@@ -71,11 +75,9 @@ export function generateField(registry, random = Math.random, size = FIELD_SIZE)
   const terrainId = (id) => (has(id) ? id : 'plain');
   const grid = (fill) => Array.from({ length: size }, (_, y) => Array.from({ length: size }, (_, x) => fill(x, y)));
 
-  // regions: the nearest of a few random points (on the torus) decides each tile's tileset and the ground under it
-  const sets = registry.tilesetIds?.length ? shuffled(registry.tilesetIds, random) : [null];
-  const seeds = Array.from({ length: 5 }, (_, i) => ({ x: Math.floor(random() * size), y: Math.floor(random() * size), tileset: sets[i % sets.length] }));
-  const regionAt = (x, y) => { let best = seeds[0], bd = Infinity; for (const s of seeds) { const d = ring(x, s.x, size) ** 2 + ring(y, s.y, size) ** 2; if (d < bd) { bd = d; best = s; } } return best; };
-  const tileset = grid((x, y) => regionAt(x, y).tileset);
+  // one biome for the whole picture: a tileset picked at random, and the ground that goes with it
+  const biome = registry.tilesetIds?.length ? pick(registry.tilesetIds, random) : null;
+  const tileset = grid(() => biome);
   const ground = grid((x, y) => registry.tilesetDef?.(tileset[y][x])?.ground ?? registry.defaultGround ?? null);
 
   // land and water, woods, mountains and rough ground, each by thresholds on smooth noise so the shares are the same for every seed
@@ -183,8 +185,8 @@ export function generateField(registry, random = Math.random, size = FIELD_SIZE)
   return { size, terrain, tileset, ground, owners, units, teams };
 }
 
-/** Draw `field` with `S` pixels a tile: the terrain layer, then each unit, back to front. */
-export function paintField(g, field, registry, S) {
+/** Draw `field` with `S` pixels a tile: the terrain layer, then each unit, back to front (`units: false` leaves them out; `now` is the animation clock in ms). */
+export function paintField(g, field, registry, S, { units = true, now = 0 } = {}) {
   const { size } = field;
   const skinAt = (x, y) => registry.skin(field.tileset[y][x], field.terrain[y][x]);
   const colorOf = (faction) => (faction ? registry.faction(faction).color : registry.rules.neutralColor);
@@ -193,10 +195,15 @@ export function paintField(g, field, registry, S) {
     ownerColorAt: (x, y) => (skinAt(x, y).attributes.property ? colorOf(field.owners[y][x]) : null),
     groundAt: (x, y) => registry.groundDef(field.ground[y][x]),
   });
+  if (units) paintUnits(g, field, registry, S, now);
+}
+
+/** Draw the field's units (back to front) at animation time `now` ms, with `S` pixels a tile. */
+export function paintUnits(g, field, registry, S, now = 0) {
   for (const u of field.units) {
     const def = registry.unit(u.type), f = registry.faction(u.faction);
     drawUnit(g, { type: u.type, x: u.x, y: u.y, hp: 10 }, {
-      def, colors: { color: f.color, dark: f.dark }, px: u.x * S, py: u.y * S, size: S, now: 0, animate: true, moving: false, showHp: false,
+      def, colors: { color: f.color, dark: f.dark }, px: u.x * S, py: u.y * S, size: S, now, animate: true, moving: false, showHp: false,
       face: def.render.facing === false ? 1 : u.face, onWater: !!registry.terrain[field.terrain[u.y][u.x]]?.render?.water,
     });
   }
@@ -228,7 +235,8 @@ export class MenuBackdrop {
     this.timer = null;
     this.stopped = false;
     this.paused = false;
-    this.onResize = () => { this.#fit(); this.#draw(); };
+    this.onResize = () => { this.#fit(); this.#draw(this.clock); };
+    this.clock = 0;          // the animation clock, ms
   }
 
   start() {
@@ -270,12 +278,13 @@ export class MenuBackdrop {
     const wg = world.getContext?.('2d');
     if (!wg) return;
     world.width = world.height = this.field.size * tile;
-    paintField(wg, this.field, registry, tile);
+    paintField(wg, this.field, registry, tile, { units: false });   // the terrain is painted once; the units are drawn afresh every frame so they can move
+    this.tile = tile;
     this.world = world;
     this.#fit();
     this.canvas.classList.add('is-on');
     this.win.addEventListener?.('resize', this.onResize);
-    this.#draw();
+    this.#draw(0);
     if (!reducedMotion() && this.raf && !this.paused) this.frame = this.raf((t) => this.#tick(t));
   }
 
@@ -288,19 +297,38 @@ export class MenuBackdrop {
 
   #tick(now) {
     if (this.stopped || this.paused) return;
+    if (this.last != null && now - this.last < FRAME_MS) { this.frame = this.raf((t) => this.#tick(t)); return; }   // no more than about 30 frames a second: it is only a backdrop, and the animated units cost more than the terrain
     const dt = this.last == null ? 0 : Math.min(.1, (now - this.last) / 1000);
     this.last = now;
     this.pos += DRIFT * this.dpr * dt;
-    this.#draw();
+    this.clock += dt * 1000;   // the units' animation runs on the time the menu has been showing, not the page's clock, so it carries on smoothly after a pause
+    this.#draw(this.clock);
     this.frame = this.raf((t) => this.#tick(t));
   }
 
-  /** Lay the picture over the canvas, copies side by side, shifted by how far it has drifted. */
-  #draw() {
-    const { g, world, canvas } = this;
+  /** Lay the picture over the canvas, copies side by side, shifted by how far it has drifted, and the animated units over each copy. */
+  #draw(now = 0) {
+    const { g, world, canvas, field } = this;
     if (!g || !world) return;
     const side = Math.max(1, Math.round(world.width * this.scale));
     const shift = Math.floor(this.pos) % side;
-    for (let y = -shift; y < canvas.height; y += side) for (let x = -shift; x < canvas.width; x += side) g.drawImage(world, x, y, side, side);
+    const k = side / world.width, cell = this.tile * k;
+    for (let y = -shift; y < canvas.height; y += side) {
+      for (let x = -shift; x < canvas.width; x += side) {
+        g.drawImage(world, x, y, side, side);
+        g.save();
+        g.translate(x, y);
+        g.scale(k, k);
+        this.#units(now, x, y, cell);
+        g.restore();
+      }
+    }
+  }
+
+  /** The units of one copy of the picture (placed at x, y on the canvas), leaving out any that are off screen. */
+  #units(now, ox, oy, cell) {
+    const { g, canvas, field, registry, tile } = this;
+    const live = field.units.filter((u) => ox + (u.x + 1) * cell > 0 && ox + u.x * cell < canvas.width && oy + (u.y + 1) * cell > 0 && oy + u.y * cell < canvas.height);
+    if (live.length) paintUnits(g, { ...field, units: live }, registry, tile, now);
   }
 }
