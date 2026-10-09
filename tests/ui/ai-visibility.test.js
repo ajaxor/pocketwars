@@ -57,12 +57,10 @@ test('a move of a unit the human cannot see is hidden; one it saw before the ord
 test('a submarine under the water nobody watches neither dives nor surfaces on screen', () => {
   const g = game(['A' + '.'.repeat(11) + 'B', '~'.repeat(13)], [u('soldier', 0, 1, 0), u('submarine', 1, 9, 1)]);
   const sub = g.state.units.find((v) => v.type === 'submarine');
-  sub.submerged = true;
-  g.touch();
+  g.edit(() => { sub.submerged = true; });
   const surface = { type: 'surface', unit: { id: sub.id } };
   assert.equal(visibleEvents(g, 0, [surface]).length, 0, 'unseen, so no animation gives it away');
   assert.equal(visibleEvents(g, 0, [surface], true).length, 1, 'a sub the human could see before the order is shown coming up');
-  sub.x = 1; sub.y = 1;   // right next to the human's soldier: noticed
-  g.touch();
+  g.edit(() => { sub.x = 1; sub.y = 1; });   // right next to the human's soldier: noticed
   assert.equal(visibleEvents(g, 0, [{ type: 'dive', unit: { id: sub.id } }]).length, 1);
 });

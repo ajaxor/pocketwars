@@ -15,14 +15,14 @@ import { ammoOf } from '../../engine/ammo.js';
 import { deployConfig, deployCost } from '../../engine/deploy.js';
 import { fuelHomes, fuelOf, usesFuel } from '../../engine/fuel.js';
 import { supplyConfig } from '../../engine/supply.js';
-import { deployedType, distance, inBounds, terrainAt, unitDef } from '../../engine/queries.js';
+import { deployedType, distance, inBounds, terrainAt, terrainIdAt, unitDef } from '../../engine/queries.js';
 import { isStructure } from '../../engine/structures.js';
 import { ruinAt } from '../../engine/rebuild.js';
 import { areaAt, areas, gapTo, inRangeOf } from './analysis.js';
 import { matchup, reachOf, roles } from './knowledge.js';
 
 const W = (game) => game.map.width;
-const passable = (game, mc, x, y) => inBounds(game.map, x, y) && game.registry.terrainDef(game.map.terrain[y][x]).moveCost[mc] != null;
+const passable = (game, mc, x, y) => inBounds(game.map, x, y) && game.registry.terrainDef(terrainIdAt(game, x, y)).moveCost[mc] != null;
 const isHq = (p) => hasAttribute(p.terrain, 'victoryOnCapture');
 
 /** The landmasses (for `mc`) a unit at (x, y) is on or right next to (a unit just dropped on the water's edge, a ship at its shipyard). */

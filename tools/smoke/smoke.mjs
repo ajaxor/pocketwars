@@ -168,6 +168,29 @@ async function editor(page, errors, size) {
   check(`${size}: the editor threw nothing`, errors.length === 0, errors.join(' | '));
 }
 
+async function editorPaint(page, errors, size) {
+  // drawing really works: pick a palette item, tap the board, Undo lights up; Undo puts the board back and Redo brings the change again
+  await openTitle(page);
+  await page.click('.title-editor');
+  await page.waitForSelector('.ed-head');
+  await page.waitForTimeout(600);   // the camera fits the board
+  const undo = page.locator('button', { hasText: /^\s*Undo\s*$/ }).first();
+  const redo = page.locator('button', { hasText: /^\s*Redo\s*$/ }).first();
+  const items = page.locator('.ed-item');
+  check(`${size}: the editor palette lists things to paint`, (await items.count()) > 3);
+  await items.nth(3).click();
+  const box = await page.locator('canvas.ed-canvas').boundingBox();
+  const tap = (p) => (SIZES[size].hasTouch ? page.touchscreen.tap(p.x, p.y) : page.mouse.click(p.x, p.y));
+  check(`${size}: nothing to undo before the first stroke`, await undo.isDisabled());
+  await tap({ x: box.x + box.width * .5, y: box.y + box.height * .5 });
+  await page.waitForTimeout(300);
+  check(`${size}: a tap on the board paints (Undo is available)`, await undo.isEnabled());
+  await shot(page, `${size}-editor-painted`);
+  await undo.click();
+  check(`${size}: Undo takes the stroke back, Redo is then available`, (await undo.isDisabled()) && (await redo.isEnabled()));
+  check(`${size}: editor painting threw nothing`, errors.length === 0, errors.join(' | '));
+}
+
 async function campaign(page, errors, size) {
   await openTitle(page);
   await page.click('.title-campaign');
@@ -183,7 +206,7 @@ async function campaign(page, errors, size) {
   check(`${size}: the campaign threw nothing`, errors.length === 0, errors.join(' | '));
 }
 
-const CHECKS = { title, galleries, skirmishPages, editor, campaign, battle, fogBattle, tapFactory };
+const CHECKS = { title, galleries, skirmishPages, editor, editorPaint, campaign, battle, fogBattle, tapFactory };
 
 // ---- run ----------------------------------------------------------------------------------------------------------------------
 try {

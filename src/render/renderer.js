@@ -214,12 +214,12 @@ export class Renderer {
     const [dx, dy] = effects.unitOffset(u.id, now, S);
     const acted = u.done && u.owner === game.state.turn && !isMine(game, u);   // a mine is always `done`, but it is not spent
     const cx = Math.floor((base[0] + S / 2) / S), cy = Math.floor((base[1] + S / 2) / S);   // the tile under the unit's centre, even mid-slide
-    const onWater = !dying && !!game.registry.terrainDef(game.map.terrain[Math.min(game.map.height - 1, Math.max(0, cy))]?.[Math.min(game.map.width - 1, Math.max(0, cx))])?.render.water;
+    const onWater = !dying && !!game.registry.terrainDef(terrainIdAt(game, Math.min(game.map.width - 1, Math.max(0, cx)), Math.min(game.map.height - 1, Math.max(0, cy))))?.render.water;
     if (arriving) { g.save(); g.beginPath(); g.rect(0, 0, game.map.width * S, game.map.height * S); g.clip(); }   // a unit driving in from off the map is cut off at the map's edge
     drawUnit(g, { type: u.type, x: lp.x, y: lp.y, hp: dying ? u.hp : effects.displayHp(u, now) }, {
       face: game.registry.unit(u.type).render.facing === false ? 1 : this.facingOf(u, view, now), submerged: dive, hidden: !dying && isHidden(game, u), exposed: !dying && isHidden(game, u) && isExposed(game, u, this.viewer),
       def: game.registry.unit(u.type), colors: this.unitColorsOf(u.owner), px: base[0] + dx, py: base[1] + dy,
-      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(game.map.terrain[u.y][u.x]).render.water),
+      size: S, now, animate: dying || !acted || moving, moving, alpha, showHp: true, onWater: onWater || (dying && !!game.registry.terrainDef(terrainIdAt(game, u.x, u.y)).render.water),
       ammo: dying ? null : ammoLevel(game, u),
       fuel: dying ? null : fuelLevel(game, u),   // drawUnit only draws it for 'low' and 'empty'
     });
@@ -238,7 +238,7 @@ export class Renderer {
       if (animator.current !== null && animator.current.unitId === u.id) continue;
       if (this.arrivals?.has(u.id)) continue;
       const { x, y } = this.logicalPos(u, view);
-      if (u.owner !== null && state.owners[y][x] === u.owner && game.registry.terrainDef(map.terrain[y][x]).attributes.property) out.add(tileIndex(map, x, y));
+      if (u.owner !== null && state.owners[y][x] === u.owner && game.registry.terrainDef(terrainIdAt(game, x, y)).attributes.property) out.add(tileIndex(map, x, y));
     }
     return out;
   }
@@ -261,11 +261,17 @@ export class Renderer {
     if (f.from !== f.to && now - f.t0 >= FOG_FADE) f.from = f.to;   // the fade is over: from now on it is just the new fog
     const t = f.from === f.to ? 1 : Math.min(1, (now - f.t0) / FOG_FADE);
     const ease = t * t * (3 - 2 * t);
-    const draw = (sets, paint) => {
+    // the steady fog (no fade running) is the same picture every frame until the sight, the camera range or the tile size changes
+    const steady = f.from === f.to;
+    const key = `${seen.x0},${seen.y0},${seen.x1},${seen.y1},${this.S}`;
+    if (!this.fogPaths || this.fogPaths.frame !== f || this.fogPaths.key !== key) this.fogPaths = { frame: f, key, byLayer: new Map() };
+    const draw = (sets, paint, layer) => {
       const { from, to } = sets;
       const both = (k) => from[k] && to[k], into = (k) => !from[k] && to[k], out = (k) => from[k] && !to[k];
       const any = (k) => from[k] || to[k];
-      paint(this.fogShape(seen, both, any, sets.rim), 1);
+      let main = steady ? this.fogPaths.byLayer.get(layer) : null;
+      if (!main) { main = this.fogShape(seen, both, any, sets.rim); if (steady) this.fogPaths.byLayer.set(layer, main); }
+      paint(main, 1);
       if (ease < 1) {
         paint(this.fogShape(seen, into, any, sets.rim, both), ease);
         paint(this.fogShape(seen, out, any, sets.rim, both), 1 - ease);
@@ -276,10 +282,10 @@ export class Renderer {
       g.globalAlpha = a;
       g.globalCompositeOperation = 'saturation'; g.fillStyle = '#808080'; g.fill(path);   // a grey source drains the colour out of what is under it
       g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(14,18,28,.45)'; g.fill(path);
-    });
+    }, 'grey');
     // the black stops short of ground in plain sight (in sight before and after: grey in neither)
     const open = (k) => !f.from.grey[k] && !f.to.grey[k];
-    draw({ from: f.from.black, to: f.to.black, rim: open }, (path, a) => { g.globalAlpha = a; g.fillStyle = '#07090d'; g.fill(path); });
+    draw({ from: f.from.black, to: f.to.black, rim: open }, (path, a) => { g.globalAlpha = a; g.fillStyle = '#07090d'; g.fill(path); }, 'black');
     g.restore();
   }
 

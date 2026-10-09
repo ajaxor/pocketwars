@@ -1,6 +1,7 @@
 // Regenerates tests/data/damage-baseline.json from the CURRENT data. Run after deliberately retuning units or weapons:
 //   node tools/regen-damage-baseline.mjs
 // The cases (who attacks whom, at what HP, on what terrain) are kept; only the expected damage is recomputed.
+//   node tools/regen-damage-baseline.mjs --extend   first adds cases for every unit that has none yet (against a fixed set of defenders)
 import { readFileSync, writeFileSync } from 'node:fs';
 import { readData } from '../tests/helpers/node-io.js';
 import { loadRegistry, loadMap } from '../src/data/loader.js';
@@ -12,6 +13,16 @@ const baseline = JSON.parse(readFileSync(file, 'utf8'));
 const registry = await loadRegistry(readData);
 const map = await loadMap(readData, registry, 'classic');
 const game = new Game(registry, map);
+const EXTEND_DEFENDERS = ['soldier', 'tank', 'artillery', 'copter', 'destroyer', 'submarine'];
+if (process.argv.includes('--extend')) {
+  const known = new Set(baseline.cases.map((c) => c.a));
+  for (const id of registry.unitIds) {
+    const def = registry.unit(id);
+    if (known.has(id) || def.attributes.structure || def.attributes.mine || !def.weapons.length) continue;
+    for (const d of EXTEND_DEFENDERS) baseline.cases.push({ a: id, d, t: 'plain', ahp: 10, dhp: 10, dmg: 0 });
+    baseline.cases.push({ a: id, d: 'tank', t: 'forest', ahp: 5, dhp: 10, dmg: 0 });
+  }
+}
 const TILE = { plain: [0, 2], forest: [1, 0], mountain: [0, 0], road: [4, 2], city: [2, 1], hq: [5, 0] };
 
 let changed = 0;

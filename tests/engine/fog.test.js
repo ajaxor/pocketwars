@@ -127,3 +127,11 @@ test('the AI plans around enemies it would not see in fog: it is never fogged', 
   const order = chooseOrder(g, unitAt(g, 4, 0));
   assert.equal(order.action.type, 'attack');
 });
+
+test('game.edit changes the state and refreshes sight in one step', () => {
+  const g = game(['A..........B'], [u('recon', 0, 1, 0), u('soldier', 0, 0, 0), u('soldier', 1, 11, 0), u('jammer', null, 10, 0)]);
+  assert.equal(tileVisible(g, 0, 5, 0), true);
+  const out = g.edit((s) => { s.units = s.units.filter((x) => x.type !== 'recon'); return 'done'; });
+  assert.equal(out, 'done');
+  assert.equal(tileVisible(g, 0, 5, 0), false);
+});

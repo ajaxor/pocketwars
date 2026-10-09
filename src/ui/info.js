@@ -6,7 +6,7 @@ import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } fr
 import { ammoConfig, ammoOf } from '../engine/ammo.js';
 import { fuelConfig, fuelOf } from '../engine/fuel.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
-import { factionOf, layerInfo, ownerAt, propertyAt, skinAt, terrainAt, unitCost, unitDef } from '../engine/queries.js';
+import { factionOf, isInertDef, layerInfo, ownerAt, propertyAt, skinAt, terrainAt, unitCost, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 const MOVE_LABELS = { foot: 'Foot', wheels: 'Wheels', tread: 'Treads', air: 'Air', naval: 'Naval', amphibious: 'Amphibious', hover: 'Hover', amphibious_tread: 'Amphibious tread' };
@@ -89,7 +89,7 @@ export function unitInfo(game, unit, { at = unit, attacker = null, attackerAt = 
     ammo: ammoConfig(game, unit) ? { now: ammoOf(game, unit), max: ammoConfig(game, unit).max, low: ammoConfig(game, unit).low } : null,
     fuel: fuelConfig(game, unit) ? { now: fuelOf(game, unit), max: fuelConfig(game, unit).max, low: fuelConfig(game, unit).low } : null,
     fresh: !!unit.fresh && unit.owner === game.state.turn,
-    acted: !!unit.done && unit.owner === game.state.turn && !def.attributes.mine,
+    acted: !!unit.done && unit.owner === game.state.turn && !isInertDef(def),
     cover: terrainStars(game, where),
     capture: unit.capture && prop ? { progress: unit.capture, needed: prop.capturePoints } : null,
     forecast: attacker ? calcDamage(game, attacker, where, attackerAt) : null,

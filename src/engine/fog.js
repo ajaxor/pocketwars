@@ -19,7 +19,7 @@
 // AI-turn animations, interrupted moves) respects fog too. An order that brings a tile into sight cannot be undone (game.js).
 //
 // Visibility is cached per game and per player, keyed on `game.revision` (bumped by every Game method that changes the state). Code that
-// edits the state directly must call `game.touch()` afterwards.
+// edits the state directly goes through `game.edit(fn)` (or calls `game.touch()` afterwards).
 
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { tilesBetween } from './sight.js';

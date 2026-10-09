@@ -218,7 +218,7 @@ export class Session {
   // ---- the opening and scripted reinforcements ---------------------------------------------------------------------------------------
   /**
    * Bring `units` (game units that already exist) onto the map from off screen, several at once, and resolve when the last has arrived.
-   * They are drawn on their way in; the game state is not touched. A campaign script spawns its reinforcements and calls this.
+   * They are drawn on their way in; the game state is not touched. A campaign script uses `callIn`, which spawns them first.
    *   from  'left' | 'right' | 'top' | 'bottom' to choose the edge, or (unit) => [[x, y], ...] for a path of your own (tiles, may start
    *         off the map and may have waypoints); by default each comes from the nearest edge it can drive in from without turning round
    */
@@ -226,6 +226,20 @@ export class Session {
     return new Promise((resolve) => {
       this.arrivals.enter(planEntrances(units, this.renderer.viewBounds(), { from, gap, msPerTile }), this.#now(), resolve);
     });
+  }
+
+  /**
+   * Reinforcements a script calls in: each `{ type, owner, x, y }` is spawned through the game (so sight, undo and saves know about it),
+   * then driven in from off screen like `reinforce`. Specs the game refuses (an occupied tile) are skipped; resolves with the units that came.
+   */
+  async callIn(specs, options) {
+    const units = [];
+    for (const spec of specs) {
+      const res = this.game.spawn(spec);
+      if (res.ok) units.push(res.unit);
+    }
+    if (units.length) await this.reinforce(units, options);
+    return units;
   }
 
   /** The start of a battle: the human players' units come out of their buildings while the leaders say their opening lines. */

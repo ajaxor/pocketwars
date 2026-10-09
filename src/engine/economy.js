@@ -4,7 +4,7 @@ import { attributeConfig } from './attributes.js';
 import { isHidden } from './detection.js';
 import { refuelAtTurnStart } from './fuel.js';
 import { healAtTurnStart } from './heal.js';
-import { costFor, distance, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, terrainIdAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
+import { costFor, distance, isInertDef, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, terrainIdAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -55,7 +55,7 @@ export function startTurn(game, player) {
   const repaired = [];
   for (const u of state.units) {
     if (u.owner !== player) continue;
-    u.done = !!unitDef(game, u).attributes.mine;   // a mine never acts
+    u.done = isInertDef(unitDef(game, u));   // a mine never acts
     u.halted = null;
     delete u.attacks;
     delete u.fresh;
@@ -79,7 +79,7 @@ export function startTurn(game, player) {
   for (const u of state.units) if (u.owner === player) delete u.revealed;
   for (const u of state.units) {   // a unit that begins its turn hidden (cloaked, submerged) strikes with the ambush bonus this turn
     if (u.owner !== player) continue;
-    if (isHidden(game, u) && !unitDef(game, u).attributes.mine) u.ambush = true; else delete u.ambush;
+    if (isHidden(game, u) && !isInertDef(unitDef(game, u))) u.ambush = true; else delete u.ambush;
   }
   const healed = healAtTurnStart(game, player);
   const refuelled = refuelAtTurnStart(game, player);

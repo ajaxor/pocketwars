@@ -25,7 +25,7 @@
 
 import { initialAmmo } from './ammo.js';
 import { initialFuel } from './fuel.js';
-import { facingToCentre } from './queries.js';
+import { facingToCentre, isInertDef } from './queries.js';
 import { wallStructures } from './structures.js';
 
 /**
@@ -40,7 +40,7 @@ export function makeUnit(registry, map, id, { type, owner, x, y, hp, done = fals
   const hiddenLayer = registry.rules.layers[def.layer]?.hidden === true;   // a hunter sub or a mine lives under water for good
   const under = hiddenLayer || (!!dive?.auto && !!registry.terrainDef(map.terrain[y][x]).attributes?.submergible);
   return {
-    id, type, owner, x, y, hp: hp ?? registry.rules.maxHp, done: done || !!def.attributes?.mine, capture: 0, submerged: under, halted: null, facing: facingToCentre(map, x),
+    id, type, owner, x, y, hp: hp ?? registry.rules.maxHp, done: done || isInertDef(def), capture: 0, submerged: under, halted: null, facing: facingToCentre(map, x),
     ...(fresh && { fresh: true }), ...(ammo !== undefined && { ammo }), ...(fuel !== undefined && { fuel }),
   };
 }

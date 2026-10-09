@@ -21,6 +21,8 @@ export const ownerAt = (game, x, y) => game.state.owners[y][x];
 export const removeUnit = (game, unit) => { game.state.units = game.state.units.filter((u) => u !== unit); };
 
 /** Plain copy of the fields the presentation layer needs, safe to keep after the unit changes or dies. */
+/** A unit that never acts and is never shown as spent: a mine. The one place that says so (state, turn start, ambush, the info card). */
+export const isInertDef = (def) => !!def.attributes?.mine;
 export const snapshotUnit = (u) => ({ id: u.id, type: u.type, owner: u.owner, x: u.x, y: u.y, hp: u.hp, submerged: !!u.submerged });
 
 /** The `property` attribute config of the terrain at (x, y), or null when the tile is not a property. */

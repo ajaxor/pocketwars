@@ -73,6 +73,13 @@ export class Game {
     explore(this);
   }
 
+  /** Change the state from outside the engine (a test, a campaign script) without forgetting `touch`: `fn(state)` runs, then the sight caches are dropped. Returns what `fn` returns. */
+  edit(fn) {
+    const result = fn(this.state);
+    this.touch();
+    return result;
+  }
+
   get currentPlayer() { return this.state.turn; }
   get isOver() { return this.state.winner !== null; }
   controllerOf(player) { return this.map.players[player].controller; }
