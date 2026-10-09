@@ -26,6 +26,7 @@ import { canSee, isExposed, isHidden } from '../engine/detection.js';
 import { isMine } from '../engine/mines.js';
 import { facingAlong, skinAt, terrainAt, terrainIdAt, tileIndex, unitById } from '../engine/queries.js';
 import { drawTerrainLayer, faceRect } from './terrain-layer.js';
+import { outlineLoops, tracePath } from './tile-outline.js';
 import { drawWalls } from './walls.js';
 import { isFogged, rememberedStructures, tileExplored, tileVisible } from '../engine/fog.js';
 import { attributeConfig } from '../engine/attributes.js';
@@ -81,56 +82,38 @@ export class Renderer {
   }
 
   /**
-   * The tiles the selected unit can reach: a blue tint with light bands drifting across it, a twinkle on each tile and a two-tone outline round
-   * the whole area. Blue shimmer rather than a flat white wash, so it shows against grass, snow, sand and water alike (the bands and the dark
-   * and light outline carry it where the tint alone would vanish, on the sea for one).
+   * The tiles the selected unit can reach: a blue tint with light bands drifting across it and a two-tone outline round the whole area.
+   * Blue shimmer rather than a flat white wash, so it shows against grass, snow, sand and water alike (the bands and the dark and light
+   * outline carry it where the tint alone would vanish, on the sea for one).
    */
   drawReach(g, tiles, now) {
     if (!tiles.length) return;
-    const map = this.game.map, S = this.S;
-    const has = new Set(tiles.map(({ x, y }) => y * map.width + x));
-    const at = (x, y) => x >= 0 && y >= 0 && x < map.width && y < map.height && has.has(y * map.width + x);
-    const r = this.face(0, 0)[4];
+    const S = this.S, loops = outlineLoops(tiles), r = this.face(0, 0)[4];
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    for (const { x, y } of tiles) { x0 = Math.min(x0, x * S); y0 = Math.min(y0, y * S); x1 = Math.max(x1, (x + 1) * S); y1 = Math.max(y1, (y + 1) * S); }
     g.save();
-    g.beginPath();
-    for (const { x, y } of tiles) {
-      // only the outer corners of the merged shape are rounded (order: top-left, top-right, bottom-right, bottom-left)
-      const round = (a, b) => (!a && !b ? r : 0);
-      const n = at(x, y - 1), e = at(x + 1, y), sd = at(x, y + 1), w = at(x - 1, y);
-      g.roundRect(x * S, y * S, S, S, [round(n, w), round(n, e), round(sd, e), round(sd, w)]);
-      x0 = Math.min(x0, x * S); y0 = Math.min(y0, y * S); x1 = Math.max(x1, (x + 1) * S); y1 = Math.max(y1, (y + 1) * S);
-    }
+    g.beginPath(); tracePath(g, loops, S, { radius: r });
     g.fillStyle = `rgba(36,118,255,${(.34 + .07 * Math.sin(now / 550)).toFixed(3)})`;
-    g.fill();
-    g.clip();   // the bands and twinkles stay inside the shape
+    g.fill('evenodd');
+    g.clip('evenodd');   // the bands stay inside the shape
     const w = x1 - x0, h = y1 - y0, period = S * 1.7, band = S * .5, off = ((now * S) / 1500) % period;
     g.fillStyle = 'rgba(190,228,255,.26)';
     for (let d = -h - period; d < w + period; d += period) {   // slanted bands drifting right
       const bx = x0 + d + off;
       g.beginPath(); g.moveTo(bx, y1); g.lineTo(bx + band, y1); g.lineTo(bx + band + h, y0); g.lineTo(bx + h, y0); g.closePath(); g.fill();
     }
-    for (const { x, y } of tiles) {   // one twinkle a tile, each on its own beat
-      const k = (x * 73 + y * 151) % 97, a = Math.max(0, Math.sin(now / 380 + k));
-      if (a < .15) continue;
-      const cx = x * S + (.2 + .6 * ((k * 37) % 100) / 100) * S, cy = y * S + (.2 + .6 * ((k * 61) % 100) / 100) * S, u = S * (.035 + .035 * a);
-      g.fillStyle = `rgba(255,255,255,${(.85 * a).toFixed(2)})`;
-      g.beginPath(); g.moveTo(cx - u * 2, cy); g.lineTo(cx, cy - u); g.lineTo(cx + u * 2, cy); g.lineTo(cx, cy + u); g.closePath(); g.fill();
-    }
     g.restore();
-    // the outline: only the sides that face out of the area, dark under light so it reads on pale ground and on water
-    g.save(); g.lineCap = 'round';
-    const edges = [];
-    for (const { x, y } of tiles) {
-      const px = x * S, py = y * S, i = Math.max(1, S * .03);
-      if (!at(x, y - 1)) edges.push([px + r * .5, py + i, px + S - r * .5, py + i]);
-      if (!at(x, y + 1)) edges.push([px + r * .5, py + S - i, px + S - r * .5, py + S - i]);
-      if (!at(x - 1, y)) edges.push([px + i, py + r * .5, px + i, py + S - r * .5]);
-      if (!at(x + 1, y)) edges.push([px + S - i, py + r * .5, px + S - i, py + S - r * .5]);
-    }
-    for (const [color, lw] of [['rgba(8,40,120,.65)', Math.max(3, S * .09)], ['rgba(170,222,255,.95)', Math.max(1.5, S * .04)]]) {
+    this.strokeRing(g, loops, [['rgba(8,40,120,.65)', Math.max(3, S * .09)], ['rgba(170,222,255,.95)', Math.max(1.5, S * .04)]]);
+  }
+
+  /** Stroke the joined outline `loops` (see render/tile-outline.js) once per [color, width] layer, widest first, so a dark edge sits under a light line. */
+  strokeRing(g, loops, layers, dash = null) {
+    const S = this.S, r = this.face(0, 0)[4];
+    g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
+    if (dash) { g.setLineDash(dash.pattern); g.lineDashOffset = dash.offset; }
+    for (const [color, lw] of layers) {
       g.strokeStyle = color; g.lineWidth = lw; g.beginPath();
-      for (const [ax, ay, bx, by] of edges) { g.moveTo(ax, ay); g.lineTo(bx, by); }
+      tracePath(g, loops, S, { radius: r, inset: Math.max(1, S * .03) });
       g.stroke();
     }
     g.restore();
@@ -494,21 +477,9 @@ export class Renderer {
     this.drawArrow(now);
 
     const atk = view.attackTiles;
-    if (atk) {
-      g.save(); g.strokeStyle = '#ff3b3b'; g.lineWidth = 3; g.lineCap = 'square'; g.beginPath();
-      for (const k of atk) {
-        const x = k % map.width;
-        const y = Math.floor(k / map.width);
-        const l = x * S + 1.5;
-        const t = y * S + 1.5;
-        const r = l + S - 3;
-        const b = t + S - 3;
-        if (!atk.has(tileIndex(map, x, y - 1)) || y === 0) { g.moveTo(l, t); g.lineTo(r, t); }
-        if (!atk.has(tileIndex(map, x, y + 1)) || y === map.height - 1) { g.moveTo(l, b); g.lineTo(r, b); }
-        if (!atk.has(tileIndex(map, x - 1, y)) || x === 0) { g.moveTo(l, t); g.lineTo(l, b); }
-        if (!atk.has(tileIndex(map, x + 1, y)) || x === map.width - 1) { g.moveTo(r, t); g.lineTo(r, b); }
-      }
-      g.stroke(); g.restore();
+    if (atk) {   // the same joined outline as the movement area, in red
+      const ring = outlineLoops([...atk].map((k) => ({ x: k % map.width, y: Math.floor(k / map.width) })));
+      this.strokeRing(g, ring, [['rgba(90,0,0,.6)', Math.max(4, S * .1)], ['#ff3b3b', Math.max(2, S * .05)]]);
     }
     if (atk && sel) {
       g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;

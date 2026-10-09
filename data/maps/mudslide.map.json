@@ -3,8 +3,8 @@
   "version": 1,
   "id": "mudslide",
   "name": "Mudslide",
-  "description": "A 24x14 rainforest river valley. Muddy banks of bare dirt slow wheels, mossy crags wall the trails, and the dense canopy hides everything inside it.",
-  "tileset": "jungle",
+  "description": "A 24x14 river valley of ash and dead timber. Bare dirt banks slow wheels along the river, slag heaps wall the trails, and the standing deadwood hides everything inside it.",
+  "tileset": "ruins",
   "players": [
     { "faction": "solace", "controller": "human", "funds": 8000 },
     { "faction": "ironvale", "controller": "ai", "funds": 8000 }
@@ -45,7 +45,7 @@
     "~~.c................c.~~",
     "fff..f............f..fff"
   ],
-  "groundLegend": { "m": "moss", "d": "dirt" },
+  "groundLegend": { "m": "ash", "d": "dirt" },
   "ground": [
     "mmmmmddmmmmmmmmmmddmmmmm",
     "mmmmdddmmmmmmmmmmdddmmmm",

@@ -9,9 +9,9 @@ import { drawTerrainLayer } from '../../src/render/terrain-layer.js';
 import { TERRAIN_DECOR } from '../../src/render/terrain-art.js';
 
 const registry = await loadRegistry(readData);
-const HOME = { temperate: ['lastholm', 'highspire'], tundra: ['deepmere', 'vantor_reach'], desert: ['ashmark', 'skyreach'], jungle: ['solace'], ruins: ['ironvale'], islands: ['tidehaven'] };
+const HOME = { temperate: ['lastholm', 'highspire'], tundra: ['deepmere', 'vantor_reach'], desert: ['ashmark', 'skyreach'], ruins: ['ironvale', 'solace'], islands: ['tidehaven'] };
 
-test('every army is at home in exactly one of the six biomes (some share one), and the default is the temperate one', () => {
+test('every army is at home in exactly one of the five biomes (some share one), and the default is the temperate one', () => {
   assert.deepEqual(registry.tilesetIds.sort(), Object.keys(HOME).sort());
   for (const [id, factions] of Object.entries(HOME)) {
     assert.deepEqual(registry.tilesets[id].factions, factions);
@@ -62,7 +62,7 @@ test('tileset problems are reported: unknown terrain, a faction at home twice, a
 });
 
 test('the tileset maps: each is in its tileset, led by one of its armies, mirrored left and right', async () => {
-  const MAPS = { ridgeback: 'temperate', garden_maze: 'temperate', whiteout: 'tundra', concrete_canyon: 'tundra', dune_sea: 'desert', skyline_pass: 'desert', mudslide: 'jungle', burnt_offering: 'ruins', atoll: 'islands' };
+  const MAPS = { ridgeback: 'temperate', garden_maze: 'temperate', whiteout: 'tundra', concrete_canyon: 'tundra', dune_sea: 'desert', skyline_pass: 'desert', mudslide: 'ruins', burnt_offering: 'ruins', atoll: 'islands' };
   for (const [id, set] of Object.entries(MAPS)) {
     const map = await loadMap(readData, registry, id);
     assert.equal(map.tileset, set, id);

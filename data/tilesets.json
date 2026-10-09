@@ -108,14 +108,14 @@
       "ashmark",
       "skyreach"
     ],
-    "description": "Sand seas, banded mesas and palm oases.",
+    "description": "Sand seas, banded mesas and stands of cacti.",
     "ground": "sand",
     "terrain": {
       "forest": {
-        "name": "Oasis",
+        "name": "Cactus grove",
         "render": {
-          "decor": "palm",
-          "mini": "#6a9a48"
+          "decor": "cactus",
+          "mini": "#6f9a4c"
         }
       },
       "mountain": {
@@ -168,109 +168,11 @@
       }
     }
   },
-  "jungle": {
-    "name": "Jungle",
-    "factions": [
-      "solace"
-    ],
-    "description": "Rainforest canopy, mossy crags and a thick moss floor.",
-    "ground": "moss",
-    "terrain": {
-      "forest": {
-        "name": "Rainforest",
-        "render": {
-          "decor": "roundwood",
-          "style": {
-            "dense": true,
-            "canopy": [
-              [
-                "#1d5a2a",
-                "#2f8a3c"
-              ],
-              [
-                "#194f26",
-                "#2a7a38"
-              ],
-              [
-                "#256a30",
-                "#38963f"
-              ]
-            ],
-            "dots": [
-              "#f2a1c0",
-              "#f4d35e"
-            ],
-            "trunk": "#4a3420"
-          },
-          "mini": "#2a6a34"
-        }
-      },
-      "mountain": {
-        "name": "Mossy crag",
-        "render": {
-          "style": {
-            "rock": [
-              "#7e8a68",
-              "#6e7a5b"
-            ],
-            "side": [
-              "#4f5a43",
-              "#48533d"
-            ],
-            "snow": null
-          },
-          "mini": "#7a8566"
-        }
-      },
-      "road": {
-        "name": "Jungle track",
-        "render": {
-          "mini": "#8c7549",
-          "style": {
-            "color": "#8c7549",
-            "specks": [
-              "#ad9565",
-              "#6f5b36"
-            ]
-          }
-        }
-      },
-      "sea": {
-        "name": "Lagoon",
-        "render": {
-          "base": "#2f8f94",
-          "mini": "#2f8f94"
-        }
-      },
-      "shoals": {
-        "name": "Mangroves",
-        "render": {
-          "base": "#2f8f94",
-          "mini": "#2f8f94"
-        }
-      },
-      "ruin_city": {
-        "render": {
-          "style": {
-            "stone": "#8d9a78",
-            "dark": "#5f6b50"
-          }
-        }
-      },
-      "ruin_factory": {
-        "render": {
-          "style": {
-            "stone": "#8d9a78",
-            "dark": "#5f6b50"
-          }
-        }
-      }
-    }
-  },
   "ruins": {
     "name": "Ruins",
     "factions": [
-      "ironvale"
+      "ironvale",
+      "solace"
     ],
     "description": "Ash plains, deadwood and slag heaps: a land that has already been fought over.",
     "ground": "ash",

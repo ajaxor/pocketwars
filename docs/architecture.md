@@ -89,11 +89,11 @@ function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-til
 requires a drawing for every decor name the data uses. Buildings (`buildings.js`: flat-shaded boxes seen from the front-left
 with a soft ground shadow, one silhouette per kind; the barracks is a pair of squat canvas tents with a flag) are drawn on top.
 
-**Tilesets.** `data/tilesets.json` gives each biome (`temperate`, `tundra`, `desert`, `jungle`, `ruins`, `islands`) one or two home `factions`:
+**Tilesets.** `data/tilesets.json` gives each biome (`temperate`, `tundra`, `desert`, `ruins`, `islands`) one or two home `factions`:
 a default ground plus per-terrain overrides `{ name, render: { base, decor, mini, style, group } }`. A tileset is a skin: `registry.skin(tilesetId, terrainId)` is the
 terrain with the tileset's name and render options laid over it, and the rules (move costs, defense, attributes) are never touched. A map names its tileset
 (`"tileset"`); the renderer, minimap, editor palette and info cards ask `skin`, the engine reads terrain directly. Drawings live in `terrain-art.js` plus
-`terrain-wood.js` (round trees, palms, deadwood), `terrain-relief.js` (mesa, towers, spires), `terrain-ground.js` (ground textures, ford, ice),
+`terrain-wood.js` (round trees, palms, cacti, deadwood), `terrain-relief.js` (mesa, towers, spires), `terrain-ground.js` (ground textures, ford, ice),
 `terrain-ruins.js`; drawings for terrain taken out of the game are kept, unused, in `src/render/unused/`; each reads the tileset's `render.style` for its colours. See [terrain.md](terrain.md). `node tools/sprite-lab/terrain.mjs` renders every tileset (or `--map=id`) to PNG.
 
 **Changing terrain.** The map is frozen, but a rebuilt ruin changes a tile, so the game state holds `terrain` (a copy of the map's terrain grid, snapshotted for Undo) and

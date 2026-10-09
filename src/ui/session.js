@@ -288,7 +288,7 @@ export class Session {
     const now = this.#now();
     this.renderer.updateCamera(this.lastFrame ? Math.min(50, now - this.lastFrame) : 0);
     this.lastFrame = now;
-    hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.mode === 'idle' && !this.effects.isLocked(now)));
+    hud.setUndoDisabled(!(game.canUndo && this.#humanTurn() && !this.busy && controller.allowsUndo && !this.effects.isLocked(now)));
     this.animator.update(now);
     this.arrivals.update(now);
     this.banner?.tick(now, this.pacer.fast);
@@ -308,7 +308,7 @@ export class Session {
   #onUndo() {
     const { game, hud, controller } = this;
     const now = this.#now();
-    if (!game.canUndo || !this.#humanTurn() || this.busy || controller.mode !== 'idle' || this.effects.isLocked(now)) return;
+    if (!game.canUndo || !this.#humanTurn() || this.busy || !controller.allowsUndo || this.effects.isLocked(now)) return;
     this.endArmed = false;
     game.undo();
     this.effects.clear();

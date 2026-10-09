@@ -2,6 +2,7 @@
 // terrain-art.js; these are the others. Each is decor(g, px, py, S, { x, y, now, style }): `style` is the tileset's render.style for that terrain.
 //   roundwood   round-crowned trees: orchards, parks, rainforest (`dense`: crowns packed edge to edge), blossom (`dots`)
 //   palm        palm trees with a few drooping fronds
+//   cactus      saguaro-style cacti with arms, and the odd round barrel cactus with a flower
 //   deadwood    bare charred trunks standing in ash
 // Position, size and colour vary per tile through rnd(), so every tile differs but each draws the same every time.
 
@@ -62,6 +63,38 @@ export const WOOD_DECOR = {
     const slots = [[.3, .78, 1.05], [.7, .62, .9], [.52, .96, 1.15]];
     if (R(1) < .45) slots.splice(2, 1);
     slots.map(([cx, by, u], k) => [cx + (R(3 + k) - .5) * .1, by + (R(7 + k) - .5) * .05, u, k]).sort((a, b) => a[1] - b[1]).forEach(([cx, by, u, k]) => palm(cx, Math.min(by, .95), u, k));
+  },
+
+  // Cacti: a few saguaros (a ribbed trunk with one or two elbowed arms) and sometimes a round barrel cactus, each lit from the upper left.
+  cactus(g, px, py, S, at) {
+    const { x, y } = at, st = styled({ body: ['#2f7448', '#4f9d62'], rib: 'rgba(8,48,24,.3)', bloom: '#e8738f', bloom2: '#f4d35e' }, at), R = (i) => rnd(x, y, 260 + i);
+    const limb = (pts, w) => { line(g, pts, st.body[0], w); line(g, pts.map(([ax, ay]) => [ax - w * .16, ay]), st.body[1], w * .5); };
+    const saguaro = (cx, by, u, k) => {
+      const ax = px + cx * S, ay = py + by * S, h = S * (.34 + .1 * u), w = S * .075 * u;
+      ell(g, ax + w * .6, ay, w * 1.5, w * .42, 'rgba(0,0,0,.16)');
+      // arms first, so the trunk overlaps their roots: one on each side at its own height, a short elbow out and then up
+      for (const side of [-1, 1]) {
+        if (R(k * 5 + (side > 0 ? 1 : 2)) < .28) continue;
+        const rise = .34 + .22 * R(k * 5 + 3 + (side > 0 ? 0 : 1)), out = S * (.075 + .03 * R(k * 5 + 40 + (side > 0 ? 0 : 1))) * u, top = ay - h * (rise + .26 + .08 * R(k * 5 + 50));
+        limb([[ax, ay - h * rise], [ax + side * out, ay - h * rise], [ax + side * out, top]], w * .62);
+      }
+      limb([[ax, ay - w * .3], [ax, ay - h]], w);
+      line(g, [[ax + w * .18, ay - h * .92], [ax + w * .18, ay - w]], st.rib, Math.max(1, S * .014));
+      if (R(k + 60) < .45) dot(g, ax + w * .1, ay - h - w * .35, Math.max(1.2, S * .022), st.bloom);
+    };
+    const barrel = (cx, by, u, k) => {
+      const ax = px + cx * S, ay = py + by * S, r = S * .085 * u;
+      ell(g, ax + r * .25, ay, r * 1.2, r * .34, 'rgba(0,0,0,.16)');
+      ell(g, ax, ay - r * .85, r, r * .92, st.body[0]);
+      ell(g, ax - r * .25, ay - r * 1.0, r * .62, r * .62, st.body[1]);
+      for (const f of [-.5, 0, .5]) line(g, [[ax + f * r, ay - r * 1.65], [ax + f * r * .55, ay - r * .1]], st.rib, Math.max(1, S * .012));
+      dot(g, ax, ay - r * 1.78, Math.max(1.2, S * .024), k % 2 ? st.bloom2 : st.bloom);
+    };
+    const slots = [[.3, .66, 1.05], [.72, .56, .9], [.5, .94, 1.12]];
+    if (R(1) < .4) slots.push(R(2) < .5 ? [.13, .94, .8] : [.9, .92, .8]);
+    slots.map(([cx, by, u], k) => [cx + (R(3 + k) - .5) * .12, by + (R(7 + k) - .5) * .05, u, k])
+      .sort((a, b) => a[1] - b[1])
+      .forEach(([cx, by, u, k]) => (R(70 + k) < .22 ? barrel : saguaro)(cx, Math.min(by, .95), u, k));
   },
 
   deadwood(g, px, py, S, at) {

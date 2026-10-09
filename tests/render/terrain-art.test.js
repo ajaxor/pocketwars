@@ -198,6 +198,16 @@ test('a road is a narrow strip over the ground, not a grey field: it runs out of
   assert.ok(!bend.some((r) => r[0] === 0) && !bend.some((r) => r[1] + r[3] === 100), 'a bend does not reach the west or south edge');
 });
 
+test('a dead-end road thins out and breaks up instead of running to the tile edge', async () => {
+  const { TERRAIN_DECOR } = await import('../../src/render/terrain-art.js');
+  const none = { n: 0, e: 0, s: 0, w: 0, ne: 0, se: 0, sw: 0, nw: 0 };
+  const alphas = new Set(), rects = [], g = new Proxy({}, { get: (_, p) => (...a) => { if (p === 'rect') rects.push(a); }, set: (_, p, v) => { if (p === 'globalAlpha') alphas.add(v); return true; } });
+  TERRAIN_DECOR.road(g, 0, 0, 100, { x: 3, y: 4, now: 0, link: { ...none, e: 1 } });
+  assert.ok(rects.some((r) => r[0] + r[2] >= 100), 'it runs to the east edge where the road carries on');
+  assert.ok(!rects.some((r) => r[0] === 0 && r[2] >= 50), 'but the west end does not reach its edge as a solid bar');
+  assert.ok([...alphas].some((a) => a < 1), 'the dead end grows fainter');
+});
+
 test('the archived drawings for removed terrain still load (they are kept for later, not wired in)', async () => {
   const archive = await import('../../src/render/unused/removed-terrain.js');
   for (const [name, decor] of Object.entries({ rough: archive.ROUGH_DECOR.rough, drift: archive.SOFT_DECOR.drift, dune: archive.SOFT_DECOR.dune, mud: archive.SOFT_DECOR.mud, cliff: archive.CLIFF_DECOR.cliff })) assert.equal(typeof decor, 'function', name);

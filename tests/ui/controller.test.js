@@ -185,6 +185,26 @@ test('tapping an owned factory opens the build menu; buying spends funds and clo
   assert.match(t.lastMsg(), /Built Unit/);
 });
 
+test('a unit just built can be taken back with Undo even though it is selected at once; mid-move modes cannot undo', () => {
+  const t = setup({ units: { a: { cost: 1000 }, b: {} }, rows: ['a..b'], unitsOnMap: [['b', 1, 3, 0]], terrain: {}, ai: undefined });
+  t.game.state.funds[0] = 3000;
+  t.controller.tap(0, 0);
+  assert.equal(t.controller.allowsUndo, false, 'not while the build menu is open');
+  t.hud.built.onBuild('a');
+  assert.equal(t.controller.mode, 'move');
+  assert.equal(t.controller.allowsUndo, true, 'the built unit is selected, and Undo is still on offer');
+  assert.equal(t.game.canUndo, true);
+  t.game.undo(); t.controller.cancelAll();
+  assert.equal(t.game.state.units.filter((u) => u.owner === 0).length, 0, 'the unit is gone');
+  assert.equal(t.game.state.funds[0], 3000, 'and the price is back');
+  assert.equal(t.controller.mode, 'idle');
+  t.controller.tap(0, 0);
+  t.hud.built.onBuild('a');
+  assert.equal(t.game.state.units.filter((u) => u.owner === 0).length, 1, 'the property builds again');
+  t.controller.tap(2, 0); assert.equal(t.controller.mode, 'anim');
+  assert.equal(t.controller.allowsUndo, false, 'not while a unit is sliding');
+});
+
 test('the build menu marks units the player cannot afford and refuses them', () => {
   const t = setup({ rows: ['a..b'], unitsOnMap: [['b', 1, 3, 0]] });
   t.game.state.funds[0] = 0;

@@ -76,17 +76,34 @@ export const TERRAIN_DECOR = {
       const { x, y, link = NO_LINKS } = at, RD = styled({ color: '#7d838e', edge: 'rgba(0,0,0,.2)', specks: ['#a3a8b1', '#7f848d'], width: ROAD_WIDTH }, at);
       const { shape, arms } = roadShape(link);
       const c = S / 2, edgePx = Math.max(1, S * .035);
-      const strip = (half, fill) => {   // the centre block (rounded, so a bend has a round outside corner) and one bar out to the tile edge per arm
+      // An arm with no road neighbour behind it is a dead end: the road does not stop at the tile edge but breaks up and thins out, so it reads as worn away.
+      const fade = { n: arms.n && !link.n, e: arms.e && !link.e, s: arms.s && !link.s, w: arms.w && !link.w };
+      const DIR = { n: [0, -1], e: [1, 0], s: [0, 1], w: [-1, 0] };
+      const FADE_STEPS = 8;
+      const strip = (half, fill, pad = 0) => {   // the centre block (rounded, so a bend has a round outside corner) and one bar out to the tile edge per arm
         g.fillStyle = fill; g.beginPath();
-        g.roundRect(px + c - half, py + c - half, half * 2, half * 2, half * .7);
-        if (arms.n) g.rect(px + c - half, py, half * 2, c);
-        if (arms.s) g.rect(px + c - half, py + c, half * 2, c);
-        if (arms.w) g.rect(px, py + c - half, c, half * 2);
-        if (arms.e) g.rect(px + c, py + c - half, c, half * 2);
+        if (shape === 'straight') g.rect(px + c - half, py + c - half, half * 2, half * 2); else g.roundRect(px + c - half, py + c - half, half * 2, half * 2, half * .7);
+        if (arms.n && !fade.n) g.rect(px + c - half, py, half * 2, c);
+        if (arms.s && !fade.s) g.rect(px + c - half, py + c, half * 2, c);
+        if (arms.w && !fade.w) g.rect(px, py + c - half, c, half * 2);
+        if (arms.e && !fade.e) g.rect(px + c, py + c - half, c, half * 2);
         g.fill();
+        for (const k of 'nesw') {
+          if (!fade[k]) continue;
+          const [dx, dy] = DIR[k];
+          for (let i = 0; i < FADE_STEPS; i++) {   // slices that narrow, grow fainter and drop out more often towards the edge
+            const t = (i + .5) / FADE_STEPS;
+            if (i > 1 && rnd(x * 7 + dx, y * 5 + dy, i + 40) < t * .45) continue;
+            const run = c - half + 1, w = half * (1 - .5 * t) + pad, len = run / FADE_STEPS, d = half - 1 + i * len;
+            g.globalAlpha = Math.max(.08, 1 - t * .92);
+            const sx = dx ? px + c + (dx > 0 ? d : -d - len) : px + c - w, sy = dy ? py + c + (dy > 0 ? d : -d - len) : py + c - w;
+            g.beginPath(); g.rect(sx, sy, dx ? len + .5 : w * 2, dy ? len + .5 : w * 2); g.fill();
+          }
+          g.globalAlpha = 1;
+        }
       };
       const half = S * RD.width / 2;
-      strip(half + edgePx, RD.edge);
+      strip(half + edgePx, RD.edge, 0);
       strip(half, RD.color);
       for (let i = 0; i < 3; i++) {   // a few specks, kept on the strip (along it on a straight, inside the centre block at a bend or junction)
         const reach = shape === 'straight' ? .36 : RD.width * .3, across = (rnd(x, y, i + 5) - .5) * RD.width * .7 * S, along = (rnd(x, y, i) - .5) * 2 * reach * S;

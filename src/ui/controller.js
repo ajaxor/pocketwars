@@ -117,6 +117,9 @@ export class Controller {
   #selPos() { return this.dest || { x: this.sel.x, y: this.sel.y }; }
   #msg(text) { this.hud.message(text); }
 
+  /** Undo is on offer while nothing is mid-flight: idle, or a unit selected / previewed (just built units are selected at once, and taking the build back is the point). Not while sliding, laying a mine or in the build menu. */
+  get allowsUndo() { return this.mode === 'idle' || this.mode === 'move' || this.mode === 'act'; }
+
   cancelAll() {
     this.#undoPendingDeploy();
     this.animator.arrow = null;

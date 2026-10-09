@@ -8,14 +8,13 @@ a map without one is drawn in the default (`temperate`).
 |---|---|---|---|---|
 | temperate | Lastholm, Highspire | grass | pines | peak |
 | tundra | Deepmere, Vantor Reach | snow | snowy spruce | glacier peak |
-| desert | Ashmark, Skyreach | sand | oasis palms | mesa |
-| jungle | Solace | jungle floor | rainforest | mossy crag |
-| ruins | Ironvale | ash | deadwood | slag heap |
+| desert | Ashmark, Skyreach | sand | cactus groves | mesa |
+| ruins | Ironvale, Solace | ash | deadwood | slag heap |
 | islands | Tidehaven | sand | palm grove | volcanic peak |
 
 The pairing is provisional (the campaign will lean on it through `registry.homeTileset(faction)`): nine armies over six biomes, so three biomes have one army
 for now. The urban, royal gardens and highlands tilesets were removed in October 2026. Skirmish maps showing the biomes: Ridgeback and Garden Maze (temperate),
-Whiteout and Frozen Canyon (tundra), Dune Sea and Skyline Pass (desert), Mudslide (jungle), Burnt Offering (ruins), Atoll (islands). The title screen's **Terrain** link
+Whiteout and Frozen Canyon (tundra), Dune Sea and Skyline Pass (desert), Mudslide (ruins), Burnt Offering (ruins), Atoll (islands). The title screen's **Terrain** link
 opens a gallery of every tileset.
 
 ## Ground costs
