@@ -43,6 +43,11 @@ export class Situation {
     this.strength = ours / Math.max(1000, worth(this.army));
   }
 
+  /** What the army is after: the strategy's target, or the enemy HQ once we are far enough ahead to finish the game (params.finish). */
+  get target() {
+    return this.strength >= this.params.finish ? 'hq' : (this.tactics.target ?? 'balanced');
+  }
+
   threatAt(unit, x, y) {
     const { game } = this;
     const k = y * game.map.width + x;

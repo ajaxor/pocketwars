@@ -14,12 +14,17 @@ Fixed in this pass (and removed from the list below):
 - **Art**: the `ground` shadow and the infantry body/helmet are shared through `parts.js`; a test draws every gallery concept sprite.
 - **Browser smoke test** (`npm run smoke`, `tools/smoke`): headless Chromium at phone and desktop sizes covers the title, skirmish, editor, campaign, galleries, a full round with and without fog, the build menu, and sideways-scroll checks. It found and fixed a real touch bug: the ghost-click guard let a synthetic click (detail 0) through.
 
+Computer opponent pass (9 October 2026):
+- **Fixed**: every planned order is re-checked against the engine before it is played (a route closed mid-turn is caught); what the human sees of the computer's turn is now a tested module (`src/ui/ai-visibility.js`: fights in the fog, mines, captures and submarines stay hidden); tests for support units keeping out of reach, dropped troops leaving their carrier, and the new parameters.
+- **Measured, no effect (kept as parameters, all off)**: `join` (merge two badly hurt units), `hide` (a sniper's cloak lowers the threat), `fuelSlack` (fliers stay out longer), `finish` (go for the HQ when far ahead). Each was played in 152-game mirrors or 114 games against greedy: 49-51% and 84-86% against 50% and 84%.
+- **Checked**: the heal weight (flat across its range), the tuning (256 rounds, nothing better), the support-unit danger item (already handled by the strategist), and the reasons games reach the day limit (see below).
+
 Deliberately not done:
 - **AI and fog of war**: fog is a player-only feature by design; the computer sees the whole board.
 
 Still open (needs design decisions, tuning runs or much larger work): deeper AI look-ahead, coordinated amphibious operations, AI joining units, support-unit danger weighting, leader balance numbers and starting-army fairness, a per-unit move-cost override, concept unit stats kept as free text, and hand-tuned art offsets (ships, missiles, mechs, hover). They are listed below.
 
-- **AI build rules are global.** `data/ai.json` has one rule set per category. A leader menu that adds a category the profile has no rules for is never built by the computer. Leader-specific AI rules (or a per-leader profile) will be needed once kits really differ.
+- **Greedy-engine build rules are global.** `data/ai.json` has one rule set per category for the greedy engine (the baseline). The strategist, which is the default, values every menu from unit stats and needs no lists, so leader menus work with it unchanged.
 - **Kit drift.** The default kit mirrors the category menus by hand. A test guards it, but every new unit must also be added to `data/loadouts.json`.
 - **Leader identity is split.** Names/portraits live in `campaign.json`, loadouts in `loadouts.json`. Skirmish depends on the campaign data only for names and portraits (fallback: title-cased id). Consider one source.
 - **Cramped maps.** On `classic` the formation pushes some units to odd spots (artillery ends up ahead); on `tri_point` properties on the row ahead displace five units. Naval fleets now come from the shipyard set, so they no longer vanish, but they are one default destroyer per shipyard rather than the map author's fleet. A map with no factories (`river_run`) gives only the HQ and airfield sets. Maps may need hand-authored formation hints.
@@ -40,16 +45,16 @@ Still open (needs design decisions, tuning runs or much larger work): deeper AI 
 - **Gallery structure art is separate from the game's** `src/render/buildings.js` (`gallery/structure-art.js` borrows its `kit` helpers); if structures ship, merge them so there is one drawing path.
 - **APC** is art only; the APC reuses the transport's carry mechanic in prose, not in data.
 
-- **Support-unit AI ignores danger.** Medics, mechanics, radar planes and spies path toward goals (wounded allies, the army, enemy properties) without weighing threats, and will walk into fire.
+- **Support-unit danger (strategist): done, greedy still ignores it.** The strategist weighs the threat map for every unit including medics, mechanics, radar planes and spies (`tests/ai/strategist.test.js`, "a medic keeps out of the enemy's reach"). Only the greedy baseline still walks them into fire.
 - **Mechanic has no mines.** The concept's mine laying was not built; it is a repair/heal unit only.
 - **Only the sniper is revealed by firing.** The always-cloaked units (spy, stealth fighter/bomber/copter) stay hidden after they shoot unless an enemy is adjacent or has radar; `cloak.revealedByFiring` exists if that should change.
-- **The AI does not use the sniper's forest cloak:** it picks tiles by cover and distance, not by whether the tile hides it.
-- **A carried unit that was halted by a hidden enemy** used to crash the AI (no tile to choose); fixed with a size check, but `carriedBy` handling in `chooseOrder` is fragile.
+- **Sniper cloak (`params.hide`)**: the strategist can now discount the threat on a tile that cloaks the unit. It defaults to 0: a 152-game mirror at 0.9 scored 50% (no measurable effect, snipers are rare), so it is off until a sweep says otherwise.
+- **Carried units (done).** The engine refuses a drop with no free neighbour (`no-room`), a unit just dropped must move off its carrier in `bestOrder`, and a refused order is replanned once in the turn loop; covered by a test.
 - **Radar adds no fog sight.** Radar only finds cloaked units; the radar plane just has a long `vision` (6) in fog of war.
 - **Sprites moved from `gallery/` to `src/render/art-*.js`** so the deploy build includes them; the gallery imports them back. Older gallery art files may still want the same treatment.
 - **No damage-baseline cases for the new units** (spy, medic pistol, RPG trooper, stealth copter); the baseline tool covers only the original units.
 - **RPG trooper has no weakness against infantry:** its armor piercing gives it full damage on everything; only its single round limits it.
-- **Heal order is all-or-nothing on adjacency:** it heals every eligible neighbour, with no way to choose one, and the AI scores tiles by total HP restored but ignores the funds cost.
+- **Heal order is all-or-nothing on adjacency:** it heals every eligible neighbour, with no way to choose one. The strategist's heal weight was swept (0 to 6, 136 games per value, all 50-52%): the AI is insensitive to it, so the missing funds-cost term in its heal score does not matter in practice.
 - **Diver and bike are two new move classes** (`diver`, `bike`) with a cost per terrain; every new terrain must now list both, and the terrain window shows eight move chips. A per-unit cost override would scale better than a class per special unit.
 - **Diver is infantry on land** (hit by ordinary rifles, healed by medics) and is only hidden in deep water; it cannot capture, and nothing lets it carry its harpoon's strength against ships onto shoals (shoals are not deep, so it surfaces there).
 - **Diver and motorcycle art in the gallery is unit-sheet only:** the swim sprite ignores the `submerged` fade that submarines use, and the dive splash plays when a diver enters the sea.
@@ -70,7 +75,7 @@ Still open (needs design decisions, tuning runs or much larger work): deeper AI 
 - **Mech idle is a gait value, not an animation state.** `gait` returns 1/.4/0 and `leg` branches on `walk >= 1` to pick stride or shuffle; arms use `armSwing`. A real idle/walk/attack state (and a place for a breathing or weapon-check idle) belongs in the walker kit, not in magic numbers.
 - **Missile depth is still hand-tuned.** The SAM and buggy rockets now use an outlined `missile` helper with per-sprite offsets (`DX`, `DY`) picked by eye so that the perpendicular gap clears the rocket thickness; they overlap the SAM's dish a little. A shared launcher part should compute the spacing from the thickness.
 - **Swim propeller hangs below the hull by hand** (`amphibious_tank_swim`, a strut plus `propeller` at y .275); its bubbles still trail off the tile's left edge.
-- **Mechanic is now armed but the AI does not know it.** The wrench (12 damage, armor piercing 1) is in `data/weapons.json`, so the computer's attack scoring may now send mechanics at enemies; the AI still treats them as support units. Damage baselines do not cover the wrench, and the mechanic's gallery text is the only place the rule is described.
+- **Mechanic is armed; the strategist reads the wrench from the weapon data** like any weapon (no per-unit code), the greedy baseline does not. Damage baselines still do not cover the wrench.
 - **Gallery cards with a water tile use a `wide` class.** Cards with three tiles span two grid columns above 700px and wrap below that; any future unit with four icons would need the same treatment. The grid could size cards from their content instead.
 - **Mech visors share one scanner in `helm`.** The sweeping light runs on a fixed rate (`w * 3`) for every walker and ignores the walker's state; the scout still draws its own eye disc over the visor.
 - **Hover tank and scout shapes are polygon-by-hand,** with the scout's chin gun placed against the hull by eye; nothing ties either to a shared hover hull part.
@@ -88,7 +93,6 @@ Still open (needs design decisions, tuning runs or much larger work): deeper AI 
 
 ## Gallery units drafted into the game
 - **Hidden-tile leak when laying mines.** `layTiles` skips any tile with a unit on it, hidden enemy submarines included, so a mine layer's highlighted tiles (and the `bad-lay-tile` error) can reveal where an unseen sub is. A hidden unit should count as free for the plan and the lay should then be interrupted like a move.
-- **Mines are not capped by the engine.** Only the AI limits itself (`ai.json` weights.maxMines); a human can lay mines every turn, and each is a full unit in `state.units` that is scanned by every `unitAt`/`canSee` loop. Consider a per-player cap or a separate mine layer in state.
 - **A mine is a `unit` with `done` forced on.** `economy.startTurn`, `makeUnit`, the renderer's "acted" wash and the info card each special-case `mine` to keep it inert and un-greyed. A first-class "inert" unit flag (or terrain-like objects) would remove those four places.
 - **`submerged: true` is stored for permanently hidden units** (hunter sub, mines) so the renderer draws them dived; `canDive` guards the "comes up off deep water" rule. The renderer and `layerIdOf` still treat `submerged` as the source of truth, which is a second copy of "this unit's layer is hidden".
 - **Supply and Heal are near-duplicates** (`supply.js`, `heal.js`, controller buttons, AI scores, messages, effects). A generic "support order" with a plan/resolve pair would collapse them, and `resupply` at a property is a third variant.
@@ -116,7 +120,7 @@ Still open (needs design decisions, tuning runs or much larger work): deeper AI 
 
 ## Maps and skirmish (latest pass)
 - **The water maps were generated, not drawn.** `island_chain`, `sky_strait` and `four_seas` (and `iron_curtain`) came from throwaway scripts; they can now be opened and touched up in the map editor.
-- **The AI never plans amphibious landings,** so every map still needs a land route between the HQs (the island map uses a causeway); real island-hopping play is human-only until the AI learns to use transports.
+- **Landings are planned, but not coordinated.** The strategist ferries troops across water (carriers, `landingTiles`), so island maps are no longer human-only; there is still no escort-and-bombard operation (see the computer opponent section).
 - **Skirmish no longer offers Random or No leader,** and a colour with no leader (none exist today) would play with the map's own units; `RANDOM_LEADER` and `resolveLeaders` remain in `src/data/skirmish.js` for map files and tests only.
 
 - **Defence art lives in `src/render/art-defences.js`** (moved from the gallery) together with three concept defences only the gallery shows (gun turret, automated factory, land mine); its `footing`, `grass` and `footShadow` could move to `parts.js`. The wall drawing is in `src/render/walls.js`; the gallery re-exports both.
@@ -126,7 +130,7 @@ Still open (needs design decisions, tuning runs or much larger work): deeper AI 
 ## Fuel, ambush, double attacks (October 2026)
 - **Fuel is a second resource tracked beside ammo with parallel code** (`fuel.js`, the fuel can next to the ammo bullet, the HUD chips, resupply and supply special cases). A generic "meter" abstraction (ammo, fuel, later morale or charge) would remove the duplicates; nothing else needs it yet.
 - **Fuel burns per tile moved, never while idle, and never limits a move** (a flyer may fly on an empty tank; it only crashes if it starts its turn empty), and refuelling is automatic at turn start, so a plane parked on an airfield can never run dry. The Resupply order refuels too but is mostly redundant. There is no per-turn upkeep, so loitering aircraft (radar plane, drones) are free to hover forever.
-- **The AI only turns back when it can no longer afford a full sortie** (`fuel <= distance home + move`); with no airfield or carrier it flies until it crashes (a few crashes per simulated game), and it does not plan routes through carriers or trucks that will have moved.
+- **Fuel turn-back margin.** Running dry only disarms a flier (it never crashes), so the turn-back rule is conservative on purpose. `params.fuelSlack` lets it stay out longer: a 152-game mirror at 1 turn of slack scored 51% (no measurable difference), so it stays at 0.
 - **`attacksPerTurn` reuses `unit.halted`** (the interrupted-move state) to mean "attacked, may attack again from here"; code that reads `halted` as "was stopped by a hidden unit" (the sub's pre-move dive, undo) now also sees a unit mid-way through its attacks.
 - **Ambush uses a `unit.ambush` flag set at turn start** for any hidden unit (the divers, spies and stealth air all get it; only the sniper and the submarines were nerfed). A unit that leaves cover during its turn keeps the bonus for that turn. The multiplier is a global rule (`rules.ambushMultiplier`), not per unit.
 - **The marine's boarding rifle is a separate weapon with `fromTerrain`** rather than a general "attack from a boat" rule; `attackProblem` answers `wrong-terrain` but the controller shows the generic out-of-range hint.
@@ -172,7 +176,7 @@ The review's points and where they stand, then what the new system leaves open. 
   turn from the board at its start; it does not simulate the enemy's actual reply, re-plan the enemy's routes as our units block them, or
   search over orderings of our units. A real reply search (clone the state, play the enemy's best few answers to our top plans) is the
   next big step in strength, once turns are cheap enough.
-- **Plans made earlier in a turn are trusted** when nothing fought near them (`stillGood` in strategist/index.js): in our own turn enemies
+- **Plans made earlier in a turn are trusted** when nothing fought near them (`stillGood` in strategist/index.js): in our own turn enemies only die or come to light, never move. Every plan, `wait` included, is now checked against the engine's reach before it is carried out, so a route closed by a friend or a mine is caught. If the rules ever let units react in the other side's turn, the trust has to go.
   only die or come to light, never move. If the rules ever let units react in the other side's turn, this assumption has to go.
 - **Landings avoid defended shores rather than open them.** Carriers keep out of the threat map, so a well-guarded coast is never
   assaulted; there is no coordinated "bombard, then land, then escort" operation. Stalemates on island maps are judged at the day limit.
@@ -181,7 +185,6 @@ The review's points and where they stand, then what the new system leaves open. 
   help; a cheaper engine would help more.
 - **The AI still ignores fog of war** (as before): the strategist honours cloaking and submarines (what it cannot see it does not plan
   around) but sees through jammer fog.
-- **Engine choice is not in the UI.** The game plays the data's default engine; a skirmish option to pick an opponent (or difficulty,
   for example a less-tuned profile) would be a small addition through `game.aiSetup`.
 - **What the AI learns about the player lives in one browser** (`localStorage`), per engine rather than per player profile or campaign
   save. The campaign will want it in its save data.
@@ -218,7 +221,7 @@ The review's points and where they stand, then what the new system leaves open. 
 
 - **Concept stats are free text.** Costs, damage and armour for concepts live in the `mechanic` sentence, so nothing checks them against the damage baselines or the units they overlap (the Tesla cannon at damage 40, armour 0.4 on the Royal Guard, the blast of 3 are guesses). A `stats` block in `concepts.json` that `catalog.js` can validate would let the balance tools include concepts.
 - **Infantry drawing helpers are copied.** `gait`, `body` and `helmet` exist in both `src/render/art-infantry.js` and `gallery/concept-art-ideas.js` (and the soldier's rifle line is re-drawn inline in the Royal Guard, and a simplified AK-47 in the Fanatic next to the commando's fuller `ak47`). They belong in `src/render/parts.js` next to `legs`/`torso`/`head`; the Shock Trooper and Fanatic use the gallery copies.
-- **The AI tuning is stale** (`npm run ai:tune -- --check`; it already was before the RPG range and motorcycle move changes). It is manual by design, so it needs a run on a spare machine before the next balance pass is judged by arena results.
+- **AI tuning**: `npm run ai:tune -- --check` was stale after the balance changes. A 30-minute run (256 rounds, `--write`) found no variant that beat the shipped profile, so the profile stands and is stamped as checked on the current data. The sweeps agree: heal (0 to 6) is flat at 50-52%, and the four new parameters measured at 49-51% in mirrors. Tuning remains manual (there is no tuning workflow in `.github/workflows`; only `pages.yml`); a multi-hour run on a spare machine is the next step if the AI needs more strength.
 - **Greedy AI keeps per-unit caps** (`data/ai.json` `rpg_trooper`, `motorcycle`), which the RPG range change does not account for; harmless for the baseline engine, but they contradict the "no per-unit weights" direction for the strategist.
 - **The ghost-click guard is verified by unit tests and a source check, not on a touch device.** `src/ui/ghost-click.js` is tested as a plain class, but `Session`'s wiring (the document-level capture listeners and `onPointerUp` arming it) is only checked by a regex on `session.js`, and the original bug (the touch browser's click landing on the build row that opened under the finger) was not reproduced in a real browser. It is the `Session` has-no-automated-test gap again; a headless-browser smoke test using a touch-emulated tap on a factory would cover it. The root cause is that taps act on `pointerup` while the buttons act on `click`; moving the map's tap to the click event would be the alternative fix, but it changes how drags and holds end.
 - **Concept units still without engine support.** The Remote Technical (unmanned, shut down by jammers) and the guard aura / `onDeath` blast / Fanatic damage rule remain gallery concepts only.
@@ -230,10 +233,8 @@ The review's points and where they stand, then what the new system leaves open. 
 - **The new sprites (flamethrower, royal guard, shock trooper, swordsman, missile tank, airship) have not been checked in a browser.**
 - **The damage baseline has few cases for the new units**, and the AI tuning is still stale (`npm run ai:tune`).
 - **Balance of the October units rests on one 720-game AI run**; hiroshi (43%) and ludwig (45%) still trail.
-- **Healer value is measured, not tuned.** The leader report now has a Healing table (mechanic 0.89 credits restored per credit fielded, medic 0.28 after the AI change). The strategist's `heal` weight is still the old default and nobody has swept it (`npm run ai:sweep`).
-- **Fog presentation of AI turns is untested.** `Session#visibleTo` / `#playAiStep` (what the human sees of the computer's turn: strikes from the fog, hidden captures) has no automated test, and the October change (blows from out of sight at a visible unit now pan the camera and are waited for; capture flags are not drawn in the fog) was not checked in a browser. A headless-browser test with a fogged map and an artillery in the fog would cover it.
 
-- **The AI never joins units, and its fuel-home logic still treats low fuel as a danger** although running dry no longer crashes a flyer (it only disarms it).
+- **Joining and fuel (strategist): tried, no measurable effect.** `params.join` makes two badly hurt units of a kind merge instead of both walking home; at 8 and 20 the 152-game mirrors scored 50% and 49%, so it stays 0 (off). The tests show the order is generated and accepted by the engine.
 - **Join loses surplus HP with no refund**, and repair costs the full tenth of the unit price per HP (`rules.repairCostRate`); neither has been balanced (no leader run since the repair costs went in).
 - **The join action and repaired-HP effects are untested in a browser** (controller Join button, presenter 'join' event).
 
@@ -270,8 +271,8 @@ The review's points and where they stand, then what the new system leaves open. 
   so idle support units (medics, supply trucks) parked on them and blocked builds while money piled up. Whether that was the whole of what
   was seen is not confirmed: in headless games the computer does leave its base and capture, so a second cause (for example how it reacts to a
   human's units it can see) is still possible.
-- The AI tuning (`data/ai.json`) is stale after recent balance changes; the ai-tune workflow re-tunes it on push.
-- Computer-vs-computer games on most maps (Whiteout, Dust Bowl, Ridgeback) mostly end undecided at the day limit, so the strategist is slow
+- The AI tuning is current as of 9 October 2026 (see above); it is run by hand, there is no ai-tune workflow.
+- **Games at the day limit (looked at, not a bug).** Mirror games (strategist against strategist) end at the 30-day limit about 90% of the time and are mostly draws, which is what two equal players do. Against the greedy engine ~70% still reach the limit, but traced games show the strategist well ahead and at the enemy HQ: on Skyline Pass it had 29 units to 7 and a flamethrower with 15 of 20 capture points on the HQ when day 31 arrived. So it is a few days slow, not stuck. `params.finish` (go for the HQ once our worth is this many times theirs; default 4) did not change the number of finished games at 1.2, 1.8 or 3.0 against greedy (84% to 86%, within noise). It also keeps 10,000 or more in the bank in these games: factories are busy or nothing on the menu clears `minUtility`. Worth a look if games should finish faster.
   to finish games. Worth a look in the arena.
 - Early-game capture race (October 2026): infantry that heal (medics) now take free properties before looking after the army, and ferries
   (transport copter, APC, troop transport) are also worth building for free cities a long walk from anything we hold, not only for islands.

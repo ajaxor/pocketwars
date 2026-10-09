@@ -78,6 +78,16 @@ A fixed AI can be learned and beaten the same way every time. The strategist wor
 - **Memory**: the game keeps, in the browser, which plans have beaten this player and which they have seen (`src/ai/history.js`). Plans
   that worked are favoured, plans the player has seen less of get a novelty bonus, and last battle's plan is avoided.
 
+### Switches that were tried and left off
+
+Four parameters in `params.js` change behaviour only when moved from their defaults; each was played against the shipped profile in the
+arena (152-game mirrors) and none moved the score beyond noise, so they stay at their defaults until a sweep says otherwise:
+
+- `join` (0 = never): two badly hurt units of a kind merge (the Join order) instead of both walking home to be repaired.
+- `hide` (0..1): the share of the threat that does not count on a tile that cloaks the unit (a sniper in the woods).
+- `fuelSlack` (0..2 turns): how long a flier may stay out beyond the trip home. Running dry only disarms it.
+- `finish` (default 4, 1.2..4): once our worth is this many times theirs, every army unit heads for the enemy HQ whatever the plan says.
+
 ## Strategies (`data/ai-strategies.json`)
 
 A strategy is data. To add one, add an entry; `npm run validate` checks it.

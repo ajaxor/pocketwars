@@ -6,12 +6,12 @@ import { applyStep, startTurn } from '../ai/runner.js';
 import { recordGame } from '../ai/history.js';
 import { hasAttribute } from '../engine/attributes.js';
 import { canSee } from '../engine/detection.js';
-import { isFogged, tileVisible } from '../engine/fog.js';
 import { allProperties, factionOf, propertiesOwnedBy, unitById } from '../engine/queries.js';
 import { MoveAnimator } from '../render/animator.js';
 import { Arrivals, planEntrances, buildingPath } from '../render/arrivals.js';
 import { Effects } from '../render/effects.js';
 import { Renderer } from '../render/renderer.js';
+import { seesTile, visibleEvents } from './ai-visibility.js';
 import { Controller } from './controller.js';
 import { Gestures } from './gestures.js';
 import { GhostClickGuard } from './ghost-click.js';
@@ -259,11 +259,7 @@ export class Session {
   }
 
   /** Can the player watching see tile (x, y)? Always, except in fog of war (fog.js). */
-  #seesTile(x, y) {
-    const { game } = this;
-    const v = this.#viewer();
-    return !isFogged(game, v) || (x >= 0 && y >= 0 && x < game.map.width && y < game.map.height && tileVisible(game, v, x, y));
-  }
+  #seesTile(x, y) { return seesTile(this.game, this.#viewer(), x, y); }
 
   #viewer() {
     const { game } = this;
@@ -378,23 +374,7 @@ export class Session {
     this.#comment(this.commentator?.turnStart(game.currentPlayer, this.#now()));
   }
 
-  /**
-   * The part of an AI order's events the human may see. Something the computer does out of sight (a submarine moving or diving
-   * under water nobody is watching) must not show up as an animation, a ripple or a message, or it would give it away.
-   */
-  #visibleTo(viewer, events, wasVisible = false) {
-    const { game } = this;
-    // a unit the human could see before the order may dive during it: its move and its dive are still shown (it then fades away)
-    const seen = (id) => { const u = unitById(game, id); return !u || wasVisible || canSee(game, viewer, u); };
-    return events.filter((ev) => {
-      if (ev.type === 'move' || ev.type === 'interrupt') return seen(ev.unitId);
-      if (ev.type === 'dive' || ev.type === 'surface') return seen(ev.unit.id);
-      if (ev.type === 'lay') return false;   // nobody sees a mine go down
-      if (ev.type === 'capture' || ev.type === 'rebuild') return this.#seesTile(ev.x, ev.y);   // no flag raised over a property in the fog
-      if (ev.type === 'strike') return this.#seesTile(ev.attacker.x, ev.attacker.y) || this.#seesTile(ev.defender.x, ev.defender.y);   // a fight deep in the fog is not shown
-      return true;
-    });
-  }
+  #visibleTo(viewer, events, wasVisible = false) { return visibleEvents(this.game, viewer, events, wasVisible); }
 
   /** The computer's turn: its engine (src/ai/engines.js) hands out steps one at a time, and each is shown before the next is asked for. */
   async #playAiTurn() {

@@ -20,6 +20,10 @@ export const PARAMS = {
   retreatHp:      { def: 3.5,  min: 0,   max: 7,    doc: 'HP at or under which a unit goes home to be repaired' },
   heal:           { def: 2,    min: 0,   max: 6,    doc: 'per HP x 1000 of value healed or supplied' },
   guard:          { def: 1.5,  min: 0,   max: 6,    doc: 'per own unit nearby (a unit on its own is easier to gang up on)' },
+  hide:           { def: 0,    min: 0,   max: 1,    doc: 'share of the threat that does not count on a tile that cloaks the unit (a sniper in the woods is only noticed from next to it)' },
+  join:           { def: 0,    min: 0,   max: 30,   doc: 'per 1000 of the merged unit\'s value, for two badly hurt units of one kind merging instead of both going home; 0: never' },
+  fuelSlack:      { def: 0,    min: 0,   max: 2,    doc: 'turns of fuel a flier may spend beyond the trip home before it turns back (running dry only disarms it)' },
+  finish:         { def: 4,    min: 1.2, max: 4,    doc: 'balance of forces (our worth over theirs) at which the army drops its plan and goes for the enemy HQ (4: only when overwhelming)' },
   land:           { def: 25,   min: 0,   max: 80,   doc: 'for a carrier dropping troops where they can reach a property' },
   unreachable:    { def: 60,   min: 10,  max: 150,  doc: 'distance assumed when there is no route at all to a goal' },
   // ---- production (production.js) ----

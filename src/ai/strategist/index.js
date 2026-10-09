@@ -62,9 +62,9 @@ function stillGood(game, unit, order) {
     const target = game.state.units.find((u) => u.id === order.action.targetId);
     if (!target || !canSee(game, unit.owner, target)) return false;
   }
-  const type = order.action.type;
-  if (type !== 'wait' && type !== 'attack') return game.validateOrder(order).ok;   // a heal, supply, lay... depends on who is around now
-  return true;
+  // a heal, supply, lay... depends on who is around now; a move (wait) or attack must still have a legal route (a friend that moved into the
+  // path, or a mine that came to light, can close it)
+  return game.validateOrder(order).ok;
 }
 
 /** Units whose plans may have changed after something happened at these tiles. */

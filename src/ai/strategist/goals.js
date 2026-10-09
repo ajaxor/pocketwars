@@ -95,7 +95,7 @@ export function planCaptures(sit) {
     const here = wanted.find((p) => p.x === u.x && p.y === u.y);
     if (here && u.capture > 0) { sit.captureTargets.set(u.id, here); taken.set(here.y * W(game) + here.x, 1); } else free.push(u);
   }
-  const hqFirst = sit.tactics.target === 'hq' ? 6 : 0;
+  const hqFirst = sit.target === 'hq' ? 6 : 0;
   const pairs = [];
   for (const u of free) {
     const mc = unitDef(game, u).moveClass;
@@ -111,7 +111,7 @@ export function planCaptures(sit) {
   for (const { u, p } of pairs) {
     if (done.has(u.id)) continue;
     const k = p.y * W(game) + p.x;
-    if ((taken.get(k) ?? 0) >= (isHq(p) && p.owner !== null && sit.tactics.target === 'hq' ? 2 : 1)) continue;   // a second for the HQ only in an HQ rush, as a backup
+    if ((taken.get(k) ?? 0) >= (isHq(p) && p.owner !== null && sit.target === 'hq' ? 2 : 1)) continue;   // a second for the HQ only in an HQ rush, as a backup
     taken.set(k, (taken.get(k) ?? 0) + 1);
     sit.captureTargets.set(u.id, p);
     done.add(u.id);
@@ -263,7 +263,7 @@ export function goalsFor(sit, unit) {
       const homeFrom = (x, y) => Math.min(...homes.map(([hx, hy]) => distance(x, y, hx, hy)));
       const away = homeFrom(unit.x, unit.y);
       const fuel = fuelOf(game, unit);
-      if (away > 0 && fuel <= Math.ceil(away / def.move)) {
+      if (away > 0 && fuel <= Math.ceil(away / def.move) - Math.floor(params.fuelSlack)) {
         const land = r.carrier && (ammoOf(game, unit) ?? 1) >= deployCost(deployConfig(game, unit)) ? landingTiles(sit, unit) : [];
         const drop = land.filter(([x, y]) => distance(unit.x, unit.y, x, y) <= def.move && Math.ceil(homeFrom(x, y) / def.move) <= fuel);
         if (drop.length) return result('land', drop);
@@ -318,11 +318,11 @@ export function goalsFor(sit, unit) {
   let tiles = [];
   const combatUnits = sit.mine.filter((u) => roles(unitDef(game, u)).combat && !isStructure(game, u) && !roles(unitDef(game, u)).capture).length;
   const engaged = sit.threatAt(unit, unit.x, unit.y) > 0;
-  if (tactics.mass && combatUnits < tactics.mass && !engaged && sit.army.length) {
+  if (tactics.mass && combatUnits < tactics.mass && !engaged && sit.army.length && sit.target !== 'hq') {
     tiles = rallyGoals(sit, unit, mc, ids);
     if (tiles.length) return result('rally', tiles);
   }
-  const target = tactics.target ?? 'balanced';
+  const target = sit.target;
   if (r.combat) {
     const fight = target === 'hq' ? 4 : target === 'properties' ? 2 : 0;
     tiles = attackGoals(sit, unit, mc, ids, fight);

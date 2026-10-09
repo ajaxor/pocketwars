@@ -188,3 +188,59 @@ test('a medic goes to take a free city rather than waiting beside a wounded frie
   assert.equal(order.goal.kind, 'capture');
   assert.ok(order.order.to.x > 1, 'and it heads for it');
 });
+
+test('a medic keeps out of the enemy\'s reach: support units weigh the threat map like any other unit', () => {
+  const g = world(['H.........h.', '............', '............'], [['medic', 0, 5, 1], ['soldier', 0, 7, 1, 4], ['tank', 1, 8, 1]]);
+  const sit0 = situation(g);
+  const careful = bestOrder(sit0, g.state.units[0]);
+  const reckless = bestOrder(situation(g, 0, { params: { threat: 0 } }), g.state.units[0]);
+  assert.equal(sit0.threatAt(g.state.units[0], careful.order.to.x, careful.order.to.y), 0, 'it stays where the tank cannot reach');
+  assert.ok(sit0.threatAt(g.state.units[0], reckless.order.to.x, reckless.order.to.y) > 0, 'while a medic that ignores the threat walks in to heal');
+});
+
+test('troops just dropped by a carrier always leave its tile (there is a free neighbour, or the drop is refused)', () => {
+  const g = world(['H.~~~~h', '~~~~~~~'], [['transport_copter', 0, 1, 0], ['soldier', 1, 6, 0]], [0, 0]);
+  g.aiSetup = [{ engine: 'strategist', profile: {} }, null];
+  const copter = g.state.units[0];
+  assert.ok(g.deploy({ unitId: copter.id }).ok);
+  const dropped = g.state.units.find((u) => u.owner === 0 && u !== copter);
+  const c = bestOrder(situation(g), dropped);
+  assert.ok(c, 'it gets an order');
+  assert.ok(c.order.to.x !== copter.x || c.order.to.y !== copter.y, 'and the order moves it off the carrier');
+  const walled = world(['H~~~~~h', '~~~~~~~'], [['transport_copter', 0, 0, 0], ['soldier', 1, 6, 0]], [0, 0]);
+  assert.equal(walled.deploy({ unitId: walled.state.units[0].id }).error, 'no-room', 'no free tile: the engine refuses the drop, so the AI never has a stuck unit');
+  assert.doesNotThrow(() => { walled.aiSetup = [{ engine: 'strategist', profile: {} }, null]; playTurn(walled); });
+});
+
+test('join (off by default): two badly hurt units of one kind merge instead of both walking home', () => {
+  const rows = ['H.........h', '...........'];
+  const units = [['soldier', 0, 4, 0, 2], ['soldier', 0, 5, 0, 3], ['soldier', 1, 10, 1]];
+  const off = world(rows, units);
+  const on = world(rows, units);
+  const joiner = (g, profile) => bestOrder(situation(g, 0, profile), g.state.units[1]);   // the 3 HP one, standing next to the 2 HP one
+  assert.notEqual(joiner(off, {}).order.action.type, 'join', 'not unless the profile asks for it');
+  const c = joiner(on, { params: { join: 20 } });
+  assert.equal(c.order.action.type, 'join');
+  assert.deepEqual(c.order.to, { x: 4, y: 0 });
+  assert.ok(on.validateOrder(c.order).ok, 'and the engine accepts it');
+  const healthy = world(rows, [['soldier', 0, 4, 0, 9], ['soldier', 0, 5, 0, 9], ['soldier', 1, 10, 1]]);
+  assert.notEqual(bestOrder(situation(healthy, 0, { params: { join: 20 } }), healthy.state.units[1]).order.action.type, 'join', 'healthy units do not merge');
+});
+
+test('hide: a sniper weighs the threat less on a tile that cloaks it', () => {
+  const g = world(['H.F.......h', '...........'], [['sniper', 0, 0, 1], ['tank', 1, 6, 1]]);
+  const sniper = g.state.units[0];
+  const plain = situation(g, 0, { params: { threat: 12, hide: 0 } });
+  const wary = bestOrder(plain, sniper);
+  const hiding = bestOrder(situation(g, 0, { params: { threat: 12, hide: 1 } }), sniper);
+  assert.ok(hiding.order.to.x >= wary.order.to.x, 'it goes at least as far forward when the woods hide it');
+});
+
+test('finish: far ahead, the army drops its plan and heads for the enemy HQ', () => {
+  const g = world(['H.........h'], [['tank', 0, 2, 0], ['tank', 0, 3, 0], ['soldier', 1, 9, 0]]);
+  const s = situation(g, 0, { params: { finish: 1.5 } });
+  assert.equal(s.target, 'hq');
+  const even = world(['H.........h'], [['soldier', 0, 2, 0], ['soldier', 1, 9, 0]]);
+  assert.notEqual(situation(even, 0, { params: { finish: 1.5 } }).target, 'hq', 'not while the forces are level');
+  assert.notEqual(situation(even).target, 'hq');
+});

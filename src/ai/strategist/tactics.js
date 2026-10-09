@@ -16,8 +16,9 @@ import { canAttackFrom, forecastAttack } from '../../engine/combat.js';
 import { canHealAt, healPlan, healsAutomatically } from '../../engine/heal.js';
 import { isMine, layConfig, layTiles } from '../../engine/mines.js';
 import { canFireAfterMoving, computeReach, hasMovedAlready } from '../../engine/movement.js';
-import { distance, propertyAt, ownerAt, terrainAt, tileIndex, unitDef } from '../../engine/queries.js';
+import { distance, propertyAt, ownerAt, terrainAt, terrainIdAt, tileIndex, unitDef } from '../../engine/queries.js';
 import { isNeutral } from '../../engine/structures.js';
+import { joinPartner } from '../../engine/join.js';
 import { canSubmergeAt } from '../../engine/submerge.js';
 import { canSupplyAt, supplyPlan } from '../../engine/supply.js';
 import { menuFor } from '../../engine/economy.js';
@@ -49,7 +50,9 @@ export function finishPotential(sit, target, except) {
 export function bestOrder(sit, unit) {
   const { game, params, tactics, player } = sit;
   const def = unitDef(game, unit);
-  const reach = computeReach(game, unit);
+  const joins = params.join > 0 && unit.hp <= params.retreatHp * (tactics.retreat ?? 1) && !unit.fresh;   // two badly hurt units of a kind may merge
+  const reach = computeReach(game, unit, { join: joins });
+  const cloakTerrain = attributeConfig(def, 'cloak')?.terrain;   // a unit that hides on some terrain (a sniper in the woods)
   const at = unit.y * game.map.width + unit.x;
   let cached = sit.goalCache?.get(unit.id);
   if (!cached || cached.at !== at || cached.hp !== unit.hp) sit.goalCache?.set(unit.id, (cached = { at, hp: unit.hp, goal: goalsFor(sit, unit) }));
@@ -71,13 +74,23 @@ export function bestOrder(sit, unit) {
     if (unit.carriedBy && !moved && reach.size > 1) continue;   // a unit just dropped has to leave its carrier's tile
     const stars = hasAttribute(def, 'ignoresTerrainDefense') ? 0 : terrainAt(game, x, y).defense * (attributeConfig(def, 'terrainDefenseMultiplier') ?? 1);
     let base = -(field.get(tileIndex(game.map, x, y)) ?? fallback(x, y)) * params.distance + stars * params.terrain;
-    base -= sit.threatAt(unit, x, y) * params.threat * caution;
+    const hidden = cloakTerrain && !unit.revealed && cloakTerrain.includes(terrainIdAt(game, x, y));
+    base -= sit.threatAt(unit, x, y) * params.threat * caution * (hidden ? 1 - params.hide : 1);
     let friends = 0;
     for (const f of sit.mine) if (f !== unit && Math.abs(f.x - x) + Math.abs(f.y - y) <= 2 && ++friends >= 3) break;
     base += friends * params.guard;
     const prop = propertyAt(game, x, y);
     if (prop && ownerAt(game, x, y) === player && prop.builds?.length && menuFor(game, player, x, y).length) base -= BLOCK_BUILD;   // staying put blocks it as much as arriving
 
+    if (joins && moved) {   // a hurt friend of the same kind stands here: merging beats both walking home to be repaired
+      const partner = joinPartner(game, unit, x, y);
+      if (partner) {
+        const total = unit.hp + partner.hp;
+        const gain = total <= sit.maxHp && partner.hp <= params.retreatHp * (tactics.retreat ?? 1) ? params.join * total / sit.maxHp * value : 0;
+        if (gain > 0 && (!best || base + gain > best.score)) best = { score: base + gain, kind: 'support', action: { type: 'join' }, gain, x, y };
+        continue;
+      }
+    }
     let pick = { score: base, kind: 'move', action: { type: 'wait' }, gain: 0 };
     // attacks from here
     if (mayFire(moved)) {
