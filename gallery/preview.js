@@ -55,7 +55,9 @@ async function boot() {
   setFactions([...Object.values(registry.factions), { id: 'chorus', ...campaign.chorus }]);
   const catalog = buildCatalog({ registry, concepts, planned, status });
   const factions = Object.values(registry.factions).map((f) => ({ id: f.id, name: f.name, color: f.color, dark: f.dark }));
-  const terrain = Object.fromEntries(['plain', 'road', 'sea'].map((id) => [id, registry.terrain[id].render.base || registry.terrain[id].render.mini]));
+  // plain has no colour of its own: it shows the ground under it (grass), so the grass backdrop comes from the ground data
+  const grassColor = registry.groundDef('grass')?.render.base ?? '#86b95c';
+  const terrain = Object.fromEntries(['plain', 'road', 'sea'].map((id) => [id, registry.terrain[id].render.base || registry.terrain[id].render.mini || grassColor]));
 
   const state = { mode: 'idle', size: 96, bg: 'plain', outline: 'thin', outlineColor: 'faction', blackLines: 'plain', paused: matchMedia('(prefers-reduced-motion: reduce)').matches };
   let clock = 0, last = performance.now();
