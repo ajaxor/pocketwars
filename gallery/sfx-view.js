@@ -9,6 +9,7 @@ export const clipCount = (data) => data.groups.reduce((n, g) => n + g.clips.leng
 
 export function createSfxView(ctx, root, data) {
   const players = new Map();   // clip id -> { audio, button }
+  const reviews = new Map();   // clip id -> { card, approve, reject, note, badge }
   const state = { volume: 0.8, loop: false };
 
   root.append(el('p', 'intro', `${data.model}. ${data.note}`));
@@ -24,6 +25,28 @@ export function createSfxView(ctx, root, data) {
   bar.append(volLabel, loopLabel, stopAll);
   root.append(bar);
 
+  // Review: Approve / Reject per clip. Approved status is saved in sfx.json (committed); a pending decision lives in this browser
+  // until it is exported to chat, where Claude applies it (approve, or redo the rejected ones) and the saved status takes over.
+  const KEY = 'pocketwars-sfx-review';
+  const decisions = loadDecisions();   // clip id -> { v: 'approved' | 'rejected', note }
+  const saved = new Map(data.groups.flatMap((g) => g.clips).map((c) => [c.id, c.status || 'new']));
+  const statusOf = (id) => decisions[id]?.v || saved.get(id);
+  function loadDecisions() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
+  function saveDecisions() { try { localStorage.setItem(KEY, JSON.stringify(decisions)); } catch { /* private window: decisions last until the tab closes */ } }
+
+  const review = el('div', 'controls sfx-controls');
+  const summary = el('span', 'tag sfx-summary');
+  const filterLabel = el('label', 'ctl', 'Show ');
+  const filter = el('select'); filter.setAttribute('aria-label', 'Filter clips by status');
+  for (const [v, t] of [['all', 'All'], ['new', 'Not reviewed'], ['approved', 'Approved'], ['rejected', 'Rejected']]) { const o = el('option', null, t); o.value = v; filter.append(o); }
+  filterLabel.append(filter);
+  const exportBtn = el('button', 'btn', 'Export decisions'); exportBtn.type = 'button';
+  const clearBtn = el('button', 'btn', 'Clear decisions'); clearBtn.type = 'button';
+  review.append(summary, filterLabel, exportBtn, clearBtn);
+  root.append(review);
+  const exportBox = el('textarea', 'sfx-export'); exportBox.readOnly = true; exportBox.hidden = true; exportBox.rows = 8; exportBox.setAttribute('aria-label', 'Exported decisions');
+  root.append(exportBox);
+
   for (const group of data.groups) {
     const section = el('section', 'sfx-group');
     section.append(el('h3', 'section', `${group.label} · ${group.unit}`));
@@ -33,11 +56,21 @@ export function createSfxView(ctx, root, data) {
       const top = el('div', 'top'); top.append(el('div', 'name', clip.id), el('span', 'tag', `${clip.seconds.toFixed(1)} s`));
       const button = el('button', 'btn sfx-play', 'Play'); button.type = 'button'; button.setAttribute('aria-pressed', 'false');
       button.setAttribute('aria-label', `Play ${clip.id}`);
-      const label = [clip.for, clip.chosen ? 'chosen' : null].filter(Boolean).join(' · ');
+      const label = clip.for || '';
       card.append(top);
       if (label) card.append(el('div', 'meta', label));
       card.append(button);
       button.addEventListener('click', () => play(clip.id));
+      const row = el('div', 'sfx-review');
+      const approve = el('button', 'btn sfx-ok', 'Approve'); approve.type = 'button'; approve.setAttribute('aria-label', `Approve ${clip.id}`);
+      const reject = el('button', 'btn sfx-no', 'Reject'); reject.type = 'button'; reject.setAttribute('aria-label', `Reject ${clip.id}`);
+      const note = el('input', 'sfx-note'); note.type = 'text'; note.placeholder = 'Why? (optional)'; note.setAttribute('aria-label', `Note for ${clip.id}`);
+      approve.addEventListener('click', () => decide(clip.id, 'approved'));
+      reject.addEventListener('click', () => decide(clip.id, 'rejected'));
+      note.addEventListener('change', () => { if (decisions[clip.id]) { decisions[clip.id].note = note.value.trim(); saveDecisions(); } });
+      row.append(approve, reject); card.append(row, note);
+      reviews.set(clip.id, { card, approve, reject, note, badge: el('span', 'tag') });
+      top.append(reviews.get(clip.id).badge);
       if (group.id === 'move') {   // hear a move: fade in, run for a moment, then cut early the way the game does when the move ends
         const demo = el('button', 'btn sfx-play', 'Move + stop'); demo.type = 'button'; demo.setAttribute('aria-label', `Play ${clip.id} as a short move`);
         demo.addEventListener('click', () => playMove(clip.id));
@@ -67,6 +100,46 @@ export function createSfxView(ctx, root, data) {
     a.volume = state.volume; a.loop = state.loop; a.currentTime = 0;
     a.play().then(() => mark(p, true)).catch(() => mark(p, false));   // a refused play (no gesture, no codec) just leaves the button idle
   }
+  function decide(id, v) {
+    const was = decisions[id]?.v;
+    if (was === v || (!was && saved.get(id) === v)) delete decisions[id];   // tapping the current choice again undoes it
+    else decisions[id] = { v, note: reviews.get(id).note.value.trim() };
+    saveDecisions(); refresh();
+  }
+  function refresh() {
+    for (const id of Object.keys(decisions)) if (!reviews.has(id) || decisions[id].v === saved.get(id)) delete decisions[id];   // a decision the file already holds, or for a clip that is gone
+    const count = { new: 0, approved: 0, rejected: 0 };
+    for (const [id, r] of reviews) {
+      const st = statusOf(id), pending = Boolean(decisions[id]);
+      count[st]++;
+      r.card.dataset.status = st; r.card.classList.toggle('sfx-pending', pending);
+      r.badge.textContent = st === 'new' ? 'new' : st + (pending ? ' •' : '');
+      r.approve.setAttribute('aria-pressed', String(st === 'approved')); r.reject.setAttribute('aria-pressed', String(st === 'rejected'));
+      if (decisions[id]) r.note.value = decisions[id].note || '';
+      r.note.hidden = st !== 'rejected';
+      r.card.hidden = filter.value !== 'all' && filter.value !== st;
+    }
+    const n = Object.keys(decisions).length;
+    summary.textContent = `${count.approved} approved · ${count.rejected} rejected · ${count.new} to review`;
+    exportBtn.disabled = n === 0; clearBtn.disabled = n === 0;
+    exportBtn.textContent = n ? `Export decisions (${n})` : 'Export decisions';
+  }
+  function exportText() {
+    const pick = (v) => Object.entries(decisions).filter(([, d]) => d.v === v);
+    const ok = pick('approved'), no = pick('rejected');
+    return ['Sound review', '', `Approved (${ok.length}): ${ok.map(([id]) => id).join(', ') || 'none'}`, '',
+      `Rejected, please redo (${no.length}):`, ...(no.length ? no.map(([id, d]) => `- ${id}${d.note ? ': ' + d.note : ''}`) : ['none'])].join('\n');
+  }
+  filter.addEventListener('change', refresh);
+  clearBtn.addEventListener('click', () => { for (const k of Object.keys(decisions)) delete decisions[k]; for (const r of reviews.values()) r.note.value = ''; saveDecisions(); exportBox.hidden = true; refresh(); });
+  exportBtn.addEventListener('click', async () => {
+    const text = exportText();
+    exportBox.value = text; exportBox.hidden = false;   // always shown too, so it can be copied by hand if the clipboard is blocked
+    try { await navigator.clipboard.writeText(text); exportBtn.textContent = 'Copied!'; }
+    catch { exportBox.select(); exportBtn.textContent = 'Select and copy below'; }
+    setTimeout(refresh, 1800);
+  });
+
   function stop() { clearInterval(fadeTimer); for (const p of players.values()) if (p.audio) { p.audio.pause(); p.audio.currentTime = 0; } }
 
   // The movement design from sfx.json: no loop, fade in at the start, fade out and stop when the move ends (here after ~0.9 s).
@@ -110,5 +183,6 @@ export function createSfxView(ctx, root, data) {
   loop.addEventListener('change', () => { state.loop = loop.checked; for (const p of players.values()) if (p.audio) p.audio.loop = state.loop; });
   stopAll.addEventListener('click', stop);
 
+  refresh();
   return { show() {}, stop, resize() {}, frame() {} };
 }

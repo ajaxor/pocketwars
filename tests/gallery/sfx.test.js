@@ -43,8 +43,9 @@ test('the groups are attack, impact, movement, death and UI', () => {
   for (const g of data.groups) assert.ok(g.clips.length >= 1, `${g.id} has a clip`);
 });
 
-test('the tank moves with tank-move-2, played once with a fade, not looped', () => {
-  assert.deepEqual(clips.filter((c) => c.chosen).map((c) => c.id), ['tank-move-2']);
+test('each clip is new or approved; tank-move-2 is approved; the tank moves once with a fade, not looped', () => {
+  for (const c of clips) assert.ok([undefined, 'new', 'approved'].includes(c.status), `${c.id}: status ${c.status}`);
+  assert.ok(clips.find((c) => c.id === 'tank-move-2').status === 'approved');
   assert.equal(data.movePlayback.loop, false);
   assert.ok(data.movePlayback.fadeInMs > 0 && data.movePlayback.fadeOutMs > 0);
   assert.equal(data.movePlayback.stopWhenMoveEnds, true);

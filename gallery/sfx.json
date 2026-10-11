@@ -1,6 +1,6 @@
 {
   "model": "ElevenLabs eleven_text_to_sound_v2",
-  "note": "Sounds for the whole game: weapon fire (one per attack look), impacts, movement per unit, deaths, and UI and battle events. Several takes of most; the first take of each is the default pick in the mapping. Only tank-move-2 has been chosen by ear so far. Files are in gallery/sfx/. The Mapping section at the bottom shows which clip plays for which unit, weapon look or event.",
+  "note": "Sounds for the whole game: weapon fire (one per attack look), impacts, movement per unit, deaths, and UI and battle events. Several takes of most; the first take of each is the default pick in the mapping. Each clip has a status: new (not reviewed yet) or approved (you listened and kept it). Rejected clips are redone and replaced. Review in this tab with the Approve and Reject buttons, then Export decisions and paste them into chat. Files are in gallery/sfx/. The Mapping section at the bottom shows which clip plays for which unit, weapon look or event.",
   "movePlayback": {
     "loop": false,
     "fadeInMs": 150,
@@ -399,7 +399,7 @@
           "seconds": 2,
           "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop",
           "for": "tread",
-          "chosen": true
+          "status": "approved"
         },
         {
           "id": "tank-move-3",

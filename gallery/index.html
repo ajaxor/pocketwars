@@ -92,6 +92,15 @@
   .sfx-group .grid { padding-top: 10px; padding-bottom: 8px; }
   .sfx-play { margin-top: 4px; min-width: 96px; min-height: 40px; }   /* a comfortable thumb target on a phone */
   .sfx-play[aria-pressed="true"] { background: #3c74d6; color: #fff; }
+  .sfx-review { display: flex; gap: 6px; margin-top: 4px; }
+  .sfx-review .btn { flex: 1; min-height: 40px; }
+  .sfx-review .btn[aria-pressed="true"].sfx-ok { background: #2f8f4e; color: #fff; }
+  .sfx-review .btn[aria-pressed="true"].sfx-no { background: #b3402f; color: #fff; }
+  .sfx-note { width: 100%; box-sizing: border-box; margin-top: 6px; min-height: 36px; }
+  .sfx-export { width: calc(100% - 32px); margin: 0 16px 12px; box-sizing: border-box; font: 12px/1.4 monospace; }
+  .sfx-group .card[data-status="approved"] { outline: 2px solid #2f8f4e; }
+  .sfx-group .card[data-status="rejected"] { outline: 2px solid #b3402f; }
+  .sfx-group .card.sfx-pending { outline-style: dashed; }
   .sfx-map { padding: 6px 16px; }
   .sfx-map summary { cursor: pointer; padding: 10px 0; font-weight: 600; }
   .sfx-map .controls { flex-wrap: wrap; gap: 6px; padding-bottom: 12px; }
