@@ -102,9 +102,11 @@ Last sorted 9 October 2026.
 ## Audio
 
 - **The game has no sound.** The clips exist only in the gallery's Sound effects tab. Nothing plays in a battle: it needs a small sound manager (one place that plays a named effect), a mute setting, the first-tap unlock that phone browsers require, and a mapping from unit, weapon and event to a clip.
-- **Only the tank has sounds, and no take is chosen.** First pass (October 2026): one attack, four movement and two death takes from one prompt each (`gallery/sfx.json`). Pick the keepers by ear, then decide whether the other units share the tank's sounds or get their own. Weapon looks (`fx` in `data/weapons.json`) are the natural unit for attack sounds.
-- **The movement clips are one-shots, not loops.** The prompt asked for a rolling loop but the clips were generated with looping off, so they are 1 to 2 seconds long and the seam is audible with the tab's Loop box ticked. Regenerate with looping on, or crossfade the ends, before a unit drives with one.
-- **No sounds yet for** the other units and weapons, capturing and building, UI taps, turn change, victory and defeat, ambience or music.
+- **No take is chosen except the tank's movement.** Every sound was generated blind (October 2026): 125 clips in `gallery/sfx/`, listed with prompts and a unit / weapon-look / event mapping in `gallery/sfx.json`. The mapping uses the first take of each sound; listen to the rest and pick by ear. Only `tank-move-2` is chosen.
+- **Movement is meant to be a one-shot with a fade, not a loop.** Play the clip once at the start of a move with a ~150 ms fade-in, fade out (~250 ms) and stop as soon as the move ends, even mid-clip (`movePlayback` in `sfx.json`; the gallery's "Move + stop" button demos it). Clips run 1 to 5 s, so the game must also handle a move longer than its clip (hold the last second quietly or restart with a fade).
+- **Weak or odd takes to regenerate if they bother you:** `atk-slash-2` (6 s), `death-wheels-1` (5 s), `mov-jet-1` (5 s, the only jet take), `mov-prop-2` (the only prop take), `atk-cruise-1` and `atk-missile-1` (one take each), a few UI clips are only 0.5 s (`ui-cancel-1`, `ui-heal-1`, `ui-join-1`) and `ui-victory-1` / `ui-defeat-1` are 1 s, short for a fanfare. The generator picks the clip length itself (0.5 to 16 s), so some takes could not be used and were not kept.
+- **Reused rather than generated:** the zap impact reuses the spark take, the flak impact reuses a blast take, `light_bombs` plays the bomb clip, the amphibious tank moves like a tank, the marine like a wheeled unit, crashes use the aircraft death, mine detonations the mine death.
+- **Still without sound:** ambience and music.
 
 ## UI and presentation
 

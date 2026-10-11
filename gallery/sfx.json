@@ -1,34 +1,1136 @@
 {
   "model": "ElevenLabs eleven_text_to_sound_v2",
-  "note": "First pass: one prompt per sound, several takes each, none chosen yet. Files are in gallery/sfx/. A take that wins gets copied into the game's audio folder when the game gets sound.",
+  "note": "Sounds for the whole game: weapon fire (one per attack look), impacts, movement per unit, deaths, and UI and battle events. Several takes of most; the first take of each is the default pick in the mapping. Only tank-move-2 has been chosen by ear so far. Files are in gallery/sfx/. The Mapping section at the bottom shows which clip plays for which unit, weapon look or event.",
+  "movePlayback": {
+    "loop": false,
+    "fadeInMs": 150,
+    "fadeOutMs": 250,
+    "maxSeconds": 2,
+    "stopWhenMoveEnds": true,
+    "note": "Movement clips are one-shots (1 to 5 s): play once from the start of a move with a short fade-in, and fade out and stop as soon as the move ends, even mid-clip. Never loop."
+  },
   "groups": [
     {
       "id": "attack",
       "label": "Attack",
-      "unit": "tank",
+      "unit": "one per weapon look (fx)",
       "clips": [
-        { "id": "tank-attack-1", "file": "sfx/tank-attack-1.mp3", "seconds": 1.0, "prompt": "Tank cannon firing, single sharp boom with a heavy low thump, brief metallic ring, short tail" }
+        {
+          "id": "tank-attack-1",
+          "file": "sfx/tank-attack-1.mp3",
+          "seconds": 1,
+          "prompt": "Tank cannon firing, single sharp boom with a heavy low thump, brief metallic ring, short tail",
+          "for": "cannon"
+        },
+        {
+          "id": "atk-bullet-1",
+          "file": "sfx/atk-bullet-1.mp3",
+          "seconds": 1,
+          "prompt": "Single rifle shot, sharp crack with short echo",
+          "for": "bullet"
+        },
+        {
+          "id": "atk-bullet-2",
+          "file": "sfx/atk-bullet-2.mp3",
+          "seconds": 1,
+          "prompt": "Single rifle shot, sharp crack with short echo",
+          "for": "bullet"
+        },
+        {
+          "id": "atk-burst-1",
+          "file": "sfx/atk-burst-1.mp3",
+          "seconds": 1,
+          "prompt": "Short automatic rifle burst, five rapid shots, dry and punchy",
+          "for": "burst"
+        },
+        {
+          "id": "atk-burst-2",
+          "file": "sfx/atk-burst-2.mp3",
+          "seconds": 2,
+          "prompt": "Short automatic rifle burst, five rapid shots, dry and punchy",
+          "for": "burst"
+        },
+        {
+          "id": "atk-rocket-1",
+          "file": "sfx/atk-rocket-1.mp3",
+          "seconds": 1,
+          "prompt": "Rocket launcher whoosh, short hissing launch with a dull thump",
+          "for": "rocket"
+        },
+        {
+          "id": "atk-rocket-2",
+          "file": "sfx/atk-rocket-2.mp3",
+          "seconds": 1,
+          "prompt": "Rocket launcher whoosh, short hissing launch with a dull thump",
+          "for": "rocket"
+        },
+        {
+          "id": "atk-heavy_cannon-1",
+          "file": "sfx/atk-heavy_cannon-1.mp3",
+          "seconds": 2,
+          "prompt": "Heavy artillery cannon blast, huge deep boom with long low rumble",
+          "for": "heavy_cannon"
+        },
+        {
+          "id": "atk-heavy_cannon-2",
+          "file": "sfx/atk-heavy_cannon-2.mp3",
+          "seconds": 1,
+          "prompt": "Heavy artillery cannon blast, huge deep boom with long low rumble",
+          "for": "heavy_cannon"
+        },
+        {
+          "id": "atk-shell-1",
+          "file": "sfx/atk-shell-1.mp3",
+          "seconds": 1,
+          "prompt": "Howitzer artillery shell fired, deep thump then a falling whistle",
+          "for": "shell"
+        },
+        {
+          "id": "atk-shell-2",
+          "file": "sfx/atk-shell-2.mp3",
+          "seconds": 1,
+          "prompt": "Howitzer artillery shell fired, deep thump then a falling whistle",
+          "for": "shell"
+        },
+        {
+          "id": "atk-flame-1",
+          "file": "sfx/atk-flame-1.mp3",
+          "seconds": 2,
+          "prompt": "Flamethrower burst, roaring whoosh of fire with crackle",
+          "for": "flame"
+        },
+        {
+          "id": "atk-flame-2",
+          "file": "sfx/atk-flame-2.mp3",
+          "seconds": 2,
+          "prompt": "Flamethrower burst, roaring whoosh of fire with crackle",
+          "for": "flame"
+        },
+        {
+          "id": "atk-salvo-1",
+          "file": "sfx/atk-salvo-1.mp3",
+          "seconds": 1,
+          "prompt": "Rocket salvo, several rockets launching in quick succession with hissing whoosh",
+          "for": "salvo"
+        },
+        {
+          "id": "atk-salvo-2",
+          "file": "sfx/atk-salvo-2.mp3",
+          "seconds": 1,
+          "prompt": "Rocket salvo, several rockets launching in quick succession with hissing whoosh",
+          "for": "salvo"
+        },
+        {
+          "id": "atk-flak-1",
+          "file": "sfx/atk-flak-1.mp3",
+          "seconds": 2,
+          "prompt": "Anti-aircraft flak gun, rapid pounding thumps with sharp bursting pops",
+          "for": "flak"
+        },
+        {
+          "id": "atk-flak-2",
+          "file": "sfx/atk-flak-2.mp3",
+          "seconds": 1,
+          "prompt": "Anti-aircraft flak gun, rapid pounding thumps with sharp bursting pops",
+          "for": "flak"
+        },
+        {
+          "id": "atk-pods-1",
+          "file": "sfx/atk-pods-1.mp3",
+          "seconds": 1,
+          "prompt": "Small rocket pod volley, rapid popping launches with short hiss",
+          "for": "pods"
+        },
+        {
+          "id": "atk-pods-2",
+          "file": "sfx/atk-pods-2.mp3",
+          "seconds": 2,
+          "prompt": "Small rocket pod volley, rapid popping launches with short hiss",
+          "for": "pods"
+        },
+        {
+          "id": "atk-air_missile-1",
+          "file": "sfx/atk-air_missile-1.mp3",
+          "seconds": 1,
+          "prompt": "Air-to-air missile launch, sharp ignition whoosh streaking away",
+          "for": "air_missile"
+        },
+        {
+          "id": "atk-air_missile-2",
+          "file": "sfx/atk-air_missile-2.mp3",
+          "seconds": 3,
+          "prompt": "Air-to-air missile launch, sharp ignition whoosh streaking away",
+          "for": "air_missile"
+        },
+        {
+          "id": "atk-bombs-1",
+          "file": "sfx/atk-bombs-1.mp3",
+          "seconds": 1,
+          "prompt": "Aerial bomb dropped, descending whistle ending in a short thud",
+          "for": "bombs"
+        },
+        {
+          "id": "atk-bombs-2",
+          "file": "sfx/atk-bombs-2.mp3",
+          "seconds": 2,
+          "prompt": "Aerial bomb dropped, descending whistle ending in a short thud",
+          "for": "bombs"
+        },
+        {
+          "id": "atk-depth-1",
+          "file": "sfx/atk-depth-1.mp3",
+          "seconds": 1,
+          "prompt": "Depth charge dropped into water, heavy plunk then bubbling sink",
+          "for": "depth"
+        },
+        {
+          "id": "atk-depth-2",
+          "file": "sfx/atk-depth-2.mp3",
+          "seconds": 1,
+          "prompt": "Depth charge dropped into water, heavy plunk then bubbling sink",
+          "for": "depth"
+        },
+        {
+          "id": "atk-torpedo-1",
+          "file": "sfx/atk-torpedo-1.mp3",
+          "seconds": 1,
+          "prompt": "Torpedo launch, compressed air thump then underwater propeller whir",
+          "for": "torpedo"
+        },
+        {
+          "id": "atk-torpedo-2",
+          "file": "sfx/atk-torpedo-2.mp3",
+          "seconds": 1,
+          "prompt": "Torpedo launch, compressed air thump then underwater propeller whir",
+          "for": "torpedo"
+        },
+        {
+          "id": "atk-naval_shell-1",
+          "file": "sfx/atk-naval_shell-1.mp3",
+          "seconds": 1,
+          "prompt": "Battleship main gun salvo, colossal deep boom with rolling echo over water",
+          "for": "naval_shell"
+        },
+        {
+          "id": "atk-naval_shell-2",
+          "file": "sfx/atk-naval_shell-2.mp3",
+          "seconds": 1,
+          "prompt": "Battleship main gun salvo, colossal deep boom with rolling echo over water",
+          "for": "naval_shell"
+        },
+        {
+          "id": "atk-mortar-1",
+          "file": "sfx/atk-mortar-1.mp3",
+          "seconds": 2,
+          "prompt": "Mortar tube firing, hollow thunk with a short ringing echo",
+          "for": "mortar"
+        },
+        {
+          "id": "atk-mortar-2",
+          "file": "sfx/atk-mortar-2.mp3",
+          "seconds": 1,
+          "prompt": "Mortar tube firing, hollow thunk with a short ringing echo",
+          "for": "mortar"
+        },
+        {
+          "id": "atk-slash-1",
+          "file": "sfx/atk-slash-1.mp3",
+          "seconds": 2,
+          "prompt": "Katana sword slash, quick sharp metallic swish",
+          "for": "slash"
+        },
+        {
+          "id": "atk-slash-2",
+          "file": "sfx/atk-slash-2.mp3",
+          "seconds": 6,
+          "prompt": "Katana sword slash, quick sharp metallic swish",
+          "for": "slash"
+        },
+        {
+          "id": "atk-wrench-1",
+          "file": "sfx/atk-wrench-1.mp3",
+          "seconds": 2,
+          "prompt": "Wrench hitting metal, quick sharp clang",
+          "for": "wrench"
+        },
+        {
+          "id": "atk-wrench-2",
+          "file": "sfx/atk-wrench-2.mp3",
+          "seconds": 1,
+          "prompt": "Wrench hitting metal, quick sharp clang",
+          "for": "wrench"
+        },
+        {
+          "id": "atk-harpoon-1",
+          "file": "sfx/atk-harpoon-1.mp3",
+          "seconds": 1,
+          "prompt": "Harpoon gun firing, sharp twang and whoosh of a spear flying",
+          "for": "harpoon"
+        },
+        {
+          "id": "atk-harpoon-2",
+          "file": "sfx/atk-harpoon-2.mp3",
+          "seconds": 1,
+          "prompt": "Harpoon gun firing, sharp twang and whoosh of a spear flying",
+          "for": "harpoon"
+        },
+        {
+          "id": "atk-sam-1",
+          "file": "sfx/atk-sam-1.mp3",
+          "seconds": 1,
+          "prompt": "Surface-to-air missile launch, heavy roaring rocket ignition climbing skyward",
+          "for": "sam"
+        },
+        {
+          "id": "atk-sam-2",
+          "file": "sfx/atk-sam-2.mp3",
+          "seconds": 2,
+          "prompt": "Surface-to-air missile launch, heavy roaring rocket ignition climbing skyward",
+          "for": "sam"
+        },
+        {
+          "id": "atk-cruise-1",
+          "file": "sfx/atk-cruise-1.mp3",
+          "seconds": 1,
+          "prompt": "Cruise missile launch, deep rumbling ignition then jet engine whine fading away",
+          "for": "cruise"
+        },
+        {
+          "id": "atk-missile-1",
+          "file": "sfx/atk-missile-1.mp3",
+          "seconds": 1,
+          "prompt": "Tank guided missile launch, sharp whooshing rocket motor ignition",
+          "for": "missile"
+        },
+        {
+          "id": "atk-electric-1",
+          "file": "sfx/atk-electric-1.mp3",
+          "seconds": 1,
+          "prompt": "Electric shock zap, crackling arc of lightning with buzzing snap",
+          "for": "electric"
+        },
+        {
+          "id": "atk-electric-2",
+          "file": "sfx/atk-electric-2.mp3",
+          "seconds": 1,
+          "prompt": "Electric shock zap, crackling arc of lightning with buzzing snap",
+          "for": "electric"
+        }
+      ]
+    },
+    {
+      "id": "impact",
+      "label": "Impact",
+      "unit": "where the blow lands",
+      "clips": [
+        {
+          "id": "imp-spark-1",
+          "file": "sfx/imp-spark-1.mp3",
+          "seconds": 2,
+          "prompt": "Sparks impact, quick metallic ricochet ping with bright crackle",
+          "for": "spark"
+        },
+        {
+          "id": "imp-spark-2",
+          "file": "sfx/imp-spark-2.mp3",
+          "seconds": 1,
+          "prompt": "Sparks impact, quick metallic ricochet ping with bright crackle",
+          "for": "spark"
+        },
+        {
+          "id": "imp-blast-1",
+          "file": "sfx/imp-blast-1.mp3",
+          "seconds": 1,
+          "prompt": "Explosion blast, sharp punchy boom with debris and short fading rumble",
+          "for": "blast"
+        },
+        {
+          "id": "imp-blast-2",
+          "file": "sfx/imp-blast-2.mp3",
+          "seconds": 2,
+          "prompt": "Explosion blast, sharp punchy boom with debris and short fading rumble",
+          "for": "blast"
+        },
+        {
+          "id": "imp-fire-1",
+          "file": "sfx/imp-fire-1.mp3",
+          "seconds": 1,
+          "prompt": "Fire ignition burst, soft whoomp of flames catching with crackle",
+          "for": "fire"
+        },
+        {
+          "id": "imp-fire-2",
+          "file": "sfx/imp-fire-2.mp3",
+          "seconds": 2,
+          "prompt": "Fire ignition burst, soft whoomp of flames catching with crackle",
+          "for": "fire"
+        },
+        {
+          "id": "imp-splash-1",
+          "file": "sfx/imp-splash-1.mp3",
+          "seconds": 1,
+          "prompt": "Big water splash with deep underwater thump and bubbles",
+          "for": "splash"
+        },
+        {
+          "id": "imp-splash-2",
+          "file": "sfx/imp-splash-2.mp3",
+          "seconds": 1,
+          "prompt": "Big water splash with deep underwater thump and bubbles",
+          "for": "splash"
+        }
       ]
     },
     {
       "id": "move",
       "label": "Movement",
-      "unit": "tank",
+      "unit": "per move sound",
       "clips": [
-        { "id": "tank-move-1", "file": "sfx/tank-move-1.mp3", "seconds": 1.0, "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop" },
-        { "id": "tank-move-2", "file": "sfx/tank-move-2.mp3", "seconds": 2.0, "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop" },
-        { "id": "tank-move-3", "file": "sfx/tank-move-3.mp3", "seconds": 2.0, "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop" },
-        { "id": "tank-move-4", "file": "sfx/tank-move-4.mp3", "seconds": 1.0, "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop" }
+        {
+          "id": "tank-move-1",
+          "file": "sfx/tank-move-1.mp3",
+          "seconds": 1,
+          "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop",
+          "for": "tread"
+        },
+        {
+          "id": "tank-move-2",
+          "file": "sfx/tank-move-2.mp3",
+          "seconds": 2,
+          "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop",
+          "for": "tread",
+          "chosen": true
+        },
+        {
+          "id": "tank-move-3",
+          "file": "sfx/tank-move-3.mp3",
+          "seconds": 2,
+          "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop",
+          "for": "tread"
+        },
+        {
+          "id": "tank-move-4",
+          "file": "sfx/tank-move-4.mp3",
+          "seconds": 1,
+          "prompt": "Tank driving forward, rumbling diesel engine with clanking metal tracks, steady rolling loop",
+          "for": "tread"
+        },
+        {
+          "id": "mov-foot-1",
+          "file": "sfx/mov-foot-1.mp3",
+          "seconds": 1,
+          "prompt": "Soldier marching on dirt, steady rhythmic boot footsteps with light gear rattle",
+          "for": "foot"
+        },
+        {
+          "id": "mov-foot-2",
+          "file": "sfx/mov-foot-2.mp3",
+          "seconds": 2,
+          "prompt": "Soldier marching on dirt, steady rhythmic boot footsteps with light gear rattle",
+          "for": "foot"
+        },
+        {
+          "id": "mov-wheels-1",
+          "file": "sfx/mov-wheels-1.mp3",
+          "seconds": 1,
+          "prompt": "Light wheeled military truck driving, steady engine hum with tire rumble on gravel",
+          "for": "wheels"
+        },
+        {
+          "id": "mov-wheels-2",
+          "file": "sfx/mov-wheels-2.mp3",
+          "seconds": 1,
+          "prompt": "Light wheeled military truck driving, steady engine hum with tire rumble on gravel",
+          "for": "wheels"
+        },
+        {
+          "id": "mov-copter-1",
+          "file": "sfx/mov-copter-1.mp3",
+          "seconds": 1,
+          "prompt": "Helicopter hovering and flying, steady rotor chop and turbine whine",
+          "for": "copter"
+        },
+        {
+          "id": "mov-copter-2",
+          "file": "sfx/mov-copter-2.mp3",
+          "seconds": 1,
+          "prompt": "Helicopter hovering and flying, steady rotor chop and turbine whine",
+          "for": "copter"
+        },
+        {
+          "id": "mov-prop-2",
+          "file": "sfx/mov-prop-2.mp3",
+          "seconds": 1,
+          "prompt": "Propeller plane flying past, steady droning radial engine",
+          "for": "prop"
+        },
+        {
+          "id": "mov-jet-1",
+          "file": "sfx/mov-jet-1.mp3",
+          "seconds": 5,
+          "prompt": "Jet fighter flying by, smooth steady turbine roar and rushing air",
+          "for": "jet"
+        },
+        {
+          "id": "mov-airship-1",
+          "file": "sfx/mov-airship-1.mp3",
+          "seconds": 1,
+          "prompt": "Large airship slowly cruising, deep low hum of engines with soft propeller whir",
+          "for": "airship"
+        },
+        {
+          "id": "mov-airship-2",
+          "file": "sfx/mov-airship-2.mp3",
+          "seconds": 1,
+          "prompt": "Large airship slowly cruising, deep low hum of engines with soft propeller whir",
+          "for": "airship"
+        },
+        {
+          "id": "mov-ship-1",
+          "file": "sfx/mov-ship-1.mp3",
+          "seconds": 1,
+          "prompt": "Warship sailing, steady diesel engine thrum with water lapping against the hull",
+          "for": "ship"
+        },
+        {
+          "id": "mov-ship-2",
+          "file": "sfx/mov-ship-2.mp3",
+          "seconds": 1,
+          "prompt": "Warship sailing, steady diesel engine thrum with water lapping against the hull",
+          "for": "ship"
+        },
+        {
+          "id": "mov-sub-1",
+          "file": "sfx/mov-sub-1.mp3",
+          "seconds": 1,
+          "prompt": "Submarine gliding underwater, muffled low motor hum with faint sonar ping",
+          "for": "sub"
+        },
+        {
+          "id": "mov-sub-2",
+          "file": "sfx/mov-sub-2.mp3",
+          "seconds": 2,
+          "prompt": "Submarine gliding underwater, muffled low motor hum with faint sonar ping",
+          "for": "sub"
+        },
+        {
+          "id": "mov-gunboat-1",
+          "file": "sfx/mov-gunboat-1.mp3",
+          "seconds": 1,
+          "prompt": "Small motorboat gunboat speeding, buzzing outboard engine with splashing wake",
+          "for": "gunboat"
+        },
+        {
+          "id": "mov-gunboat-2",
+          "file": "sfx/mov-gunboat-2.mp3",
+          "seconds": 3,
+          "prompt": "Small motorboat gunboat speeding, buzzing outboard engine with splashing wake",
+          "for": "gunboat"
+        },
+        {
+          "id": "mov-bike-1",
+          "file": "sfx/mov-bike-1.mp3",
+          "seconds": 2,
+          "prompt": "Motorbike riding, steady buzzing small engine with tire hiss on road",
+          "for": "bike"
+        },
+        {
+          "id": "mov-bike-2",
+          "file": "sfx/mov-bike-2.mp3",
+          "seconds": 1,
+          "prompt": "Motorbike riding, steady buzzing small engine with tire hiss on road",
+          "for": "bike"
+        },
+        {
+          "id": "mov-diver-1",
+          "file": "sfx/mov-diver-1.mp3",
+          "seconds": 1,
+          "prompt": "Scuba diver swimming underwater, slow breathing bubbles and gentle water swish",
+          "for": "diver"
+        },
+        {
+          "id": "mov-diver-2",
+          "file": "sfx/mov-diver-2.mp3",
+          "seconds": 2,
+          "prompt": "Scuba diver swimming underwater, slow breathing bubbles and gentle water swish",
+          "for": "diver"
+        },
+        {
+          "id": "mov-hover-1",
+          "file": "sfx/mov-hover-1.mp3",
+          "seconds": 1,
+          "prompt": "Hovercraft gliding, steady fan roar with rushing air cushion hiss",
+          "for": "hover"
+        },
+        {
+          "id": "mov-hover-2",
+          "file": "sfx/mov-hover-2.mp3",
+          "seconds": 1,
+          "prompt": "Hovercraft gliding, steady fan roar with rushing air cushion hiss",
+          "for": "hover"
+        }
       ]
     },
     {
       "id": "death",
       "label": "Death",
-      "unit": "tank",
+      "unit": "per unit kind",
       "clips": [
-        { "id": "tank-death-1", "file": "sfx/tank-death-1.mp3", "seconds": 2.0, "prompt": "Tank exploding, deep blast with crunching metal debris and a fading fiery crackle" },
-        { "id": "tank-death-2", "file": "sfx/tank-death-2.mp3", "seconds": 2.0, "prompt": "Tank exploding, deep blast with crunching metal debris and a fading fiery crackle" }
+        {
+          "id": "tank-death-1",
+          "file": "sfx/tank-death-1.mp3",
+          "seconds": 2,
+          "prompt": "Tank exploding, deep blast with crunching metal debris and a fading fiery crackle",
+          "for": "tank"
+        },
+        {
+          "id": "tank-death-2",
+          "file": "sfx/tank-death-2.mp3",
+          "seconds": 2,
+          "prompt": "Tank exploding, deep blast with crunching metal debris and a fading fiery crackle",
+          "for": "tank"
+        },
+        {
+          "id": "death-infantry-1",
+          "file": "sfx/death-infantry-1.mp3",
+          "seconds": 2,
+          "prompt": "Soldier defeated, short pained grunt and body falling to the ground with gear rattle",
+          "for": "infantry"
+        },
+        {
+          "id": "death-infantry-2",
+          "file": "sfx/death-infantry-2.mp3",
+          "seconds": 1,
+          "prompt": "Soldier defeated, short pained grunt and body falling to the ground with gear rattle",
+          "for": "infantry"
+        },
+        {
+          "id": "death-wheels-1",
+          "file": "sfx/death-wheels-1.mp3",
+          "seconds": 5,
+          "prompt": "Military truck exploding, mid-size blast with twisting metal and a short fiery crackle",
+          "for": "wheels"
+        },
+        {
+          "id": "death-wheels-2",
+          "file": "sfx/death-wheels-2.mp3",
+          "seconds": 1,
+          "prompt": "Military truck exploding, mid-size blast with twisting metal and a short fiery crackle",
+          "for": "wheels"
+        },
+        {
+          "id": "death-aircraft-1",
+          "file": "sfx/death-aircraft-1.mp3",
+          "seconds": 3,
+          "prompt": "Aircraft shot down, engine screaming into a dive then a heavy crash explosion on the ground",
+          "for": "aircraft"
+        },
+        {
+          "id": "death-aircraft-2",
+          "file": "sfx/death-aircraft-2.mp3",
+          "seconds": 1,
+          "prompt": "Aircraft shot down, engine screaming into a dive then a heavy crash explosion on the ground",
+          "for": "aircraft"
+        },
+        {
+          "id": "death-ship-1",
+          "file": "sfx/death-ship-1.mp3",
+          "seconds": 1,
+          "prompt": "Warship sinking, massive hull explosion then groaning metal and rushing water",
+          "for": "ship"
+        },
+        {
+          "id": "death-ship-2",
+          "file": "sfx/death-ship-2.mp3",
+          "seconds": 2,
+          "prompt": "Warship sinking, massive hull explosion then groaning metal and rushing water",
+          "for": "ship"
+        },
+        {
+          "id": "death-sub-1",
+          "file": "sfx/death-sub-1.mp3",
+          "seconds": 2,
+          "prompt": "Submarine destroyed underwater, muffled deep explosion with creaking hull collapse and bubbling",
+          "for": "sub"
+        },
+        {
+          "id": "death-sub-2",
+          "file": "sfx/death-sub-2.mp3",
+          "seconds": 1,
+          "prompt": "Submarine destroyed underwater, muffled deep explosion with creaking hull collapse and bubbling",
+          "for": "sub"
+        },
+        {
+          "id": "death-turret-1",
+          "file": "sfx/death-turret-1.mp3",
+          "seconds": 1,
+          "prompt": "Gun turret destroyed, heavy explosion with collapsing concrete and metal debris crashing down",
+          "for": "turret"
+        },
+        {
+          "id": "death-turret-2",
+          "file": "sfx/death-turret-2.mp3",
+          "seconds": 1,
+          "prompt": "Gun turret destroyed, heavy explosion with collapsing concrete and metal debris crashing down",
+          "for": "turret"
+        },
+        {
+          "id": "death-wall-1",
+          "file": "sfx/death-wall-1.mp3",
+          "seconds": 2,
+          "prompt": "Stone wall breached, cracking masonry then rubble collapsing in a dusty crumble",
+          "for": "wall"
+        },
+        {
+          "id": "death-wall-2",
+          "file": "sfx/death-wall-2.mp3",
+          "seconds": 2,
+          "prompt": "Stone wall breached, cracking masonry then rubble collapsing in a dusty crumble",
+          "for": "wall"
+        },
+        {
+          "id": "death-mine-1",
+          "file": "sfx/death-mine-1.mp3",
+          "seconds": 1,
+          "prompt": "Naval sea mine detonating, sharp underwater blast with a big water geyser splash",
+          "for": "mine"
+        },
+        {
+          "id": "death-mine-2",
+          "file": "sfx/death-mine-2.mp3",
+          "seconds": 1,
+          "prompt": "Naval sea mine detonating, sharp underwater blast with a big water geyser splash",
+          "for": "mine"
+        },
+        {
+          "id": "death-diver-1",
+          "file": "sfx/death-diver-1.mp3",
+          "seconds": 2,
+          "prompt": "Scuba diver killed underwater, small muffled burst with a rush of bubbles",
+          "for": "diver"
+        },
+        {
+          "id": "death-diver-2",
+          "file": "sfx/death-diver-2.mp3",
+          "seconds": 1,
+          "prompt": "Scuba diver killed underwater, small muffled burst with a rush of bubbles",
+          "for": "diver"
+        }
+      ]
+    },
+    {
+      "id": "ui",
+      "label": "UI and events",
+      "unit": "interface and battle events",
+      "clips": [
+        {
+          "id": "ui-tap-1",
+          "file": "sfx/ui-tap-1.mp3",
+          "seconds": 1,
+          "prompt": "Mobile game UI tap, soft clean click",
+          "for": "tap"
+        },
+        {
+          "id": "ui-select-1",
+          "file": "sfx/ui-select-1.mp3",
+          "seconds": 1,
+          "prompt": "Mobile game unit select, short bright rising blip",
+          "for": "select"
+        },
+        {
+          "id": "ui-confirm-1",
+          "file": "sfx/ui-confirm-1.mp3",
+          "seconds": 1,
+          "prompt": "Mobile game confirm button, positive two-note chime",
+          "for": "confirm"
+        },
+        {
+          "id": "ui-cancel-1",
+          "file": "sfx/ui-cancel-1.mp3",
+          "seconds": 0.5,
+          "prompt": "Mobile game cancel button, soft low descending blip",
+          "for": "cancel"
+        },
+        {
+          "id": "ui-invalid-1",
+          "file": "sfx/ui-invalid-1.mp3",
+          "seconds": 1,
+          "prompt": "Game invalid action denied, short low buzzer error tone",
+          "for": "invalid"
+        },
+        {
+          "id": "ui-undo-1",
+          "file": "sfx/ui-undo-1.mp3",
+          "seconds": 1,
+          "prompt": "Game undo move, quick reverse rewind swoosh",
+          "for": "undo"
+        },
+        {
+          "id": "ui-menu-open-1",
+          "file": "sfx/ui-menu-open-1.mp3",
+          "seconds": 1,
+          "prompt": "Game menu opening, quick soft whoosh with a light click",
+          "for": "menu-open"
+        },
+        {
+          "id": "ui-menu-close-1",
+          "file": "sfx/ui-menu-close-1.mp3",
+          "seconds": 2,
+          "prompt": "Game menu closing, quick soft reverse whoosh with a light click",
+          "for": "menu-close"
+        },
+        {
+          "id": "ui-end-turn-1",
+          "file": "sfx/ui-end-turn-1.mp3",
+          "seconds": 1,
+          "prompt": "Strategy game end turn button, firm stamp thunk with a short rising chime",
+          "for": "end-turn"
+        },
+        {
+          "id": "ui-your-turn-1",
+          "file": "sfx/ui-your-turn-1.mp3",
+          "seconds": 1,
+          "prompt": "Your turn begins, short triumphant military bugle fanfare",
+          "for": "your-turn"
+        },
+        {
+          "id": "ui-enemy-turn-1",
+          "file": "sfx/ui-enemy-turn-1.mp3",
+          "seconds": 1,
+          "prompt": "Enemy turn begins, ominous low drum hit with a short tense brass sting",
+          "for": "enemy-turn"
+        },
+        {
+          "id": "ui-build-1",
+          "file": "sfx/ui-build-1.mp3",
+          "seconds": 2,
+          "prompt": "Construction build unit, short hammering clang and a ratchet whirr finishing with a ding",
+          "for": "build"
+        },
+        {
+          "id": "ui-capture-tick-1",
+          "file": "sfx/ui-capture-tick-1.mp3",
+          "seconds": 3,
+          "prompt": "Capturing a building progress, soft rhythmic ticking beep",
+          "for": "capture-tick"
+        },
+        {
+          "id": "ui-capture-done-1",
+          "file": "sfx/ui-capture-done-1.mp3",
+          "seconds": 1,
+          "prompt": "Building captured, flag raised with a bright victorious chime",
+          "for": "capture-done"
+        },
+        {
+          "id": "ui-rebuild-1",
+          "file": "sfx/ui-rebuild-1.mp3",
+          "seconds": 1,
+          "prompt": "Rebuilding a structure, quick stacking of bricks and a hammer tapping, ending with a satisfied thunk",
+          "for": "rebuild"
+        },
+        {
+          "id": "ui-heal-1",
+          "file": "sfx/ui-heal-1.mp3",
+          "seconds": 0.5,
+          "prompt": "Units healed, gentle sparkling restorative chime with a soft rising shimmer",
+          "for": "heal"
+        },
+        {
+          "id": "ui-resupply-1",
+          "file": "sfx/ui-resupply-1.mp3",
+          "seconds": 1,
+          "prompt": "Supply crate delivering ammo, metal latch clunk and a quick rattle of ammunition being loaded",
+          "for": "resupply"
+        },
+        {
+          "id": "ui-refuel-1",
+          "file": "sfx/ui-refuel-1.mp3",
+          "seconds": 1,
+          "prompt": "Refuelling a vehicle, fuel pump gurgle and a short nozzle click when full",
+          "for": "refuel"
+        },
+        {
+          "id": "ui-join-1",
+          "file": "sfx/ui-join-1.mp3",
+          "seconds": 0.5,
+          "prompt": "Two units merging together, short warm combining whoosh with a bright confirming ping",
+          "for": "join"
+        },
+        {
+          "id": "ui-dive-1",
+          "file": "sfx/ui-dive-1.mp3",
+          "seconds": 2,
+          "prompt": "Submarine diving, ballast tanks flooding with bubbling water rush and a low sonar ping",
+          "for": "dive"
+        },
+        {
+          "id": "ui-surface-1",
+          "file": "sfx/ui-surface-1.mp3",
+          "seconds": 2,
+          "prompt": "Submarine surfacing, rushing air blowing out of ballast tanks and water breaking the surface",
+          "for": "surface"
+        },
+        {
+          "id": "ui-income-1",
+          "file": "sfx/ui-income-1.mp3",
+          "seconds": 1,
+          "prompt": "Income collected, cheerful coins pouring into a pile with a bright cash register ding",
+          "for": "income"
+        },
+        {
+          "id": "ui-deploy-1",
+          "file": "sfx/ui-deploy-1.mp3",
+          "seconds": 1,
+          "prompt": "Deploying a unit from a transport, metal ramp thud and a short mechanical release hiss",
+          "for": "deploy"
+        },
+        {
+          "id": "ui-mine-lay-1",
+          "file": "sfx/ui-mine-lay-1.mp3",
+          "seconds": 1,
+          "prompt": "Laying a naval mine, heavy metal object dropped into water with a deep plunk and sink",
+          "for": "mine-lay"
+        },
+        {
+          "id": "ui-interrupt-1",
+          "file": "sfx/ui-interrupt-1.mp3",
+          "seconds": 1,
+          "prompt": "Movement interrupted by an ambush, sharp alarm stinger with a sudden hard stop screech",
+          "for": "interrupt"
+        },
+        {
+          "id": "ui-eliminated-1",
+          "file": "sfx/ui-eliminated-1.mp3",
+          "seconds": 1,
+          "prompt": "Player eliminated from the game, somber descending brass notes with a low final drum thud",
+          "for": "eliminated"
+        },
+        {
+          "id": "ui-victory-1",
+          "file": "sfx/ui-victory-1.mp3",
+          "seconds": 1,
+          "prompt": "Victory fanfare, triumphant brass and snare drum march flourish ending on a bright major chord",
+          "for": "victory"
+        },
+        {
+          "id": "ui-defeat-1",
+          "file": "sfx/ui-defeat-1.mp3",
+          "seconds": 1,
+          "prompt": "Defeat jingle, mournful slow descending trumpet and a low drum roll fading out",
+          "for": "defeat"
+        }
       ]
     }
-  ]
+  ],
+  "map": {
+    "attack": {
+      "bullet": "atk-bullet-1",
+      "electric": "atk-electric-1",
+      "slash": "atk-slash-1",
+      "flame": "atk-flame-1",
+      "missile": "atk-missile-1",
+      "burst": "atk-burst-1",
+      "rocket": "atk-rocket-1",
+      "cannon": "tank-attack-1",
+      "heavy_cannon": "atk-heavy_cannon-1",
+      "shell": "atk-shell-1",
+      "salvo": "atk-salvo-1",
+      "flak": "atk-flak-1",
+      "pods": "atk-pods-1",
+      "air_missile": "atk-air_missile-1",
+      "bombs": "atk-bombs-1",
+      "depth": "atk-depth-1",
+      "torpedo": "atk-torpedo-1",
+      "naval_shell": "atk-naval_shell-1",
+      "mortar": "atk-mortar-1",
+      "light_bombs": "atk-bombs-1",
+      "wrench": "atk-wrench-1",
+      "harpoon": "atk-harpoon-1",
+      "sam": "atk-sam-1",
+      "cruise": "atk-cruise-1"
+    },
+    "impact": {
+      "blast": "imp-blast-1",
+      "spark": "imp-spark-1",
+      "fire": "imp-fire-1",
+      "zap": "imp-spark-2",
+      "splash": "imp-splash-1",
+      "flak": "imp-blast-2"
+    },
+    "move": {
+      "soldier": "mov-foot-1",
+      "mech": "mov-foot-1",
+      "sniper": "mov-foot-1",
+      "marine": "mov-wheels-1",
+      "recon": "mov-wheels-1",
+      "tank": "tank-move-2",
+      "stealth_tank": "tank-move-2",
+      "heavy_tank": "tank-move-2",
+      "artillery": "mov-wheels-1",
+      "rocket_launcher": "mov-wheels-1",
+      "flak": "tank-move-2",
+      "transport_copter": "mov-copter-1",
+      "copter": "mov-copter-1",
+      "fighter": "mov-jet-1",
+      "bomber": "mov-jet-1",
+      "destroyer": "mov-ship-1",
+      "submarine": "mov-sub-1",
+      "cruiser": "mov-ship-1",
+      "battleship": "mov-ship-1",
+      "spy": "mov-foot-1",
+      "commando": "mov-foot-1",
+      "medic": "mov-foot-1",
+      "mechanic": "mov-foot-1",
+      "mortar": "mov-foot-1",
+      "gun_boat": "mov-gunboat-1",
+      "vintage_fighter": "mov-prop-2",
+      "vintage_bomber": "mov-prop-2",
+      "torpedo_bomber": "mov-jet-1",
+      "radar_plane": "mov-jet-1",
+      "stealth_fighter": "mov-jet-1",
+      "stealth_bomber": "mov-jet-1",
+      "stealth_copter": "mov-copter-1",
+      "airship": "mov-airship-1",
+      "rpg_trooper": "mov-foot-1",
+      "conscript": "mov-foot-1",
+      "diver": "mov-diver-1",
+      "motorcycle": "mov-bike-1",
+      "flamethrower": "mov-foot-1",
+      "royal_guard": "mov-foot-1",
+      "shock_trooper": "mov-foot-1",
+      "swordsman": "mov-foot-1",
+      "supply_truck": "mov-wheels-1",
+      "hover_tank": "mov-hover-1",
+      "amphibious_tank": "tank-move-2",
+      "sam_launcher": "tank-move-2",
+      "rocket_buggy": "mov-wheels-1",
+      "missile_tank": "tank-move-2",
+      "apc": "tank-move-2",
+      "troop_transport": "mov-ship-1",
+      "mine_layer": "mov-ship-1",
+      "aircraft_carrier": "mov-ship-1",
+      "dreadnought": "mov-ship-1",
+      "missile_sub": "mov-sub-1",
+      "hunter_sub": "mov-sub-1"
+    },
+    "death": {
+      "soldier": "death-infantry-1",
+      "mech": "death-infantry-1",
+      "sniper": "death-infantry-1",
+      "marine": "death-infantry-1",
+      "recon": "death-wheels-2",
+      "tank": "tank-death-1",
+      "stealth_tank": "tank-death-1",
+      "heavy_tank": "tank-death-1",
+      "artillery": "death-wheels-2",
+      "rocket_launcher": "death-wheels-2",
+      "flak": "tank-death-1",
+      "transport_copter": "death-aircraft-1",
+      "copter": "death-aircraft-1",
+      "fighter": "death-aircraft-1",
+      "bomber": "death-aircraft-1",
+      "destroyer": "death-ship-1",
+      "submarine": "death-sub-1",
+      "cruiser": "death-ship-1",
+      "battleship": "death-ship-1",
+      "spy": "death-infantry-1",
+      "commando": "death-infantry-1",
+      "medic": "death-infantry-1",
+      "mechanic": "death-infantry-1",
+      "mortar": "death-infantry-1",
+      "gun_boat": "death-ship-1",
+      "vintage_fighter": "death-aircraft-1",
+      "vintage_bomber": "death-aircraft-1",
+      "torpedo_bomber": "death-aircraft-1",
+      "radar_plane": "death-aircraft-1",
+      "stealth_fighter": "death-aircraft-1",
+      "stealth_bomber": "death-aircraft-1",
+      "stealth_copter": "death-aircraft-1",
+      "airship": "death-aircraft-1",
+      "rpg_trooper": "death-infantry-1",
+      "conscript": "death-infantry-1",
+      "diver": "death-diver-1",
+      "motorcycle": "death-wheels-2",
+      "flamethrower": "death-infantry-1",
+      "royal_guard": "death-infantry-1",
+      "shock_trooper": "death-infantry-1",
+      "swordsman": "death-infantry-1",
+      "supply_truck": "death-wheels-2",
+      "hover_tank": "death-wheels-2",
+      "amphibious_tank": "tank-death-1",
+      "sam_launcher": "tank-death-1",
+      "rocket_buggy": "death-wheels-2",
+      "missile_tank": "tank-death-1",
+      "apc": "tank-death-1",
+      "troop_transport": "death-ship-1",
+      "mine_layer": "death-ship-1",
+      "sea_mine": "death-mine-1",
+      "aircraft_carrier": "death-ship-1",
+      "dreadnought": "death-ship-1",
+      "missile_sub": "death-sub-1",
+      "hunter_sub": "death-sub-1",
+      "cannon_turret": "death-turret-1",
+      "sam_turret": "death-turret-1",
+      "artillery_turret": "death-turret-1",
+      "jammer": "death-turret-1",
+      "cracked_wall": "death-wall-1"
+    },
+    "ui": {
+      "tap": "ui-tap-1",
+      "select": "ui-select-1",
+      "confirm": "ui-confirm-1",
+      "cancel": "ui-cancel-1",
+      "invalid": "ui-invalid-1",
+      "undo": "ui-undo-1",
+      "menu-open": "ui-menu-open-1",
+      "menu-close": "ui-menu-close-1",
+      "end-turn": "ui-end-turn-1",
+      "your-turn": "ui-your-turn-1",
+      "enemy-turn": "ui-enemy-turn-1",
+      "build": "ui-build-1",
+      "capture-tick": "ui-capture-tick-1",
+      "capture-done": "ui-capture-done-1",
+      "rebuild": "ui-rebuild-1",
+      "heal": "ui-heal-1",
+      "resupply": "ui-resupply-1",
+      "refuel": "ui-refuel-1",
+      "join": "ui-join-1",
+      "dive": "ui-dive-1",
+      "surface": "ui-surface-1",
+      "income": "ui-income-1",
+      "deploy": "ui-deploy-1",
+      "mine-lay": "ui-mine-lay-1",
+      "interrupt": "ui-interrupt-1",
+      "eliminated": "ui-eliminated-1",
+      "victory": "ui-victory-1",
+      "defeat": "ui-defeat-1"
+    },
+    "events": {
+      "interrupt": "ui-interrupt-1",
+      "dive": "ui-dive-1",
+      "surface": "ui-surface-1",
+      "capture": "ui-capture-tick-1",
+      "capture-completed": "ui-capture-done-1",
+      "rebuild": "ui-rebuild-1",
+      "build": "ui-build-1",
+      "deploy": "ui-deploy-1",
+      "resupply": "ui-resupply-1",
+      "resupplyDenied": "ui-invalid-1",
+      "supply": "ui-resupply-1",
+      "detonate": "death-mine-1",
+      "lay": "ui-mine-lay-1",
+      "heal": "ui-heal-1",
+      "join": "ui-join-1",
+      "turnStart-repaired": "ui-heal-1",
+      "turnStart-healed": "ui-heal-1",
+      "turnStart-refuelled": "ui-refuel-1",
+      "crash": "death-aircraft-1",
+      "eliminated": "ui-eliminated-1",
+      "gameOver-win": "ui-victory-1",
+      "gameOver-lose": "ui-defeat-1",
+      "income": "ui-income-1",
+      "turn-yours": "ui-your-turn-1",
+      "turn-enemy": "ui-enemy-turn-1"
+    }
+  }
 }
