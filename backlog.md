@@ -99,6 +99,13 @@ Last sorted 9 October 2026.
 - **Highlands was removed along with urban and royal** (the request said "maybe"). Skyreach lives in the desert biome now; the highlands art (heath ground, dark pines, granite) is gone from the data and could come back as a seventh biome.
 - **Frozen Canyon, Garden Maze and Skyline Pass are re-skins, not redesigns** of the old urban, royal and highlands maps (`concrete_canyon`, `garden_maze`, `skyline_pass` keep their ids). Their descriptions were rewritten, but the layouts still read as a city grid, a hedge maze and a cliff moor.
 
+## Audio
+
+- **The game has no sound.** The clips exist only in the gallery's Sound effects tab. Nothing plays in a battle: it needs a small sound manager (one place that plays a named effect), a mute setting, the first-tap unlock that phone browsers require, and a mapping from unit, weapon and event to a clip.
+- **Only the tank has sounds, and no take is chosen.** First pass (October 2026): one attack, four movement and two death takes from one prompt each (`gallery/sfx.json`). Pick the keepers by ear, then decide whether the other units share the tank's sounds or get their own. Weapon looks (`fx` in `data/weapons.json`) are the natural unit for attack sounds.
+- **The movement clips are one-shots, not loops.** The prompt asked for a rolling loop but the clips were generated with looping off, so they are 1 to 2 seconds long and the seam is audible with the tab's Loop box ticked. Regenerate with looping on, or crossfade the ends, before a unit drives with one.
+- **No sounds yet for** the other units and weapons, capturing and building, UI taps, turn change, victory and defeat, ambience or music.
+
 ## UI and presentation
 
 - **Leaders are independent of team colour**; they could be tied together later.

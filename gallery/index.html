@@ -88,6 +88,10 @@
   .talk { border-top: 1px solid #2a2d35; }
   .tbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .tbar select { background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; text-transform: capitalize; }
+  .sfx-controls { padding-top: 14px; }
+  .sfx-group .grid { padding-top: 10px; padding-bottom: 8px; }
+  .sfx-play { margin-top: 4px; min-width: 96px; min-height: 40px; }   /* a comfortable thumb target on a phone */
+  .sfx-play[aria-pressed="true"] { background: #3c74d6; color: #fff; }
   .attack-row { margin: 8px 0 4px; }
   .attack-row canvas { margin-top: 4px; }
   .tdesc { display: block; font-size: 12px; color: #8a877c; margin: 6px 0; }
@@ -119,6 +123,7 @@
 <main>
   <section id="view-units"></section>
   <section id="view-attacks" hidden></section>
+  <section id="view-sfx" hidden></section>
   <section id="view-chars" hidden></section>
 </main>
 <script type="module">

@@ -11,6 +11,7 @@ import { buildCatalog, GROUPS } from './catalog.js';
 import { createUnitsView } from './units-view.js';
 import { createCharactersView } from './characters-view.js';
 import { createAttacksView } from './attacks-view.js';
+import { createSfxView, clipCount } from './sfx-view.js';
 import { drawOutlined, OUTLINE_THIN } from '../src/render/outline.js';
 import { BUILDINGS } from '../src/render/buildings.js';
 import { BASES, drawWall } from './structure-art.js';
@@ -45,13 +46,13 @@ export function paintTile(g, { unit, faction: team, size, t, state, phase, bg, o
 }
 
 // ---- page ----------------------------------------------------------------------------------------------------
-const TABS = [...GROUPS.map((g) => ({ ...g, kind: 'units' })), { id: 'attacks', label: 'Attacks', kind: 'attacks' }, { id: 'characters', label: 'Characters', kind: 'characters' }];
+const TABS = [...GROUPS.map((g) => ({ ...g, kind: 'units' })), { id: 'attacks', label: 'Attacks', kind: 'attacks' }, { id: 'sfx', label: 'Sound effects', kind: 'sfx' }, { id: 'characters', label: 'Characters', kind: 'characters' }];
 
 async function boot() {
   const $ = (sel) => document.querySelector(sel);
   const json = async (rel) => (await fetch(new URL(rel, import.meta.url))).json();
   const registry = await loadRegistry(fetchReader(new URL('../data/', import.meta.url)));
-  const [concepts, status, campaign, planned] = await Promise.all([json('concepts.json'), json('status.json'), json('../data/campaign.json'), json('planned-units.json').catch(() => ({}))]);
+  const [concepts, status, campaign, planned, sfxData] = await Promise.all([json('concepts.json'), json('status.json'), json('../data/campaign.json'), json('planned-units.json').catch(() => ({})), json('sfx.json')]);
   setFactions([...Object.values(registry.factions), { id: 'chorus', ...campaign.chorus }]);
   const catalog = buildCatalog({ registry, concepts, planned, status });
   const factions = Object.values(registry.factions).map((f) => ({ id: f.id, name: f.name, color: f.color, dark: f.dark }));
@@ -83,12 +84,13 @@ async function boot() {
   const units = createUnitsView(ctx, $('#view-units'));
   const characters = await createCharactersView(ctx, $('#view-chars'));
   const attacks = createAttacksView(ctx, $('#view-attacks'));
+  const sfx = createSfxView(ctx, $('#view-sfx'), sfxData);
 
   // tabs: the hash picks one (#vehicle, #characters), so a link opens on it
   const bar = $('#tabs');
   for (const t of TABS) {
     const b = document.createElement('button'); b.role = 'tab'; b.dataset.tab = t.id;
-    const n = t.kind === 'units' ? catalog.filter((u) => u.group === t.id).length : null;
+    const n = t.kind === 'units' ? catalog.filter((u) => u.group === t.id).length : t.kind === 'sfx' ? clipCount(sfxData) : null;
     b.append(t.label); if (n !== null) { const c = document.createElement('span'); c.className = 'count'; c.textContent = n; b.append(c); }
     b.addEventListener('click', () => { location.hash = t.id; });
     bar.append(b);
@@ -97,8 +99,9 @@ async function boot() {
     const id = TABS.some((t) => t.id === location.hash.slice(1)) ? location.hash.slice(1) : TABS[0].id, tab = TABS.find((t) => t.id === id);
     bar.querySelectorAll('button').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === id)));
     const isUnits = tab.kind === 'units';
-    $('#view-units').hidden = !isUnits; $('#view-attacks').hidden = tab.kind !== 'attacks'; $('#view-chars').hidden = tab.kind !== 'characters'; $('#unit-controls').hidden = tab.kind === 'characters';
-    if (isUnits) units.show(id); else if (tab.kind === 'attacks') attacks.show(); else characters.show();
+    $('#view-units').hidden = !isUnits; $('#view-attacks').hidden = tab.kind !== 'attacks'; $('#view-sfx').hidden = tab.kind !== 'sfx'; $('#view-chars').hidden = tab.kind !== 'characters'; $('#unit-controls').hidden = tab.kind === 'characters' || tab.kind === 'sfx';
+    if (tab.kind !== 'sfx') sfx.stop();   // leaving the tab silences it
+    if (isUnits) units.show(id); else if (tab.kind === 'attacks') attacks.show(); else if (tab.kind === 'sfx') sfx.show(); else characters.show();
     window.scrollTo(0, 0);
   };
   addEventListener('hashchange', show);

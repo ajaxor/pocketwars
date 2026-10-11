@@ -42,6 +42,9 @@ Tooling and tests
 - **Training maps sit outside the game** (`tools/ai/maps/`): Archipelago's HQs cannot reach each other on foot, which the shipped-map tests forbid.
 - **`tools/` read data through `tests/helpers/node-io.js`.** Six lines, shared on purpose.
 - **Gallery pipeline stages** are hand-edited in `gallery/status.json`; `catalog.js` validates the ids and stage names, not whether "balanced" matches the baselines.
+- **The sound pipeline is manual** (October 2026). The clips came from ElevenLabs by hand and their prompts live in `gallery/sfx.json`; no script regenerates or re-downloads them, and fetching them needed a local helper that sits outside the repo. *Trigger: sounds for a second unit.*
+- **Audio ships twice and is bigger than it needs to be.** `pages.yml` copies `gallery/` to two places (`gallery/` and `v/<hash>/gallery/`), so every clip is deployed twice; the seven tank clips are about 300 KB of 128 kbps stereo, and short effects are fine in mono at half that. *Trigger: a few dozen clips, or sound in the game itself.*
+- **The Sound effects tab is only tested as data.** `tests/gallery/sfx.test.js` checks `sfx.json` against the files; the playback code in `gallery/sfx-view.js` was checked once in headless Chromium (play, end, stop on leaving the tab) with no repeatable test. The dev server (`tools/serve.mjs`) also ignores HTTP Range requests, which Safari needs to play audio, so test sound on the deployed page there.
 - **Browser coverage that needs a person**: a physical touch device (the ghost-click guard is covered in headless touch emulation), attack animation timing, in-game tileset look under fog and zoom, join and dialogue wiring (unit-tested as pure logic only), generated field quality (tested for validity, not looks).
 
 
