@@ -20,14 +20,16 @@
           "file": "sfx/tank-attack-1.mp3",
           "seconds": 1,
           "prompt": "Tank cannon firing, single sharp boom with a heavy low thump, brief metallic ring, short tail",
-          "for": "cannon"
+          "for": "cannon",
+          "status": "approved"
         },
         {
           "id": "atk-bullet-2",
           "file": "sfx/atk-bullet-2.mp3",
           "seconds": 1,
           "prompt": "Single rifle shot, sharp crack with short echo",
-          "for": "bullet"
+          "for": "bullet",
+          "status": "approved"
         },
         {
           "id": "atk-burst-1",
@@ -42,7 +44,8 @@
           "file": "sfx/atk-heavy_cannon-1.mp3",
           "seconds": 2,
           "prompt": "Heavy artillery cannon blast, huge deep boom with long low rumble",
-          "for": "heavy_cannon"
+          "for": "heavy_cannon",
+          "status": "approved"
         },
         {
           "id": "atk-heavy_cannon-2",
@@ -85,13 +88,6 @@
           "status": "approved"
         },
         {
-          "id": "atk-air_missile-3",
-          "file": "sfx/atk-air_missile-3.mp3",
-          "seconds": 2,
-          "prompt": "Air-to-air missile fired from a fighter jet, a sharp ignition crack then a fast screaming whoosh streaking away into the distance",
-          "for": "air_missile"
-        },
-        {
           "id": "atk-bombs-3",
           "file": "sfx/atk-bombs-3.mp3",
           "seconds": 4,
@@ -104,20 +100,6 @@
           "seconds": 2,
           "prompt": "Aerial bomb falling from a bomber, a long descending whistle that ends in a heavy impact thud and a short rumbling blast",
           "for": "bombs"
-        },
-        {
-          "id": "atk-bullet-3",
-          "file": "sfx/atk-bullet-3.mp3",
-          "seconds": 1,
-          "prompt": "Single bolt-action rifle shot outdoors, a sharp crisp crack followed by a short natural echo fading into the distance, realistic and punchy",
-          "for": "bullet"
-        },
-        {
-          "id": "atk-bullet-4",
-          "file": "sfx/atk-bullet-4.mp3",
-          "seconds": 1,
-          "prompt": "Single bolt-action rifle shot outdoors, a sharp crisp crack followed by a short natural echo fading into the distance, realistic and punchy",
-          "for": "bullet"
         },
         {
           "id": "atk-cruise-3",
@@ -208,7 +190,8 @@
           "file": "sfx/atk-pods-3.mp3",
           "seconds": 2,
           "prompt": "Small rocket pod volley, a quick rapid series of six popping launches each with a short sharp hiss, like a helicopter firing unguided rockets",
-          "for": "pods"
+          "for": "rocket",
+          "status": "approved"
         },
         {
           "id": "atk-pods-4",
@@ -216,20 +199,6 @@
           "seconds": 1,
           "prompt": "Small rocket pod volley, a quick rapid series of six popping launches each with a short sharp hiss, like a helicopter firing unguided rockets",
           "for": "pods"
-        },
-        {
-          "id": "atk-rocket-3",
-          "file": "sfx/atk-rocket-3.mp3",
-          "seconds": 2,
-          "prompt": "Shoulder-fired rocket launcher firing, a loud pop of the launch charge then a long hissing roar of the rocket motor streaking away, outdoors",
-          "for": "rocket"
-        },
-        {
-          "id": "atk-rocket-4",
-          "file": "sfx/atk-rocket-4.mp3",
-          "seconds": 2,
-          "prompt": "Shoulder-fired rocket launcher firing, a loud pop of the launch charge then a long hissing roar of the rocket motor streaking away, outdoors",
-          "for": "rocket"
         },
         {
           "id": "atk-salvo-3",
@@ -260,32 +229,20 @@
           "for": "sam"
         },
         {
-          "id": "atk-slash-3",
-          "file": "sfx/atk-slash-3.mp3",
-          "seconds": 1,
-          "prompt": "Katana sword drawn and slashed through the air, a crisp metallic shing followed by a fast sharp swish",
-          "for": "slash"
-        },
-        {
           "id": "atk-slash-4",
           "file": "sfx/atk-slash-4.mp3",
           "seconds": 1,
           "prompt": "Katana sword drawn and slashed through the air, a crisp metallic shing followed by a fast sharp swish",
-          "for": "slash"
-        },
-        {
-          "id": "atk-torpedo-3",
-          "file": "sfx/atk-torpedo-3.mp3",
-          "seconds": 3,
-          "prompt": "Torpedo launched from a submarine, a hard compressed-air thump and a bubbling rush, then a whirring underwater propeller fading away",
-          "for": "torpedo"
+          "for": "slash",
+          "status": "approved"
         },
         {
           "id": "atk-torpedo-4",
           "file": "sfx/atk-torpedo-4.mp3",
           "seconds": 1,
           "prompt": "Torpedo launched from a submarine, a hard compressed-air thump and a bubbling rush, then a whirring underwater propeller fading away",
-          "for": "torpedo"
+          "for": "torpedo",
+          "status": "approved"
         },
         {
           "id": "atk-wrench-3",
@@ -293,6 +250,13 @@
           "seconds": 1,
           "prompt": "Heavy wrench striking a metal pipe, a loud sharp clang with a brief ringing metallic overtone",
           "for": "wrench"
+        },
+        {
+          "id": "atk-air_missile-5",
+          "file": "sfx/atk-air_missile-5.mp3",
+          "seconds": 3,
+          "prompt": "Air-to-air missile launch, a short sharp whoosh with a quick ignition hiss, clean and dry, under one second",
+          "for": "air_missile"
         }
       ]
     },
@@ -855,23 +819,23 @@
   ],
   "map": {
     "attack": {
-      "bullet": "atk-bullet-3",
+      "bullet": "atk-bullet-2",
       "electric": "atk-electric-2",
-      "slash": "atk-slash-3",
+      "slash": "atk-slash-4",
       "flame": "atk-flame-2",
       "missile": "atk-missile-3",
       "burst": "atk-burst-1",
-      "rocket": "atk-rocket-3",
+      "rocket": "atk-pods-3",
       "cannon": "tank-attack-1",
       "heavy_cannon": "atk-heavy_cannon-1",
       "shell": "atk-shell-2",
       "salvo": "atk-salvo-3",
       "flak": "atk-flak-3",
       "pods": "atk-pods-3",
-      "air_missile": "atk-air_missile-3",
+      "air_missile": "atk-air_missile-5",
       "bombs": "atk-bombs-3",
       "depth": "atk-depth-1",
-      "torpedo": "atk-torpedo-3",
+      "torpedo": "atk-torpedo-4",
       "naval_shell": "atk-naval_shell-3",
       "mortar": "atk-mortar-3",
       "light_bombs": "atk-bombs-3",
