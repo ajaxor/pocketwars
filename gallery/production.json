@@ -1,0 +1,293 @@
+{
+ "note": "Which building produces which unit. Every unit in data/units.json appears exactly once (tests/gallery/production.test.js). art: game = drawn by src/render/buildings.js, concept = gallery/structure-art.js. origin: existing = already in the game, existing concept = drawn in the gallery before, new = invented for this page.",
+ "buildings": [
+  {
+   "id": "barracks",
+   "name": "Barracks",
+   "art": "game",
+   "origin": "existing",
+   "water": false,
+   "blurb": "Foot soldiers who need nothing but a bed and a rifle rack.",
+   "units": [
+    "soldier",
+    "conscript",
+    "rpg_trooper",
+    "mortar"
+   ]
+  },
+  {
+   "id": "agency",
+   "name": "Agency",
+   "art": "concept",
+   "origin": "new",
+   "water": false,
+   "blurb": "Dark-windowed office block. Spies and snipers work for it, not for the army.",
+   "units": [
+    "spy",
+    "sniper"
+   ]
+  },
+  {
+   "id": "bunker",
+   "name": "Bunker",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "A hardened shelter that turns out the close-range specialists.",
+   "units": [
+    "flamethrower",
+    "commando"
+   ]
+  },
+  {
+   "id": "training_ground",
+   "name": "Training Ground",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Drill yard with a target post: elite and melee troops.",
+   "units": [
+    "swordsman",
+    "royal_guard",
+    "shock_trooper"
+   ]
+  },
+  {
+   "id": "mech_factory",
+   "name": "Mech Factory",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Tall bay with a crane: powered-armour infantry.",
+   "units": [
+    "mech"
+   ]
+  },
+  {
+   "id": "aid_station",
+   "name": "Aid Station",
+   "art": "concept",
+   "origin": "new",
+   "water": false,
+   "blurb": "Red-cross hall with a canvas awning. The support infantry who keep the line alive.",
+   "units": [
+    "medic",
+    "mechanic"
+   ]
+  },
+  {
+   "id": "factory",
+   "name": "Factory",
+   "art": "game",
+   "origin": "existing",
+   "water": false,
+   "blurb": "The all-round vehicle hall, now for light and support wheels and the personnel carrier.",
+   "units": [
+    "recon",
+    "motorcycle",
+    "apc",
+    "amphibious_tank"
+   ]
+  },
+  {
+   "id": "supply_depot",
+   "name": "Supply Depot",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Crates and a fuel drum: the trucks that feed the front line.",
+   "units": [
+    "supply_truck"
+   ]
+  },
+  {
+   "id": "heavy_factory",
+   "name": "Heavy Factory",
+   "art": "concept",
+   "origin": "new",
+   "water": false,
+   "blurb": "Squat hall under a slab roof with two stacks and a wide bay: the main battle tanks and big guns.",
+   "units": [
+    "tank",
+    "heavy_tank",
+    "artillery",
+    "flak"
+   ]
+  },
+  {
+   "id": "rocket_factory",
+   "name": "Rocket Factory",
+   "art": "concept",
+   "origin": "new",
+   "water": false,
+   "blurb": "A hall beside a rack of rockets on end: everything that fires a rocket or a missile from the ground.",
+   "units": [
+    "rocket_buggy",
+    "rocket_launcher",
+    "missile_tank",
+    "sam_launcher"
+   ]
+  },
+  {
+   "id": "hover_lab",
+   "name": "Hover Lab",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Glass dome and a glowing pad: hover craft.",
+   "units": [
+    "hover_tank"
+   ]
+  },
+  {
+   "id": "stealth_lab",
+   "name": "Stealth Lab",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Dark faceted bunker with a single lit slit: everything that hides from radar.",
+   "units": [
+    "stealth_tank",
+    "stealth_fighter",
+    "stealth_bomber",
+    "stealth_copter"
+   ]
+  },
+  {
+   "id": "airfield",
+   "name": "Airfield",
+   "art": "game",
+   "origin": "existing",
+   "water": false,
+   "blurb": "Runway, hangar and tower: the fixed-wing fighters and bombers.",
+   "units": [
+    "fighter",
+    "bomber",
+    "vintage_fighter",
+    "vintage_bomber",
+    "torpedo_bomber"
+   ]
+  },
+  {
+   "id": "heliport",
+   "name": "Heliport",
+   "art": "concept",
+   "origin": "new",
+   "water": false,
+   "blurb": "A painted pad with an H, a windsock and a hut: rotor craft.",
+   "units": [
+    "copter",
+    "transport_copter"
+   ]
+  },
+  {
+   "id": "glider_field",
+   "name": "Glider Field",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "A launch ramp and a windsock, for the lighter-than-air.",
+   "units": [
+    "airship"
+   ]
+  },
+  {
+   "id": "radar_station",
+   "name": "Radar Station",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Mast and dish: the eyes in the sky.",
+   "units": [
+    "radar_plane"
+   ]
+  },
+  {
+   "id": "shipyard",
+   "name": "Shipyard",
+   "art": "game",
+   "origin": "existing",
+   "water": true,
+   "blurb": "Slipway and crane: the escorts and the working ships.",
+   "units": [
+    "destroyer",
+    "cruiser",
+    "mine_layer"
+   ]
+  },
+  {
+   "id": "harbor",
+   "name": "Harbor",
+   "art": "concept",
+   "origin": "new",
+   "water": true,
+   "blurb": "A pier, a crane and a moored boat: small craft and the ships that put troops ashore.",
+   "units": [
+    "marine",
+    "gun_boat",
+    "troop_transport"
+   ]
+  },
+  {
+   "id": "sub_pen",
+   "name": "Sub Pen",
+   "art": "concept",
+   "origin": "new",
+   "water": true,
+   "blurb": "Hardened concrete shelter with a flooded mouth: every submarine.",
+   "units": [
+    "submarine",
+    "hunter_sub",
+    "missile_sub"
+   ]
+  },
+  {
+   "id": "dry_dock",
+   "name": "Dry Dock",
+   "art": "concept",
+   "origin": "new",
+   "water": true,
+   "blurb": "Gantry towers over a berth: the big hulls.",
+   "units": [
+    "battleship",
+    "dreadnought",
+    "aircraft_carrier"
+   ]
+  },
+  {
+   "id": "underwater_lab",
+   "name": "Underwater Lab",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": true,
+   "blurb": "Two domes joined by a tube below the waterline: divers.",
+   "units": [
+    "diver"
+   ]
+  },
+  {
+   "id": "engineer_works",
+   "name": "Engineer Works",
+   "art": "concept",
+   "origin": "existing concept",
+   "water": false,
+   "blurb": "Gear on the front and stacked wall blocks: the fixed defences and walls.",
+   "units": [
+    "cannon_turret",
+    "sam_turret",
+    "artillery_turret",
+    "jammer",
+    "cracked_wall"
+   ]
+  }
+ ],
+ "laid": {
+  "note": "Never bought: laid by a unit.",
+  "units": [
+   {
+    "unit": "sea_mine",
+    "by": "mine_layer"
+   }
+  ]
+ }
+}

@@ -67,3 +67,10 @@ Terrain `moveCost` per move class (`null` = impassable); unit `layer`, `weapons`
 
 
 **Join:** a damaged unit may move onto a damaged friend of the same type (`src/engine/join.js`); HP adds up to the maximum, the lower ammo and fuel carry over, and the partner is spent for the turn.
+
+
+## Ammo, fuel and supply (current rules)
+
+- Every armed unit has `ammo`; each shot (and each counterattack) spends the weapon's `ammo` cost. Carriers and mine layers' own guns are free (their ammo stands for troops or mines).
+- Every vehicle and ship has `fuel` with `burn: "move"`: it burns 1 only on a turn it moved. Aircraft burn 1 every turn. With an empty tank a unit cannot attack, loses radar and moves at half speed.
+- Cities and HQs (`resupply`, range 1) refill ammo and fuel of every adjacent friendly unit and repair a unit that starts its turn on them. The supply truck refuels what it supplies; the radar plane supplies fuel only (`supply.ammo: false`).

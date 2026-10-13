@@ -3,6 +3,8 @@
 import { drawPortrait } from '../src/render/portrait-art.js';
 import { SITUATIONS, Talker, MIN_LINES } from '../src/campaign/speech.js';
 
+import { clipsFor } from './sfx-review.js';
+
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const CPS = 34;                 // typing speed in the tester, letters per second
 const HOLD = 1500;              // how long a finished line stays before the next one in "play all"
@@ -94,6 +96,8 @@ export async function createCharactersView(ctx, root) {
       c.bubble = bubble;
     }
 
+    const jingles = ctx.sfx?.group(clipsFor.events(ctx.sfx.map, ['turn-yours', 'turn-enemy', 'gameOver-win', 'gameOver-lose', 'eliminated']), 'Turn and result sounds');
+    if (jingles) card.append(jingles);
     cards.push(c); list.append(card); io?.observe(card);
   }
 

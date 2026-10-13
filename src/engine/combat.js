@@ -17,7 +17,7 @@
 //     as a counterattack too (see ammo.js); a unit that is out cannot fire it, so it is not offered, forecast or used
 // Every function returns plain data / event objects; nothing here knows about drawing.
 
-import { hasAmmoFor, spendAmmo } from './ammo.js';
+import { hasAmmoFor, shotCost, spendAmmo } from './ammo.js';
 import { attributeConfig, hasAttribute } from './attributes.js';
 import { hasLineOfSight } from './sight.js';
 import { canSee } from './detection.js';
@@ -172,7 +172,7 @@ export function resolveAttack(game, attacker, defender) {
   const events = [];
   const weapon = weaponFor(game, attacker, defender);
   const dealt = weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
-  if (weapon) spendAmmo(game, attacker, weapon.ammo);
+  if (weapon) spendAmmo(game, attacker, shotCost(game, attacker, weapon));
   defender.hp = round1(defender.hp - dealt);
   if (defender.hp <= 0) {
     removeUnit(game, defender);
@@ -183,7 +183,7 @@ export function resolveAttack(game, attacker, defender) {
   if (canCounter(game, defender, attacker, weapon)) {
     const reply = weaponFor(game, defender, attacker, defender, { counter: true });
     const back = reply ? weaponDamage(game, reply, defender, attacker) : 0;
-    if (reply) spendAmmo(game, defender, reply.ammo);
+    if (reply) spendAmmo(game, defender, shotCost(game, defender, reply));
     attacker.hp = round1(attacker.hp - back);
     const destroyed = attacker.hp <= 0;
     if (destroyed) removeUnit(game, attacker);

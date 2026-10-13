@@ -48,14 +48,22 @@ test('attributes are assigned to the intended units', () => {
   assert.deepEqual(withAttr('heal'), ['mechanic', 'medic']);
   assert.deepEqual(withAttr('rest'), ['commando']);
   assert.deepEqual(withAttr('ignoresTerrainDefense'), ['airship', 'bomber', 'copter', 'fighter', 'hover_tank', 'radar_plane', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(withAttr('ammo'), ['apc', 'mine_layer', 'missile_sub', 'missile_tank', 'mortar', 'rocket_buggy', 'rocket_launcher', 'rpg_trooper', 'sam_launcher', 'stealth_bomber', 'stealth_fighter', 'torpedo_bomber', 'transport_copter', 'troop_transport']);
-  assert.deepEqual(withAttr('fuel'), registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air').sort(), 'every flyer has a fuel tank, and nothing else does');
+  // every armed unit carries ammo (turrets excepted), and so do the carriers and the mine layer, whose rounds stand for troops and mines
+  const armed = registry.unitIds.filter((id) => registry.unit(id).weapons.length && registry.unit(id).category !== 'structure');
+  assert.deepEqual(withAttr('ammo'), [...new Set([...armed, 'apc', 'mine_layer', 'transport_copter', 'troop_transport'])].sort(), 'every armed unit has ammo, and nothing else but the carriers');
+  for (const id of armed) for (const w of registry.unit(id).weapons) assert.ok(registry.weapon(w).ammo >= 1, `${id}: ${w} costs a round`);
+  for (const id of registry.unitIds.filter((i) => registry.unit(i).category === 'structure')) for (const w of registry.unit(id).weapons) assert.equal(registry.weapon(w).ammo, undefined, `${id}: a turret never runs dry`);
+  // every vehicle, ship and aircraft has a tank; infantry, mines and structures have none
+  const tanked = registry.unitIds.filter((id) => ['vehicle', 'naval', 'aircraft'].includes(registry.unit(id).category)).sort();
+  assert.deepEqual(withAttr('fuel'), tanked, 'every vehicle, ship and aircraft has a fuel tank, and nothing else does');
+  for (const id of tanked) assert.equal(registry.unit(id).attributes.fuel.burn, registry.unit(id).moveClass === 'air' ? undefined : 'move', `${id}: aircraft burn every turn, ground units and ships only when they move`);
   const tank = (id) => registry.unit(id).attributes.fuel.max;
-  const planes = registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter'));
+  const planes = registry.unitIds.filter((id) => registry.unit(id).moveClass === 'air' && !registry.unit(id).tags?.includes('helicopter') && id !== 'radar_plane');
   for (const id of registry.unitIds.filter((i) => registry.unit(i).tags?.includes('helicopter'))) assert.ok(planes.every((p) => tank(id) > tank(p)), `${id} carries more fuel than any plane`);
+  assert.ok(tank('radar_plane') > tank('copter'), 'the radar plane has the longest endurance of any aircraft');
   assert.deepEqual(withAttr('attacksPerTurn'), [], 'the dreadnought no longer attacks twice (the attribute stays available)');
   assert.deepEqual(withAttr('deploy'), ['apc', 'transport_copter', 'troop_transport']);
-  assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'supply_truck']);
+  assert.deepEqual(withAttr('supply'), ['aircraft_carrier', 'radar_plane', 'supply_truck']);
   assert.deepEqual(withAttr('reloads'), ['sam_launcher']);
   assert.deepEqual(withAttr('layMines'), ['mine_layer']);
   assert.deepEqual(withAttr('mine'), ['sea_mine']);
@@ -184,7 +192,8 @@ test('transports carry each leader\'s basic infantry, and the tuning of the stea
   assert.ok(registry.weapon('dreadnought_guns').damage > registry.weapon('main_guns').damage && registry.weapon('dreadnought_guns').armorPiercing > registry.weapon('main_guns').armorPiercing, 'the dreadnought out-hits the battleship');
   assert.ok(registry.weapon('dreadnought_secondary').damage >= registry.weapon('secondary_guns').damage, 'and so does its secondary battery');
   assert.deepEqual(registry.unitIds.filter((id) => registry.unit(id).tags?.includes('helicopter')).sort(), ['copter', 'stealth_copter', 'transport_copter']);
-  assert.deepEqual(registry.unit('supply_truck').attributes.supply.fuelTags, ['helicopter']);
+  assert.equal(registry.unit('supply_truck').attributes.supply.fuelTags, undefined, 'the supply truck refuels every kind of unit it supplies, not only helicopters');
+  assert.deepEqual(registry.unit('radar_plane').attributes.supply, { categories: ['aircraft'], ammo: false }, 'the radar plane refuels aircraft but carries no ammunition');
 });
 
 test('every weapon names an attack animation of its own, and a unit uses only known looks', () => {

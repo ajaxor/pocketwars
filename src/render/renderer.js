@@ -106,17 +106,38 @@ export class Renderer {
     this.strokeRing(g, loops, [['rgba(8,40,120,.65)', Math.max(3, S * .09)], ['rgba(170,222,255,.95)', Math.max(1.5, S * .04)]]);
   }
 
-  /** Stroke the joined outline `loops` (see render/tile-outline.js) once per [color, width] layer, widest first, so a dark edge sits under a light line. */
+  /**
+   * Stroke the joined outline `loops` (see render/tile-outline.js) once per [color, width, shift?] layer, widest first, so a dark edge sits under a light line.
+   * `shift` (px, default 0) moves that layer's line from the usual place just inside the area: positive further in, negative out. Inside means
+   * the area's own side, so on the ring of a hole a negative shift moves the line into the hole.
+   */
   strokeRing(g, loops, layers, dash = null) {
-    const S = this.S, r = this.face(0, 0)[4];
+    const S = this.S, r = this.face(0, 0)[4], base = Math.max(1, S * .03);
     g.save(); g.lineCap = 'round'; g.lineJoin = 'round';
     if (dash) { g.setLineDash(dash.pattern); g.lineDashOffset = dash.offset; }
-    for (const [color, lw] of layers) {
+    for (const [color, lw, shift = 0] of layers) {
       g.strokeStyle = color; g.lineWidth = lw; g.beginPath();
-      tracePath(g, loops, S, { radius: r, inset: Math.max(1, S * .03) });
+      tracePath(g, loops, S, { radius: r, inset: base + shift });
       g.stroke();
     }
     g.restore();
+  }
+
+  /**
+   * The attack range: the tiles in `tiles` (a Set of tile indexes) outlined in red, with a soft fringe just inside. The line is bright red on
+   * the range's own edge and its dark border sits on the OTHER side of that line: outside the outer (maximum range) line, and on the hole side
+   * of the inner (minimum range) line. So the dark borders face away from the band and the bright lines hug it: the band between them is the
+   * area that can be hit, and you can tell at a glance which line is which.
+   */
+  drawAttackRing(g, tiles) {
+    const S = this.S, width = this.game.map.width;
+    const ring = outlineLoops([...tiles].map((k) => ({ x: k % width, y: Math.floor(k / width) })));
+    // a translucent fringe just inside the ring, so the outer (max range) and inner (min range) lines read as the edges of one band
+    g.save(); g.beginPath(); tracePath(g, ring, S, { radius: this.face(0, 0)[4] }); g.clip('evenodd');
+    for (const [a, wd] of [[.14, .5], [.17, .32], [.2, .16]]) this.strokeRing(g, ring, [[`rgba(255,59,59,${a})`, S * wd]]);
+    g.restore();
+    const line = Math.max(2, S * .05), border = Math.max(3, S * .08);
+    this.strokeRing(g, ring, [['rgba(70,0,0,.8)', line + border, -border / 2], ['#ff3b3b', line]]);
   }
 
   /** [x, y, w, h, radius] of tile (x, y), for outlines and highlights that follow the rounded tiles. */
@@ -477,14 +498,7 @@ export class Renderer {
     this.drawArrow(now);
 
     const atk = view.attackTiles;
-    if (atk) {   // the same joined outline as the movement area, in red
-      const ring = outlineLoops([...atk].map((k) => ({ x: k % map.width, y: Math.floor(k / map.width) })));
-      // a translucent fringe just inside the ring, so the outer (max range) and inner (min range) lines read as the edges of one band
-      g.save(); g.beginPath(); tracePath(g, ring, S, { radius: this.face(0, 0)[4] }); g.clip('evenodd');
-      for (const [a, wd] of [[.14, .5], [.17, .32], [.2, .16]]) this.strokeRing(g, ring, [[`rgba(255,59,59,${a})`, S * wd]]);
-      g.restore();
-      this.strokeRing(g, ring, [['rgba(90,0,0,.6)', Math.max(4, S * .1)], ['#ff3b3b', Math.max(2, S * .05)]]);
-    }
+    if (atk) this.drawAttackRing(g, atk);
     if (atk && sel) {
       g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;
       state.units.forEach((e) => {

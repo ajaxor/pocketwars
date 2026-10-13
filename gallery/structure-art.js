@@ -125,5 +125,90 @@ export const BASES = {
     k.rect(.24, .62, .42, .07, '#23252b');                                                // the firing slit
     k.rect(.38, .74, .14, .08, shade(owner, -.35));                                       // a low door
   },
+  // ---- production buildings for the "units are built in their own building" idea (gallery/production.json) -------------------------------------
+  // Agency: a plain office block with a satellite dish and one dark window, nothing else: spies and snipers work from the shadows.
+  agency(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    k.boxShadow(.14, .4, .5, .48, .14); k.box(.14, .4, .5, .48, .14, shade(owner, -.3));
+    k.rect(.14, .4, .5, .06, shade(owner, -.5));                                         // a dark cornice
+    k.rect(.26, .58, .12, .14, '#10131a'); k.rect(.44, .58, .12, .14, '#10131a');        // two blind windows
+    k.rect(.34, .74, .14, .14, DARK);                                                    // a door
+    k.line([[.8, .62], [.8, .3]], '#555a64', .03);                                       // a mast with a small dish
+    g.fillStyle = '#e6e8ee'; g.beginPath(); g.ellipse(k.X(.8), k.Y(.28), .1 * S, .05 * S, -.5, 0, 7); g.fill();
+  },
+  // Heavy Factory: a squat, wide hall under a thick roof with two smokestacks and a tread-wide bay door, with a plated tank face at the door.
+  heavy_factory(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    k.boxShadow(.04, .5, .8, .38, .16); k.box(.04, .5, .8, .38, .16, owner);
+    k.box(.02, .42, .84, .09, .18, '#8d93a0');                                           // a heavy roof slab
+    k.rect(.14, .58, .36, .3, DARK);                                                     // the wide bay
+    k.rect(.18, .72, .28, .1, STEEL); k.rect(.22, .64, .14, .08, STEEL);                 // a tank in the door: hull and turret
+    k.rect(.36, .66, .14, .03, STEEL);
+    k.rect(.62, .18, .1, .26, '#555a64'); k.rect(.76, .26, .09, .18, '#555a64');         // two stacks
+    k.rect(.62, .18, .1, .03, shade(owner, .2)); k.rect(.76, .26, .09, .03, shade(owner, .2));
+  },
+  // Rocket Factory: a hall with a rack of rockets standing on end beside it, nose cones in the owner's colour.
+  rocket_factory(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    k.boxShadow(.06, .56, .46, .32, .12); k.box(.06, .56, .46, .32, .12, owner);
+    k.rect(.16, .68, .24, .2, DARK);                                                     // the door
+    k.rect(.6, .84, .34, .06, '#6a6e78');                                                // the rack's base
+    for (let i = 0; i < 3; i++) {                                                        // three rockets
+      const x = .62 + i * .11, top = .3 + (i === 1 ? -.08 : 0);
+      k.rect(x, top, .07, .54 - (top - .3) - .08 + .08, WHITE);
+      k.poly([[x, top], [x + .035, top - .12], [x + .07, top]], owner);
+      k.rect(x, .72, .07, .04, RED);
+    }
+  },
+  // Aid Station: a low white hall with a red cross and a tent awning: medics and mechanics.
+  aid_station(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    k.boxShadow(.1, .52, .6, .36, .12); k.box(.1, .52, .6, .36, .12, WHITE);
+    k.rect(.1, .5, .6, .06, owner);                                                      // an eaves stripe
+    k.rect(.34, .58, .12, .3, RED); k.rect(.25, .67, .3, .12, RED);                      // the cross
+    k.poly([[.72, .88], [.72, .6], [.94, .6], [.94, .88]], shade(owner, -.1));           // a canvas awning
+    k.poly([[.72, .6], [.83, .44], [.94, .6]], owner);
+    k.rect(.78, .72, .1, .16, DARK);
+  },
+  // Heliport: a round pad with an H, a windsock and a low hut.
+  heliport(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    g.fillStyle = 'rgba(0,0,0,.2)'; g.beginPath(); g.ellipse(k.X(.56), k.Y(.82), .36 * S, .13 * S, 0, 0, 7); g.fill();
+    g.fillStyle = '#6a6e78'; g.beginPath(); g.ellipse(k.X(.5), k.Y(.76), .36 * S, .14 * S, 0, 0, 7); g.fill();     // the pad
+    g.fillStyle = WHITE; g.beginPath(); g.ellipse(k.X(.5), k.Y(.76), .31 * S, .115 * S, 0, 0, 7); g.fill();
+    g.fillStyle = owner; g.beginPath(); g.ellipse(k.X(.5), k.Y(.76), .27 * S, .098 * S, 0, 0, 7); g.fill();
+    k.rect(.39, .7, .035, .12, WHITE); k.rect(.575, .7, .035, .12, WHITE); k.rect(.39, .745, .22, .03, WHITE);     // the H
+    k.box(.04, .46, .2, .2, .08, shade(owner, -.2));                                     // a hut
+    k.line([[.86, .72], [.86, .3]], '#4a3a26', .03); k.poly([[.86, .3], [.66, .34], [.86, .42]], '#ffb347');       // windsock
+  },
+  // Harbor (needs a sea backdrop): a pier running out over the water with a small crane and a boat tied up.
+  harbor(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    k.boxShadow(.04, .62, .94, .06, .14); k.box(.04, .62, .94, .06, .14, '#8a7350');       // the pier
+    for (const x of [.14, .4, .66, .9]) k.rect(x, .68, .035, .12, '#4a3a26');             // pilings
+    k.box(.06, .38, .22, .24, .1, owner);                                                // a warehouse at the root
+    k.line([[.62, .62], [.62, .22], [.84, .22]], shade(owner, -.4), .04); k.line([[.82, .22], [.82, .36]], '#222', .015);   // a crane
+    k.poly([[.36, .9], [.9, .9], [.84, .96], [.42, .96]], '#b9b5a8'); k.rect(.5, .82, .2, .08, owner);                       // a boat
+  },
+  // Sub Pen (needs a sea backdrop): a hardened concrete shelter with a dark arched mouth at the waterline, slabs stacked on top.
+  sub_pen(g, px, py, S, owner) {
+    const k = kit(g, px, py, S), CONC = '#a9a69b';
+    k.boxShadow(.06, .4, .84, .5, .16); k.box(.06, .4, .84, .5, .16, CONC);
+    k.box(.1, .3, .76, .1, .16, shade(CONC, -.12));                                      // a thick roof
+    g.fillStyle = '#10131a'; g.beginPath(); g.moveTo(k.X(.24), k.Y(.9)); g.lineTo(k.X(.24), k.Y(.66)); g.arc(k.X(.44), k.Y(.66), .2 * S, Math.PI, 0); g.lineTo(k.X(.64), k.Y(.9)); g.fill();   // the mouth
+    g.fillStyle = 'rgba(80,170,230,.55)'; g.fillRect(k.X(.24), k.Y(.82), .4 * S, .08 * S);   // water in it
+    k.rect(.7, .46, .12, .14, owner);                                                    // a marker plate in the owner's colour
+    g.fillStyle = shade(owner, -.35); g.beginPath(); g.ellipse(k.X(.44), k.Y(.82), .09 * S, .028 * S, 0, 0, 7); g.fill();   // a hull lurking
+  },
+  // Dry Dock (needs a sea backdrop): two tall gantry towers straddling a berth, a big hull sitting between them.
+  dry_dock(g, px, py, S, owner) {
+    const k = kit(g, px, py, S);
+    k.boxShadow(.04, .84, .92, .06, .12); k.box(.04, .84, .92, .06, .12, '#6a6e78');       // the quay
+    k.poly([[.14, .84], [.86, .84], [.8, .66], [.22, .66]], shade(owner, -.4));          // the hull
+    k.rect(.3, .6, .22, .06, shade(owner, -.15)); k.rect(.36, .52, .1, .08, owner);
+    k.rect(.06, .2, .09, .64, shade(owner, -.2)); k.rect(.85, .2, .09, .64, shade(owner, -.2));    // the gantry towers
+    k.rect(.06, .2, .88, .07, shade(owner, -.35));                                       // the beam across
+    k.line([[.5, .27], [.5, .46]], '#222', .015);
+  },
 };
 

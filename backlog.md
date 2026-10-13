@@ -137,3 +137,7 @@ Last sorted 9 October 2026.
 - **Fog movement rule is human-only.** A fogged player cannot move into tiles they have never seen; the computer is never fogged, so it
   still moves anywhere (and the AI still sees everything).
 - **Only the sniper is revealed by firing.** The always-cloaked units (spy, stealth fighter/bomber/copter) stay hidden after they shoot unless an enemy is adjacent or has radar; `cloak.revealedByFiring` exists if that should change.
+
+- **Production buildings are a design page only.** `gallery/production.json` assigns every unit to a building (eight new structures drawn in `gallery/structure-art.js`), but the game still builds from barracks / factory / airfield / shipyard (`data/loadouts.json`). To adopt it: add the property terrains, give each faction's `build` lists by building, update the maps, the AI build logic and the build menu.
+- **Sea mines have no building** (laid by the mine layer), and the underwater lab only makes divers; decide if those need more.
+- **Sound review cannot judge concept art pages**: concepts and walls have no sounds yet.

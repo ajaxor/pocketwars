@@ -1,16 +1,17 @@
-// Fuel: a flyer burns one unit of fuel per TURN, whether it flies or sits still. Nothing here knows about particular units.
+// Fuel: every vehicle, ship and aircraft carries a tank, counted in TURNS. Nothing here knows about particular units.
 //
-//   unit attribute `fuel: { max, low }`   the unit starts full (`unit.fuel`, in turns); at `low` or fewer it is "low", at 0 it is "empty"
-//   every unit with a tank burns 1 as its owner's turn ends (burnFuel, called by game.endTurn); the tank never limits a move (the player does not
-//   have to count tiles); at 0 the unit cannot attack or use radar (see RUNNING DRY)
+//   unit attribute `fuel: { max, low, burn? }`   the unit starts full (`unit.fuel`, in turns); at `low` or fewer it is "low", at 0 it is "empty"
+//   BURN. An aircraft burns 1 as its owner's turn ends, whether it flew or sat still (`burn` omitted). A vehicle or ship has `burn: "move"`: it
+//   burns 1 only on a turn in which it changed tile, so a parked tank costs nothing and the fuel measures how long a push can go on
+//   (burnFuel, called by game.endTurn). The tank never limits a single move (the player does not have to count tiles).
+//   EMPTY. At 0 a unit is not lost, but it cannot attack (so it does not counterattack either), its radar is off, and its move is halved
+//   (rounded down, at least 1; see moveOf in submerge.js), until a source refuels it.
 //
 // REFUELLING IS FREE AND AUTOMATIC. At the start of its owner's turn (economy.js startTurn) a unit is topped up when it stands where a source
-// reaches it: a property of its owner whose `resupply` covers its category (an airfield: on or next to it), a friendly unit whose `supply`
-// covers its category and is next to it (an aircraft carrier), or a friendly supply unit whose `supply.fuelTags` names one of its tags (the
-// supply truck refuels helicopters, not planes). The Resupply order (ammo.js) and the Supply order (supply.js) fill the tank mid-turn too.
-//
-// RUNNING DRY. A flyer with an empty tank (fuel 0) is not lost: it can still move, but it cannot attack (so it does not counterattack
-// either) and its radar is switched off, until a source refuels it (free, at the start of its owner's turn, or with a Resupply / Supply order).
+// reaches it: a property of its owner whose `resupply` covers its category (a city or HQ for everyone, an airfield for aircraft, a factory for
+// vehicles ...: on or next to it), a friendly unit whose `supply` covers its category and is next to it (a supply truck, an aircraft carrier, a
+// radar plane for aircraft). A `supply` with `fuelTags` refuels only units carrying one of those tags. The Resupply order (ammo.js) and the
+// Supply order (supply.js) fill the tank mid-turn too.
 
 import { attributeConfig } from './attributes.js';
 import { distance, snapshotUnit, unitDef } from './queries.js';
@@ -23,7 +24,7 @@ export const usesFuel = (game, unit) => !!fuelConfig(game, unit);
 export const initialFuel = (def) => fuelConfigOf(def)?.max;
 /** Fuel left, or null for a unit that does not use any. */
 export const fuelOf = (game, unit) => (usesFuel(game, unit) ? unit.fuel ?? fuelConfig(game, unit).max : null);
-/** Is the tank dry? A flyer with no fuel left can neither attack nor use its radar until it is refuelled (it never crashes). */
+/** Is the tank dry? A unit with no fuel left can neither attack nor use its radar, and moves at half speed, until it is refuelled (it is never lost). */
 export const isOutOfFuel = (game, unit) => usesFuel(game, unit) && fuelOf(game, unit) <= 0;
 /** Is the tank below full? */
 export const needsFuel = (game, unit) => usesFuel(game, unit) && fuelOf(game, unit) < fuelConfig(game, unit).max;
@@ -42,9 +43,16 @@ export function spendFuel(game, unit, amount = 1) {
   unit.fuel = Math.max(0, fuelOf(game, unit) - amount);
 }
 
-/** End of `player`'s turn: every unit of theirs with a tank burns one turn of fuel, moving or not. (Run after crashEmpty, so a unit that just ran dry gets its turn at 0.) */
+/** Does this unit's tank only drain on turns it moves (`burn: "move"`: vehicles and ships), rather than every turn (aircraft)? */
+export const burnsOnlyWhenMoving = (game, unit) => fuelConfig(game, unit)?.burn === 'move';
+
+/** End of `player`'s turn: every unit of theirs with a tank burns one turn of fuel: always for an aircraft, only if it moved for a vehicle or ship. */
 export function burnFuel(game, player) {
-  for (const u of game.state.units) if (u.owner === player) spendFuel(game, u, 1);
+  for (const u of game.state.units) {
+    if (u.owner !== player || !usesFuel(game, u)) continue;
+    if (burnsOnlyWhenMoving(game, u) && !u.moved) continue;   // `moved` is set by game.js when the unit changes tile, and cleared at the start of its next turn (heal.js)
+    spendFuel(game, u, 1);
+  }
 }
 
 /** Fill the tank (and lift the crash sentence). */

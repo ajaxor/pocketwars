@@ -45,7 +45,7 @@
     "name": "City",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "amphibious", "vehicle"], "builds": [] }, "blocksLineOfSight": 2 },
+    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] }, "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] }, "blocksLineOfSight": 2 },
     "render": { "building": "city" }
   },
   "hq": {
@@ -53,7 +53,8 @@
     "defense": 4,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "amphibious", "vehicle"], "builds": [] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
+      "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] },
       "victoryOnCapture": true,
       "blocksLineOfSight": 2
     },

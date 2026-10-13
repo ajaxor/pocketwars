@@ -1,5 +1,5 @@
-// Unit attribute `fuel`: a flyer burns a unit of fuel per tile, cannot go further than it has left, refuels for free at a friendly airfield,
-// carrier or (helicopters) supply truck at the start of its owner's turn, and when the tank is dry it cannot attack or use radar (it never crashes).
+// Unit attribute `fuel`: a flyer burns one unit of fuel per turn, a vehicle or ship (`burn: "move"`) one per turn it moves; both refuel for free next
+// to a friendly property or supply unit at the start of their owner's turn, and with a dry tank a unit cannot attack or use radar and moves at half speed (it never crashes).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { makeGame } from '../helpers/fixtures.js';
@@ -42,14 +42,15 @@ test('fuel: an idle flyer burns fuel too, and only its owner\'s turn ends burn i
   assert.equal(theirs.fuel, 7);
 });
 
-test('fuel: the tank never limits a move; a flyer can fly on empty, and the tank bottoms out at 0', () => {
+test('fuel: a low tank never limits a move; an empty one halves it, and the tank bottoms out at 0', () => {
   const g = game(['H.......h'], [['flyer', 0, 0, 0], ['grunt', 1, 8, 0]]);
   const u = g.state.units[0];
   u.fuel = 2;
-  assert.equal(computeReach(g, u).has(5, 0), true, 'move 6 is all there is to count');
+  assert.equal(computeReach(g, u).has(5, 0), true, 'move 6 is all there is to count while there is any fuel');
   u.fuel = 0;
-  assert.equal(computeReach(g, u).has(6, 0), true, 'even a dry flyer moves');
-  assert.equal(g.act({ unitId: u.id, to: { x: 4, y: 0 }, action: { type: 'wait' } }).ok, true);
+  assert.equal(computeReach(g, u).has(3, 0), true, 'a dry flyer still moves, at half speed');
+  assert.equal(computeReach(g, u).has(4, 0), false, 'but no further than half of its 6');
+  assert.equal(g.act({ unitId: u.id, to: { x: 3, y: 0 }, action: { type: 'wait' } }).ok, true);
   assert.equal(u.fuel, 0);
 });
 
@@ -79,7 +80,7 @@ test('fuel: a flyer with an empty tank does not crash: it still moves, but canno
   dry.fuel = 0;
   const before = foe.hp;
   assert.equal(g.act({ unitId: dry.id, to: { x: 3, y: 0 }, action: { type: 'attack', targetId: foe.id } }).ok, false, 'no attack on an empty tank');
-  assert.equal(g.act({ unitId: dry.id, to: { x: 1, y: 0 }, action: { type: 'wait' } }).ok, true, 'but it can fly');
+  assert.equal(g.act({ unitId: dry.id, to: { x: 1, y: 0 }, action: { type: 'wait' } }).ok, true, 'but it can still fly');
   const res = g.endTurn();
   assert.deepEqual(res.events.filter((e) => e.type === 'crash'), [], 'and it does not crash');
   assert.ok(g.state.units.includes(dry));

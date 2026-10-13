@@ -34,7 +34,7 @@ import { attributeConfig, hasAttribute } from '../engine/attributes.js';
 import { canCapture } from '../engine/capture.js';
 import { fuelHomes, fuelOf, usesFuel } from '../engine/fuel.js';
 import { canHealAt } from '../engine/heal.js';
-import { canSupplyAt, supplyConfig, supplyPlan } from '../engine/supply.js';
+import { canSupplyAt, needsSupplyFrom, supplyConfig, supplyPlan } from '../engine/supply.js';
 import { isMine, layConfig, layTiles } from '../engine/mines.js';
 import { attacksPerTurn, calcDamage, canAttackFrom, canTarget } from '../engine/combat.js';
 import { canSee } from '../engine/detection.js';
@@ -68,13 +68,9 @@ function healScore(game, unit, x, y, w) {
   return score;
 }
 
-/** Does friendly `v` need something a unit with the `supply` config `cfg` gives (rounds, or HP when it repairs)? */
-const needsSupply = (game, cfg, v) => cfg.categories.includes(unitDef(game, v).category)
-  && ((ammoLevel(game, v) !== null && ammoLevel(game, v) !== 'ok') || (!!cfg.repair && v.hp < game.registry.rules.maxHp));
-
-/** What a Supply order from (x, y) is worth to the AI: the price of the rounds and the HP it would give, in the profile's cost units. */
+/** What a Supply order from (x, y) is worth to the AI: the price of the rounds and the HP it would give, in the profile's cost units, and a flat worth for each tank it fills. */
 function supplyScore(game, unit, x, y, w) {
-  return supplyPlan(game, unit, x, y).reduce((a, p) => a + (p.rounds * roundCost(game, p.unit) + p.hp * unitDef(game, p.unit).cost / game.registry.rules.maxHp) / w.costUnit, 0);
+  return supplyPlan(game, unit, x, y).reduce((a, p) => a + (p.rounds * roundCost(game, p.unit) + p.hp * unitDef(game, p.unit).cost / game.registry.rules.maxHp) / w.costUnit + (p.fuel ? w.fuelValue ?? 1 : 0), 0);
 }
 
 /**
@@ -112,7 +108,7 @@ function goalTiles(game, unit) {
   const sup = supplyConfig(game, unit);
   if (sup) {   // a supplier goes to the friends that need it, or else stays with the ones it looks after
     const mine = state.units.filter((u) => u !== unit && u.owner === unit.owner && sup.categories.includes(unitDef(game, u).category));
-    const needy = mine.filter((u) => needsSupply(game, sup, u));
+    const needy = mine.filter((u) => needsSupplyFrom(game, unit, u));
     const chosen = needy.length ? needy : mine;
     if (chosen.length) return chosen.map((u) => [u.x, u.y]);
   }

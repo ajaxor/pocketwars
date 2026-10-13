@@ -1,10 +1,18 @@
 // The unit tabs: a pipeline summary with stage filters, and a card per unit (two team colours, status badge, stats, description).
 import { stageCounts } from './catalog.js';
 import { createWallLab } from './wall-lab.js';
+import { clipsFor } from './sfx-review.js';
 
 export const SECTIONS = ['Game buildings', 'Defences', 'Walls', 'Labs and bases'];   // the order of the Structures tab's sections
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+/** The sound clips a catalogue entry makes: a unit moves, dies and fires; a game building is captured; concepts and walls make none. */
+export function soundsOf(map, u) {
+  if (u.kind === 'building') return u.inGame ? clipsFor.events(map, ['capture', 'capture-completed', 'build']) : null;
+  if (u.kind !== 'unit' || !u.inGame) return null;
+  return clipsFor.unit(map, u.id, (u.weapons || []).map((w) => w.fx));
+}
 
 export function createUnitsView(ctx, root) {
   const { catalog, status, factions, state } = ctx;
@@ -40,6 +48,8 @@ export function createUnitsView(ctx, root) {
     if (u.weapons?.length) card.append(el('p', 'mech', u.weapons.map((w) => `${w.name} ${w.range[0] === w.range[1] ? w.range[0] : w.range[0] + '–' + w.range[1]}`).join(' · ')));
     if (u.tags?.length) { const t = el('div', 'tags'); u.tags.forEach((k) => t.append(el('span', 'tag', k))); card.append(t); }
     if (u.mechanic) card.append(el('p', 'mech', u.mechanic));
+    const sounds = ctx.sfx && soundsOf(ctx.sfx.map, u);                                        // approve / reject the sounds this unit makes
+    if (sounds) { const g = ctx.sfx.group(sounds); if (g) card.append(g); }
     if (u.facility) card.append(el('div', 'ov', `${u.facility}${u.overlaps ? ` · overlaps: ${u.overlaps}` : ''}`));
     return { u, card, order };
   });

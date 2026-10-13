@@ -90,6 +90,18 @@
   .tbar select { background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 8px; padding: 7px 10px; font: inherit; font-size: 13px; text-transform: capitalize; }
   .sfx-controls { padding-top: 14px; }
   .sfx-group .grid { padding-top: 10px; padding-bottom: 8px; }
+  .sfx-block { margin-top: 8px; border-top: 1px solid #2a2d35; }
+  .sfx-block summary { cursor: pointer; padding: 8px 0 4px; font-size: 13px; color: #8fc2ee; }
+  .sfx-block .sfx-done { color: #55c27a; }
+  .sfx-row { padding: 6px 0; border-radius: 8px; }
+  .sfx-row-head { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; font-size: 12px; color: #b9b5a8; }
+  .sfx-row[data-status="approved"] { box-shadow: inset 3px 0 #2f8f4e; padding-left: 8px; }
+  .sfx-row[data-status="rejected"] { box-shadow: inset 3px 0 #b3402f; padding-left: 8px; }
+  .sfx-row.sfx-pending { outline: 1px dashed #8a877c; outline-offset: 2px; }
+  .sfx-bar .sfx-controls { padding: 6px 0; }
+  .sfx-bar .sfx-export { width: 100%; margin: 0 0 8px; }
+  .prod-units { gap: 8px; margin-top: 8px; }
+  .kcost { font-size: 10px; color: #8a877c; }
   .sfx-play { margin-top: 4px; min-width: 96px; min-height: 40px; }   /* a comfortable thumb target on a phone */
   .sfx-play[aria-pressed="true"] { background: #3c74d6; color: #fff; }
   .sfx-review { display: flex; gap: 6px; margin-top: 4px; }
@@ -122,6 +134,7 @@
 </header>
 <div class="top"><div class="top-inner">
   <div class="tabs" id="tabs" role="tablist"></div>
+  <div id="review-bar"></div>
   <div class="controls" id="unit-controls">
     <div class="ctl">State <span class="seg" id="mode"><button data-v="idle" aria-pressed="true">Idle</button><button data-v="moving" aria-pressed="false">Moving</button><button data-v="done" aria-pressed="false">Done</button></span></div>
     <div class="ctl">Ground <span class="seg" id="bg"><button data-v="plain" aria-pressed="true">Grass</button><button data-v="road" aria-pressed="false">Road</button><button data-v="sea" aria-pressed="false">Sea</button></span></div>
@@ -135,6 +148,7 @@
 <main>
   <section id="view-units"></section>
   <section id="view-attacks" hidden></section>
+  <section id="view-production" hidden></section>
   <section id="view-sfx" hidden></section>
   <section id="view-chars" hidden></section>
 </main>

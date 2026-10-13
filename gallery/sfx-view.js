@@ -7,7 +7,8 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 /** Total number of clips in the data (shown as the tab's count). */
 export const clipCount = (data) => data.groups.reduce((n, g) => n + g.clips.length, 0);
 
-export function createSfxView(ctx, root, data) {
+export function createSfxView(ctx, root, data, kit) {
+  const store = kit.store;   // the decisions are shared with the review rows on the other tabs and pages
   const players = new Map();   // clip id -> { audio, button }
   const reviews = new Map();   // clip id -> { card, approve, reject, note, badge }
   const state = { volume: 0.8, loop: false };
@@ -27,12 +28,7 @@ export function createSfxView(ctx, root, data) {
 
   // Review: Approve / Reject per clip. Approved status is saved in sfx.json (committed); a pending decision lives in this browser
   // until it is exported to chat, where Claude applies it (approve, or redo the rejected ones) and the saved status takes over.
-  const KEY = 'pocketwars-sfx-review';
-  const decisions = loadDecisions();   // clip id -> { v: 'approved' | 'rejected', note }
-  const saved = new Map(data.groups.flatMap((g) => g.clips).map((c) => [c.id, c.status || 'new']));
-  const statusOf = (id) => decisions[id]?.v || saved.get(id);
-  function loadDecisions() { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; } }
-  function saveDecisions() { try { localStorage.setItem(KEY, JSON.stringify(decisions)); } catch { /* private window: decisions last until the tab closes */ } }
+  const statusOf = (id) => store.statusOf(id);
 
   const review = el('div', 'controls sfx-controls');
   const summary = el('span', 'tag sfx-summary');
@@ -67,7 +63,7 @@ export function createSfxView(ctx, root, data) {
       const note = el('input', 'sfx-note'); note.type = 'text'; note.placeholder = 'Why? (optional)'; note.setAttribute('aria-label', `Note for ${clip.id}`);
       approve.addEventListener('click', () => decide(clip.id, 'approved'));
       reject.addEventListener('click', () => decide(clip.id, 'rejected'));
-      note.addEventListener('change', () => { if (decisions[clip.id]) { decisions[clip.id].note = note.value.trim(); saveDecisions(); } });
+      note.addEventListener('change', () => store.setNote(clip.id, note.value));
       row.append(approve, reject); card.append(row, note);
       reviews.set(clip.id, { card, approve, reject, note, badge: el('span', 'tag') });
       top.append(reviews.get(clip.id).badge);
@@ -100,38 +96,28 @@ export function createSfxView(ctx, root, data) {
     a.volume = state.volume; a.loop = state.loop; a.currentTime = 0;
     a.play().then(() => mark(p, true)).catch(() => mark(p, false));   // a refused play (no gesture, no codec) just leaves the button idle
   }
-  function decide(id, v) {
-    const was = decisions[id]?.v;
-    if (was === v || (!was && saved.get(id) === v)) delete decisions[id];   // tapping the current choice again undoes it
-    else decisions[id] = { v, note: reviews.get(id).note.value.trim() };
-    saveDecisions(); refresh();
-  }
+  function decide(id, v) { store.decide(id, v, reviews.get(id).note.value); }
   function refresh() {
-    for (const id of Object.keys(decisions)) if (!reviews.has(id) || decisions[id].v === saved.get(id)) delete decisions[id];   // a decision the file already holds, or for a clip that is gone
     const count = { new: 0, approved: 0, rejected: 0 };
     for (const [id, r] of reviews) {
-      const st = statusOf(id), pending = Boolean(decisions[id]);
+      const st = statusOf(id), pending = store.isPending(id);
       count[st]++;
       r.card.dataset.status = st; r.card.classList.toggle('sfx-pending', pending);
       r.badge.textContent = st === 'new' ? 'new' : st + (pending ? ' •' : '');
       r.approve.setAttribute('aria-pressed', String(st === 'approved')); r.reject.setAttribute('aria-pressed', String(st === 'rejected'));
-      if (decisions[id]) r.note.value = decisions[id].note || '';
+      if (pending) r.note.value = store.noteOf(id);
       r.note.hidden = st !== 'rejected';
       r.card.hidden = filter.value !== 'all' && filter.value !== st;
     }
-    const n = Object.keys(decisions).length;
+    const n = store.pendingCount();
     summary.textContent = `${count.approved} approved · ${count.rejected} rejected · ${count.new} to review`;
     exportBtn.disabled = n === 0; clearBtn.disabled = n === 0;
     exportBtn.textContent = n ? `Export decisions (${n})` : 'Export decisions';
   }
-  function exportText() {
-    const pick = (v) => Object.entries(decisions).filter(([, d]) => d.v === v);
-    const ok = pick('approved'), no = pick('rejected');
-    return ['Sound review', '', `Approved (${ok.length}): ${ok.map(([id]) => id).join(', ') || 'none'}`, '',
-      `Rejected, please redo (${no.length}):`, ...(no.length ? no.map(([id, d]) => `- ${id}${d.note ? ': ' + d.note : ''}`) : ['none'])].join('\n');
-  }
+  store.subscribe(refresh);
+  const exportText = () => store.exportText();
   filter.addEventListener('change', refresh);
-  clearBtn.addEventListener('click', () => { for (const k of Object.keys(decisions)) delete decisions[k]; for (const r of reviews.values()) r.note.value = ''; saveDecisions(); exportBox.hidden = true; refresh(); });
+  clearBtn.addEventListener('click', () => { for (const r of reviews.values()) r.note.value = ''; exportBox.hidden = true; store.clear(); });
   exportBtn.addEventListener('click', async () => {
     const text = exportText();
     exportBox.value = text; exportBox.hidden = false;   // always shown too, so it can be copied by hand if the clipboard is blocked

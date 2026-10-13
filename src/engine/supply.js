@@ -1,11 +1,12 @@
 // The Supply order. A unit with `supply: { categories, repair? }` (the supply truck, the aircraft carrier) can end its move with Supply
 // instead of Wait: every friendly unit of one of those categories on a tile next to it gets its ammo topped up (the owner pays each
 // missing round at ammo.js roundCost; with too little money it fills what it can pay for) and, when `repair` is given, regains that many
-// HP for free. The order is only offered when somebody next to it needs something.
+// HP for free. It also refills the tank (fuel.js) of those units, for nothing. A supplier with `ammo: false` (the radar plane) hands out fuel
+// only. The order is only offered when somebody next to it needs something.
 
 import { attributeConfig } from './attributes.js';
-import { ammoConfig, ammoOf, roundCost, usesAmmo } from './ammo.js';
-import { fuelOf, needsFuel, refuel, refuelsUnit } from './fuel.js';
+import { ammoConfig, ammoLevel, ammoOf, roundCost, usesAmmo } from './ammo.js';
+import { fuelLevel, fuelOf, needsFuel, refuel, refuelsUnit } from './fuel.js';
 import { distance, round1, snapshotUnit, unitDef } from './queries.js';
 
 export const supplyConfig = (game, unit) => attributeConfig(unitDef(game, unit), 'supply');
@@ -19,7 +20,7 @@ export function supplyPlan(game, unit, x = unit.x, y = unit.y) {
   const plan = [];
   for (const v of game.state.units) {
     if (v === unit || v.owner !== unit.owner || distance(x, y, v.x, v.y) !== 1 || !cfg.categories.includes(unitDef(game, v).category)) continue;
-    let rounds = usesAmmo(game, v) ? Math.max(0, ammoConfig(game, v).max - ammoOf(game, v)) : 0;
+    let rounds = cfg.ammo !== false && usesAmmo(game, v) ? Math.max(0, ammoConfig(game, v).max - ammoOf(game, v)) : 0;
     const price = roundCost(game, v);
     if (price > 0) rounds = Math.min(rounds, Math.floor(funds / price));
     const hp = cfg.repair ? Math.min(cfg.repair, round1(max - v.hp)) : 0;
@@ -29,6 +30,18 @@ export function supplyPlan(game, unit, x = unit.x, y = unit.y) {
     plan.push({ unit: v, rounds, hp, fuel, cost: rounds * price });
   }
   return plan;
+}
+
+/**
+ * Is friendly `v` in real need of something `supplier` hands out: rounds (low or empty; not from a supplier with `ammo: false`), fuel (low or empty,
+ * when this supplier refuels it) or HP (when it repairs)? The AI uses this to decide who a supplier walks to.
+ */
+export function needsSupplyFrom(game, supplier, v) {
+  const cfg = supplyConfig(game, supplier);
+  if (!cfg || v === supplier || !cfg.categories.includes(unitDef(game, v).category)) return false;
+  const ammo = cfg.ammo !== false ? ammoLevel(game, v) : null;
+  const fuel = refuelsUnit(game, supplier, v) ? fuelLevel(game, v) : null;
+  return (ammo !== null && ammo !== 'ok') || (fuel !== null && fuel !== 'ok') || (!!cfg.repair && v.hp < game.registry.rules.maxHp);
 }
 
 /** Could `unit`, stopping on (x, y), supply anybody? */

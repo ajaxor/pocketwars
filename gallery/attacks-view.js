@@ -1,6 +1,8 @@
 // The Attacks tab: every armed unit shooting its weapon at a target, on a loop, using the game's own effects code (src/render/effects.js).
 import { Effects } from '../src/render/effects.js';
 import { attackList } from './attack-stage.js';
+import { attackSpec } from '../src/render/attack-fx.js';
+import { clipsFor } from './sfx-review.js';
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const GAP = 900;   // ms of rest between two plays
@@ -27,6 +29,8 @@ export function createAttacksView(ctx, root) {
       row.append(el('div', 'meta', `${w.name} · ${w.fx} · range ${w.range[0] === w.range[1] ? w.range[0] : w.range[0] + '–' + w.range[1]}`));
       const canvas = el('canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `${u.name}: ${w.name}`);
       row.append(canvas);
+      const sound = ctx.sfx?.group(clipsFor.attack(ctx.sfx.map, w.fx, attackSpec(w.fx).impact), 'Sound');
+      if (sound) row.append(sound);
       card.append(row);
       const stage = { canvas, g: canvas.getContext('2d'), effects: new Effects(registry, colorsOf), spec, started: -1e9, visible: true, play: 0 };
       stages.push(stage); io?.observe(canvas);

@@ -14,7 +14,7 @@ import { attributeConfig, hasAttribute } from '../../engine/attributes.js';
 import { ammoOf } from '../../engine/ammo.js';
 import { deployConfig, deployCost } from '../../engine/deploy.js';
 import { fuelHomes, fuelOf, usesFuel } from '../../engine/fuel.js';
-import { supplyConfig } from '../../engine/supply.js';
+import { needsSupplyFrom, supplyConfig } from '../../engine/supply.js';
 import { deployedType, distance, inBounds, terrainAt, terrainIdAt, unitDef } from '../../engine/queries.js';
 import { isStructure } from '../../engine/structures.js';
 import { ruinAt } from '../../engine/rebuild.js';
@@ -298,7 +298,7 @@ export function goalsFor(sit, unit) {
   if (r.supplier) {
     const cfg = supplyConfig(game, unit);
     const mine = sit.mine.filter((u) => u !== unit && cfg.categories.includes(unitDef(game, u).category));
-    const needy = mine.filter((v) => (ammoLevel(game, v) !== null && ammoLevel(game, v) !== 'ok') || (cfg.repair && v.hp < sit.maxHp));
+    const needy = mine.filter((v) => needsSupplyFrom(game, unit, v));
     const chosen = (needy.length ? needy : mine).filter((u) => canGet(game, mc, ids, u.x, u.y, 1));
     if (chosen.length) return result('supply', chosen.flatMap((u) => ring(game, mc, ids, u.x, u.y, 1, 1)));
   }

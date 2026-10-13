@@ -147,6 +147,21 @@
   @keyframes person { 0% { transform: translateX(-120%); } 16%, 80% { transform: none; } 100% { transform: translateX(-120%); } }
   @keyframes shout { 0%, 12% { opacity: 0; transform: skewY(-6deg) scale(1.6); } 20%, 80% { opacity: 1; transform: skewY(-6deg) scale(1); } 100% { opacity: 0; } }
   .power .lines { animation-name: lines; } @keyframes lines { 0% { opacity: 0; } 14%, 80% { opacity: 1; } 100% { opacity: 0; } }
+  #sfx-review { max-width: 1040px; margin: 0 auto; padding: 0 16px; }
+  .sfx-panel { margin: 18px 0 40px; background: #1d2027; border: 1px solid #2a2d35; border-radius: 12px; padding: 4px 14px 8px; }
+  .sfx-block summary { cursor: pointer; padding: 10px 0 4px; font-weight: 600; color: #8fc2ee; }
+  .sfx-row { padding: 6px 0; } .sfx-row-head { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; color: #b9b5a8; }
+  .sfx-review { display: flex; gap: 6px; margin-top: 4px; }
+  .sfx-review .btn, .sfx-bar .btn { background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 8px; padding: 7px 12px; font: inherit; font-size: 13px; cursor: pointer; min-height: 40px; }
+  .sfx-review .btn { flex: 1; }
+  .sfx-review .btn[aria-pressed="true"].sfx-play { background: #3c74d6; color: #fff; }
+  .sfx-review .btn[aria-pressed="true"].sfx-ok { background: #2f8f4e; color: #fff; } .sfx-review .btn[aria-pressed="true"].sfx-no { background: #b3402f; color: #fff; }
+  .sfx-row[data-status="approved"] { box-shadow: inset 3px 0 #2f8f4e; padding-left: 8px; } .sfx-row[data-status="rejected"] { box-shadow: inset 3px 0 #b3402f; padding-left: 8px; }
+  .sfx-note { width: 100%; box-sizing: border-box; margin-top: 6px; min-height: 36px; background: #20232b; color: #e9e6dc; border: 1px solid #383c46; border-radius: 8px; padding: 6px 10px; font: inherit; }
+  .sfx-controls { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; padding: 8px 0; }
+  .sfx-export { width: 100%; box-sizing: border-box; font: 12px/1.4 monospace; background: #0f1115; color: #e9e6dc; }
+  .sfx-bar .tag, .sfx-block .tag, .sfx-row .tag { font-size: 11px; color: #b9b5a8; background: #262a33; border-radius: 5px; padding: 0 6px; }
+  [hidden] { display: none !important; }
 </style>
 </head>
 <body>
@@ -178,6 +193,7 @@
   <div class="mocks" id="mocks"></div>
   <p class="hint">Portraits are drawn by <code>gallery/portrait-art.js</code> (traits in the <code>LEADERS</code> list); layouts are plain HTML and CSS in this page.</p>
 </main>
+<div id="sfx-review"></div>
 <script type="module">
 // Same cache-busting as the other gallery pages: find the current build via version.json, then load that build's copy of the code.
 let base = './portraits.js?t=' + Date.now();
@@ -186,6 +202,8 @@ try {
   if (r.ok) base = '../v/' + (await r.json()).hash + '/gallery/portraits.js';
 } catch {}
 await import(base);
+const panelBase = base.replace(/\/[a-z]+\.js(\?.*)?$/, '/sfx-panel.js');
+try { (await import(panelBase)).mountSfxPanel(document.getElementById('sfx-review'), 'portraits'); } catch (e) { console.warn('sound review unavailable', e); }
 </script>
 </body>
 </html>

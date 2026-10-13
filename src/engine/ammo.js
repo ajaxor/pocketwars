@@ -12,8 +12,13 @@
 // ammunition and, for a carrier, the price of the unit each round stands for (a transport copter pays for the soldiers it takes on, a mine layer
 // for its mines). The owner pays it from their funds; without enough, nothing is refilled (the order is a Wait).
 //
-// A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say.
-// The same order also refills a flyer's fuel (fuel.js), for nothing; a unit short of fuel only can Resupply too.
+// A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say. Every unit that fights carries ammo (turrets and
+// walls excepted); the plain ones carry a generous amount, so only a long fight runs them dry.
+// A carrier's or mine layer's rounds stand for the soldiers or mines it takes on, so its own guns never cost any (see shotCost).
+// The same order also refills the tank (fuel.js), for nothing; a unit short of fuel only can Resupply too.
+//
+// WHERE: a property with `resupply` serves units of its categories that stand on or next to it. Cities and the HQ serve every kind of unit,
+// so a city behind the line is a front-line supply point.
 
 import { attributeConfig } from './attributes.js';
 import { fuelConfig, fuelOf, needsFuel, refuel, usesFuel } from './fuel.js';
@@ -29,8 +34,18 @@ export const usesAmmo = (game, unit) => !!ammoConfig(game, unit);
 /** Rounds left, or null for a unit with an unlimited supply. */
 export const ammoOf = (game, unit) => (usesAmmo(game, unit) ? unit.ammo ?? ammoConfig(game, unit).max : null);
 
+/**
+ * What firing `weapon` costs `unit` in rounds: the weapon's `ammo`. A carrier (`deploy`) or a mine layer (`layMines`) keeps its rounds for the
+ * units it carries, so its own guns are free.
+ */
+export function shotCost(game, unit, weapon) {
+  if (!weapon.ammo) return 0;
+  const def = unitDef(game, unit);
+  return attributeConfig(def, 'deploy') || attributeConfig(def, 'layMines') ? 0 : weapon.ammo;
+}
+
 /** Does `unit` have enough left to fire `weapon`? Always true for a weapon (or a unit) that does not use ammo. */
-export const hasAmmoFor = (game, unit, weapon) => !weapon.ammo || !usesAmmo(game, unit) || ammoOf(game, unit) >= weapon.ammo;
+export const hasAmmoFor = (game, unit, weapon) => !usesAmmo(game, unit) || ammoOf(game, unit) >= shotCost(game, unit, weapon);
 
 /** Use up `amount` rounds (no-op for a unit with an unlimited supply). */
 export function spendAmmo(game, unit, amount) {
