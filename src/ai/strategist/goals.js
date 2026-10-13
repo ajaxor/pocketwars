@@ -13,7 +13,7 @@ import { ammoLevel, resupplyCost } from '../../engine/ammo.js';
 import { attributeConfig, hasAttribute } from '../../engine/attributes.js';
 import { ammoOf } from '../../engine/ammo.js';
 import { deployConfig, deployCost } from '../../engine/deploy.js';
-import { fuelHomes, fuelOf, usesFuel } from '../../engine/fuel.js';
+import { burnsOnlyWhenMoving, fuelHomes, fuelOf, usesFuel } from '../../engine/fuel.js';
 import { needsSupplyFrom, supplyConfig } from '../../engine/supply.js';
 import { deployedType, distance, inBounds, terrainAt, terrainIdAt, unitDef } from '../../engine/queries.js';
 import { isStructure } from '../../engine/structures.js';
@@ -56,11 +56,11 @@ function ring(game, mc, ids, x, y, lo, hi, start = 0, out = []) {
 
 /**
  * How far from a refuelling spot a flier can go and still get back: half its fuel (in turns, plus the turn it gets on an empty tank)
- * times its move. Infinity for a unit without fuel. `homes` are the [x, y] of its refuelling spots (fuel.js fuelHomes).
+ * times its move. Infinity for a unit without fuel, or one that burns it only when it moves (vehicles and ships). `homes` are the [x, y] of its refuelling spots (fuel.js fuelHomes).
  */
 export function roundTrip(game, def) {
   const cfg = attributeConfig(def, 'fuel');
-  return cfg ? Math.floor((cfg.max + 1) / 2) * def.move : Infinity;
+  return cfg && cfg.burn !== 'move' ? Math.floor((cfg.max + 1) / 2) * def.move : Infinity;   // only a flier burns fuel every turn; a vehicle or ship (burn: "move") has no round trip to respect
 }
 
 /** The refuelling spots of a type for a player: their properties that resupply its category (for a type with no unit yet). */
@@ -257,7 +257,7 @@ export function goalsFor(sit, unit) {
 
   // a flier low on fuel turns home in time (fuel is in turns, and an empty tank still gets one to reach a refill), unless it is a carrier
   // that can make its drop this turn and still get home from there
-  if (usesFuel(game, unit)) {
+  if (usesFuel(game, unit) && !burnsOnlyWhenMoving(game, unit)) {
     const homes = fuelHomes(game, unit);
     if (homes.length) {
       const homeFrom = (x, y) => Math.min(...homes.map(([hx, hy]) => distance(x, y, hx, hy)));
@@ -270,6 +270,11 @@ export function goalsFor(sit, unit) {
         return result('refuel', homes);
       }
     }
+  }
+  // a vehicle or ship burns fuel only when it moves, so it never has to plan a trip home: it goes back only once the tank is dry (half speed, no attacks)
+  if (usesFuel(game, unit) && burnsOnlyWhenMoving(game, unit) && fuelOf(game, unit) <= 0) {
+    const homes = fuelHomes(game, unit);
+    if (homes.length) return result('refuel', homes);
   }
   // out of ammo (a carrier with no troops left), with the money to refill: back to where it is refilled
   if (ammoLevel(game, unit) === 'empty' && resupplyCost(game, unit) <= game.state.funds[player]) {

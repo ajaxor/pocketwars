@@ -32,7 +32,7 @@ import { ammoOf, ammoLevel, canResupplyAt, resupplyCost, roundCost } from '../en
 import { AI_CONDITIONS } from './conditions.js';
 import { attributeConfig, hasAttribute } from '../engine/attributes.js';
 import { canCapture } from '../engine/capture.js';
-import { fuelHomes, fuelOf, usesFuel } from '../engine/fuel.js';
+import { burnsOnlyWhenMoving, fuelHomes, fuelOf, usesFuel } from '../engine/fuel.js';
 import { canHealAt } from '../engine/heal.js';
 import { canSupplyAt, needsSupplyFrom, supplyConfig, supplyPlan } from '../engine/supply.js';
 import { isMine, layConfig, layTiles } from '../engine/mines.js';
@@ -84,7 +84,8 @@ function goalTiles(game, unit) {
     const homes = fuelHomes(game, unit);
     if (homes.length) {
       const away = Math.min(...homes.map(([hx, hy]) => distance(unit.x, unit.y, hx, hy)));
-      if (away > 0 && fuelOf(game, unit) <= Math.ceil(away / unitDef(game, unit).move)) return homes;   // fuel is in turns: head home when it would take as many turns to get there as it has left
+      const turns = burnsOnlyWhenMoving(game, unit) ? 0 : Math.ceil(away / unitDef(game, unit).move);   // a vehicle or ship burns fuel only when it moves: it heads home only once dry
+      if (away > 0 && fuelOf(game, unit) <= turns) return homes;   // fuel is in turns: head home when it would take as many turns to get there as it has left
     }
   }
   // out of ammo (and able to pay for more): back to the property that refills it

@@ -56,10 +56,12 @@ test('the dark border is on one side of each line: outside the outer line, on th
   assert.ok(dist(outerOf(bright)) < 2.5 * S && dist(innerOf(bright)) > 1.5 * S, 'the bright lines themselves stay inside the band');
 });
 
-test('the ring is drawn after (over) the movement overlay', () => {
+test('the fog is drawn first, then the movement overlay, then the ring: both overlays show over the fog of war', () => {
   const src = readFileSync(new URL('../../src/render/renderer.js', import.meta.url), 'utf8');
   const ring = src.indexOf('this.drawAttackRing(g, atk)'), reach = src.indexOf('this.drawReach(g, [...view.reach.tiles()]');
-  assert.ok(reach > 0 && ring > reach, 'the movement overlay is drawn first');
+  const fog = src.indexOf('this.drawFog(seen, now)');
+  assert.ok(fog > 0 && reach > fog, 'the movement overlay is drawn over the fog');
+  assert.ok(reach > 0 && ring > reach, 'the ring is drawn over the movement overlay');
   assert.equal(src.split('this.drawAttackRing(').length - 1, 1, 'drawn in one place only');
 });
 

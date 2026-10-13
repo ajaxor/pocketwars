@@ -465,7 +465,6 @@ export class Renderer {
       view: seen,
     });
     drawWalls(g, { width: map.width, height: map.height, S, wallAt: (x, y) => this.wallAt(x, y), view: seen });
-    if (view.reach) this.drawReach(g, [...view.reach.tiles()], now);
     if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a small sonar mark on every empty water tile (deep sea or shoals) it listens to
       g.save(); g.lineCap = 'round';
       const pulse = .55 + .25 * Math.sin(now / 350);
@@ -497,6 +496,7 @@ export class Renderer {
     this.motionAt = now;
     if (this.motion.size > state.units.length + 8) for (const id of [...this.motion.keys()]) if (!unitById(game, id)) this.motion.delete(id);
     this.drawFog(seen, now);
+    if (view.reach) this.drawReach(g, [...view.reach.tiles()], now);   // the movement overlay and the range ring are drawn over the fog, so they show on tiles the player cannot see
     this.drawArrow(now);
 
     const atk = view.attackTiles;

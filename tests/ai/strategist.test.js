@@ -11,7 +11,7 @@ import { unitAt } from '../../src/engine/queries.js';
 import { playTurn } from '../../src/ai/runner.js';
 import { areaAt, areas, gapTo, inRangeOf } from '../../src/ai/strategist/analysis.js';
 import { matchup } from '../../src/ai/strategist/knowledge.js';
-import { planCaptures } from '../../src/ai/strategist/goals.js';
+import { goalsFor, planCaptures, roundTrip } from '../../src/ai/strategist/goals.js';
 import { paramsOf } from '../../src/ai/strategist/params.js';
 import { planBuilds } from '../../src/ai/strategist/production.js';
 import { FALLBACK } from '../../src/ai/strategist/selector.js';
@@ -243,4 +243,16 @@ test('finish: far ahead, the army drops its plan and heads for the enemy HQ', ()
   const even = world(['H.........h'], [['soldier', 0, 2, 0], ['soldier', 1, 9, 0]]);
   assert.notEqual(situation(even, 0, { params: { finish: 1.5 } }).target, 'hq', 'not while the forces are level');
   assert.notEqual(situation(even).target, 'hq');
+});
+
+test('a tank is not tied to a round trip home like a flier: its fuel only burns when it moves, so it chases an enemy far from its buildings', () => {
+  const g = world(['H' + '.'.repeat(38) + 'h'], [['tank', 0, 20, 0], ['soldier', 1, 38, 0]]);
+  assert.equal(roundTrip(g, registry.unit('tank')), Infinity, 'no round trip for a vehicle');
+  assert.ok(roundTrip(g, registry.unit('fighter')) < Infinity, 'a flier still has one');
+  const tank = g.state.units[0];
+  const sit = situation(g, 0);
+  const goal = goalsFor(sit, tank);
+  assert.notEqual(goal.kind, 'refuel', 'a full tank far from home does not turn back');
+  tank.fuel = 0;
+  assert.equal(goalsFor(situation(g, 0), tank).kind, 'refuel', 'a dry one does go back to a refuelling spot');
 });
