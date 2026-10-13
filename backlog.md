@@ -141,3 +141,5 @@ Last sorted 9 October 2026.
 - **Production buildings are a design page only.** `gallery/production.json` assigns every unit to a building (eight new structures drawn in `gallery/structure-art.js`), but the game still builds from barracks / factory / airfield / shipyard (`data/loadouts.json`). To adopt it: add the property terrains, give each faction's `build` lists by building, update the maps, the AI build logic and the build menu.
 - **Sea mines have no building** (laid by the mine layer), and the underwater lab only makes divers; decide if those need more.
 - **Sound review cannot judge concept art pages**: concepts and walls have no sounds yet.
+
+- AI stalemate impatience: strategist units hold back once armies meet (day-10 advance ~0.0-0.17 vs greedy 0.2-0.3). Track days since combat in `ctx.memory` and lower `caution`/`balance` after a quiet spell. Not yet tried.

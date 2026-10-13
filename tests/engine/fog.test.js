@@ -135,19 +135,3 @@ test('game.edit changes the state and refreshes sight in one step', () => {
   assert.equal(out, 'done');
   assert.equal(tileVisible(g, 0, 5, 0), false);
 });
-
-test('a jammer can be destroyed by ordinary shooting: hitting a structure costs no ammo, so a lone tank can bring it down and lift the fog', () => {
-  const g = game(['A.......B'], [u('tank', 0, 1, 0), u('jammer', null, 2, 0), u('soldier', 1, 7, 0)]);
-  const [tank, jammer] = g.state.units;
-  const rounds = tank.ammo ?? 99;
-  let shots = 0;
-  while (g.state.units.includes(jammer) && shots < 60) {
-    const r = g.act({ unitId: g.state.units[0].id, to: { x: 1, y: 0 }, action: { type: 'attack', targetId: jammer.id } });
-    assert.ok(r.ok, r.error);
-    shots++;
-    if (g.state.units.includes(jammer)) { g.endTurn(); g.endTurn(); }
-  }
-  assert.ok(!g.state.units.includes(jammer));
-  assert.equal(fogActive(g), false, 'the fog is gone');
-  assert.equal(tank.ammo ?? 99, rounds, 'and the tank spent no rounds on it');
-});

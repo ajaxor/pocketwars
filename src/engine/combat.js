@@ -172,7 +172,7 @@ export function resolveAttack(game, attacker, defender) {
   const events = [];
   const weapon = weaponFor(game, attacker, defender);
   const dealt = weapon ? weaponDamage(game, weapon, attacker, defender) : 0;
-  if (weapon && !attributeConfig(unitDef(game, defender), 'structure')) spendAmmo(game, attacker, shotCost(game, attacker, weapon));   // battering a structure (a jammer, a turret, a wall) uses no rounds: it takes many shots, so it must not run a unit dry
+  if (weapon) spendAmmo(game, attacker, shotCost(game, attacker, weapon));
   defender.hp = round1(defender.hp - dealt);
   if (defender.hp <= 0) {
     removeUnit(game, defender);

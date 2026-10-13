@@ -14,7 +14,6 @@
 //
 // A unit that has no `ammo` attribute has an unlimited supply, whatever its weapons say. Every unit that fights carries ammo (turrets and
 // walls excepted); the plain ones carry a generous amount, so only a long fight runs them dry.
-// Shooting at a STRUCTURE (jammer, turret, wall) costs no rounds: it takes many shots to bring one down, and a jammer has to be destroyable to lift the fog.
 // A carrier's or mine layer's rounds stand for the soldiers or mines it takes on, so its own guns never cost any (see shotCost).
 // The same order also refills the tank (fuel.js), for nothing; a unit short of fuel only can Resupply too.
 //
