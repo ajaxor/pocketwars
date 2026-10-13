@@ -1,7 +1,8 @@
-// The attack range ring (Renderer#drawAttackRing): a bright red line just inside the band's edge with a thin dark border round it, kept inside the
-// band so it does not run over the movement range lines. The band between the outer (maximum range) and inner (minimum range) lines is the area a unit can hit.
+// The attack range ring (Renderer#drawAttackRing): a bright red line just inside the band's edge with a dark border on one side of it (outside the
+// outer line, in the hole for the inner line). The movement overlay is drawn over the ring, so the two never fight where their edges meet.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { Renderer } from '../../src/render/renderer.js';
 import { faceRect } from '../../src/render/terrain-layer.js';
 
@@ -36,24 +37,30 @@ const dist = ([x, y]) => Math.hypot(x - centre[0], y - centre[1]);
 const draw = () => { const g = recorder(); Renderer.prototype.drawAttackRing.call(stub, g, band); return g.strokes; };
 const byStyle = (strokes, re) => strokes.filter((s) => re.test(s.style));
 
-test('the ring is a bright red line with a darker border under it', () => {
+test('the ring is a bright red line with a dark border stroke, drawn first', () => {
   const strokes = draw();
   assert.equal(byStyle(strokes, /^#ff3b3b$/).length, 1, 'one bright line round the whole band');
   assert.equal(byStyle(strokes, /^rgba\(70,0,0/).length, 1, 'one dark border');
   const bright = byStyle(strokes, /^#ff3b3b$/)[0], dark = byStyle(strokes, /^rgba\(70,0,0/)[0];
-  assert.ok(dark.width > bright.width, 'the border is wider than the line, so it shows beside it');
-  assert.ok(strokes.indexOf(dark) < strokes.indexOf(bright), 'and it is drawn first, so the bright line sits on top');
+  assert.ok(strokes.indexOf(dark) < strokes.indexOf(bright), 'the border is drawn first, so the bright line sits on top');
   assert.equal(bright.starts.length, 2, 'two loops: the outer edge (maximum range) and the hole (minimum range)');
 });
 
-test('the dark border is thin and centred on the line, so it stays inside the band\'s edge and never spills onto the movement range lines', () => {
+test('the dark border is on one side of each line: outside the outer line, on the hole side of the inner line', () => {
   const strokes = draw();
   const bright = byStyle(strokes, /^#ff3b3b$/)[0], dark = byStyle(strokes, /^rgba\(70,0,0/)[0];
-  assert.deepEqual(dark.starts, bright.starts, 'same path as the bright line: no shift outward or into the hole');
-  assert.ok(dark.width - bright.width <= S * .04, 'only a thin dark rim shows beside the line');
-  const outer = bright.starts.find((p) => dist(p) > S * 2), inner = bright.starts.find((p) => dist(p) <= S * 2);
-  assert.ok(dist(outer) + dark.width / 2 <= 2.5 * S + 1e-6, 'the outer border ends inside the band\'s outer edge (2.5 tiles from the centre)');
-  assert.ok(dist(inner) - dark.width / 2 >= 1.5 * S - 1e-6, 'the inner border ends inside the band, beyond the hole\'s edge (1.5 tiles from the centre)');
+  const outerOf = (st) => st.starts.find((p) => dist(p) > S * 2), innerOf = (st) => st.starts.find((p) => dist(p) <= S * 2);
+  assert.ok(dist(outerOf(dark)) > dist(outerOf(bright)), 'outer line: the dark side is further from the centre than the bright line');
+  assert.ok(dist(innerOf(dark)) < dist(innerOf(bright)), 'inner line: the dark side is nearer the centre (in the hole) than the bright line');
+  assert.ok(dark.width > bright.width, 'the border is wider than the line, so it shows on that side');
+  assert.ok(dist(outerOf(bright)) < 2.5 * S && dist(innerOf(bright)) > 1.5 * S, 'the bright lines themselves stay inside the band');
+});
+
+test('the movement overlay is drawn after (over) the attack ring', () => {
+  const src = readFileSync(new URL('../../src/render/renderer.js', import.meta.url), 'utf8');
+  const ring = src.indexOf('this.drawAttackRing(g, view.attackTiles)'), reach = src.indexOf('this.drawReach(g, [...view.reach.tiles()]');
+  assert.ok(ring > 0 && reach > ring, 'the ring is drawn before the movement overlay');
+  assert.equal(src.split('this.drawAttackRing(').length - 1, 1, 'drawn in one place only');
 });
 
 test('a soft fringe is still drawn inside the band, clipped to it', () => {

@@ -136,10 +136,10 @@ export class Renderer {
     g.save(); g.beginPath(); tracePath(g, ring, S, { radius: this.face(0, 0)[4] }); g.clip('evenodd');
     for (const [a, wd] of [[.14, .5], [.17, .32], [.2, .16]]) this.strokeRing(g, ring, [[`rgba(255,59,59,${a})`, S * wd]]);
     g.restore();
-    // a thin dark border centred on the line, which sits just inside the band's edge: nothing spills outside onto the movement range lines
-    const line = Math.max(2, S * .05), rim = line + Math.max(1.5, S * .03);
-    const inward = Math.max(0, rim / 2 - Math.max(1, S * .03));   // far enough in that the dark rim's outer edge is the band's edge
-    this.strokeRing(g, ring, [['rgba(70,0,0,.8)', rim, inward], ['#ff3b3b', line, inward]]);
+    // The dark border is on one side of each line: outside the outer (maximum range) line and on the hole side of the inner (minimum range) line, so the
+    // band between them is the lighter part. The movement overlay is drawn over this ring, so where its edge meets the hole's border it covers it.
+    const line = Math.max(2, S * .05), border = Math.max(2, S * .05);
+    this.strokeRing(g, ring, [['rgba(70,0,0,.85)', line + border, -border / 2], ['#ff3b3b', line]]);
   }
 
   /** [x, y, w, h, radius] of tile (x, y), for outlines and highlights that follow the rounded tiles. */
@@ -465,6 +465,7 @@ export class Renderer {
       view: seen,
     });
     drawWalls(g, { width: map.width, height: map.height, S, wallAt: (x, y) => this.wallAt(x, y), view: seen });
+    if (view.attackTiles) this.drawAttackRing(g, view.attackTiles);   // under the movement overlay, which is drawn over it wherever the two meet
     if (view.reach) this.drawReach(g, [...view.reach.tiles()], now);
     if (view.sonar && view.sonar.size) {   // the selected unit's sonar: a small sonar mark on every empty water tile (deep sea or shoals) it listens to
       g.save(); g.lineCap = 'round';
@@ -500,7 +501,6 @@ export class Renderer {
     this.drawArrow(now);
 
     const atk = view.attackTiles;
-    if (atk) this.drawAttackRing(g, atk);
     if (atk && sel) {
       g.strokeStyle = `rgba(255,70,70,${.55 + .45 * Math.sin(now / 150)})`; g.lineWidth = 3;
       state.units.forEach((e) => {
