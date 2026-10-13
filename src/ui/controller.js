@@ -282,7 +282,7 @@ export class Controller {
     this.sel = u;
     this.dest = null;
     this.reach = computeReach(this.game, u, { join: !u.fresh });   // a damaged friend of its own kind is a place to move to: Join
-    this.attack = u.fresh ? null : attackTiles(this.game, u);   // a freshly built unit only moves
+    this.attack = null;   // the attack range ring waits until the destination is chosen (#actMenu): moving, or tapping the unit's own tile
     this.mode = 'move';
     this.hud.message(text);
     this.#showSelected();

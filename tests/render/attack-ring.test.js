@@ -1,5 +1,5 @@
 // The attack range ring (Renderer#drawAttackRing): a bright red line just inside the band's edge with a dark border on one side of it (outside the
-// outer line, in the hole for the inner line). The movement overlay is drawn over the ring, so the two never fight where their edges meet.
+// outer line, in the hole for the inner line). The ring is drawn over the movement overlay.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -56,10 +56,10 @@ test('the dark border is on one side of each line: outside the outer line, on th
   assert.ok(dist(outerOf(bright)) < 2.5 * S && dist(innerOf(bright)) > 1.5 * S, 'the bright lines themselves stay inside the band');
 });
 
-test('the movement overlay is drawn after (over) the attack ring', () => {
+test('the ring is drawn after (over) the movement overlay', () => {
   const src = readFileSync(new URL('../../src/render/renderer.js', import.meta.url), 'utf8');
-  const ring = src.indexOf('this.drawAttackRing(g, view.attackTiles)'), reach = src.indexOf('this.drawReach(g, [...view.reach.tiles()]');
-  assert.ok(ring > 0 && reach > ring, 'the ring is drawn before the movement overlay');
+  const ring = src.indexOf('this.drawAttackRing(g, atk)'), reach = src.indexOf('this.drawReach(g, [...view.reach.tiles()]');
+  assert.ok(reach > 0 && ring > reach, 'the movement overlay is drawn first');
   assert.equal(src.split('this.drawAttackRing(').length - 1, 1, 'drawn in one place only');
 });
 

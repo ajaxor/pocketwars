@@ -246,3 +246,29 @@ test('tapping an enemy unit previews where it could move and what it could hit, 
   assert.equal(t.controller.view.reach, null);
   assert.equal(t.controller.view.attackTiles, null);
 });
+
+test('the attack range ring waits for the destination: not on selection, but after a move or a tap on the unit\'s own tile', () => {
+  const t = setup(duelMap);
+  t.controller.tap(0, 0);
+  assert.ok(t.controller.view.reach.has(2, 0), 'the movement range is shown on selection');
+  assert.equal(t.controller.view.attackTiles, null, 'but not the attack range yet');
+  t.controller.tap(0, 0);   // the unit's own tile: stay put, the action menu opens
+  assert.equal(t.controller.mode, 'act');
+  assert.ok(t.controller.view.attackTiles.size > 0, 'the attack range shows while it waits for a target or Wait');
+  t.controller.cancelAll();
+  t.controller.tap(0, 0); t.controller.tap(2, 0);   // or after choosing another tile to move to
+  assert.equal(t.controller.view.attackTiles, null, 'hidden while the unit slides');
+  t.finishMove();
+  assert.equal(t.controller.mode, 'act');
+  assert.ok(t.controller.view.attackTiles.size > 0, 'shown once it has arrived');
+});
+
+test('an enemy unit, or one that has already moved, still shows both its movement and attack range', () => {
+  const t = setup(duelMap);
+  t.controller.tap(4, 0);   // the enemy
+  assert.ok(t.controller.view.reach && t.controller.view.attackTiles.size > 0);
+  t.controller.tap(2, 0);
+  t.controller.tap(0, 0); t.controller.tap(1, 0); t.finishMove(); t.press('Wait');   // my unit moves and waits: done for the turn
+  t.controller.tap(1, 0);
+  assert.ok(t.controller.view.reach && t.controller.view.attackTiles.size > 0, 'a unit that has acted shows both');
+});
