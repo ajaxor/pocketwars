@@ -49,14 +49,37 @@ test('a decision the file already holds, or for an unknown clip, is dropped; unk
   assert.equal(s.pendingCount(), 0);
 });
 
-test('the export text keeps the format Claude reads: approved ids, then rejected ones with their notes', () => {
+test('the export collects every kind of asset in one text, sounds first, with the notes of the rejected ones', () => {
   const s = createReviewStore(data, memory());
-  assert.match(s.exportText(), /Approved \(0\): none/);
+  assert.match(s.exportText(), /No decisions yet/);
   s.decide(fresh, 'rejected', 'harsh');
   const other = allIds.find((id) => id !== fresh && createReviewStore(data, memory()).statusOf(id) === 'new');
   s.decide(other, 'approved');
+  s.decide('unit:tank', 'rejected', 'barrel too thin');
+  s.decide('unit:soldier', 'approved');
+  s.decide('tileset:desert', 'approved');
+  s.decide('attack:tank.tank_cannon', 'rejected');
   const text = s.exportText();
-  assert.match(text, new RegExp(`^Sound review\\n\\nApproved \\(1\\): ${other}\\n\\nRejected, please redo \\(1\\):\\n- ${fresh}: harsh$`));
+  assert.match(text, /^Asset review\n/);
+  assert.match(text, new RegExp(`\\nSounds\\nApproved \\(1\\): ${other}\\nRejected, please redo \\(1\\):\\n- ${fresh}: harsh\\n`));
+  assert.match(text, /\nUnit and structure art\nApproved \(1\): soldier\nRejected, please redo \(1\):\n- tank: barrel too thin\n/);
+  assert.match(text, /\nTerrain tilesets\nApproved \(1\): desert\nRejected, please redo \(0\):\nnone$/);
+  assert.match(text, /\nAttack effects\nApproved \(0\): none\nRejected, please redo \(1\):\n- tank.tank_cannon\n/);
+  assert.ok(text.indexOf('Sounds') < text.indexOf('Unit and structure art'), 'kinds come in a fixed order');
+});
+
+test('asset keys need a known kind; they are approved, undone and shared between pages like clips; the file can hold approved assets', () => {
+  const storage = memory(), s = createReviewStore(data, storage);
+  s.decide('mystery:thing', 'approved');
+  assert.equal(s.pendingCount(), 0, 'an unknown kind is ignored');
+  s.decide('building:agency', 'rejected', 'too plain');
+  assert.equal(createReviewStore(data, storage).statusOf('building:agency'), 'rejected');
+  s.decide('building:agency', 'rejected');
+  assert.equal(s.statusOf('building:agency'), 'new');
+  const saved = createReviewStore({ ...data, approvedAssets: ['unit:tank'] }, memory());
+  assert.equal(saved.statusOf('unit:tank'), 'approved');
+  saved.decide('unit:tank', 'approved');   // already what the file says: nothing to export
+  assert.equal(saved.pendingCount(), 0);
 });
 
 test('storage that throws (private window) does not break the store', () => {

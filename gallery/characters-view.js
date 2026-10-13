@@ -96,6 +96,7 @@ export async function createCharactersView(ctx, root) {
       c.bubble = bubble;
     }
 
+    if (ctx.sfx) card.append(ctx.sfx.review(`leader:${L.id}`, 'Leader (portrait, kit, lines)'));
     const jingles = ctx.sfx?.group(clipsFor.events(ctx.sfx.map, ['turn-yours', 'turn-enemy', 'gameOver-win', 'gameOver-lose', 'eliminated']), 'Turn and result sounds');
     if (jingles) card.append(jingles);
     cards.push(c); list.append(card); io?.observe(card);

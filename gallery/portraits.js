@@ -1,5 +1,6 @@
 // Leader portrait gallery: builds the style grid, the expression sheet and eight dialogue mock-ups, and animates the portraits
 // (blinking, and a flapping mouth while a mock-up is "typing"). Art lives in portrait-art.js; layouts are CSS in portraits.html.
+import { mountSfxPanel } from './sfx-panel.js';
 import { STYLES, EXPRESSIONS, drawPortrait, drawCutout, setFactions } from '../src/render/portrait-art.js';
 
 const DATA = await (await fetch(new URL('data.json', import.meta.url))).json();
@@ -9,6 +10,7 @@ const LEADERS = CAMPAIGN.leaders.filter((l) => l.id !== 'envoy');   // every fac
 
 const fac = (L) => DATA.factions.find((f) => f.id === L.faction);
 const $ = (s) => document.querySelector(s);
+const kit = await mountSfxPanel($('#sfx-review'), 'portraits').catch(() => null);   // sound review panel + the shared review export bar
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const dpr = Math.min(2, window.devicePixelRatio || 1);
@@ -68,7 +70,7 @@ for (const st of STYLES) {
     p.px = Math.round(state.size * dpr); p.cv.width = p.cv.height = p.px;
     f.append(p.cv, el('div', 'cap', `<b>${L.name}</b><br>${L.tag}`)); faces.append(f);
   }
-  row.append(faces); $('#styles').append(row);
+  row.append(faces); if (kit) row.append(kit.review(`style:${st.id}`, `${st.name} style`)); $('#styles').append(row);
 }
 
 // ---- section 2: expression sheet ------------------------------------------------------------------------------------------------
@@ -126,7 +128,8 @@ function mock(title, note, pro, con, build) {
   const m = el('div', 'mock'); m.append(el('h3', '', title), el('p', '', `${note}<br><span class="pro">+ ${pro}</span><br><span class="con">– ${con}</span>`));
   const scene = { alive: true, hidden: false, typing: false, speaking: 0, expr: null };
   const st = build(scene);
-  m.append(st); $('#mocks').append(m);
+  m.append(st); if (kit) m.append(kit.review(`layout:${title.replace(/^\d+ · /, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-$/, '')}`, 'Layout'));
+  $('#mocks').append(m);
   new IntersectionObserver((es) => { scene.hidden = !es[0].isIntersecting; }).observe(m);
   return scene;
 }

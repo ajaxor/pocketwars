@@ -53,6 +53,7 @@ export function createProductionView(ctx, root, data) {
       units.append(box);
     }
     card.append(top, row, el('p', 'mech', b.blurb), units);
+    if (ctx.sfx) card.append(ctx.sfx.review(`building:${b.id}`, 'Building and its units'));
     const sound = ctx.sfx?.group(clipsFor.events(ctx.sfx.map, ['build']), 'Sound');   // the build jingle every building shares
     if (sound) card.append(sound);
     return { b, card };

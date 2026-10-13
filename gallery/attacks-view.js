@@ -29,6 +29,7 @@ export function createAttacksView(ctx, root) {
       row.append(el('div', 'meta', `${w.name} · ${w.fx} · range ${w.range[0] === w.range[1] ? w.range[0] : w.range[0] + '–' + w.range[1]}`));
       const canvas = el('canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', `${u.name}: ${w.name}`);
       row.append(canvas);
+      if (ctx.sfx) row.append(ctx.sfx.review(`attack:${u.id}.${spec.weapon}`, 'Effect'));
       const sound = ctx.sfx?.group(clipsFor.attack(ctx.sfx.map, w.fx, attackSpec(w.fx).impact), 'Sound');
       if (sound) row.append(sound);
       card.append(row);

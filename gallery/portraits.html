@@ -202,8 +202,6 @@ try {
   if (r.ok) base = '../v/' + (await r.json()).hash + '/gallery/portraits.js';
 } catch {}
 await import(base);
-const panelBase = base.replace(/\/[a-z]+\.js(\?.*)?$/, '/sfx-panel.js');
-try { (await import(panelBase)).mountSfxPanel(document.getElementById('sfx-review'), 'portraits'); } catch (e) { console.warn('sound review unavailable', e); }
 </script>
 </body>
 </html>

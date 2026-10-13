@@ -48,6 +48,7 @@ export function createUnitsView(ctx, root) {
     if (u.weapons?.length) card.append(el('p', 'mech', u.weapons.map((w) => `${w.name} ${w.range[0] === w.range[1] ? w.range[0] : w.range[0] + '–' + w.range[1]}`).join(' · ')));
     if (u.tags?.length) { const t = el('div', 'tags'); u.tags.forEach((k) => t.append(el('span', 'tag', k))); card.append(t); }
     if (u.mechanic) card.append(el('p', 'mech', u.mechanic));
+    if (ctx.sfx) card.append(ctx.sfx.review(`unit:${u.id}`, 'Art'));                        // approve / reject the drawing
     const sounds = ctx.sfx && soundsOf(ctx.sfx.map, u);                                        // approve / reject the sounds this unit makes
     if (sounds) { const g = ctx.sfx.group(sounds); if (g) card.append(g); }
     if (u.facility) card.append(el('div', 'ov', `${u.facility}${u.overlaps ? ` · overlaps: ${u.overlaps}` : ''}`));

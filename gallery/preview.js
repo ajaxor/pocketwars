@@ -54,7 +54,7 @@ async function boot() {
   const $ = (sel) => document.querySelector(sel);
   const json = async (rel) => (await fetch(new URL(rel, import.meta.url))).json();
   const registry = await loadRegistry(fetchReader(new URL('../data/', import.meta.url)));
-  const [concepts, status, campaign, planned, sfxData, productionData] = await Promise.all([json('concepts.json'), json('status.json'), json('../data/campaign.json'), json('planned-units.json').catch(() => ({})), json('sfx.json'), json('production.json')]);
+  const [concepts, status, campaign, planned, sfxData, productionData, reviewsData] = await Promise.all([json('concepts.json'), json('status.json'), json('../data/campaign.json'), json('planned-units.json').catch(() => ({})), json('sfx.json'), json('production.json'), json('reviews.json').catch(() => ({}))]);
   setFactions([...Object.values(registry.factions), { id: 'chorus', ...campaign.chorus }]);
   const catalog = buildCatalog({ registry, concepts, planned, status });
   const factions = Object.values(registry.factions).map((f) => ({ id: f.id, name: f.name, color: f.color, dark: f.dark }));
@@ -83,7 +83,7 @@ async function boot() {
   };
   ctx.paintTile = paintTile; ctx.clock = () => clock;
   ctx.terrain = terrain; ctx.drawWall = drawWall; ctx.buildings = { game: BUILDINGS, concept: BASES };
-  ctx.sfx = createSfxKit(sfxData);   // Approve / Reject for sounds, on every tab; one set of decisions
+  ctx.sfx = createSfxKit({ ...sfxData, approvedAssets: reviewsData.approved || [] });   // Approve / Reject for sounds and assets, on every tab; one set of decisions, one export
   $('#review-bar').append(ctx.sfx.bar());
   const units = createUnitsView(ctx, $('#view-units'));
   const characters = await createCharactersView(ctx, $('#view-chars'));

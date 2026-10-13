@@ -1,10 +1,12 @@
-// Sound review shared by every gallery page: Approve / Reject for a clip, wherever the clip turns up.
+// Review shared by every gallery page: Approve / Reject for a sound clip or for any asset (unit art, building, attack effect, leader, tileset...),
+// wherever it turns up. The file keeps its old name; it started as the sound review.
 //   createReviewStore(data, storage)   the decisions (pure, no DOM; unit-tested)
-//   createSfxKit(data, baseUrl)        the store plus the widgets: kit.row(clipId, label), kit.group(title, [[clipId, label]]), kit.bar()
+//   createSfxKit(data, baseUrl)        the store plus the widgets: kit.row(clipId, label), kit.group(pairs, title), kit.review(key, label), kit.bar()
 //   clipsFor.*                         which clips belong to a unit / weapon look / building / event, from the mapping in sfx.json
-// Approved status is saved in sfx.json (committed). A pending decision lives in this browser (localStorage) until it is exported to chat,
-// where Claude applies it (approve, or redo the rejected ones) and the saved status takes over. All pages share one key, so a decision made
-// on the Units tab shows on the Sound effects tab and on the other pages.
+// Keys: a sound clip is its plain id ("tank-move-2"); any other asset is "<kind>:<id>" ("unit:tank", "building:agency", "attack:tank.tank_cannon",
+// "leader:harlan", "tileset:desert", "style:ink", "layout:versus"). Approved sounds are saved in sfx.json and approved assets in reviews.json (both committed).
+// A pending decision lives in this browser (localStorage) until it is exported to chat, where Claude applies it and the saved status takes over.
+// ONE export collects the decisions of every tab and page: they all share one localStorage key (and update each other live across browser tabs).
 
 export const REVIEW_KEY = 'pocketwars-sfx-review';
 
@@ -13,36 +15,52 @@ const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls)
 function browserStorage() { try { return globalThis.localStorage ?? null; } catch { return null; } }
 
 /** @param {{groups:{clips:{id:string,status?:string}[]}[]}} data  sfx.json   @param {{getItem:Function,setItem:Function}|null} storage */
+export const KIND_LABELS = { sound: 'Sounds', unit: 'Unit and structure art', building: 'Production buildings', attack: 'Attack effects', leader: 'Leaders', tileset: 'Terrain tilesets', style: 'Portrait styles', layout: 'Dialogue layouts' };
+export const kindOf = (key) => (key.includes(':') ? key.slice(0, key.indexOf(':')) : 'sound');
+const nameOf = (key) => (key.includes(':') ? key.slice(key.indexOf(':') + 1) : key);
+
 export function createReviewStore(data, storage = browserStorage()) {
   const saved = new Map(data.groups.flatMap((g) => g.clips).map((c) => [c.id, c.status || 'new']));
-  let decisions = {};
-  try { decisions = JSON.parse(storage?.getItem(REVIEW_KEY)) || {}; } catch { decisions = {}; }
+  const approvedAssets = new Set(data.approvedAssets || []);
+  const savedOf = (id) => (saved.has(id) ? saved.get(id) : approvedAssets.has(id) ? 'approved' : 'new');
+  const known = (id) => saved.has(id) || (id.includes(':') && KIND_LABELS[kindOf(id)] !== undefined);
+  const load = () => { try { return JSON.parse(storage?.getItem(REVIEW_KEY)) || {}; } catch { return {}; } };
+  let decisions = load();
   const listeners = new Set();
-  const prune = () => { for (const id of Object.keys(decisions)) if (!saved.has(id) || decisions[id].v === saved.get(id)) delete decisions[id]; };   // a decision the file already holds, or for a clip that is gone
+  const prune = () => { for (const id of Object.keys(decisions)) if (!known(id) || decisions[id].v === savedOf(id)) delete decisions[id]; };   // a decision the file already holds, or for something that is gone
   const commit = () => { prune(); try { storage?.setItem(REVIEW_KEY, JSON.stringify(decisions)); } catch { /* private window: decisions last until the tab closes */ } for (const f of listeners) f(); };
   prune();
+  // another browser tab or page changed the decisions: take them over
+  try { globalThis.addEventListener?.('storage', (e) => { if (e.key === REVIEW_KEY) { decisions = load(); prune(); for (const f of listeners) f(); } }); } catch { /* no window */ }
   return {
-    has: (id) => saved.has(id),
-    statusOf: (id) => decisions[id]?.v || saved.get(id) || 'new',
+    has: known,
+    statusOf: (id) => decisions[id]?.v || savedOf(id),
     isPending: (id) => Boolean(decisions[id]),
     noteOf: (id) => decisions[id]?.note || '',
     /** Choose approved / rejected for a clip; choosing the current status again undoes the decision. */
     decide(id, v, note = '') {
-      if (!saved.has(id)) return;
+      if (!known(id)) return;
       const was = decisions[id]?.v;
-      if (was === v || (!was && saved.get(id) === v)) delete decisions[id]; else decisions[id] = { v, note: note.trim() };
+      if (was === v || (!was && savedOf(id) === v)) delete decisions[id]; else decisions[id] = { v, note: note.trim() };
       commit();
     },
     setNote(id, note) { if (decisions[id]) { decisions[id].note = note.trim(); commit(); } },
     clear() { decisions = {}; commit(); },
     pendingCount: () => Object.keys(decisions).length,
-    counts() { const c = { new: 0, approved: 0, rejected: 0 }; for (const id of saved.keys()) c[this.statusOf(id)]++; return c; },
+    counts() { const c = { new: 0, approved: 0, rejected: 0 }; for (const id of saved.keys()) c[this.statusOf(id)]++; return c; },   // the sound clips: the only things with a known total
     subscribe(fn) { listeners.add(fn); return () => listeners.delete(fn); },
+    /** Every pending decision of every kind, in one block of text for chat. */
     exportText() {
-      const pick = (v) => Object.entries(decisions).filter(([, d]) => d.v === v);
-      const ok = pick('approved'), no = pick('rejected');
-      return ['Sound review', '', `Approved (${ok.length}): ${ok.map(([id]) => id).join(', ') || 'none'}`, '',
-        `Rejected, please redo (${no.length}):`, ...(no.length ? no.map(([id, d]) => `- ${id}${d.note ? ': ' + d.note : ''}`) : ['none'])].join('\n');
+      const kinds = Object.keys(KIND_LABELS).filter((k) => Object.keys(decisions).some((id) => kindOf(id) === k));
+      const out = ['Asset review'];
+      for (const k of kinds) {
+        const mine = Object.entries(decisions).filter(([id]) => kindOf(id) === k);
+        const ok = mine.filter(([, d]) => d.v === 'approved'), no = mine.filter(([, d]) => d.v === 'rejected');
+        out.push('', KIND_LABELS[k], `Approved (${ok.length}): ${ok.map(([id]) => nameOf(id)).join(', ') || 'none'}`,
+          `Rejected, please redo (${no.length}):`, ...(no.length ? no.map(([id, d]) => `- ${nameOf(id)}${d.note ? ': ' + d.note : ''}`) : ['none']));
+      }
+      if (!kinds.length) out.push('', 'No decisions yet.');
+      return out.join('\n');
     },
   };
 }
@@ -62,6 +80,13 @@ export const clipsFor = {
 function uniq(pairs) { const seen = new Set(); return pairs.filter(([id]) => id && !seen.has(id) && seen.add(id)); }
 
 /** The widgets, all wired to one store and one player (starting a clip stops the one playing). */
+/** Fetch sfx.json and reviews.json (next to this file) and build the kit: what every page does at start-up. */
+export async function loadKit(base = import.meta.url) {
+  const get = async (f) => { try { const r = await fetch(new URL(f, base)); return r.ok ? r.json() : null; } catch { return null; } };
+  const [sfx, reviews] = await Promise.all([get('sfx.json'), get('reviews.json')]);
+  return createSfxKit({ ...sfx, approvedAssets: reviews?.approved || [] }, base);
+}
+
 export function createSfxKit(data, baseUrl = import.meta.url, storage) {
   const store = createReviewStore(data, storage);
   const clips = new Map(data.groups.flatMap((g) => g.clips).map((c) => [c.id, c]));
@@ -80,11 +105,11 @@ export function createSfxKit(data, baseUrl = import.meta.url, storage) {
   store.subscribe(() => refreshers.forEach((f) => f()));
 
   /** One clip: Play, Approve, Reject (and a note box once rejected). */
-  function row(id, label) {
+  function row(id, label, { playable = true } = {}) {
     const clip = clips.get(id);
     const box = el('div', 'sfx-row');
     const head = el('div', 'sfx-row-head');
-    const name = el('span', 'sfx-row-name', label ? `${label} · ${id}` : id); name.title = clip?.prompt || '';
+    const name = el('span', 'sfx-row-name', playable ? (label ? `${label} · ${id}` : id) : label); name.title = clip?.prompt || '';
     const badge = el('span', 'tag');
     head.append(name, badge);
     const buttons = el('div', 'sfx-review');
@@ -96,7 +121,8 @@ export function createSfxKit(data, baseUrl = import.meta.url, storage) {
     ok.addEventListener('click', () => store.decide(id, 'approved', note.value));
     no.addEventListener('click', () => store.decide(id, 'rejected', note.value));
     note.addEventListener('change', () => store.setNote(id, note.value));
-    buttons.append(playBtn, ok, no);
+    if (playable) buttons.append(playBtn);
+    buttons.append(ok, no);
     box.append(head, buttons, note);
     const refresh = () => {
       const st = store.statusOf(id);
@@ -109,6 +135,9 @@ export function createSfxKit(data, baseUrl = import.meta.url, storage) {
     refreshers.add(refresh); refresh();
     return box;
   }
+
+  /** Approve / Reject for any asset (no Play button): `key` is "<kind>:<id>", `label` says what is being judged, e.g. "Art". */
+  const review = (key, label = 'Review') => { const r = row(key, label, { playable: false }); r.classList.add('asset-review'); return r; };
 
   /** A collapsible "Sound" block with a row per clip; returns null when there is nothing to hear. */
   function group(pairs, title = 'Sound') {
@@ -137,7 +166,7 @@ export function createSfxKit(data, baseUrl = import.meta.url, storage) {
     wrap.append(line, box);
     const refresh = () => {
       const c = store.counts(), n = store.pendingCount();
-      summary.textContent = `Sound review: ${c.approved} approved · ${c.rejected} rejected · ${c.new} to review`;
+      summary.textContent = `Review (all tabs): ${n} pending · sounds ${c.approved} approved, ${c.rejected} rejected, ${c.new} to review`;
       exportBtn.hidden = n === 0; clearBtn.hidden = n === 0;   // nothing to export yet: keep the sticky header short
       exportBtn.textContent = n ? `Export decisions (${n})` : 'Export decisions';
       if (!n) box.hidden = true;
@@ -153,5 +182,5 @@ export function createSfxKit(data, baseUrl = import.meta.url, storage) {
     return wrap;
   }
 
-  return { store, map: data.map, clips, row, group, bar, play, stop: stopAll, isPlaying: () => playing };
+  return { store, map: data.map, clips, row, review, group, bar, play, stop: stopAll, isPlaying: () => playing };
 }
