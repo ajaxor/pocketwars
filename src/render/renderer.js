@@ -136,8 +136,10 @@ export class Renderer {
     g.save(); g.beginPath(); tracePath(g, ring, S, { radius: this.face(0, 0)[4] }); g.clip('evenodd');
     for (const [a, wd] of [[.14, .5], [.17, .32], [.2, .16]]) this.strokeRing(g, ring, [[`rgba(255,59,59,${a})`, S * wd]]);
     g.restore();
-    const line = Math.max(2, S * .05), border = Math.max(3, S * .08);
-    this.strokeRing(g, ring, [['rgba(70,0,0,.8)', line + border, -border / 2], ['#ff3b3b', line]]);
+    // a thin dark border centred on the line, which sits just inside the band's edge: nothing spills outside onto the movement range lines
+    const line = Math.max(2, S * .05), rim = line + Math.max(1.5, S * .03);
+    const inward = Math.max(0, rim / 2 - Math.max(1, S * .03));   // far enough in that the dark rim's outer edge is the band's edge
+    this.strokeRing(g, ring, [['rgba(70,0,0,.8)', rim, inward], ['#ff3b3b', line, inward]]);
   }
 
   /** [x, y, w, h, radius] of tile (x, y), for outlines and highlights that follow the rounded tiles. */

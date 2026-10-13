@@ -1,6 +1,5 @@
-// The attack range ring (Renderer#drawAttackRing): a bright red line on the band's own edge, with its dark border on the far side of the line,
-// so the outer (maximum range) line is shadowed outside and the inner (minimum range) line on the hole side. The band between them reads as the
-// area a unit can hit.
+// The attack range ring (Renderer#drawAttackRing): a bright red line just inside the band's edge with a thin dark border round it, kept inside the
+// band so it does not run over the movement range lines. The band between the outer (maximum range) and inner (minimum range) lines is the area a unit can hit.
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Renderer } from '../../src/render/renderer.js';
@@ -47,22 +46,14 @@ test('the ring is a bright red line with a darker border under it', () => {
   assert.equal(bright.starts.length, 2, 'two loops: the outer edge (maximum range) and the hole (minimum range)');
 });
 
-test('the dark border is outside the outer line and on the hole side of the inner line', () => {
+test('the dark border is thin and centred on the line, so it stays inside the band\'s edge and never spills onto the movement range lines', () => {
   const strokes = draw();
-  const bright = byStyle(strokes, /^#ff3b3b$/)[0].starts, dark = byStyle(strokes, /^rgba\(70,0,0/)[0].starts;
-  const split = (pts) => ({ outer: pts.filter((p) => dist(p) > S * 2), inner: pts.filter((p) => dist(p) <= S * 2) });   // the outer edge is 2.5 tiles from the centre, the hole's edge 1.5
-  const b = split(bright), d = split(dark);
-  assert.equal(b.outer.length, 1);
-  assert.equal(b.inner.length, 1);
-  assert.ok(dist(d.outer[0]) > dist(b.outer[0]), 'outer line: the dark side is further from the centre than the bright line');
-  assert.ok(dist(d.inner[0]) < dist(b.inner[0]), 'inner line: the dark side is nearer the centre (in the hole) than the bright line');
-});
-
-test('both bright lines hug the band: on its side of each edge, not out in the dark border', () => {
-  const bright = byStyle(draw(), /^#ff3b3b$/)[0].starts;
-  const outer = bright.find((p) => dist(p) > S * 2), inner = bright.find((p) => dist(p) <= S * 2);
-  assert.ok(dist(outer) < 2.5 * S, 'the outer line is just inside the band\'s outer edge (2.5 tiles from the centre)');
-  assert.ok(dist(inner) > 1.5 * S, 'the inner line is just inside the band, beyond the hole\'s edge (1.5 tiles from the centre)');
+  const bright = byStyle(strokes, /^#ff3b3b$/)[0], dark = byStyle(strokes, /^rgba\(70,0,0/)[0];
+  assert.deepEqual(dark.starts, bright.starts, 'same path as the bright line: no shift outward or into the hole');
+  assert.ok(dark.width - bright.width <= S * .04, 'only a thin dark rim shows beside the line');
+  const outer = bright.starts.find((p) => dist(p) > S * 2), inner = bright.starts.find((p) => dist(p) <= S * 2);
+  assert.ok(dist(outer) + dark.width / 2 <= 2.5 * S + 1e-6, 'the outer border ends inside the band\'s outer edge (2.5 tiles from the centre)');
+  assert.ok(dist(inner) - dark.width / 2 >= 1.5 * S - 1e-6, 'the inner border ends inside the band, beyond the hole\'s edge (1.5 tiles from the centre)');
 });
 
 test('a soft fringe is still drawn inside the band, clipped to it', () => {
