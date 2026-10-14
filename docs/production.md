@@ -1,38 +1,44 @@
 # Production: buildings, labs and maps
 
-Who can build what is decided by three things: the **building**, the **labs** its owner holds, and the **leader's kit**. Maps decide which buildings each side owns, so the map sets up the battle.
+Who can build what is decided by three things: the **building** (a fixed menu of every unit it can ever build), the **leader's roster** (the units of that faction: a leader builds only the units of each menu that are on their roster), and the **labs** the player holds (they upgrade units on the menu). Maps decide which buildings each side owns, so the map sets up the battle.
 
 ## Buildings (`data/terrain.json`, menus in `data/loadouts.json`)
 
-| Building | Builds (default menu) |
+| Building | Menu (every unit it can build; a faction's roster cuts it down) |
 |---|---|
 | HQ | the leader's own infantry, unlimited builds |
 | Garage | recon, rocket buggy, mechanic |
 | Chemical plant | flamethrower, rocket launcher, mine layer (only when water touches the tile: `shore`) |
-| Tank factory (`factory`) | AT infantry, tank, flak |
+| Tank factory (`factory`) | AT infantry, tank, flak, heavy tank, hover tank, missile tank, amphibious tank, stealth tank |
 | Support factory | medic, supply truck, APC |
 | Artillery range | mortar, artillery |
 | Agency | sniper, radar plane (stand-in for the spy plane) |
-| Shipyard | diver, destroyer, cruiser, battleship, aircraft carrier |
+| Shipyard | diver, destroyer, cruiser, battleship, dreadnought, aircraft carrier |
 | Harbor | gun boat, troop transport |
-| Sub pen | submarine, hunter sub |
-| Airfield | copter, transport copter, torpedo bomber, RPG trooper |
-| Airbase | fighter, bomber, SAM launcher |
+| Sub pen | submarine, hunter sub, missile sub |
+| Airfield | copter, transport copter, torpedo bomber, RPG trooper, vintage fighter, vintage bomber, stealth copter, airship |
+| Airbase | fighter, bomber, SAM launcher, stealth fighter, stealth bomber |
 
 Every building but the HQ builds one unit per turn. Infantry and vehicles are mixed on purpose: a building has a theme, not a unit type.
 
+## Rosters
+
+Each leader has a `roster` in `data/loadouts.json`: the old faction units, so Ada has the missile tank and no tank, Harlan the vintage planes, and so on (the nine rosters are the old build lists, see `docs/leaders.md`). The menu a player sees at a building is the building's menu limited to their roster, cheapest first. A faction that has none of a building's units can still own it but builds nothing there (for now: Harlan's chemical plant, sub pen and airbase; Ada's artillery range and agency; and so on). New faction units may be invented to fill those gaps. The default kit (no leader chosen) has a base roster without the lab-upgrade units and the faction-only units.
+
+The starting units of a building are the default one, or the unit of the leader's menu there nearest to it in price.
+
 ## Labs
 
-A lab builds nothing. While its owner holds it, it **adds** units to the menus of the owner's other buildings (`adds` on the lab's terrain: building id -> unit ids). Tapping a lab shows what it adds where.
+A lab builds nothing. While its owner holds it, it **upgrades** units on that owner's build menus: each unit the lab names is replaced by its upgrade, wherever it is on their menus (`upgrades` on the lab's terrain: unit id -> upgraded unit id). A leader without the plain unit gets nothing from it. Two labs that upgrade the same unit offer both upgrades. Tapping a lab shows what it upgrades. The upgrades are a first draft ("hover tank replaces tank"), to be tuned.
 
-| Lab | Adds |
+| Lab | Upgrades |
 |---|---|
-| Hover lab | hover tank (tank factory), amphibious tank (harbor) |
-| Stealth lab | stealth tank (tank factory), stealth copter, stealth fighter, stealth bomber (airbase) |
-| Heavy lab | heavy tank (tank factory), dreadnought (shipyard), airship (airfield) |
-| Missile lab | missile tank (tank factory), missile sub (sub pen) |
+| Hover lab | tank -> hover tank |
+| Stealth lab | tank -> stealth tank, copter -> stealth copter, fighter -> stealth fighter, bomber -> stealth bomber |
+| Heavy lab | tank -> heavy tank, battleship -> dreadnought |
+| Missile lab | tank -> missile tank, submarine -> missile sub |
 
-Each leader has one **unlock**: a lab unit they can build without owning the lab (see `docs/leaders.md`). Losing a lab removes its units from the menu at once; units already built stay.
+Losing a lab changes the menu at once; units already built stay.
 
 ## Maps
 

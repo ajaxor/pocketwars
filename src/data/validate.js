@@ -269,11 +269,10 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     }
     const prop = t && t.attributes && t.attributes.property;
     if (isObj(prop) && Array.isArray(prop.shore)) for (const unit of prop.shore) if (typeof unit === 'string' && !isObj(units[unit])) problems.push(`terrain "${id}": shore names unknown unit "${unit}"`);
-    if (isObj(prop) && isObj(prop.adds)) {
-      for (const [building, ids] of Object.entries(prop.adds)) {
-        const target = terrain[building]?.attributes?.property;
-        if (!isObj(target) || !Array.isArray(target.builds) || !target.builds.length) problems.push(`terrain "${id}": adds names "${building}", which is not a production building`);
-        for (const unit of Array.isArray(ids) ? ids : []) if (typeof unit === 'string' && !isObj(units[unit])) problems.push(`terrain "${id}": adds.${building} names unknown unit "${unit}"`);
+    if (isObj(prop) && isObj(prop.upgrades)) {
+      for (const [from, to] of Object.entries(prop.upgrades)) {
+        if (!isObj(units[from])) problems.push(`terrain "${id}": upgrades names unknown unit "${from}"`);
+        if (typeof to === 'string' && !isObj(units[to])) problems.push(`terrain "${id}": upgrades.${from} names unknown unit "${to}"`);
       }
     }
     const supplies = t && t.attributes && t.attributes.resupply && t.attributes.resupply.categories;
@@ -363,16 +362,14 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
 
   const checkKit = (kit, where, whole) => {
     if (!isObj(kit)) return problems.push(`${where} must be an object`);
-    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start' && k !== 'infantry' && k !== 'unlock') problems.push(`${where}: unknown key "${k}" (expected build, start, infantry and unlock)`);
-    if (kit.unlock !== undefined) {
-      if (!Array.isArray(kit.unlock)) problems.push(`${where}: unlock must be a list of unit ids`);
+    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start' && k !== 'infantry' && k !== 'roster') problems.push(`${where}: unknown key "${k}" (expected build, start, infantry and roster)`);
+    if (kit.roster !== undefined) {
+      if (!Array.isArray(kit.roster)) problems.push(`${where}: roster must be a list of unit ids`);
       else {
-        const labbed = new Set(Object.values(terrain).flatMap((t) => (isObj(t?.attributes?.property?.adds) ? Object.values(t.attributes.property.adds).flat() : [])));
         const seen = new Set();
-        for (const id of kit.unlock) {
-          if (!isObj(units[id])) problems.push(`${where}: unlock names unknown unit "${id}"`);
-          else if (!labbed.has(id)) problems.push(`${where}: unlock "${id}" is not added by any lab, so there is no building to unlock it in`);
-          if (seen.has(id)) problems.push(`${where}: unlock lists "${id}" twice`);
+        for (const id of kit.roster) {
+          if (!isObj(units[id])) problems.push(`${where}: roster names unknown unit "${id}"`);
+          if (seen.has(id)) problems.push(`${where}: roster lists "${id}" twice`);
           seen.add(id);
         }
       }
@@ -402,7 +399,7 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
  * only lists what its building can produce. Where a unit can be built:
  *   - the default kit's `build` menus (the same for everyone) and any leader's own `build` menu
  *   - a leader's `infantry` at the HQ, which builds it
- *   - a lab's `adds` (a lab adds units to the buildings its owner holds; a leader's `unlock` brings them without the lab)
+ * and a leader builds only what its `roster` lists (the default kit's roster is the base set), plus the upgrades of the labs it holds (a lab's `upgrades`).
  */
 export function validateShippedKit(loadouts, units, terrain, problems) {
   if (!isObj(loadouts) || !isObj(units) || !isObj(terrain)) return;
@@ -426,15 +423,23 @@ export function validateShippedKit(loadouts, units, terrain, problems) {
     for (const [tid, menu] of Object.entries(isObj(kit.build) ? kit.build : {})) if (Array.isArray(menu)) for (const id of menu) { note(id, `${where} ${tid}`); fits(tid, id, `${where}: build.${tid}`); }
     if (kit.infantry) { note(kit.infantry, `${where} infantry`); fits('hq', kit.infantry, `${where}: infantry`); }
   }
+  const rosters = new Set();
+  for (const kit of [loadouts.default, ...Object.values(isObj(loadouts.leaders) ? loadouts.leaders : {})]) if (isObj(kit) && Array.isArray(kit.roster)) kit.roster.forEach((id) => rosters.add(id));
+  const menus = Object.values(isObj(loadouts.default?.build) ? loadouts.default.build : {}).filter(Array.isArray);
+  const upgraded = new Set();
   for (const [tid, t] of Object.entries(terrain)) {
     const prop = t?.attributes?.property;
-    for (const [building, ids] of Object.entries(isObj(prop?.adds) ? prop.adds : {})) for (const id of ids) { note(id, `${tid} adds`); fits(building, id, `terrain ${tid}: adds.${building}`); }
+    for (const [from, to] of Object.entries(isObj(prop?.upgrades) ? prop.upgrades : {})) {
+      upgraded.add(to);
+      if (!menus.some((m) => m.includes(from) && m.includes(to))) problems.push(`terrain ${tid}: upgrades.${from} -> ${to}, but no default menu lists both (the upgrade replaces the unit on its own menu)`);
+    }
     for (const id of Array.isArray(prop?.shore) ? prop.shore : []) if (!Object.values(loadouts.default?.build ?? {}).some((m) => m.includes(id))) problems.push(`terrain ${tid}: shore names "${id}", which is on no default menu`);
   }
   for (const [id, u] of Object.entries(units)) {
     if (!isObj(u) || u.attributes?.structure || u.attributes?.mine) continue;   // structures come from maps and mines from mine layers
     if (u.shelved && buildable.has(id)) problems.push(`unit "${id}" is shelved but ${buildable.get(id)} still builds it`);
-    else if (!u.shelved && !buildable.has(id)) problems.push(`unit "${id}" can be built nowhere: put it on a menu, add it to a lab, or mark it "shelved": true`);
+    else if (!u.shelved && !buildable.has(id) && !upgraded.has(id)) problems.push(`unit "${id}" can be built nowhere: put it on a menu, make a lab upgrade to it, or mark it "shelved": true`);
+    else if (!u.shelved && buildable.has(id) && !rosters.has(id) && !upgraded.has(id) && !Object.values(loadouts.leaders ?? {}).some((k) => k?.infantry === id) && loadouts.default?.infantry !== id && menus.some((m) => m.includes(id))) problems.push(`unit "${id}" is on a default menu but on no leader's roster, so nobody can build it`);
   }
 }
 

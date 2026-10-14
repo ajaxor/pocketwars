@@ -104,7 +104,7 @@ Also resolved earlier and removed from the lists: the mine hidden-tile leak, the
 ## Production redesign (October 2026)
 
 - **The maps were rewritten by a throwaway script**, which is not in the repo. Their layouts are now the source of truth; to restyle all of them again the script has to be rewritten. *Trigger: a second bulk map change.*
-- **Menus are written out in `loadouts.json` and again as `adds` on the labs.** `validate.js` checks that they agree (a lab unit must not be on a default menu), but the two lists are edited separately.
+- **Rosters are plain lists in `loadouts.json`** (about 16 to 20 ids per leader, written out from the old build menus). `validate.js` checks that every unit is on some roster or upgraded to, but an unwanted unit on a roster is invisible until play.
 - **`exclusive` is a leftover.** Menus are explicit now; the flag only keeps units out of the category-fallback menu of a building the loadout does not list. *Trigger: removing the fallback.*
 - **The HQ keeps `builds: [infantry, amphibious]`** so `buildPath` and arrivals treat it as an infantry source, while its real menu is its owner's one infantry (`registry.resolveLoadouts`). Two sources of truth for one thing.
 - **`gallery/production.json` was generated once from the game data** and is now hand-maintained; the test only checks unit coverage and that labs list what they add. It could be generated at load.

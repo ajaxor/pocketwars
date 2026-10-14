@@ -17,26 +17,34 @@ const withIds = (obj) => Object.fromEntries(Object.entries(obj).map(([id, def]) 
 /**
  * Resolve loadouts.json: every leader's kit with the default's parts filled in. A kit is { build: { <terrain id>: [unit ids] },
  * start: { hq|<building id>: [{ unit, at }] }, infantry: the leader's basic foot soldier (what a transport with `deploy.basic` carries),
- * unlock: [unit ids] (lab units the leader has without owning the lab, see economy.js) }. The HQ builds the leader's own infantry: unless the
+ * roster: [unit ids] (what the leader may build at the fixed building menus; the default's roster is the base set, see economy.js) }. The HQ builds the leader's own infantry: unless the
  * kit gives the HQ a menu of its own, `build.hq` is `[infantry]`. Without loadouts.json there are no leaders, and every building gives
  * the menu of its `builds` categories.
  */
-function resolveLoadouts(raw) {
-  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? {}, infantry: raw?.default?.infantry, unlock: raw?.default?.unlock };
+function resolveLoadouts(raw, units) {
+  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? {}, infantry: raw?.default?.infantry, roster: raw?.default?.roster };
   const kit = (own = {}) => {
     const infantry = own.infantry ?? base.infantry;
-    const unlock = own.unlock ?? base.unlock;
+    const roster = own.roster ?? base.roster;
     const build = { ...base.build, ...(own.build ?? {}) };
     if (infantry !== undefined && !own.build?.hq) build.hq = [infantry];
-    return { ...(infantry !== undefined && { infantry }), ...(unlock !== undefined && { unlock }), build, start: { ...base.start, ...(own.start ?? {}) } };
+    const start = { ...base.start, ...(own.start ?? {}) };
+    if (roster) {   // the standard one-unit set of a building is the unit nearest in price on this leader's own menu there (none: no set)
+      for (const [site, list] of Object.entries(base.start)) {
+        if (site === 'hq' || own.start?.[site] || !build[site]) continue;
+        const menu = build[site].filter((id) => roster.includes(id));
+        start[site] = menu.length ? list.map((s) => ({ ...s, unit: menu.includes(s.unit) ? s.unit : menu.reduce((best, id) => (Math.abs((units?.[id]?.cost ?? 0) - (units?.[s.unit]?.cost ?? 0)) < Math.abs((units?.[best]?.cost ?? 0) - (units?.[s.unit]?.cost ?? 0)) ? id : best)) })) : [];
+      }
+    }
+    return { ...(infantry !== undefined && { infantry }), ...(roster !== undefined && { roster }), build, start };
   };
   return { default: kit(), leaders: Object.fromEntries(Object.entries(raw?.leaders ?? {}).map(([id, own]) => [id, kit(own)])) };
 }
 
-/** Which buildings a lab can add each unit to: { <unit id>: [building terrain ids] } (from the labs' `adds`). */
-function labUnitsOf(terrain) {
+/** The units some lab upgrades to: { <upgraded unit id>: [lab terrain ids] } (from the labs' `upgrades`). */
+function upgradedByOf(terrain) {
   const out = {};
-  for (const t of Object.values(terrain)) for (const [building, ids] of Object.entries(t.attributes?.property?.adds ?? {})) for (const id of ids) (out[id] ??= []).includes(building) || out[id].push(building);
+  for (const [tid, t] of Object.entries(terrain)) for (const to of Object.values(t.attributes?.property?.upgrades ?? {})) (out[to] ??= []).includes(tid) || out[to].push(tid);
   return out;
 }
 
@@ -63,12 +71,12 @@ export function createRegistry(raw) {
   const tilesetIds = Object.keys(tilesets);
   const skins = new Map();   // `${tileset}|${terrain}` -> the terrain as that tileset draws it
   const factionIds = Object.keys(factions); // JSON order = the order colours are offered in
-  const loadouts = deepFreeze(resolveLoadouts(structuredClone(raw.loadouts)));
+  const loadouts = deepFreeze(resolveLoadouts(structuredClone(raw.loadouts), units));
   const leaderIds = Object.keys(loadouts.leaders); // JSON order = the order leaders are offered in
-  const labUnits = deepFreeze(labUnitsOf(terrain));
+  const upgradedBy = deepFreeze(upgradedByOf(terrain));
 
   return Object.freeze({
-    rules, factions, terrain, ground, tilesets, tilesetIds, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds, labUnits,
+    rules, factions, terrain, ground, tilesets, tilesetIds, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds, upgradedBy,
     /** The kit a leader brings: { build, start } (see resolveLoadouts). No leader (null) gets the default kit. */
     loadoutFor: (leaderId) => {
       if (leaderId == null) return loadouts.default;

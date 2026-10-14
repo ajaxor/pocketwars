@@ -78,14 +78,18 @@ test('the standard start gives the HQ and each building type a set of units that
   for (const site of Object.keys(start).filter((k) => k !== 'hq')) assert.equal(start[site].length, 1, `${site} gets one extra unit`);
 });
 
-test('every leader starts with three HQ units and one unit per building, and the starting armies cost about the same', () => {
+test('every leader starts with three HQ units from their own roster, at most one unit per building, and the HQ armies cost about the same', () => {
   const costs = registry.leaderIds.map((id) => {
-    const start = { ...registry.loadouts.default.start, ...registry.loadouts.leaders[id]?.start };
-    assert.equal(start.hq.length, 3, `${id}: HQ`);
-    for (const site of Object.keys(start).filter((k) => k !== 'hq')) assert.equal(start[site].length, 1, `${id}: ${site}`);
-    return Object.values(start).flat().reduce((sum, s) => sum + registry.units[s.unit].cost, 0);
+    const kit = registry.loadoutFor(id);
+    assert.equal(kit.start.hq.length, 3, `${id}: HQ`);
+    for (const { unit } of kit.start.hq) assert.ok(unit === kit.infantry || kit.roster.includes(unit), `${id}: ${unit} is not one of their units`);
+    for (const site of Object.keys(kit.start).filter((k) => k !== 'hq')) {
+      assert.ok(kit.start[site].length <= 1, `${id}: ${site}`);
+      for (const { unit } of kit.start[site]) assert.ok(kit.build[site].includes(unit) && kit.roster.includes(unit), `${id}: the ${site} starter ${unit} is on their menu`);
+    }
+    return kit.start.hq.reduce((sum, s) => sum + registry.units[s.unit].cost, 0);
   });
-  assert.ok(Math.max(...costs) - Math.min(...costs) <= 4500, `army costs ${costs.join(', ')} stay within 4,500 of each other`);
+  assert.ok(Math.max(...costs) - Math.min(...costs) <= 4500, `HQ armies cost ${costs.join(', ')}: within 4,500 of each other`);
 });
 
 // ---- validation -----------------------------------------------------------------------------------------------------------------------
@@ -290,8 +294,8 @@ test('a team with a leader but no property keeps its map units (and still gets t
   assert.deepEqual(out.units.filter((u) => u.owner === 1).map((u) => [u.x, u.y]), [[3, 0]]);
 });
 
-const setsFor = (map, owner) => {
-  const { start } = registry.loadoutFor(null);
+const setsFor = (map, owner, leader = null) => {
+  const { start } = registry.loadoutFor(leader);
   let n = start.hq.length;
   map.terrain.forEach((row, y) => row.forEach((t, x) => { if (map.owners[y][x] === owner && t !== 'hq' && registry.terrain[t].attributes.property?.builds?.length) n += start[t]?.length ?? 0; }));
   return n;
@@ -304,7 +308,7 @@ test('a leader\'s units fit every shipped map: nobody skipped, none on a propert
     const map = await loadMap(readData, registry, id);
     const out = withLeaders(map, registry, map.players.map(() => registry.leaderIds[0]));
     const each = (o) => out.units.filter((u) => u.owner === o && !registry.unit(u.type).attributes.structure);   // the map's own turrets stay as well
-    map.players.forEach((_, o) => assert.equal(each(o).length, setsFor(map, o), `${id}: team ${o + 1} has all its sets`));
+    map.players.forEach((_, o) => assert.equal(each(o).length, setsFor(map, o, registry.leaderIds[0]), `${id}: team ${o + 1} has all its sets`));
     assert.equal(new Set(out.units.map((u) => `${u.x},${u.y}`)).size, out.units.length, `${id}: one unit per tile`);
     for (const u of out.units) {
       assert.equal(registry.terrain[map.terrain[u.y][u.x]].attributes.property, undefined, `${id}: unit on a property at ${u.x},${u.y}`);

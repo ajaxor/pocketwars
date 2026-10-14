@@ -163,14 +163,14 @@ export class Hud {
     w.body.append(chips);
     const notes = [...t.notes];
     if (t.property && t.property.builds.length) notes.unshift(`Builds ${t.property.builds.join(', ').toLowerCase()}`);
-    if (t.property?.adds) notes.unshift('Lab');
+    if (t.property?.upgrades) notes.unshift('Lab');
     if (notes.length) w.body.append(this.#tags(notes));
     if (t.property?.menu?.length) w.body.append(h(d, 'div', 'note prod-note', `Builds: ${t.property.menu.map((u) => u.name).join(', ')}`));
-    if (t.property?.adds) {   // a lab: which units it adds to which of its owner's buildings
-      w.body.append(h(d, 'div', 'note prod-note', owner ? `${owner.name} production gains:` : 'Whoever holds it adds to their production:'));
-      for (const a of t.property.adds) {
+    if (t.property?.upgrades) {   // a lab: which unit it replaces with which, on its owner's build menus
+      w.body.append(h(d, 'div', 'note prod-note', owner ? `${owner.name} build menus upgrade:` : 'Whoever holds it upgrades their build menus:'));
+      for (const u of t.property.upgrades) {
         const line = h(d, 'div', 'prod-lab');
-        line.append(h(d, 'span', 'prod-lab-k', a.building), h(d, 'span', 'prod-lab-v', a.units.map((u) => `${u.name} (${fmtMoney(u.cost)})`).join(', ')));
+        line.append(h(d, 'span', 'prod-lab-k', u.from.name), h(d, 'span', 'prod-lab-v', `→ ${u.to.name} (${fmtMoney(u.to.cost)})`));
         w.body.append(line);
       }
     }

@@ -176,22 +176,50 @@ test('every faction builds its own infantry at the HQ: Lysandra royal guard, Lud
   for (const leader of ['lysandra', 'ludwig', 'hiroshi', 'chase']) assert.ok(!Object.values(kit(leader).build).flat().includes('soldier'), `${leader} has no soldier`);
 });
 
-test('each leader has exactly one unlock, a lab unit they build without owning the lab', () => {
-  const unlocks = { harlan: 'heavy_tank', ada: 'hover_tank', vex: 'missile_sub', hiroshi: 'missile_tank', ludwig: 'stealth_bomber', rex: 'amphibious_tank', chase: 'stealth_copter', dmitri: 'airship', lysandra: 'dreadnought' };
-  for (const [leader, unit] of Object.entries(unlocks)) {
-    assert.deepEqual(kit(leader).unlock, [unit], leader);
-    assert.ok(registry.labUnits[unit], `${unit} is added by a lab`);
-  }
+test('each leader builds only their own roster: the old units, spread over the fixed building menus', () => {
+  const rosters = {
+    harlan: ['medic', 'sniper', 'mech', 'vintage_fighter', 'vintage_bomber', 'torpedo_bomber', 'recon', 'artillery', 'apc', 'flak', 'tank', 'heavy_tank', 'destroyer', 'troop_transport', 'cruiser', 'battleship'],
+    ada: ['missile_tank', 'rocket_launcher', 'rocket_buggy', 'sam_launcher', 'gun_boat', 'hunter_sub'],
+    ludwig: ['hover_tank', 'stealth_copter', 'radar_plane', 'missile_sub'],
+    chase: ['hover_tank', 'heavy_tank', 'stealth_fighter', 'aircraft_carrier'],
+    rex: ['amphibious_tank', 'torpedo_bomber', 'aircraft_carrier', 'hunter_sub'],
+    dmitri: ['airship', 'heavy_tank', 'missile_sub', 'torpedo_bomber'],
+    lysandra: ['stealth_bomber', 'dreadnought', 'radar_plane'],
+    hiroshi: ['dreadnought', 'heavy_tank', 'mortar'],
+    vex: ['stealth_copter', 'missile_sub', 'diver'],
+  };
+  for (const [leader, units] of Object.entries(rosters)) for (const u of units) assert.ok(kit(leader).roster.includes(u), `${leader} builds ${u}`);
+  assert.ok(!kit('ada').roster.includes('tank') && !kit('ludwig').roster.includes('tank'), 'Ada and Ludwig have no plain tank');
+  assert.ok(!kit('lysandra').roster.includes('marine') && !kit('chase').roster.includes('flak'));
+  for (const leader of registry.leaderIds) assert.ok(!('unlock' in kit(leader)), 'no leader unlocks a lab unit any more');
 });
 
-test('the default menus: infantry and vehicles mix in each building, and the labs add their own units', () => {
+test('the default menus list every unit a building can build; a leader\'s roster cuts them down', () => {
   const b = registry.loadouts.default.build;
   assert.deepEqual([...b.garage].sort(), ['mechanic', 'recon', 'rocket_buggy']);
   assert.deepEqual([...b.chemical_plant].sort(), ['flamethrower', 'mine_layer', 'rocket_launcher']);
-  assert.deepEqual([...b.factory].sort(), ['flak', 'mech', 'tank']);
-  assert.deepEqual([...b.airbase].sort(), ['bomber', 'fighter', 'sam_launcher']);
-  assert.deepEqual(registry.labUnits.stealth_bomber, ['airbase']);
-  assert.deepEqual(registry.labUnits.heavy_tank, ['factory']);
+  assert.ok(['mech', 'tank', 'flak', 'heavy_tank', 'hover_tank', 'missile_tank', 'amphibious_tank', 'stealth_tank'].every((u) => b.factory.includes(u)));
+  const menuAt = (leader, building, labs = []) => {
+    const glyphs = { factory: 'f', airfield: 'a', shipyard: 'y', sub_pen: 's', airbase: 'x', chemical_plant: 'c', support_factory: 'u' };
+    const lg = { ...legend, ...Object.fromEntries(Object.entries(glyphs).map(([t, g]) => [g, { terrain: t, owner: 0 }])), 1: { terrain: 'hover_lab', owner: 0 }, 2: { terrain: 'stealth_lab', owner: 0 }, 3: { terrain: 'heavy_lab', owner: 0 }, 4: { terrain: 'missile_lab', owner: 0 } };
+    const row = `H${glyphs[building]}${labs.join('')}h`.padEnd(6, '.');
+    const g = new Game(registry, parseMap(rawMap({ rows: [row, '.'.repeat(6)], unitsOnMap: [], players: [{ ...players[0], leader }, players[1]], legend: lg }), registry));
+    return menuFor(g, 0, 1, 0).map((d) => d.id).sort();
+  };
+  assert.deepEqual(menuAt('harlan', 'factory'), ['flak', 'heavy_tank', 'mech', 'tank'], 'Harlan: his tanks and the AT infantry');
+  assert.deepEqual(menuAt('ada', 'factory'), ['missile_tank'], 'Ada: only her missile tank');
+  assert.deepEqual(menuAt('rex', 'factory'), ['amphibious_tank', 'flak'], 'Rex: the amphibious tank and flak');
+  assert.deepEqual(menuAt('harlan', 'airfield'), ['torpedo_bomber', 'vintage_bomber', 'vintage_fighter']);
+  assert.deepEqual(menuAt('vex', 'airfield'), ['stealth_copter', 'transport_copter']);
+  assert.deepEqual(menuAt('harlan', 'chemical_plant'), [], 'a building none of whose units a faction has builds nothing');
+  assert.deepEqual(menuAt('lysandra', 'shipyard'), ['cruiser', 'destroyer', 'dreadnought']);
+  // a lab swaps a unit for its upgrade, but only where the leader has the unit
+  assert.deepEqual(menuAt('harlan', 'factory', ['1']), ['flak', 'heavy_tank', 'hover_tank', 'mech'], 'the hover lab: tank -> hover tank');
+  assert.deepEqual(menuAt('harlan', 'factory', ['1', '2']), ['flak', 'heavy_tank', 'hover_tank', 'mech', 'stealth_tank'], 'two labs offer both upgrades');
+  assert.deepEqual(menuAt('harlan', 'shipyard', ['3']), ['cruiser', 'destroyer', 'dreadnought'], 'the heavy lab: battleship -> dreadnought');
+  assert.deepEqual(menuAt('ada', 'factory', ['1']), ['missile_tank'], 'Ada has no tank, so the hover lab gives her nothing');
+  assert.deepEqual(menuAt('harlan', 'sub_pen', ['4']), [], 'Harlan has no submarine');
+  assert.deepEqual(menuAt('chase', 'sub_pen', ['4']), ['missile_sub'], 'the missile lab: submarine -> missile sub');
 });
 
 test('every build menu is listed cheapest first for its leader, whatever order the data lists the units in', () => {

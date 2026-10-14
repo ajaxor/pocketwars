@@ -349,7 +349,6 @@
     "armor": 0.2,
     "attributes": { "fuel": { "max": 4, "low": 1 }, "ignoresTerrainDefense": true, "ammo": { "max": 8, "low": 3 } },
     "exclusive": true,
-    "shelved": true,
     "render": { "sprite": "vintage_fighter", "attackFx": "shot", "altitude": 0.1 }
   },
   "vintage_bomber": {
@@ -364,7 +363,6 @@
     "armor": 0.1,
     "attributes": { "fuel": { "max": 3, "low": 1 }, "ignoresTerrainDefense": true, "ammo": { "max": 4, "low": 2 } },
     "exclusive": true,
-    "shelved": true,
     "render": { "sprite": "vintage_bomber", "attackFx": "drop", "altitude": 0.1 }
   },
   "torpedo_bomber": {

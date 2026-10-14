@@ -75,17 +75,16 @@ test('attributes are assigned to the intended units', () => {
   for (const id of withAttr('structure')) assert.equal(registry.unit(id).category, 'structure', `${id} is in the structure category`);
 });
 
-test('every unit can be built somewhere: a default menu, a lab, a faction HQ, or it is shelved, laid by a mine layer or a structure placed by the map', () => {
-  const onMenus = new Set(Object.values(registry.loadouts.default.build).flat());
-  for (const id of registry.leaderIds) for (const ids of Object.values(registry.loadoutFor(id).build)) for (const u of ids) onMenus.add(u);
-  for (const u of Object.keys(registry.labUnits)) onMenus.add(u);
+test('every unit can be built somewhere: a leader\'s roster, an HQ, a lab upgrade, or it is laid by a mine layer or placed by the map', () => {
+  const rostered = new Set();
+  for (const kit of [registry.loadouts.default, ...registry.leaderIds.map((id) => registry.loadoutFor(id))]) for (const u of [...(kit.roster ?? []), kit.infantry]) rostered.add(u);
   for (const id of registry.unitIds) {
     const def = registry.unit(id);
     if (['mine', 'structure'].includes(def.category)) continue;
-    if (def.shelved) { assert.ok(!onMenus.has(id), `${id} is shelved, so it is on no menu`); continue; }
-    assert.ok(onMenus.has(id), `${id} is on some menu`);
+    assert.ok(rostered.has(id) || registry.upgradedBy[id], `${id} is on some roster or a lab upgrades to it`);
+    assert.ok(!def.shelved, `${id} is not shelved`);
   }
-  assert.deepEqual(registry.unitIds.filter((id) => registry.unit(id).shelved).sort(), ['vintage_bomber', 'vintage_fighter']);
+  assert.deepEqual(Object.keys(registry.upgradedBy).sort(), ['dreadnought', 'heavy_tank', 'hover_tank', 'missile_sub', 'missile_tank', 'stealth_bomber', 'stealth_copter', 'stealth_fighter', 'stealth_tank']);
 });
 
 test('terrain attributes: properties, income and the HQ victory condition', () => {

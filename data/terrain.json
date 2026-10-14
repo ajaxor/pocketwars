@@ -190,7 +190,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["hover_tank"], "harbor": ["amphibious_tank"] } },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "upgrades": { "tank": "hover_tank" } },
       "blocksLineOfSight": 2
     },
     "render": { "building": "hover_lab" }
@@ -200,7 +200,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["stealth_tank"], "airbase": ["stealth_copter", "stealth_fighter", "stealth_bomber"] } },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "upgrades": { "tank": "stealth_tank", "copter": "stealth_copter", "fighter": "stealth_fighter", "bomber": "stealth_bomber" } },
       "blocksLineOfSight": 2
     },
     "render": { "building": "stealth_lab" }
@@ -210,7 +210,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["heavy_tank"], "shipyard": ["dreadnought"], "airfield": ["airship"] } },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "upgrades": { "tank": "heavy_tank", "battleship": "dreadnought" } },
       "blocksLineOfSight": 2
     },
     "render": { "building": "heavy_lab" }
@@ -220,7 +220,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["missile_tank"], "sub_pen": ["missile_sub"] } },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "upgrades": { "tank": "missile_tank", "submarine": "missile_sub" } },
       "blocksLineOfSight": 2
     },
     "render": { "building": "missile_lab" }

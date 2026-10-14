@@ -157,3 +157,10 @@ Concept units and structures that the new production design names but the game d
 - **Four-player maps draw.** In the 176-game arena run, `four_corners` finished 8 of 8 games undecided and `four_seas` 6 of 8; the new asymmetric layouts have not been balanced for the AI at all, and no map has been tuned for the nine unlocks.
 - **No per-map leaders.** Maps give each side different buildings but not a leader; a map could pin leaders (the `players[i].leader` field exists) to make the asymmetry intentional.
 - **Lab info is text only**: tapping a lab lists the units it adds per building; there is no highlight on the map of the buildings it feeds.
+
+## Rosters and lab upgrades (October 14 2026)
+
+- **Lab upgrades are a first draft** (hover lab tank -> hover tank, stealth lab the tank and the three aircraft, heavy lab tank -> heavy tank and battleship -> dreadnought, missile lab tank -> missile tank and submarine -> missile sub). Which units, which upgrades are strict, what they cost and whether a lab should upgrade many units are all open. Two labs upgrading the tank offer both.
+- **Factions with empty buildings** (the old rosters leave them nothing to build there): Harlan chemical plant, sub pen, airbase; Ada artillery range, agency; Vex support factory, artillery range; Hiroshi agency, harbor; Ludwig harbor; Rex agency; Chase support factory, harbor; Dmitri agency; Lysandra sub pen. New faction units are needed to fill the gaps, or the maps should avoid giving a side a building it cannot use.
+- **Maps do not know the factions.** They give each side buildings regardless of its leader, so a side can own a building its leader cannot use. A skirmish leader pick can be mismatched with the map's producers.
+- **Starting armies differ a lot between factions** (one starter per building the faction can use). Only the HQ sets are balanced to within 4,500.
