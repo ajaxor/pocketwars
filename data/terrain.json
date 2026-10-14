@@ -46,7 +46,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry", "amphibious"], "hub": true },
       "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] },
       "blocksLineOfSight": 2
     },
@@ -57,7 +57,7 @@
     "defense": 4,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry", "amphibious"], "unlimitedBuilds": true },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry", "amphibious"], "hub": true, "unlimitedBuilds": true },
       "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] },
       "victoryOnCapture": true,
       "blocksLineOfSight": 2
@@ -69,7 +69,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"], "unlocks": ["mechanic"] },
       "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
       "blocksLineOfSight": 2
     },
@@ -80,18 +80,18 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "vehicle", "naval"], "builds": ["infantry", "vehicle", "naval"], "shore": ["mine_layer"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "vehicle", "naval"], "builds": ["infantry", "vehicle", "naval"], "shore": ["mine_layer"], "shelved": true },
       "resupply": { "range": 1, "categories": ["infantry", "vehicle", "naval"] },
       "blocksLineOfSight": 2
     },
     "render": { "building": "chemical_plant" }
   },
   "factory": {
-    "name": "Tank Factory",
+    "name": "Factory",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"], "unlocks": ["mech"] },
       "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
       "blocksLineOfSight": 2
     },
@@ -102,7 +102,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"], "shelved": true },
       "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
       "blocksLineOfSight": 2
     },
@@ -113,7 +113,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"], "shelved": true },
       "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
       "blocksLineOfSight": 2
     },
@@ -124,7 +124,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "aircraft"], "builds": ["infantry", "aircraft"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "aircraft"], "builds": ["infantry", "aircraft"], "shelved": true },
       "resupply": { "range": 1, "categories": ["infantry", "aircraft"] },
       "blocksLineOfSight": 2
     },
@@ -157,8 +157,8 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["naval"], "builds": ["naval"] },
-      "resupply": { "range": 1, "categories": ["naval"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["naval", "infantry"], "builds": ["naval", "infantry"] },
+      "resupply": { "range": 1, "categories": ["naval", "infantry"] },
       "blocksLineOfSight": 1
     },
     "render": { "building": "sub_pen" }
@@ -168,7 +168,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["aircraft", "infantry"], "builds": ["infantry", "aircraft"] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["aircraft", "infantry"], "builds": ["infantry", "aircraft"], "unlocks": ["rpg_trooper"] },
       "resupply": { "range": 1, "categories": ["aircraft", "infantry"] },
       "blocksLineOfSight": 2
     },
@@ -200,7 +200,7 @@
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "upgrades": { "tank": "stealth_tank", "copter": "stealth_copter", "fighter": "stealth_fighter", "bomber": "stealth_bomber" } },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "upgrades": { "tank": "stealth_tank", "missile_copter": "stealth_copter", "fighter": "stealth_fighter", "bomber": "stealth_bomber" } },
       "blocksLineOfSight": 2
     },
     "render": { "building": "stealth_lab" }

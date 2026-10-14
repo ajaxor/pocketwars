@@ -120,7 +120,8 @@ test('two AI teams with different kits build only what their menus allow, over a
       for (const ev of playTurn(g)) {
         if (ev.type !== 'build') continue;
         const terrain = g.map.terrain[ev.unit.y][ev.unit.x];
-        const allowed = registry.loadoutFor(g.map.players[ev.unit.owner].leader).build[terrain];
+        const kit = registry.loadoutFor(g.map.players[ev.unit.owner].leader);
+        const allowed = registry.terrain[terrain].attributes.property.hub ? [kit.infantry, ...(kit.roster ?? [])] : kit.build[terrain];   // the HQ and the cities build the leader's infantry and what is unlocked
         assert.ok(allowed.includes(ev.unit.type), `${engine}: ${ev.unit.type} on a ${terrain} is not on the menu of player ${ev.unit.owner}`);
         built[ev.unit.owner][terrain]?.add(ev.unit.type);
       }

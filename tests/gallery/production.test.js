@@ -22,25 +22,25 @@ test('the checker catches a unit in two buildings, a missing unit, a missing dra
   const bad = structuredClone(data);
   bad.buildings[1].units.push('soldier');                                    // garage also lists the soldier (the HQ has it)
   bad.buildings[0].units = bad.buildings[0].units.filter((u) => u !== 'spy');
-  bad.buildings[2].art = 'concept';                                          // chemical_plant has no concept drawing
+  bad.buildings[2].art = 'concept';                                          // factory has no concept drawing
   bad.buildings.push({ id: 'bunker', art: 'game', units: ['sniper2'] });
   bad.buildings.push({ id: 'nothing', art: 'concept', units: [] });
   const text = productionProblems(bad, unitIds, art).join('\n');
   assert.match(text, /"soldier" is in both hq and garage/);
   assert.match(text, /unit "spy" is not assigned/);
-  assert.match(text, /"chemical_plant" has no concept drawing/);
+  assert.match(text, /"factory" has no concept drawing/);
   assert.match(text, /"bunker" has no game drawing/);
   assert.match(text, /"nothing" has no concept drawing/);
   assert.match(text, /"nothing" produces nothing/);
 });
 
-test('every production building and lab of the game is listed with its game art, and the labs list the units they add', () => {
+test('every production building and lab of the game is listed with its game art, and the labs list the units they upgrade to', () => {
   const terrain = json('data/terrain.json');
   for (const [id, t] of Object.entries(terrain)) {
     const p = t.attributes?.property;
-    if (!p?.builds?.length && !p?.adds) continue;
+    if ((!p?.builds?.length && !p?.upgrades) || p?.shelved || p?.hub) continue;
     const b = data.buildings.find((x) => x.id === id);
     assert.ok(b && b.art === 'game' && b.origin === 'existing', `${id} is listed as a game building`);
-    if (p.adds) assert.deepEqual([...b.units].sort(), [...new Set(Object.values(p.adds).flat())].sort(), `${id} lists what it adds`);
+    if (p.upgrades) assert.deepEqual([...b.units].sort(), [...new Set(Object.values(p.upgrades))].sort(), `${id} lists what it upgrades to`);
   }
 });

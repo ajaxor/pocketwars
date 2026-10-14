@@ -17,6 +17,8 @@
   "rockets":       { "siege": true, "name": "Rockets",       "damage": 110, "armorPiercing": 0.6, "range": [3, 5], "targets": ["indirect_ground", "surface"], "ammo": 1, "fx": "salvo" },
   "flak_cannon":   { "name": "Flak cannon",   "damage": 90,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air", "high_air", "surface"], "targetMultipliers": { "low_air": 1.9, "high_air": 1.6 }, "ammo": 1, "fx": "flak" },
   "rocket_pods":   { "siege": true, "name": "Rocket pods",   "damage": 85,  "armorPiercing": 0.7, "range": [1, 1], "targets": ["direct_ground", "low_air", "surface"], "categoryMultipliers": { "infantry": 0.8, "amphibious": 0.8 }, "ammo": 1, "fx": "pods" },
+  "chain_gun":     { "name": "Chain gun",     "damage": 62,  "armorPiercing": 0,   "range": [1, 1], "targets": ["direct_ground", "low_air", "surface"], "categoryMultipliers": { "infantry": 1.35, "amphibious": 1.35 }, "ammo": 1, "fx": "burst" },
+  "aa_guns":       { "name": "AA guns",       "damage": 80,  "armorPiercing": 0,   "range": [1, 1], "targets": ["low_air", "high_air"], "targetMultipliers": { "low_air": 1.8, "high_air": 1.5 }, "ammo": 1, "fx": "flak" },
   "air_missiles":  { "name": "Air missiles",  "damage": 150, "armorPiercing": 0,   "range": [1, 1], "targets": ["low_air", "high_air"], "targetMultipliers": { "low_air": 1.2 }, "ammo": 1, "fx": "air_missile" },
   "bombs":         { "siege": true, "name": "Bombs",         "damage": 115, "armorPiercing": 1,   "range": [1, 1], "targets": ["indirect_ground", "surface"], "ammo": 1, "fx": "bombs" },
   "deck_gun":      { "name": "Deck gun",      "damage": 80,  "armorPiercing": 0.3, "range": [1, 1], "targets": ["surface", "direct_ground", "low_air"], "ammo": 1, "fx": "cannon" },

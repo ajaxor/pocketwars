@@ -15,7 +15,7 @@ const info = (m) => {
 };
 
 const WATERFRONT = ['shipyard', 'harbor', 'sub_pen'];
-const MAKERS = ['garage', 'chemical_plant', 'factory', 'support_factory', 'artillery_range', 'agency', 'shipyard', 'harbor', 'sub_pen', 'airfield', 'airbase', 'hover_lab', 'stealth_lab', 'heavy_lab', 'missile_lab'];
+const MAKERS = ['garage', 'factory', 'shipyard', 'harbor', 'sub_pen', 'airfield', 'airbase', 'hover_lab', 'stealth_lab', 'heavy_lab', 'missile_lab'];
 
 test('a shipyard, harbor or sub pen sits on a lake or sea big enough to sail, never a pond', () => {
   for (const m of maps) {
@@ -70,4 +70,11 @@ test('the sides of a two-player map are not carbon copies: they start with diffe
     const set = (o) => at((t) => t.owner === o && MAKERS.includes(t.terrain)).map((t) => t.terrain).sort().join(',');
     assert.notEqual(set(0), set(1), `${m.id}: both sides start with ${set(0)}`);
   }
+});
+
+test('no shipped map uses a shelved building', () => {
+  const terrain = JSON.parse(readFileSync(new URL('../../data/terrain.json', import.meta.url), 'utf8'));
+  const shelved = new Set(Object.entries(terrain.terrain ?? terrain).filter(([, t]) => t.attributes?.property?.shelved).map(([id]) => id));
+  assert.ok(shelved.size >= 4);
+  for (const m of maps) for (const [key, entry] of Object.entries(m.legend ?? {})) assert.ok(!shelved.has(entry.terrain), `${m.name ?? m.id}: legend "${key}" uses shelved ${entry.terrain}`);
 });

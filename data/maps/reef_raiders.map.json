@@ -23,7 +23,7 @@
     "g": { "terrain": "garage", "owner": 0 },
     "f": { "terrain": "factory", "owner": 0 },
     "A": { "terrain": "factory", "owner": 1 },
-    "u": { "terrain": "support_factory", "owner": 1 },
+    "u": { "terrain": "garage", "owner": 1 },
     "B": { "terrain": "hq", "owner": 1 },
     "C": { "terrain": "airfield", "owner": 1 },
     "y": { "terrain": "shipyard", "owner": 0 },

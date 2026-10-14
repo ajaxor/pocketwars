@@ -121,6 +121,22 @@ const apc = (g, { s, c, dk, w, run, j }) => {
 };
 const darkInterior = (dk) => mix(dk, '#000000', .72);
 
+// AA truck: a wheeled flatbed carrying a twin-barrelled anti-aircraft gun on a turntable, the barrels raked skyward and flashing as it fires.
+const aaTruck = (g, { s, c, dk, w, ph, run, j }) => {
+  const jj = j / s;
+  box(g, s, -.36, .03 + jj, .72, .13, 3, dk);                                                 // chassis
+  box(g, s, .17, -.08 + jj, .19, .17, 3, c); box(g, s, .22, -.05 + jj, .12, .07, 2, GLASS);   // cab
+  box(g, s, -.32, -.03 + jj, .46, .07, 2, c);                                                 // flatbed
+  box(g, s, -.22, -.1 + jj, .24, .08, 3, dk);                                                 // the turntable housing
+  const aim = -.95 + Math.sin(w * 2 + ph) * .1 * run;
+  g.save(); g.translate(-.08 * s, (-.1 + jj) * s); g.rotate(aim);
+  g.fillStyle = INK; g.fillRect(0, -s * .05, s * .38, s * .035); g.fillRect(0, s * .012, s * .38, s * .035);   // the twin barrels
+  box(g, s, .36, -.058, .045, .05, 1, STEEL); box(g, s, .36, .005, .045, .05, 1, STEEL);                        // muzzle brakes
+  g.restore();
+  box(g, s, -.27, -.075 + jj, .09, .04, 1, '#7a6a48');                                         // ammo box on the bed
+  wheel(g, s, -.25, .2, .085, w, run, 10); wheel(g, s, -.04, .2, .085, w, run, 10); wheel(g, s, .26, .2, .085, w, run, 10);
+};
+
 // Technical (the Recon's art): a battered pickup with a machine gun on a post in its bed.
 const recon = (g, { s, c, dk, w, ph, run, j }) => {
   const jj = j / s;
@@ -155,8 +171,8 @@ const missileTank = (g, { s, c, w, run, j }) => {
   faintRect(g, s, .049, -.142 + jj, .18, .05, .66);                                                            // the missile port, along the turret's sloped front edge
 };
 
-export const SPRITES = { missile_tank: missileTank, apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, recon, ...CYCLE.SPRITES };
+export const SPRITES = { missile_tank: missileTank, apc, amphibious_tank: amphibiousTank, amphibious_tank_swim: amphibiousTankSwim, sam_launcher: samLauncher, rocket_buggy: rocketBuggy, recon, aa_truck: aaTruck, ...CYCLE.SPRITES };
 
 export const SHADOWS = {
-  missile_tank: ground(.4, .05, .285), apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), recon: ground(.38, .05, .285), ...CYCLE.SHADOWS,
+  missile_tank: ground(.4, .05, .285), apc: ground(.38, .05, .285), amphibious_tank: ground(.4, .05, .285, -.02), amphibious_tank_swim: () => {}, sam_launcher: ground(.36, .05, .285), rocket_buggy: ground(.36, .05, .295), recon: ground(.38, .05, .285), aa_truck: ground(.36, .05, .285), ...CYCLE.SHADOWS,
 };

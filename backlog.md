@@ -164,3 +164,13 @@ Concept units and structures that the new production design names but the game d
 - **Stand-in units fill the gaps** (the old rosters left some buildings empty): Harlan flamethrower, submarine, fighter; Ada mortar, sniper; Vex APC, mortar; Hiroshi sniper, gun boat, rocket launcher; Ludwig gun boat; Rex sniper; Chase supply truck, gun boat; Dmitri sniper; Lysandra submarine. These are placeholders to be replaced by new faction units.
 - **Maps do not know the factions.** They give each side buildings regardless of its leader, so a side can own a building its leader cannot use. A skirmish leader pick can be mismatched with the map's producers.
 - **Starting armies differ a lot between factions** (one starter per building the faction can use). Only the HQ sets are balanced to within 4,500.
+
+## Hubs, transfer and shelved units (October 14 2026)
+
+- **The AI never uses Transfer.** Cities build infantry for it, but it does not teleport infantry between owned cities.
+- **Shelved units wait for labs**: transport copter, APC, troop transport, flamethrower, sniper, medic, mortar, mine layer, radar plane. They are in `units.json` with `shelved: true` and appear on no menu or roster.
+- **Shelved buildings** (agency, chemical plant, support factory, artillery range) stay in `terrain.json` with `property.shelved`; no map or editor palette uses them.
+- **Stand-in units are placeholders**: gun boat (Harlan, Dmitri), mech (Vex), RPG trooper (Chase), mechanic (Lysandra) fill gaps left by the shelving.
+- **New sprites are first drafts**: AA truck, treaded artillery, gun copter, missile copter.
+- **Transfer has no animation of its own** and reuses the deploy sound.
+- **No UI hint for unlocks beyond info text**: tapping a garage, factory or airfield lists the infantry it unlocks; the map does not highlight the cities that gain it.

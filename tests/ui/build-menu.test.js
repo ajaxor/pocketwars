@@ -10,14 +10,14 @@ const registry = await loadRegistry(readData);
 const classic = await loadMap(readData, registry, 'classic');
 const factory = (game) => allProperties(game).find((p) => p.owner === 0 && p.terrain.id === 'factory');
 
-test('a tank factory lists its units cheapest first with what the player can and cannot pay', () => {
+test('a factory lists its units cheapest first with what the player can and cannot pay', () => {
   const game = new Game(registry, classic);
   const f = factory(game);
   game.state.funds[0] = 6500;
   const m = buildMenuModel(game, 0, f.x, f.y);
-  assert.equal(m.title, 'Tank Factory');
+  assert.equal(m.title, 'Factory');
   assert.equal(m.funds, 6500);
-  assert.deepEqual(m.options.map((o) => o.id), ['mech', 'flak', 'tank'], 'cheapest first');
+  assert.deepEqual(m.options.map((o) => o.id), ['flak', 'artillery', 'tank'], 'cheapest first (flak and artillery cost the same, so the menu order decides)');
   assert.deepEqual(m.options.map((o) => o.affordable), [true, true, false]);
   const tank = m.options.find((o) => o.id === 'tank');
   assert.equal(tank.missing, 500);
@@ -28,9 +28,9 @@ test('the menu starts on the first unit that can be afforded, or the first one w
   const game = new Game(registry, classic);
   const f = factory(game);
   game.state.funds[0] = 5000;
-  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'mech');
+  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'flak', 'nothing affordable at 5,000: the first row');
   game.state.funds[0] = 100;
-  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'mech', 'nothing affordable: first row');
+  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'flak', 'nothing affordable: first row');
   assert.equal(defaultChoice([]), null);
 });
 

@@ -20,7 +20,7 @@
     "s": { "terrain": "shoals" },
     "=": { "terrain": "road" },
     "y": { "terrain": "shipyard", "owner": 0 },
-    "p": { "terrain": "chemical_plant", "owner": 0 },
+    "p": { "terrain": "garage", "owner": 0 },
     "g": { "terrain": "garage", "owner": 1 },
     "b": { "terrain": "harbor", "owner": 1 },
     "O": { "terrain": "hq", "owner": 0 },

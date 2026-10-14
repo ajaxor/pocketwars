@@ -269,6 +269,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     }
     const prop = t && t.attributes && t.attributes.property;
     if (isObj(prop) && Array.isArray(prop.shore)) for (const unit of prop.shore) if (typeof unit === 'string' && !isObj(units[unit])) problems.push(`terrain "${id}": shore names unknown unit "${unit}"`);
+    if (isObj(prop) && Array.isArray(prop.unlocks)) for (const unit of prop.unlocks) if (typeof unit === 'string' && !isObj(units[unit])) problems.push(`terrain "${id}": unlocks names unknown unit "${unit}"`);
     if (isObj(prop) && isObj(prop.upgrades)) {
       for (const [from, to] of Object.entries(prop.upgrades)) {
         if (!isObj(units[from])) problems.push(`terrain "${id}": upgrades names unknown unit "${from}"`);
@@ -403,7 +404,7 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
  */
 export function validateShippedKit(loadouts, units, terrain, problems) {
   if (!isObj(loadouts) || !isObj(units) || !isObj(terrain)) return;
-  const producers = Object.entries(terrain).filter(([, t]) => Array.isArray(t?.attributes?.property?.builds) && t.attributes.property.builds.length);
+  const producers = Object.entries(terrain).filter(([, t]) => Array.isArray(t?.attributes?.property?.builds) && t.attributes.property.builds.length && !t.attributes.property.shelved && !t.attributes.property.hub);   // a shelved building and the hubs (HQ, cities) have no menu of their own
   const buildable = new Map();   // unit id -> where it can be built, for the messages
   const note = (id, where) => { if (!buildable.has(id)) buildable.set(id, where); };
   const fits = (building, unitId, where) => {
@@ -413,7 +414,6 @@ export function validateShippedKit(loadouts, units, terrain, problems) {
   };
   if (isObj(loadouts.default?.build)) {
     for (const [tid] of producers) {
-      if (tid === 'hq') continue;   // the HQ builds its leader's own infantry (see resolveLoadouts)
       if (!Array.isArray(loadouts.default.build[tid]) || !loadouts.default.build[tid].length) problems.push(`loadouts.default: build.${tid} is missing (every production building needs a menu)`);
     }
   }
@@ -422,6 +422,14 @@ export function validateShippedKit(loadouts, units, terrain, problems) {
     const where = name === 'default' ? 'loadouts.default' : `loadouts.leaders.${name}`;
     for (const [tid, menu] of Object.entries(isObj(kit.build) ? kit.build : {})) if (Array.isArray(menu)) for (const id of menu) { note(id, `${where} ${tid}`); fits(tid, id, `${where}: build.${tid}`); }
     if (kit.infantry) { note(kit.infantry, `${where} infantry`); fits('hq', kit.infantry, `${where}: infantry`); }
+  }
+  const unlocked = new Set();   // infantry a held building unlocks for the HQ and the cities
+  for (const [tid, t] of Object.entries(terrain)) {
+    const prop = t?.attributes?.property;
+    if (!Array.isArray(prop?.unlocks)) continue;
+    if (prop.shelved) problems.push(`terrain ${tid}: a shelved building cannot unlock anything`);
+    const hubs = Object.entries(terrain).filter(([, h]) => h?.attributes?.property?.hub).map(([hid]) => hid);
+    for (const id of prop.unlocks) { unlocked.add(id); note(id, `terrain ${tid} unlocks`); for (const hub of hubs) fits(hub, id, `terrain ${tid}: unlocks`); }
   }
   const rosters = new Set();
   for (const kit of [loadouts.default, ...Object.values(isObj(loadouts.leaders) ? loadouts.leaders : {})]) if (isObj(kit) && Array.isArray(kit.roster)) kit.roster.forEach((id) => rosters.add(id));
@@ -433,13 +441,13 @@ export function validateShippedKit(loadouts, units, terrain, problems) {
       upgraded.add(to);
       if (!menus.some((m) => m.includes(from) && m.includes(to))) problems.push(`terrain ${tid}: upgrades.${from} -> ${to}, but no default menu lists both (the upgrade replaces the unit on its own menu)`);
     }
-    for (const id of Array.isArray(prop?.shore) ? prop.shore : []) if (!Object.values(loadouts.default?.build ?? {}).some((m) => m.includes(id))) problems.push(`terrain ${tid}: shore names "${id}", which is on no default menu`);
+    if (!prop?.shelved) for (const id of Array.isArray(prop?.shore) ? prop.shore : []) if (!Object.values(loadouts.default?.build ?? {}).some((m) => m.includes(id))) problems.push(`terrain ${tid}: shore names "${id}", which is on no default menu`);
   }
   for (const [id, u] of Object.entries(units)) {
     if (!isObj(u) || u.attributes?.structure || u.attributes?.mine) continue;   // structures come from maps and mines from mine layers
     if (u.shelved && buildable.has(id)) problems.push(`unit "${id}" is shelved but ${buildable.get(id)} still builds it`);
     else if (!u.shelved && !buildable.has(id) && !upgraded.has(id)) problems.push(`unit "${id}" can be built nowhere: put it on a menu, make a lab upgrade to it, or mark it "shelved": true`);
-    else if (!u.shelved && buildable.has(id) && !rosters.has(id) && !upgraded.has(id) && !Object.values(loadouts.leaders ?? {}).some((k) => k?.infantry === id) && loadouts.default?.infantry !== id && menus.some((m) => m.includes(id))) problems.push(`unit "${id}" is on a default menu but on no leader's roster, so nobody can build it`);
+    else if (!u.shelved && buildable.has(id) && !rosters.has(id) && !upgraded.has(id) && !Object.values(loadouts.leaders ?? {}).some((k) => k?.infantry === id) && loadouts.default?.infantry !== id && (unlocked.has(id) || menus.some((m) => m.includes(id)))) problems.push(`unit "${id}" is on a default menu but on no leader's roster, so nobody can build it`);
   }
 }
 

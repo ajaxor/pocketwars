@@ -102,33 +102,50 @@ function labsOf(game) {
 const touchesWater = (game, x, y, def) => DIRS.some(([dx, dy]) => inBounds(game.map, x + dx, y + dy) && terrainAt(game, x + dx, y + dy).moveCost[def.moveClass] != null);
 
 /**
+ * The infantry `player` has unlocked: the units named by `unlocks` on the buildings they hold (garage: mechanic, factory: AT infantry, airfield:
+ * RPG trooper), limited to their leader's roster. The HQ and every city they hold build these (and the HQ the leader's own infantry).
+ */
+export function unlockedFor(game, player, kit) {
+  if (player == null) return [];
+  const ids = [];
+  for (const p of propertiesOwnedBy(game, player)) for (const id of p.property.unlocks ?? []) if (!ids.includes(id)) ids.push(id);
+  return kit.roster ? ids.filter((id) => kit.roster.includes(id)) : ids;
+}
+
+/**
  * The menu of the production building at (x, y) for `player`, cheapest first for that player (a troop carrier's price moves with their leader's
  * infantry, so the order is worked out here rather than kept in the data; ties keep the loadout's order):
- *   1. the units the loadout lists for that kind of building (data/loadouts.json: the same for everyone; the HQ builds the leader's own infantry),
- *   2. limited to the leader's `roster`: a leader builds only the units of their own faction,
+ *   0. a shelved building (kept in the data, out of play) builds nothing;
+ *   1. the HQ and the cities (`hub`) build the leader's own infantry (HQ only) and the infantry the player has unlocked (unlockedFor);
+ *   2. any other building: the units the loadout lists for that kind of building (data/loadouts.json: the same for everyone),
+ *      limited to the leader's `roster`: a leader builds only the units of their own faction,
  *   3. where the player holds a lab, each unit it upgrades is replaced by its upgrade (hover lab: tank -> hover tank), if the upgrade is on that menu too,
- *   4. minus a unit the building lists under `shore` when no water touches it (the chemical plant lays mines from its own pier).
+ *   4. minus a unit the building lists under `shore` when no water touches it.
  * A building the loadout says nothing about gives the same menu to everyone: the units of the categories its `builds` names, cheapest first.
- * No player (a neutral building) gets the standard menu, with no labs.
+ * No player (a neutral building) gets the standard menu, with no labs and nothing unlocked.
  */
 export function menuFor(game, player, x, y) {
   const property = propertyAt(game, x, y);
-  if (!property) return [];
+  if (!property || property.shelved) return [];
   const { registry, map } = game;
   const terrainId = terrainIdAt(game, x, y);   // the terrain NOW: a rebuilt ruin builds what its new building builds
   const kit = registry.loadoutFor(player == null ? null : map.players[player].leader ?? null);
-  const listed = kit.build[terrainId];
+  const listed = kit.build[terrainId] ?? (property.hub ? [] : null);
   if (!listed) return menuByPrice(game, player, [...registry.unitsInCategories(property.builds)]);
-  let ids = kit.roster && terrainId !== 'hq' ? listed.filter((id) => kit.roster.includes(id)) : [...listed];
-  if (player != null && terrainId !== 'hq') {
-    const labs = labsOf(game).filter((lab) => ownerAt(game, lab.x, lab.y) === player);
-    if (labs.length) {
-      const next = [];
-      for (const id of ids) {
-        const to = labs.map((lab) => lab.upgrades[id]).filter((u) => u && listed.includes(u));
-        if (to.length) next.push(...to); else next.push(id);
+  let ids;
+  if (property.hub) ids = [...listed, ...unlockedFor(game, player, kit)];
+  else {
+    ids = kit.roster ? listed.filter((id) => kit.roster.includes(id)) : [...listed];
+    if (player != null) {
+      const labs = labsOf(game).filter((lab) => ownerAt(game, lab.x, lab.y) === player);
+      if (labs.length) {
+        const next = [];
+        for (const id of ids) {
+          const to = labs.map((lab) => lab.upgrades[id]).filter((u) => u && listed.includes(u));
+          if (to.length) next.push(...to); else next.push(id);
+        }
+        ids = next;
       }
-      ids = next;
     }
   }
   const defs = [...new Set(ids)].map((id) => registry.unit(id)).filter((def) => !property.shore?.includes(def.id) || touchesWater(game, x, y, def));

@@ -40,6 +40,7 @@ import { tileExplored } from '../engine/fog.js';
 /** Structures take no orders (turrets fire by themselves at the end of the turn): tapping one only shows what it is and what it covers. */
 const isIdleStructure = (game, u) => isStructure(game, u);
 import { layConfig, layTiles } from '../engine/mines.js';
+import { canTransferFrom, transferTargets } from '../engine/transfer.js';
 import { canSupplyAt, supplyPlan } from '../engine/supply.js';
 import { ammoOf, canResupplyAt, resupplyCost } from '../engine/ammo.js';
 import { canDeploy } from '../engine/deploy.js';
@@ -76,7 +77,7 @@ export class Controller {
     this.pendingTargetId = null;
     this.preview = null; // { reach, attack }: where a tapped unit that cannot be ordered (an enemy's, say) could move and hit
     this.cursor = null; // the tile last tapped, outlined on the board while nothing is selected
-    this.layTiles = null; // the tiles a mine layer can put its mine on (mode 'lay')
+    this.layTiles = null; // the tiles a mine layer can put its mine on (mode 'lay'), or the cities an infantryman can be transferred to (mode 'transfer')
     this.cards = null;  // the info cards for the current selection; while orders are being given they start hidden (see #setCards)
     this.infoOn = false;
   }
@@ -94,7 +95,7 @@ export class Controller {
       cursor: this.cursor,
       forecast: this.#forecast(),
       sonar: this.sel && this.mode !== 'idle' ? sonarTiles(this.game, this.sel, this.#selPos()) : null,
-      layTiles: this.mode === 'lay' ? this.layTiles : null,
+      layTiles: this.mode === 'lay' || this.mode === 'transfer' ? this.layTiles : null,
     };
   }
 
@@ -172,6 +173,9 @@ export class Controller {
       this.cancelAll();
     } else if (this.mode === 'lay') {
       if (this.layTiles.some((t) => t.x === x && t.y === y)) this.#commit({ type: 'lay', at: { x, y } });
+      else { this.layTiles = null; this.#actMenu(); }
+    } else if (this.mode === 'transfer') {
+      if (this.layTiles.some((t) => t.x === x && t.y === y)) this.#commit({ type: 'transfer', at: { x, y } });
       else { this.layTiles = null; this.#actMenu(); }
     } else if (this.mode === 'act') {
       const pos = this.#selPos();
@@ -356,6 +360,7 @@ export class Controller {
     const supplyCost = supply ? supplyPlan(game, sel, pos.x, pos.y).reduce((a, p) => a + p.cost, 0) : 0;
     const lay = !fresh && !!layConfig(game, sel) && layTiles(game, sel, pos.x, pos.y).length > 0;
     const layLeft = lay ? ammoOf(game, sel) : 0;
+    const transfer = !fresh && canTransferFrom(game, sel, pos.x, pos.y);   // on a property of its owner, with an empty city of theirs to go to
     const pending = this.pendingTargetId !== null ? this.targets.find((e) => e.id === this.pendingTargetId) : null;
     const items = [];
     if (pending) items.push({ label: 'Attack', variant: 'danger', onClick: () => this.#commit({ type: 'attack', targetId: pending.id }) });
@@ -364,6 +369,7 @@ export class Controller {
     if (heal) items.push({ label: healCost ? `Heal ${healCost.toLocaleString('en-US')}` : 'Heal', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'heal' }) });
     if (supply) items.push({ label: supplyCost ? `Supply ${supplyCost.toLocaleString('en-US')}` : 'Supply', variant: pending ? undefined : 'primary', onClick: () => this.#commit({ type: 'supply' }) });
     if (lay) items.push({ label: `Lay mine (${layLeft} left)`, variant: pending ? undefined : 'primary', disabled: layLeft < 1, onClick: () => this.#layMode() });
+    if (transfer) items.push({ label: 'Transfer', onClick: () => this.#transferMode() });
     if (!fresh) items.push(...this.#deployItem(sel, () => this.#deployAfterMove()));
     if (canSubmergeAt(game, sel, pos.x, pos.y)) items.push({ label: 'Submerge', onClick: () => this.#commit({ type: 'submerge' }) });
     if (canSurface(game, sel)) items.push({ label: 'Surface', onClick: () => this.#commit({ type: 'surface' }) });
@@ -381,6 +387,7 @@ export class Controller {
           : heal ? 'Heal the damaged units next to you, or pick another action.'
           : supply ? 'Resupply the friends next to you, or pick another action.'
           : lay ? 'Lay a mine, or pick another action.'
+          : transfer ? 'Wait here, or Transfer to another of your cities.'
           : fresh ? 'Tap your unit to confirm the move.'
           : this.targets.length ? 'Tap an enemy to target it, or tap your unit to wait.'
             : 'Tap your unit to confirm the move.',
@@ -399,6 +406,21 @@ export class Controller {
     this.pendingTargetId = null;
     this.hud.actions({
       hint: `Tap a highlighted sea tile to lay the ${game.registry.unit(layConfig(game, sel).unit).name}. Enemies only see it when they come next to it.`,
+      items: [{ label: 'Back', variant: 'ghost', onClick: () => { this.layTiles = null; this.#actMenu(); } }, { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
+    });
+  }
+
+  /** An infantryman on one of its owner's properties picks the city to be sent to: the empty ones are shown, and the next tap on one sends it there. */
+  #transferMode() {
+    const { game, sel } = this;
+    const pos = this.#selPos();
+    this.mode = 'transfer';
+    this.layTiles = transferTargets(game, sel, pos.x, pos.y);
+    this.attack = null;
+    this.targets = [];
+    this.pendingTargetId = null;
+    this.hud.actions({
+      hint: `Tap a highlighted city to send the ${game.registry.unit(sel.type).name} there. Its turn ends.`,
       items: [{ label: 'Back', variant: 'ghost', onClick: () => { this.layTiles = null; this.#actMenu(); } }, { label: 'Cancel', variant: 'ghost', onClick: () => this.cancelAll() }],
     });
   }

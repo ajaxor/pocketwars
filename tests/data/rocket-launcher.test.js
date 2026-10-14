@@ -18,7 +18,7 @@ test('rocket launcher: range 3 to 5, indirect, three rockets, hits ground and sh
   assert.deepEqual(w.range, [3, 5]);
   assert.equal(registry.unit('rocket_launcher').attributes.ammo.max, 3);
   assert.ok(canTarget(game, put(game, 'rocket_launcher', 0, 0, 0), put(game, 'tank', 1, 0, 0)));
-  assert.ok(!canTarget(game, put(game, 'rocket_launcher', 0, 0, 0), put(game, 'copter', 1, 0, 0)));
+  assert.ok(!canTarget(game, put(game, 'rocket_launcher', 0, 0, 0), put(game, 'missile_copter', 1, 0, 0)));
 });
 
 test('rocket launcher: each salvo costs a rocket, and a factory refills them', async () => {

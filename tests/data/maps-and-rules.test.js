@@ -19,7 +19,7 @@ test('movement classes: wheels, treads, foot and air', () => {
   assert.deepEqual(registry.rules.moveClasses, ['foot', 'wheels', 'tread', 'air', 'naval', 'amphibious', 'bike', 'diver', 'hover', 'amphibious_tread']);
   assert.equal(registry.unit('recon').moveClass, 'wheels');
   for (const u of ['tank', 'heavy_tank', 'flak']) assert.equal(registry.unit(u).moveClass, 'tread', u);
-  assert.equal(registry.unit('artillery').moveClass, 'wheels');
+  assert.equal(registry.unit('artillery').moveClass, 'tread', 'the artillery is self-propelled, on treads');
   for (const u of ['recon', 'tank', 'heavy_tank', 'artillery', 'flak']) assert.ok(registry.unit(u).move <= 6, `${u} is slow enough`);
   for (const t of ['plain', 'forest', 'mountain', 'road', 'city']) assert.equal(registry.terrainDef(t).render.base, undefined, `${t} is drawn on the ground under it`);
 });

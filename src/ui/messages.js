@@ -34,6 +34,8 @@ export function describeEvents(game, events) {
     } else if (ev.type === 'supply') {
       const n = ev.supplied.length, cost = ev.supplied.reduce((a, s) => a + s.cost, 0);
       text = `${name(ev.unit)} supplies ${n} unit${n === 1 ? '' : 's'}` + (cost ? ` for ${cost.toLocaleString('en-US')}` : '');
+    } else if (ev.type === 'transfer') {
+      text = `${name(ev.unit)} transferred`;
     } else if (ev.type === 'lay') {
       text = `${name(ev.unit)} lays a mine`;
     } else if (ev.type === 'heal') {

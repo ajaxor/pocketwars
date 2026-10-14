@@ -19,16 +19,16 @@
     "c": { "terrain": "city" },
     "x": { "terrain": "ruin_city" },
     "~": { "terrain": "sea" },
-    "a": { "terrain": "agency", "owner": 0 },
+    "a": { "terrain": "airfield", "owner": 0 },
     "A": { "terrain": "factory" },
     "g": { "terrain": "garage", "owner": 1 },
     "O": { "terrain": "hq", "owner": 0 },
     "B": { "terrain": "hq", "owner": 1 },
     "C": { "terrain": "factory", "owner": 0 },
-    "u": { "terrain": "support_factory" },
+    "u": { "terrain": "garage" },
     "D": { "terrain": "factory", "owner": 1 },
     "v": { "terrain": "airfield", "owner": 0 },
-    "p": { "terrain": "chemical_plant", "owner": 1 }
+    "p": { "terrain": "garage", "owner": 1 }
   },
   "tiles": [
     "mmm.=...fc.mm.cf...=.mmm",

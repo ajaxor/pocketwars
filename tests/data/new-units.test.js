@@ -38,7 +38,7 @@ test('the RPG trooper is anti-vehicle infantry: one rocket, range 1-2, can move 
 });
 
 test('the stealth copter is a cloaked copter with a copter\'s weapon and less toughness', () => {
-  const sc = unit('stealth_copter'), copter = unit('copter');
+  const sc = unit('stealth_copter'), copter = unit('missile_copter');
   assert.ok(hasAttribute(sc, 'cloak'));
   assert.deepEqual(sc.weapons, copter.weapons);
   assert.equal(sc.layer, copter.layer);

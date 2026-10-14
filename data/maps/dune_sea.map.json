@@ -20,14 +20,14 @@
     "~": { "terrain": "sea" },
     "A": { "terrain": "factory" },
     "g": { "terrain": "garage", "owner": 0 },
-    "r": { "terrain": "artillery_range", "owner": 1 },
+    "r": { "terrain": "factory", "owner": 1 },
     "O": { "terrain": "hq", "owner": 0 },
     "B": { "terrain": "hq", "owner": 1 },
     "C": { "terrain": "factory", "owner": 0 },
     "D": { "terrain": "factory", "owner": 1 },
     "v": { "terrain": "airfield", "owner": 0 },
     "E": { "terrain": "airfield", "owner": 1 },
-    "u": { "terrain": "support_factory" }
+    "u": { "terrain": "garage" }
   },
   "tiles": [
     "mmm.f......ff......f.mmm",

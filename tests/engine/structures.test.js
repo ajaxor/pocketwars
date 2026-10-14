@@ -35,7 +35,7 @@ test('a breakable wall tile gets a neutral cracked wall when the game starts (un
 });
 
 test('walls stop every unit, aircraft too; a cracked wall blocks its tile until it is broken, then the rubble is open', () => {
-  const g = game(['A.....', '..W...', '..X...', '.....B'], [u('soldier', 0, 1, 1), u('copter', 0, 0, 2), u('tank', 0, 3, 1)]);
+  const g = game(['A.....', '..W...', '..X...', '.....B'], [u('soldier', 0, 1, 1), u('missile_copter', 0, 0, 2), u('tank', 0, 3, 1)]);
   const [inf, copter] = g.state.units;
   for (const unit of [inf, copter]) {
     const reach = computeReach(g, unit);

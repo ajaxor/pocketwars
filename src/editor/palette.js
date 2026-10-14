@@ -18,6 +18,7 @@ export function palette(registry) {
   const terrain = [], buildings = [], units = [], defences = [];
   for (const id of registry.terrainIds) {
     const t = registry.terrain[id];
+    if (t.attributes.property?.shelved) continue;   // a shelved building is out of play: maps may not use it
     if (t.attributes.property) buildings.push({ key: `t:${id}`, kind: 'terrain', id, label: t.name, owned: true, neutralOk: true });
     else terrain.push({ key: `t:${id}`, kind: 'terrain', id, label: t.attributes.wall?.structure ? registry.unit(t.attributes.wall.structure).name : t.name, owned: false, neutralOk: true });
   }

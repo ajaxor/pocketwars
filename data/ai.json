@@ -100,7 +100,11 @@
             "max": 2
           },
           {
-            "unit": "copter",
+            "unit": "missile_copter",
+            "max": 2
+          },
+          {
+            "unit": "gun_copter",
             "max": 2
           },
           {
@@ -183,6 +187,11 @@
           },
           {
             "unit": "flak",
+            "max": 2,
+            "when": "enemyHasAirborne"
+          },
+          {
+            "unit": "aa_truck",
             "max": 2,
             "when": "enemyHasAirborne"
           },

@@ -73,11 +73,12 @@ test('once the enemy has landed on its island, ground units are worth building a
   assert.ok(builds.some((b) => ['tread', 'wheels', 'foot'].includes(registry.unit(b.unit).moveClass)), builds.map((b) => b.unit).join(','));
 });
 
-test('with land to take across the water, a carrier is worth building, but not a walker that cannot get there', () => {
+test('with land to take across the water, it builds no walker that cannot get there (and a carrier, when the data has one on a menu)', () => {
   const g = world(ISLANDS, [['tank', 1, 11, 2]]);
   const builds = planBuilds(situation(g));
   const sit = situation(g);
-  assert.ok(builds.some((b) => sit.game.registry.unit(b.unit).attributes.deploy), `a carrier among ${builds.map((b) => b.unit).join(',')}`);
+  const carriersOnMenus = [...sit.game.registry.unitIds].some((id) => sit.game.registry.unit(id).attributes.deploy && !sit.game.registry.unit(id).shelved);   // all the carriers are shelved for now
+  if (carriersOnMenus) assert.ok(builds.some((b) => sit.game.registry.unit(b.unit).attributes.deploy), `a carrier among ${builds.map((b) => b.unit).join(',')}`);
   assert.ok(!builds.some((b) => b.unit === 'soldier'), 'no soldiers: nothing on this island to capture');
 });
 

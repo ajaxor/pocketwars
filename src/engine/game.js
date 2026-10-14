@@ -1,7 +1,7 @@
 // Game: the single entry point for changing game state. UI, AI and tests all go through these methods.
 //
 //   const game = new Game(registry, map);
-//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'rebuild' | 'heal' | 'supply' | 'lay' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId, at } })
+//   game.act({ unitId, to: {x, y}, action: { type: 'wait' | 'capture' | 'rebuild' | 'heal' | 'supply' | 'lay' | 'transfer' | 'attack' | 'submerge' | 'surface' | 'resupply', targetId, at } })
 //   game.build(x, y, unitType)
 //   game.setSubmerged({ unitId, submerged })   a submarine dives or surfaces for free before it moves
 //   game.deploy({ unitId, to })        a carrier (transport copter) puts a unit down, apart from its own order
@@ -38,6 +38,7 @@ import { canCapture, resolveCapture } from './capture.js';
 import { rebuildProblem, resolveRebuild } from './rebuild.js';
 import { resolveAttack, canTarget, attackProblem } from './combat.js';
 import { deployProblem, resolveDeploy, undoDeploy } from './deploy.js';
+import { resolveTransfer, transferProblem } from './transfer.js';
 import { canSee, hiddenFrom, revealsWhenFiring } from './detection.js';
 import { detonate, hiddenAt, layProblem, passesOverMines, resolveLay, triggersMine } from './mines.js';
 import { attacksPerTurn } from './combat.js';
@@ -134,6 +135,10 @@ export class Game {
     if (action.type === 'supply') {
       return canSupplyAt(this, unit, to.x, to.y) ? { ok: true, unit, reach } : fail('cannot-supply');
     }
+    if (action.type === 'transfer') {
+      const problem = transferProblem(this, unit, to, action.at);
+      return problem ? fail(problem) : { ok: true, unit, reach };
+    }
     if (action.type === 'lay') {
       const problem = layProblem(this, unit, to.x, to.y, action.at);
       return problem ? fail(problem) : { ok: true, unit, reach };
@@ -216,6 +221,7 @@ export class Game {
     if (action.type === 'join') events.push(...resolveJoin(this, unit, joinPartner(this, unit, unit.x, unit.y)));
     else if (action.type === 'capture') events.push(...resolveCapture(this, unit));
     else if (action.type === 'rebuild') events.push(...resolveRebuild(this, unit));
+    else if (action.type === 'transfer') events.push(...resolveTransfer(this, unit, action.at));
     else if (action.type === 'heal') events.push(...resolveHeal(this, unit));
     else if (action.type === 'supply') events.push(...resolveSupply(this, unit));
     else if (action.type === 'lay') {

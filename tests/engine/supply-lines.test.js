@@ -31,13 +31,13 @@ test('cities and the HQ resupply every kind of unit and are not picky about who 
 });
 
 test('repair: a unit of any kind that starts its turn on a city is repaired, and a ship beside a coastal city too', () => {
-  const g = world(['Hccc~~...h'], [['tank', 0, 1, 0, 5], ['copter', 0, 2, 0, 5], ['soldier', 0, 3, 0, 5], ['destroyer', 0, 4, 0, 5]]);
+  const g = world(['Hccc~~...h'], [['tank', 0, 1, 0, 5], ['missile_copter', 0, 2, 0, 5], ['soldier', 0, 3, 0, 5], ['destroyer', 0, 4, 0, 5]]);
   turnOf(g);
   for (const u of g.state.units.slice(0, 4)) assert.equal(u.hp, 7, `${u.type} repaired by the city it stands on or beside`);
 });
 
 test('resupply: next to a city every kind of unit takes on ammo and fuel for free, and it ends its turn', () => {
-  for (const [type, x] of [['soldier', 1], ['tank', 1], ['copter', 1], ['fighter', 1], ['destroyer', 3], ['submarine', 3]]) {
+  for (const [type, x] of [['soldier', 1], ['tank', 1], ['missile_copter', 1], ['fighter', 1], ['destroyer', 3], ['submarine', 3]]) {
     const g = world(['H.c~~...h'], [[type, 0, x, 0]]);
     const u = g.state.units[0], funds = g.state.funds[0];
     u.ammo = 0; if (u.fuel !== undefined) u.fuel = 0;
@@ -82,7 +82,7 @@ test('ammo: a carrier keeps its rounds for the troops it carries, so its own gun
 });
 
 test('fuel: a vehicle or ship burns a turn of fuel only on a turn it moves; an aircraft burns one every turn', () => {
-  const g = world(['H.........', '~~~~~~~~~~'], [['tank', 0, 1, 0], ['tank', 0, 2, 0], ['copter', 0, 5, 0], ['destroyer', 0, 7, 1], ['destroyer', 0, 8, 1]]);
+  const g = world(['H.........', '~~~~~~~~~~'], [['tank', 0, 1, 0], ['tank', 0, 2, 0], ['missile_copter', 0, 5, 0], ['destroyer', 0, 7, 1], ['destroyer', 0, 8, 1]]);
   const [mover, parked, copter, ship, anchored] = g.state.units;
   assert.equal(g.act({ unitId: mover.id, to: { x: 3, y: 0 }, action: { type: 'wait' } }).ok, true);
   g.endTurn();
@@ -126,7 +126,7 @@ test('fuel: an empty vehicle beside a friendly city is refuelled for free at the
 });
 
 test('supply truck: refuels ground units (and anything else it supplies), at the start of the turn and with the Supply order', () => {
-  const g = world(['H.........', '..........'], [['supply_truck', 0, 2, 0], ['tank', 0, 3, 0], ['soldier', 0, 1, 0], ['copter', 0, 2, 1]]);
+  const g = world(['H.........', '..........'], [['supply_truck', 0, 2, 0], ['tank', 0, 3, 0], ['soldier', 0, 1, 0], ['missile_copter', 0, 2, 1]]);
   const [truck, tank, soldier, copter] = g.state.units;
   tank.fuel = 0; copter.fuel = 0; tank.ammo = 0;
   turnOf(g);

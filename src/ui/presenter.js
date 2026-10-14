@@ -53,6 +53,8 @@ export class Presenter {
         this.effects.healed({ healed: [{ x: ev.unit.x, y: ev.unit.y, from: ev.from, to: ev.to }] }, t);
       } else if (ev.type === 'deploy') {
         this.effects.deploy(ev, t);
+      } else if (ev.type === 'transfer') {
+        this.effects.transfer(ev, t);
       } else if (ev.type === 'turnStart') {
         this.effects.income(ev, t);
         this.effects.healed(ev, t);

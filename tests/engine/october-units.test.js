@@ -138,8 +138,17 @@ test('only troop carriers have a leader-dependent price', () => {
   assert.equal(costFor(g, 0, 'transport_copter') % 100, 0, 'rounded to the nearest 100');
 });
 
+// The troop carriers are shelved for now, so these two tests put the transport copter back on a copy of the data (the airfield menu and Lysandra's roster).
+const withCarrier = await loadRegistry(async (path) => {
+  const d = JSON.parse(JSON.stringify(await readData(path)));
+  if (path === 'units.json') delete d.transport_copter.shelved;
+  if (path === 'loadouts.json') { d.default.build.airfield.push('transport_copter'); d.default.roster.push('transport_copter'); d.leaders.lysandra.roster.push('transport_copter'); }
+  return d;
+});
+const carrierWorld = (rows, unitsOnMap, p) => new Game(withCarrier, parseMap(rawMap({ rows, unitsOnMap, players: p, legend }), withCarrier));
+
 test('the price is what the build check, the build menu and the funds use, and units on the board are worth it', () => {
-  const g = world(['H..A.h', '......'], [], [{ ...players[0], leader: 'lysandra', funds: 100000 }, players[1]]);
+  const g = carrierWorld(['H..A.h', '......'], [], [{ ...players[0], leader: 'lysandra', funds: 100000 }, players[1]]);
   const price = costFor(g, 0, 'transport_copter');
   assert.notEqual(price, unit('transport_copter').cost);
   assert.ok(menuFor(g, 0, 3, 0).some((u) => u.id === 'transport_copter'), 'Lysandra can build one');
@@ -152,70 +161,73 @@ test('the price is what the build check, the build menu and the funds use, and u
   assert.equal(unitCost(g, g.state.units[0]), price);
 });
 
-test('a carrier deploys the leader\'s basic infantry (a motorcycle for Chase)', () => {
-  const g = world(['H.A..h', '......'], [['soldier', 1, 5, 1]], [{ ...players[0], leader: 'chase', funds: 100000 }, players[1]]);
+test('a carrier deploys the leader\'s basic infantry (a royal guard for Lysandra)', () => {
+  const g = carrierWorld(['H.A..h', '......'], [['soldier', 1, 5, 1]], [{ ...players[0], leader: 'lysandra', funds: 100000 }, players[1]]);
   assert.equal(g.build(2, 0, 'transport_copter').ok, true);
   g.endTurn(); g.endTurn();
   const copter = g.state.units.find((u) => u.type === 'transport_copter');
   const res = g.deploy({ unitId: copter.id });
   assert.equal(res.ok, true);
-  assert.equal(g.state.units.find((u) => u.id === res.deployed.unitId).type, 'motorcycle');
+  assert.equal(g.state.units.find((u) => u.id === res.deployed.unitId).type, 'royal_guard');
 });
 
 // ---- the kits ---------------------------------------------------------------------------------------------------------------------------
 const kit = (leader) => registry.loadoutFor(leader);
 const menu = (leader, building) => kit(leader).build[building] ?? registry.loadouts.default.build[building];
 
-test('every faction builds its own infantry at the HQ: Lysandra royal guard, Ludwig shock trooper, Hiroshi swordsman, Chase motorcycle', () => {
+test('every faction builds its own infantry at the HQ: Lysandra royal guard, Ludwig shock trooper, Hiroshi swordsman; Chase the plain soldier', () => {
   assert.equal(kit('lysandra').infantry, 'royal_guard');
   assert.equal(kit('ludwig').infantry, 'shock_trooper');
   assert.equal(kit('hiroshi').infantry, 'swordsman');
-  assert.equal(kit('chase').infantry, 'motorcycle');
+  assert.equal(kit('chase').infantry, 'soldier', 'the motorcycle moved to the garage');
   for (const leader of registry.leaderIds) assert.deepEqual(kit(leader).build.hq, [kit(leader).infantry], `${leader}'s HQ builds their infantry and nothing else`);
   assert.deepEqual(registry.loadouts.default.build.hq, ['soldier']);
-  for (const leader of ['lysandra', 'ludwig', 'hiroshi', 'chase']) assert.ok(!Object.values(kit(leader).build).flat().includes('soldier'), `${leader} has no soldier`);
+  for (const leader of ['lysandra', 'ludwig', 'hiroshi']) assert.ok(!Object.values(kit(leader).build).flat().includes('soldier'), `${leader} has no soldier`);
 });
 
 test('each leader builds only their own roster: the old units, spread over the fixed building menus', () => {
   const rosters = {
-    harlan: ['medic', 'sniper', 'mech', 'vintage_fighter', 'vintage_bomber', 'torpedo_bomber', 'recon', 'artillery', 'apc', 'flak', 'tank', 'heavy_tank', 'destroyer', 'troop_transport', 'cruiser', 'battleship'],
+    harlan: ['mech', 'vintage_fighter', 'vintage_bomber', 'torpedo_bomber', 'recon', 'artillery', 'flak', 'tank', 'heavy_tank', 'destroyer', 'cruiser', 'battleship'],
     ada: ['missile_tank', 'rocket_launcher', 'rocket_buggy', 'sam_launcher', 'gun_boat', 'hunter_sub'],
-    ludwig: ['hover_tank', 'stealth_copter', 'radar_plane', 'missile_sub'],
-    chase: ['hover_tank', 'heavy_tank', 'stealth_fighter', 'aircraft_carrier'],
+    ludwig: ['hover_tank', 'stealth_copter', 'missile_sub'],
+    chase: ['hover_tank', 'heavy_tank', 'stealth_fighter', 'aircraft_carrier', 'motorcycle', 'rocket_launcher'],
     rex: ['amphibious_tank', 'torpedo_bomber', 'aircraft_carrier', 'hunter_sub'],
     dmitri: ['airship', 'heavy_tank', 'missile_sub', 'torpedo_bomber'],
-    lysandra: ['stealth_bomber', 'dreadnought', 'radar_plane'],
-    hiroshi: ['dreadnought', 'heavy_tank', 'mortar'],
+    lysandra: ['stealth_bomber', 'dreadnought'],
+    hiroshi: ['dreadnought', 'heavy_tank'],
     vex: ['stealth_copter', 'missile_sub', 'diver'],
   };
   for (const [leader, units] of Object.entries(rosters)) for (const u of units) assert.ok(kit(leader).roster.includes(u), `${leader} builds ${u}`);
   assert.ok(!kit('ada').roster.includes('tank') && !kit('ludwig').roster.includes('tank'), 'Ada and Ludwig have no plain tank');
   assert.ok(!kit('lysandra').roster.includes('marine') && !kit('chase').roster.includes('flak'));
   for (const leader of registry.leaderIds) assert.ok(!('unlock' in kit(leader)), 'no leader unlocks a lab unit any more');
+  for (const leader of [null, ...registry.leaderIds]) for (const u of (leader ? kit(leader) : registry.loadouts.default).roster) assert.ok(!registry.unit(u).shelved, `${leader ?? 'default'}: ${u} is shelved, so on no roster`);
 });
 
 test('the default menus list every unit a building can build; a leader\'s roster cuts them down', () => {
   const b = registry.loadouts.default.build;
-  assert.deepEqual([...b.garage].sort(), ['mechanic', 'recon', 'rocket_buggy']);
-  assert.deepEqual([...b.chemical_plant].sort(), ['flamethrower', 'mine_layer', 'rocket_launcher']);
-  assert.ok(['mech', 'tank', 'flak', 'heavy_tank', 'hover_tank', 'missile_tank', 'amphibious_tank', 'stealth_tank'].every((u) => b.factory.includes(u)));
+  assert.deepEqual([...b.garage].sort(), ['aa_truck', 'motorcycle', 'recon', 'rocket_buggy', 'rocket_launcher', 'supply_truck']);
+  assert.deepEqual([...b.sub_pen].sort(), ['diver', 'hunter_sub', 'missile_sub', 'submarine'], 'the diver swims out of the sub pen');
+  assert.ok(['tank', 'flak', 'artillery', 'heavy_tank', 'hover_tank', 'missile_tank', 'amphibious_tank', 'stealth_tank'].every((u) => b.factory.includes(u)));
+  for (const gone of ['chemical_plant', 'support_factory', 'artillery_range', 'agency']) assert.equal(b[gone], undefined, `${gone} is shelved: no menu`);
   const menuAt = (leader, building, labs = []) => {
-    const glyphs = { factory: 'f', airfield: 'a', shipyard: 'y', sub_pen: 's', airbase: 'x', chemical_plant: 'c', support_factory: 'u' };
+    const glyphs = { factory: 'f', airfield: 'a', shipyard: 'y', sub_pen: 's', airbase: 'x', chemical_plant: 'c', garage: 'g' };
     const lg = { ...legend, ...Object.fromEntries(Object.entries(glyphs).map(([t, g]) => [g, { terrain: t, owner: 0 }])), 1: { terrain: 'hover_lab', owner: 0 }, 2: { terrain: 'stealth_lab', owner: 0 }, 3: { terrain: 'heavy_lab', owner: 0 }, 4: { terrain: 'missile_lab', owner: 0 } };
     const row = `H${glyphs[building]}${labs.join('')}h`.padEnd(6, '.');
     const g = new Game(registry, parseMap(rawMap({ rows: [row, '.'.repeat(6)], unitsOnMap: [], players: [{ ...players[0], leader }, players[1]], legend: lg }), registry));
     return menuFor(g, 0, 1, 0).map((d) => d.id).sort();
   };
-  assert.deepEqual(menuAt('harlan', 'factory'), ['flak', 'heavy_tank', 'mech', 'tank'], 'Harlan: his tanks and the AT infantry');
+  assert.deepEqual(menuAt('harlan', 'factory'), ['artillery', 'flak', 'heavy_tank', 'tank'], 'Harlan: his tanks and the artillery');
   assert.deepEqual(menuAt('ada', 'factory'), ['missile_tank'], 'Ada: only her missile tank');
-  assert.deepEqual(menuAt('rex', 'factory'), ['amphibious_tank', 'flak'], 'Rex: the amphibious tank and flak');
+  assert.deepEqual(menuAt('rex', 'factory'), ['amphibious_tank', 'artillery', 'flak'], 'Rex: the amphibious tank, artillery and flak');
   assert.deepEqual(menuAt('harlan', 'airfield'), ['torpedo_bomber', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(menuAt('vex', 'airfield'), ['stealth_copter', 'transport_copter']);
-  assert.deepEqual(menuAt('harlan', 'chemical_plant'), ['flamethrower'], 'Harlan: one unit of his own at each building');
+  assert.deepEqual(menuAt('vex', 'airfield'), ['gun_copter', 'stealth_copter']);
+  assert.deepEqual(menuAt('harlan', 'chemical_plant'), [], 'a shelved building builds nothing');
+  assert.deepEqual(menuAt('chase', 'garage'), ['aa_truck', 'motorcycle', 'recon', 'rocket_launcher', 'supply_truck'], 'Chase: the motorcycle is built at the garage');
   assert.deepEqual(menuAt('lysandra', 'shipyard'), ['cruiser', 'destroyer', 'dreadnought']);
   // a lab swaps a unit for its upgrade, but only where the leader has the unit
-  assert.deepEqual(menuAt('harlan', 'factory', ['1']), ['flak', 'heavy_tank', 'hover_tank', 'mech'], 'the hover lab: tank -> hover tank');
-  assert.deepEqual(menuAt('harlan', 'factory', ['1', '2']), ['flak', 'heavy_tank', 'hover_tank', 'mech', 'stealth_tank'], 'two labs offer both upgrades');
+  assert.deepEqual(menuAt('harlan', 'factory', ['1']), ['artillery', 'flak', 'heavy_tank', 'hover_tank'], 'the hover lab: tank -> hover tank');
+  assert.deepEqual(menuAt('harlan', 'factory', ['1', '2']), ['artillery', 'flak', 'heavy_tank', 'hover_tank', 'stealth_tank'], 'two labs offer both upgrades');
   assert.deepEqual(menuAt('harlan', 'shipyard', ['3']), ['cruiser', 'destroyer', 'dreadnought'], 'the heavy lab: battleship -> dreadnought');
   assert.deepEqual(menuAt('ada', 'factory', ['1']), ['missile_tank'], 'Ada has no tank, so the hover lab gives her nothing');
   assert.deepEqual(menuAt('harlan', 'sub_pen', ['4']), ['missile_sub'], 'Harlan has the submarine, so the missile lab upgrades it');

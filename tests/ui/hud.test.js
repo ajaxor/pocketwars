@@ -93,7 +93,7 @@ test('a terrain window for a property shows its owner and income; impassable mov
   assert.deepEqual(texts(byClass('card-sub')), ['Vantor Reach']);
   assert.ok(texts(byClass('chip-v')).includes('+1,000'));
   assert.ok(texts(byClass('tag')).includes('Builds infantry, vehicles'));
-  assert.deepEqual(texts(byClass('prod-note')), ['Builds: AT Infantry, Flak, Tank']);
+  assert.deepEqual(texts(byClass('prod-note')), ['Builds: Flak, Artillery, Tank', 'Unlocks AT Infantry at the HQ and every city.']);
   let sea = null;
   game.map.terrain.forEach((row, y) => row.forEach((t, x) => { if (t === 'sea') sea = { x, y }; }));
   hud.info({ terrain: terrainInfo(game, sea.x, sea.y) });
@@ -141,10 +141,10 @@ function openBuild(funds, extra = {}) {
 test('the build menu has a row per unit with its price, and no details below the list', () => {
   const { rows, byClass, texts } = openBuild(8000);
   assert.equal(rows().length, 3);
-  assert.deepEqual(texts(byClass('win-title')), ['Tank Factory']);
+  assert.deepEqual(texts(byClass('win-title')), ['Factory']);
   assert.deepEqual(texts(byClass('win-tag')), [], 'the menu does not show the player\'s funds');
-  assert.deepEqual(texts(byClass('build-name')), ['AT Infantry', 'Flak', 'Tank']);
-  assert.deepEqual(texts(byClass('build-cost')), ['3,000', '6,000', '7,000'], 'cheapest at the top');
+  assert.deepEqual(texts(byClass('build-name')), ['Flak', 'Artillery', 'Tank']);
+  assert.deepEqual(texts(byClass('build-cost')), ['6,000', '6,000', '7,000'], 'cheapest at the top');
   assert.equal(byClass('build-detail').length, 0, 'the extended unit info is gone');
   assert.equal(byClass('btn--primary').length, 0, 'and so is the Build button');
   assert.equal(rows().filter((r) => r.classList.contains('is-picked')).length, 0, 'nothing is pre-selected');

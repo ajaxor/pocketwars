@@ -34,12 +34,12 @@ test('property info: owner, income, repair, capture points and what it builds', 
   assert.equal(t.property.owner.name, 'Ashmark');
   assert.deepEqual([t.property.income, t.property.repair, t.property.capturePoints], [1000, 2, 20]);
   assert.deepEqual(t.property.builds, ['Infantry', 'Vehicles']);
-  assert.deepEqual(t.property.menu.map((u) => u.id), ['mech', 'flak', 'tank'], 'the menu its owner gets, cheapest first');
+  assert.deepEqual(t.property.menu.map((u) => u.id), ['flak', 'artillery', 'tank'], 'the menu its owner gets, cheapest first');
   assert.equal(t.property.upgrades, null);
   const city = allProperties(game).find((p) => p.owner === null);
   assert.equal(terrainInfo(game, city.x, city.y).property.owner, null, 'an unowned city is neutral');
   const hq = allProperties(game).find((p) => p.terrain.id === 'hq' && p.owner === 0);
-  assert.deepEqual(terrainInfo(game, hq.x, hq.y).property.menu.map((u) => u.id), ['soldier'], 'the HQ builds the faction infantry');
+  assert.deepEqual(terrainInfo(game, hq.x, hq.y).property.menu.map((u) => u.id), ['soldier', 'mechanic', 'rpg_trooper', 'mech'], 'the HQ builds the faction infantry and what its garage, airfield and factory unlock');
 });
 
 test('unit stats read the weapon, armor and attribute labels from the data', () => {
@@ -49,15 +49,15 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air', 'Surface'] }]);
   assert.deepEqual(tank.tags.map((t) => t.label), ['Ammo 8', 'Fuel 9'], 'every fighting vehicle carries ammo and fuel');
 
-  assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures', 'Ammo 9']);
+  assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures', 'Ammo 9', 'Can transfer']);
   assert.match(unitStats(game, registry.unit('commando')).tags.find((t) => t.label === 'Cover x2').help, /2 times the defense/);
   const sniper = unitStats(game, registry.unit('sniper'));
-  assert.deepEqual(sniper.tags.map((t) => t.label), ['Captures', 'Indirect fire', 'Cloaked', 'Ammo 6']);
+  assert.deepEqual(sniper.tags.map((t) => t.label), ['Captures', 'Indirect fire', 'Cloaked', 'Ammo 6', 'Can transfer']);
   assert.deepEqual([sniper.weapons[0].min, sniper.weapons[0].max], [2, 3]);
   assert.deepEqual(unitStats(game, registry.unit('artillery')).weapons[0].hits, ['Ground', 'Surface']);
   assert.deepEqual(unitStats(game, registry.unit('fighter')).weapons[0].hits, ['Low air', 'High air']);
   assert.deepEqual(unitStats(game, registry.unit('flak')).weapons[0].hits, ['Ground', 'Low air', 'High air', 'Surface']);
-  assert.equal(unitStats(game, registry.unit('copter')).layer, 'Low air');
+  assert.equal(unitStats(game, registry.unit('missile_copter')).layer, 'Low air');
   assert.equal(unitStats(game, registry.unit('tank')).layer, null);
 });
 

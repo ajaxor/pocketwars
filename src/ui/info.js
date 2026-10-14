@@ -67,6 +67,8 @@ export function terrainInfo(game, x, y) {
     property: prop ? {
       income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel),
       menu: prop.builds.length ? menuFor(game, owner ?? null, x, y).map((d) => unitLine(d)) : [],   // what it builds for its owner now (the standard menu when nobody owns it)
+      unlocks: prop.unlocks ? prop.unlocks.map((id) => unitLine(registry.unit(id))) : null,   // a garage, factory or airfield: the infantry it unlocks at the HQ and the cities
+      hub: !!prop.hub,
       upgrades: prop.upgrades ? Object.entries(prop.upgrades).map(([from, to]) => ({ from: unitLine(registry.unit(from)), to: unitLine(registry.unit(to)) })) : null,   // a lab: which unit it replaces with which
       owner: owner === null ? null : { player: owner, name: factionOf(game, owner).name, color: factionOf(game, owner).color },
     } : null,

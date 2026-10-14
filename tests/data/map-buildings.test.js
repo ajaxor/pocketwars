@@ -8,8 +8,8 @@ import { buildingGaps, playersWithoutProducer, PRODUCERS } from '../../src/data/
 const registry = await loadRegistry(readData);
 const index = await loadMapIndex(readData);
 
-test('PRODUCERS lists exactly the terrain that builds units besides the HQ', () => {
-  const builders = Object.keys(registry.terrain).filter((id) => id !== 'hq' && registry.terrainDef(id).attributes.property?.builds?.length);
+test('PRODUCERS lists exactly the terrain that builds units besides the HQ and the cities (shelved buildings aside)', () => {
+  const builders = Object.keys(registry.terrain).filter((id) => { const p = registry.terrainDef(id).attributes.property; return p?.builds?.length && !p.hub && !p.shelved; });
   assert.deepEqual([...PRODUCERS].sort(), builders.sort());
 });
 

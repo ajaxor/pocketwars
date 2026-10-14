@@ -37,13 +37,13 @@ test('no jammer, no fog; any jammer (whoever owns it) fogs the human players and
 });
 
 test('sight: vision range by unit (its own, else its category; not stretched to its move), a mountain adds to it, aircraft see over everything', () => {
-  const g = game(['A....M.......B'], [u('soldier', 0, 1, 0), u('recon', 0, 2, 0), u('soldier', 0, 5, 0), u('copter', 0, 3, 0), u('jammer', null, 13, 0)]);
+  const g = game(['A....M.......B'], [u('soldier', 0, 1, 0), u('recon', 0, 2, 0), u('soldier', 0, 5, 0), u('missile_copter', 0, 3, 0), u('jammer', null, 13, 0)]);
   const [inf, recon, onMountain, copter] = g.state.units;
   assert.equal(visionOf(g, inf), 2);
   assert.equal(visionOf(g, recon), 5, 'its own vision');
   assert.equal(visionOf(g, onMountain), 2 + 2, 'mountain +2');
   assert.equal(visionOf(g, copter), 3, 'the aircraft category, not its move');
-  assert.ok(visionOf(g, copter) < registry.unit('copter').move, 'vision no longer grows to match movement');
+  assert.ok(visionOf(g, copter) < registry.unit('missile_copter').move, 'vision no longer grows to match movement');
 });
 
 test('sight follows line of sight: a mountain or a wall hides what is behind it, but the obstacle itself is seen', () => {

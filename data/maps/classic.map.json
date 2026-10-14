@@ -19,7 +19,7 @@
     "f": { "terrain": "factory", "owner": 1 },
     "B": { "terrain": "hq", "owner": 1 },
     "g": { "terrain": "garage", "owner": 1 },
-    "A": { "terrain": "artillery_range" },
+    "A": { "terrain": "factory" },
     "C": { "terrain": "airfield", "owner": 0 },
     "D": { "terrain": "factory", "owner": 0 },
     "O": { "terrain": "hq", "owner": 0 },

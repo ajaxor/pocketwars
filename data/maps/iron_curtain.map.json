@@ -26,7 +26,7 @@
     "A": { "terrain": "airfield", "owner": 0 },
     "B": { "terrain": "factory", "owner": 1 },
     "C": { "terrain": "hq", "owner": 1 },
-    "D": { "terrain": "artillery_range", "owner": 1 }
+    "D": { "terrain": "factory", "owner": 1 }
   },
   "tiles": [
     "MM..FF...c......FF....MM",

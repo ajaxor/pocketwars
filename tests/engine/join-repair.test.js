@@ -57,12 +57,12 @@ test('repair: a unit on a friendly building that serves its kind is repaired at 
 });
 
 test('repair: ground buildings never repair aircraft, and a building only repairs the kinds it serves', () => {
-  const g = world(['HcF.B.h', '.......'], [['copter', 0, 2, 0, 5], ['tank', 0, 4, 0, 5], ['soldier', 0, 2, 1, 5], ['soldier', 1, 6, 1]]);
+  const g = world(['HcF.B.h', '.......'], [['missile_copter', 0, 2, 0, 5], ['tank', 0, 4, 0, 5], ['soldier', 0, 2, 1, 5], ['soldier', 1, 6, 1]]);
   const [copter, tank] = g.state.units;
   g.endTurn(); startTurn(g, 0);
   assert.equal(copter.hp, 5, 'a copter on a factory is not repaired');
   assert.equal(tank.hp, 5, 'a tank on a barracks is not either');
-  const a = world(['HA.....h', '........'], [['copter', 0, 1, 0, 5], ['soldier', 1, 6, 1]]);
+  const a = world(['HA.....h', '........'], [['missile_copter', 0, 1, 0, 5], ['soldier', 1, 6, 1]]);
   a.endTurn(); startTurn(a, 0);
   assert.equal(a.state.units[0].hp, 7, 'an airfield repairs aircraft');
 });
@@ -77,7 +77,7 @@ test('repair: ships are repaired beside their shipyard, and repairs stop when th
 });
 
 test('repair: aircraft next to an aircraft carrier are repaired at the start of the turn', () => {
-  const g = world(['H~~~~~h', '~~~~~~~'], [['aircraft_carrier', 0, 2, 0], ['copter', 0, 3, 0, 4], ['fighter', 0, 2, 1, 4], ['fighter', 0, 5, 1, 4], ['soldier', 1, 6, 0]]);
+  const g = world(['H~~~~~h', '~~~~~~~'], [['aircraft_carrier', 0, 2, 0], ['missile_copter', 0, 3, 0, 4], ['fighter', 0, 2, 1, 4], ['fighter', 0, 5, 1, 4], ['soldier', 1, 6, 0]]);
   const [, copter, near, far] = g.state.units;
   g.endTurn(); startTurn(g, 0);
   assert.equal(copter.hp, 6);

@@ -258,12 +258,12 @@ test('a submerged submarine sets a mine off too', () => {
 });
 
 test('infantry do not set a mine off, but ships and vehicles do (the mine\'s `triggers`)', () => {
-  const g = world(['H~~~~~~~~~~h'], [['sea_mine', 0, 4, 0], ['marine', 1, 1, 0], ['diver', 1, 2, 0], ['cruiser', 1, 3, 0], ['amphibious_tank', 1, 5, 0], ['hover_tank', 1, 6, 0], ['copter', 1, 7, 0]]);
+  const g = world(['H~~~~~~~~~~h'], [['sea_mine', 0, 4, 0], ['marine', 1, 1, 0], ['diver', 1, 2, 0], ['cruiser', 1, 3, 0], ['amphibious_tank', 1, 5, 0], ['hover_tank', 1, 6, 0], ['missile_copter', 1, 7, 0]]);
   const mine = first(g, 'sea_mine');
   const hits = (type) => triggersMine(g, first(g, type, 1), mine);
   assert.deepEqual(['marine', 'diver'].map(hits), [false, false]);
   assert.deepEqual(['cruiser', 'amphibious_tank'].map(hits), [true, true]);
-  assert.deepEqual(['hover_tank', 'copter'].map(hits), [false, false], 'floating and flying units go over it');
+  assert.deepEqual(['hover_tank', 'missile_copter'].map(hits), [false, false], 'floating and flying units go over it');
 });
 
 test('an amphibious tank sets a mine off; a hover tank floats over it and a helicopter flies over', () => {
@@ -279,15 +279,15 @@ test('an amphibious tank sets a mine off; a hover tank floats over it and a heli
   assert.equal(r.interrupted, undefined);
   assert.deepEqual([h.x, h.y], [5, 0], 'it crossed the mine');
   assert.equal(unitAt(hover, 4, 0).type, 'sea_mine', 'which is untouched');
-  const air = mined('copter');
-  const c = first(air, 'copter', 1);
+  const air = mined('missile_copter');
+  const c = first(air, 'missile_copter', 1);
   assert.equal(air.act({ unitId: c.id, to: { x: 6, y: 0 } }).interrupted, undefined);
   assert.deepEqual([c.x, c.y], [6, 0]);
 });
 
 test('a hover tank or a plane cannot end its move on a hidden mine', () => {
-  const g = mined('copter');
-  const c = first(g, 'copter', 1);
+  const g = mined('missile_copter');
+  const c = first(g, 'missile_copter', 1);
   const res = g.act({ unitId: c.id, to: { x: 4, y: 0 } });
   assert.ok(res.interrupted);
   assert.deepEqual([c.x, c.y], [3, 0]);

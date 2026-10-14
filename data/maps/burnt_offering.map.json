@@ -21,12 +21,12 @@
     "=": { "terrain": "road" },
     "~": { "terrain": "sea" },
     "g": { "terrain": "garage", "owner": 0 },
-    "p": { "terrain": "chemical_plant", "owner": 1 },
+    "p": { "terrain": "factory", "owner": 1 },
     "O": { "terrain": "hq", "owner": 0 },
     "B": { "terrain": "hq", "owner": 1 },
     "A": { "terrain": "factory", "owner": 0 },
     "C": { "terrain": "factory", "owner": 1 },
-    "a": { "terrain": "agency", "owner": 0 },
+    "a": { "terrain": "airfield", "owner": 0 },
     "v": { "terrain": "airfield", "owner": 1 }
   },
   "tiles": [

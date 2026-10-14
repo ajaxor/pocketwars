@@ -180,6 +180,12 @@ export const UNIT_ATTRIBUTES = {
       else if (Number.isInteger(v.ammo) && Number.isInteger(e.attributes.ammo.max) && v.ammo > e.attributes.ammo.max) fail('ammo (the cost of one drop) is more than the unit can carry');
     },
   },
+  transfer: {
+    label: 'Can transfer',
+    help: 'Standing on a property of its owner, it can be sent to any other empty city that owner holds (the Transfer order, in place of Wait). It arrives with its turn spent.',
+    doc: 'Infantry that is built at the HQ or a city (rather than at a building of its own) can be relocated: after its move, on a property its owner holds, the Transfer order puts it on any other EMPTY city (terrain `city`) its owner holds, anywhere on the map, and ends its turn (transfer.js). Not offered to a just-built (`fresh`) unit. The unit keeps its HP, ammo and fuel; capture progress is lost. Config: true.',
+    check: (v, e, fail) => { if (!isFlag(v)) fail('must be true'); },
+  },
   cloak: {
     label: 'Cloaked',
     help: (v) => (v === true ? 'Hidden from the enemy unless one of their units is next to it or has radar in range. A hidden unit cannot be targeted, and what it hits cannot answer unless it can see the attacker.'
@@ -226,7 +232,7 @@ export const TERRAIN_ATTRIBUTES = {
   property: {
     label: 'Property',
     help: 'Can be owned and captured. It earns income, and repairs (for a price) the units of the kinds it serves that begin their turn on it. A production building builds units here; a lab upgrades some of its owner\'s units.',
-    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored at the start of its owner\'s turn to a unit of one of the `repairs` categories that stands on it, or, for a unit that cannot enter the tile such as a ship beside its shipyard, next to it; it is paid for out of the owner\'s funds, see `rules.repairCostRate`), repairs (the unit categories it repairs: ground buildings never repair aircraft, the airfield repairs aircraft, the shipyard ships), builds (the unit categories the owner may build here; what it really builds is the menu data/loadouts.json gives that building, see menuFor in economy.js), shore (unit ids on its menu that are only offered when open water touches the tile: a chemical plant lays mines from its own pier), upgrades (a lab: { <unit id>: <upgraded unit id> }; while its owner holds the lab, every build menu of theirs that lists the first unit offers the upgrade in its place; a leader who does not build the first unit gets nothing from it). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn, unless it has `unlimitedBuilds: true` (the HQ: it may build again as soon as the last unit has moved off the tile).',
+    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored at the start of its owner\'s turn to a unit of one of the `repairs` categories that stands on it, or, for a unit that cannot enter the tile such as a ship beside its shipyard, next to it; it is paid for out of the owner\'s funds, see `rules.repairCostRate`), repairs (the unit categories it repairs: ground buildings never repair aircraft, the airfield repairs aircraft, the shipyard ships), builds (the unit categories the owner may build here; what it really builds is the menu data/loadouts.json gives that building, see menuFor in economy.js), shore (unit ids on its menu that are only offered when open water touches the tile: a chemical plant lays mines from its own pier), upgrades (a lab: { <unit id>: <upgraded unit id> }; while its owner holds the lab, every build menu of theirs that lists the first unit offers the upgrade in its place; a leader who does not build the first unit gets nothing from it). `hub` (true: the HQ and the cities; they build the leader\'s own infantry (the HQ) and the infantry the owner has UNLOCKED), unlocks (unit ids: while its owner holds this building, the infantry listed can be built at their HQ and cities; the building itself does not build them), shelved (true: kept in the data but out of play: it builds nothing and no shipped map uses it). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn, unless it has `unlimitedBuilds: true` (the HQ: it may build again as soon as the last unit has moved off the tile).',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object');
       if (!Number.isInteger(v.income) || v.income < 0) fail('income must be a non-negative integer');
@@ -235,6 +241,9 @@ export const TERRAIN_ATTRIBUTES = {
       if (v.repairs !== undefined && (!Array.isArray(v.repairs) || v.repairs.some((c) => typeof c !== 'string' || !c))) fail('repairs must be an array of unit category names');
       if (!Array.isArray(v.builds) || v.builds.some((c) => typeof c !== 'string')) fail('builds must be an array of unit category names');
       if (v.unlimitedBuilds !== undefined && typeof v.unlimitedBuilds !== 'boolean') fail('unlimitedBuilds must be true or false');
+      if (v.hub !== undefined && typeof v.hub !== 'boolean') fail('hub must be true or false');
+      if (v.shelved !== undefined && typeof v.shelved !== 'boolean') fail('shelved must be true or false');
+      if (v.unlocks !== undefined && (!Array.isArray(v.unlocks) || !v.unlocks.length || v.unlocks.some((id) => typeof id !== 'string' || !id))) fail('unlocks must be a list of unit ids');
       if (v.shore !== undefined && (!Array.isArray(v.shore) || v.shore.some((id) => typeof id !== 'string' || !id))) fail('shore must be an array of unit ids');
       if (v.upgrades !== undefined) {
         if (!v.upgrades || typeof v.upgrades !== 'object' || Array.isArray(v.upgrades) || !Object.keys(v.upgrades).length) fail('upgrades must be an object like { "tank": "hover_tank" } (unit id -> the unit that replaces it on the menu)');

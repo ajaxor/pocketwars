@@ -166,6 +166,8 @@ export class Hud {
     if (t.property?.upgrades) notes.unshift('Lab');
     if (notes.length) w.body.append(this.#tags(notes));
     if (t.property?.menu?.length) w.body.append(h(d, 'div', 'note prod-note', `Builds: ${t.property.menu.map((u) => u.name).join(', ')}`));
+    if (t.property?.unlocks) w.body.append(h(d, 'div', 'note prod-note', `${owner ? 'Unlocks' : 'Whoever holds it unlocks'} ${t.property.unlocks.map((u) => u.name).join(', ')} at the HQ and every city.`));
+    if (t.property?.hub && !t.property.menu.length) w.body.append(h(d, 'div', 'note prod-note', 'Builds the infantry that a garage, factory or airfield unlocks.'));
     if (t.property?.upgrades) {   // a lab: which unit it replaces with which, on its owner's build menus
       w.body.append(h(d, 'div', 'note prod-note', owner ? `${owner.name} build menus upgrade:` : 'Whoever holds it upgrades their build menus:'));
       for (const u of t.property.upgrades) {

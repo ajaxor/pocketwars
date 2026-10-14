@@ -6,18 +6,21 @@ Who can build what is decided by three things: the **building** (a fixed menu of
 
 | Building | Menu (every unit it can build; a faction's roster cuts it down) |
 |---|---|
-| HQ | the leader's own infantry, unlimited builds |
-| Garage | recon, rocket buggy, mechanic |
-| Chemical plant | flamethrower, rocket launcher, mine layer (only when water touches the tile: `shore`) |
-| Tank factory (`factory`) | AT infantry, tank, flak, heavy tank, hover tank, missile tank, amphibious tank, stealth tank |
-| Support factory | medic, supply truck, APC |
-| Artillery range | mortar, artillery |
-| Agency | sniper, radar plane (stand-in for the spy plane) |
-| Shipyard | diver, destroyer, cruiser, battleship, dreadnought, aircraft carrier |
-| Harbor | gun boat, troop transport |
-| Sub pen | submarine, hunter sub, missile sub |
-| Airfield | copter, transport copter, torpedo bomber, RPG trooper, vintage fighter, vintage bomber, stealth copter, airship |
+| HQ | the leader's own infantry, plus the unlocked infantry (below); unlimited builds |
+| City | marine and amphibious infantry, plus the unlocked infantry |
+| Garage | recon, rocket buggy, AA truck, supply truck, rocket launcher, motorcycle |
+| Factory | tank, flak, artillery (treads), heavy tank, hover tank, missile tank, amphibious tank, stealth tank |
+| Shipyard | destroyer, cruiser, battleship, dreadnought, aircraft carrier |
+| Harbor | gun boat |
+| Sub pen | diver, submarine, hunter sub, missile sub |
+| Airfield | gun copter, missile copter, torpedo bomber, vintage fighter, vintage bomber, stealth copter, airship |
 | Airbase | fighter, bomber, SAM launcher, stealth fighter, stealth bomber |
+
+**Hubs and unlocks.** The HQ and every city (`hub`) build infantry. Owning a building unlocks one more infantry for all your hubs (`unlocks`): garage -> mechanic, factory -> AT infantry (mech), airfield -> RPG trooper. Leader infantry is HQ-only. Exceptions to "infantry at hubs": the motorcycle is built at the garage and the diver at the sub pen.
+
+**Transfer.** An infantryman (attribute `transfer`) standing on a property of its owner can be sent to any other empty city that owner holds. It ends the unit's turn and resets capture. Fresh units, vehicles, the motorcycle and the diver cannot. The computer does not use it yet.
+
+**Shelved.** The agency, chemical plant, support factory and artillery range are `shelved` (in the data, off every menu and map). So are the transport units (APC, transport copter, troop transport) and the flamethrower, sniper, medic, mortar, mine layer and radar plane; they wait for labs.
 
 Every building but the HQ builds one unit per turn. Infantry and vehicles are mixed on purpose: a building has a theme, not a unit type.
 
@@ -34,7 +37,7 @@ A lab builds nothing. While its owner holds it, it **upgrades** units on that ow
 | Lab | Upgrades |
 |---|---|
 | Hover lab | tank -> hover tank |
-| Stealth lab | tank -> stealth tank, copter -> stealth copter, fighter -> stealth fighter, bomber -> stealth bomber |
+| Stealth lab | tank -> stealth tank, missile copter -> stealth copter, fighter -> stealth fighter, bomber -> stealth bomber |
 | Heavy lab | tank -> heavy tank, battleship -> dreadnought |
 | Missile lab | tank -> missile tank, submarine -> missile sub |
 

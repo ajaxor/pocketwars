@@ -2,7 +2,7 @@
 // near each HQ, the rest contested in the middle, so a side may well lack some kinds. `PRODUCERS` lists every kind of building that builds units
 // (the HQ builds infantry for everyone); `buildingGaps` reports which kinds a player does not start with. Balance runs ask only that every
 // player starts with at least one producer besides the HQ (see `hasNoProducer`).
-export const PRODUCERS = ['garage', 'chemical_plant', 'factory', 'support_factory', 'artillery_range', 'agency', 'shipyard', 'harbor', 'sub_pen', 'airfield', 'airbase'];
+export const PRODUCERS = ['garage', 'factory', 'shipyard', 'harbor', 'sub_pen', 'airfield', 'airbase'];   // (the chemical plant, support factory, artillery range and agency are shelved; cities and the HQ build infantry)
 
 /** `[{ owner, missing: ['airfield', ...] }]` for each player, listing the producing buildings they do not start with. */
 export function buildingGaps(map) {

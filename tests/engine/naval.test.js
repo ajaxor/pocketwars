@@ -143,7 +143,7 @@ test('the best weapon is chosen automatically: depth charges on a sub, deck gun 
 });
 
 test('a cruiser shoots flak at aircraft and cannon at ships: it picks whichever hurts more', () => {
-  const g = sea(['~~~~', '....'], [['cruiser', 0, 0, 0], ['copter', 1, 1, 0]]);
+  const g = sea(['~~~~', '....'], [['cruiser', 0, 0, 0], ['missile_copter', 1, 1, 0]]);
   assert.equal(weaponFor(g, g.state.units[0], g.state.units[1]).name, registry.weapon('aa_battery').name);
 });
 
@@ -199,7 +199,7 @@ test('the shipyard builds ships, not soldiers or marines', () => {
 
 test('destroyer and cruiser anti-air weapons are melee range, like the submarine torpedoes', () => {
   for (const id of ['deck_gun', 'depth_charges', 'aa_battery', 'torpedoes']) assert.deepEqual(registry.weapon(id).range, [1, 1], id);
-  const g = sea(['~~~~~', '.....'], [['cruiser', 0, 0, 0], ['copter', 1, 2, 0]]);
+  const g = sea(['~~~~~', '.....'], [['cruiser', 0, 0, 0], ['missile_copter', 1, 2, 0]]);
   assert.equal(weaponFor(g, g.state.units[0], g.state.units[1]), null, 'a copter two tiles away is out of the AA battery range');
 });
 

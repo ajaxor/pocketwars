@@ -25,14 +25,14 @@
     "g": { "terrain": "garage", "owner": 0 },
     "y": { "terrain": "shipyard", "owner": 0 },
     "b": { "terrain": "harbor", "owner": 1 },
-    "C": { "terrain": "artillery_range", "owner": 1 },
+    "C": { "terrain": "factory", "owner": 1 },
     "O": { "terrain": "hq", "owner": 0 },
     "D": { "terrain": "hq", "owner": 1 },
     "f": { "terrain": "factory", "owner": 0 },
     "E": { "terrain": "sub_pen", "owner": 0 },
     "G": { "terrain": "shipyard", "owner": 1 },
     "H": { "terrain": "factory", "owner": 1 },
-    "a": { "terrain": "agency", "owner": 0 },
+    "a": { "terrain": "airfield", "owner": 0 },
     "I": { "terrain": "airfield", "owner": 1 }
   },
   "tiles": [
@@ -64,7 +64,7 @@
     { "type": "artillery", "owner": 0, "x": 1, "y": 9 },
     { "type": "recon", "owner": 0, "x": 2, "y": 10 },
     { "type": "destroyer", "owner": 0, "x": 12, "y": 8 },
-    { "type": "copter", "owner": 0, "x": 2, "y": 6 },
+    { "type": "missile_copter", "owner": 0, "x": 2, "y": 6 },
     { "type": "soldier", "owner": 1, "x": 29, "y": 9 },
     { "type": "soldier", "owner": 1, "x": 31, "y": 9 },
     { "type": "soldier", "owner": 1, "x": 30, "y": 10 },
@@ -73,7 +73,7 @@
     { "type": "artillery", "owner": 1, "x": 32, "y": 9 },
     { "type": "recon", "owner": 1, "x": 31, "y": 10 },
     { "type": "destroyer", "owner": 1, "x": 21, "y": 8 },
-    { "type": "copter", "owner": 1, "x": 31, "y": 6 },
+    { "type": "missile_copter", "owner": 1, "x": 31, "y": 6 },
     { "type": "jammer", "owner": null, "x": 16, "y": 8 },
     { "type": "jammer", "owner": null, "x": 32, "y": 10 }
   ]

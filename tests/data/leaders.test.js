@@ -59,8 +59,9 @@ test('the standard kit gives every production building a menu of units its categ
   const build = registry.loadouts.default.build;
   assert.deepEqual(build.hq, ['soldier']);
   for (const [id, t] of Object.entries(registry.terrain)) {
-    const builds = t.attributes.property?.builds;
-    if (!builds?.length) { assert.equal(build[id], undefined, `${id} builds nothing`); continue; }
+    const prop = t.attributes.property, builds = prop?.builds;
+    if (id === 'hq') continue;
+    if (!builds?.length || prop.hub || prop.shelved) { assert.equal(build[id], undefined, `${id} has no menu of its own`); continue; }   // (cities and the HQ build what is unlocked; a shelved building builds nothing)
     assert.ok(build[id]?.length, `${id} has a menu`);
     for (const u of build[id]) assert.ok(builds.includes(registry.unit(u).category), `${id}: ${u} is not a unit it can build`);
   }

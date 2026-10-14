@@ -19,7 +19,7 @@ export const GROUPS = [
 ];
 
 /** Buildings the game already has (terrain render.building), shown in the Structures tab. */
-const GAME_BUILDING_NAME = { hq: 'HQ', city: 'City', factory: 'Tank Factory', airfield: 'Airfield', shipyard: 'Shipyard' };
+const GAME_BUILDING_NAME = { hq: 'HQ', city: 'City', factory: 'Factory', airfield: 'Airfield', shipyard: 'Shipyard' };
 
 const CATEGORY_GROUP = { infantry: 'infantry', amphibious: 'infantry', vehicle: 'vehicle', aircraft: 'air', naval: 'naval', mine: 'naval', structure: 'structure' };
 

@@ -1,5 +1,5 @@
 {
- "note": "Which building produces which unit. Every unit in data/units.json appears exactly once (tests/gallery/production.test.js). art: game = drawn by src/render/buildings.js, concept = gallery/structure-art.js. A unit a lab adds to another building is listed under the lab. HQs build each faction's own infantry (the soldier is shown).",
+ "note": "Which building produces which unit. Every unit in data/units.json appears exactly once (tests/gallery/production.test.js). art: game = drawn by src/render/buildings.js, concept = gallery/structure-art.js. A unit a lab upgrades to is listed under the lab. HQs build each faction's own infantry (the soldier is shown).",
  "buildings": [
   {
    "id": "hq",
@@ -7,14 +7,13 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "Each faction builds its own infantry here, as many as it can pay for (all nine are shown; a faction builds only its own).",
+   "blurb": "Each faction builds its own infantry here, as many as it can pay for (all are shown; a faction builds only its own). The HQ and every city also build the infantry that the garage, factory and airfield unlock.",
    "units": [
     "conscript",
     "soldier",
     "swordsman",
     "commando",
     "marine",
-    "motorcycle",
     "royal_guard",
     "shock_trooper",
     "spy"
@@ -26,74 +25,30 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "Light wheeled vehicles and the mechanic who fixes them.",
+   "blurb": "Wheeled vehicles, from the recon car to the rocket launcher, and the motorcycle infantry. Holding one unlocks the mechanic, who is built at the HQ and cities.",
    "units": [
     "recon",
     "rocket_buggy",
+    "aa_truck",
+    "supply_truck",
+    "rocket_launcher",
+    "motorcycle",
     "mechanic"
    ]
   },
   {
-   "id": "chemical_plant",
-   "name": "Chemical Plant",
-   "art": "game",
-   "origin": "existing",
-   "water": false,
-   "blurb": "Flames and rockets; the mine layer only if the plant has a pier on the water.",
-   "units": [
-    "flamethrower",
-    "rocket_launcher",
-    "mine_layer"
-   ]
-  },
-  {
    "id": "factory",
-   "name": "Tank Factory",
+   "name": "Factory",
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "Armour and the anti-tank infantry that walks beside it.",
+   "blurb": "Treaded armour and the big guns. Holding one unlocks AT infantry, who are built at the HQ and cities.",
    "units": [
     "mech",
     "tank",
-    "flak"
-   ]
-  },
-  {
-   "id": "support_factory",
-   "name": "Support Factory",
-   "art": "game",
-   "origin": "existing",
-   "water": false,
-   "blurb": "Medics, supply trucks and troop carriers: the support that keeps an army moving.",
-   "units": [
-    "medic",
-    "supply_truck",
-    "apc"
-   ]
-  },
-  {
-   "id": "artillery_range",
-   "name": "Artillery Range",
-   "art": "game",
-   "origin": "existing",
-   "water": false,
-   "blurb": "Indirect fire: mortar teams and the big guns.",
-   "units": [
-    "mortar",
-    "artillery"
-   ]
-  },
-  {
-   "id": "agency",
-   "name": "Agency",
-   "art": "game",
-   "origin": "existing",
-   "water": false,
-   "blurb": "Snipers and the eyes of the army.",
-   "units": [
-    "sniper",
-    "radar_plane"
+    "flak",
+    "artillery",
+    "amphibious_tank"
    ]
   },
   {
@@ -102,9 +57,8 @@
    "art": "game",
    "origin": "existing",
    "water": true,
-   "blurb": "Divers and the surface fleet, from destroyer to carrier.",
+   "blurb": "The surface fleet, from destroyer to carrier.",
    "units": [
-    "diver",
     "destroyer",
     "cruiser",
     "battleship",
@@ -117,10 +71,9 @@
    "art": "game",
    "origin": "existing",
    "water": true,
-   "blurb": "Small boats: gun boats and troop transports.",
+   "blurb": "Small boats.",
    "units": [
-    "gun_boat",
-    "troop_transport"
+    "gun_boat"
    ]
   },
   {
@@ -129,8 +82,9 @@
    "art": "game",
    "origin": "existing",
    "water": true,
-   "blurb": "Submarines in a concrete pen.",
+   "blurb": "Submarines in a concrete pen, and the divers who swim from it.",
    "units": [
+    "diver",
     "submarine",
     "hunter_sub"
    ]
@@ -141,11 +95,14 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "Copters and the light aircraft, plus the RPG trooper who shoots at them.",
+   "blurb": "Copters and the light aircraft. Holding one unlocks the RPG trooper, who is built at the HQ and cities.",
    "units": [
-    "copter",
-    "transport_copter",
+    "gun_copter",
+    "missile_copter",
     "torpedo_bomber",
+    "vintage_fighter",
+    "vintage_bomber",
+    "airship",
     "rpg_trooper"
    ]
   },
@@ -168,10 +125,9 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "A lab: owning it adds hover craft to the factory and harbor menus.",
+   "blurb": "A lab: while you hold it, the tank on your factory menu becomes a hover tank.",
    "units": [
-    "hover_tank",
-    "amphibious_tank"
+    "hover_tank"
    ]
   },
   {
@@ -180,7 +136,7 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "A lab: owning it adds stealth units to the factory and airbase menus.",
+   "blurb": "A lab: while you hold it, tanks, missile copters, fighters and bombers on your menus become their stealth versions.",
    "units": [
     "stealth_tank",
     "stealth_copter",
@@ -194,10 +150,9 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "A lab: owning it adds the heaviest hulls to the factory, shipyard and airfield menus.",
+   "blurb": "A lab: while you hold it, the tank becomes a heavy tank and the battleship a dreadnought.",
    "units": [
     "heavy_tank",
-    "airship",
     "dreadnought"
    ]
   },
@@ -207,7 +162,7 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "A lab: owning it adds missile units to the factory and sub pen menus.",
+   "blurb": "A lab: while you hold it, the tank becomes a missile tank and the submarine a missile sub.",
    "units": [
     "missile_tank",
     "missile_sub"
@@ -239,13 +194,34 @@
   ]
  },
  "shelved": {
-  "note": "Shelved for now: not built anywhere.",
+  "note": "Shelved for now: not built anywhere (kept in the data for the labs). Four buildings are shelved with them: the chemical plant, support factory, artillery range and agency.",
   "units": [
    {
-    "unit": "vintage_fighter"
+    "unit": "flamethrower"
    },
    {
-    "unit": "vintage_bomber"
+    "unit": "mine_layer"
+   },
+   {
+    "unit": "medic"
+   },
+   {
+    "unit": "apc"
+   },
+   {
+    "unit": "mortar"
+   },
+   {
+    "unit": "sniper"
+   },
+   {
+    "unit": "radar_plane"
+   },
+   {
+    "unit": "transport_copter"
+   },
+   {
+    "unit": "troop_transport"
    }
   ]
  }

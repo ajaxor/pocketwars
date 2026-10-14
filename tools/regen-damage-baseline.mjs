@@ -13,7 +13,7 @@ const baseline = JSON.parse(readFileSync(file, 'utf8'));
 const registry = await loadRegistry(readData);
 const map = await loadMap(readData, registry, 'classic');
 const game = new Game(registry, map);
-const EXTEND_DEFENDERS = ['soldier', 'tank', 'artillery', 'copter', 'destroyer', 'submarine'];
+const EXTEND_DEFENDERS = ['soldier', 'tank', 'artillery', 'missile_copter', 'destroyer', 'submarine'];
 if (process.argv.includes('--extend')) {
   const known = new Set(baseline.cases.map((c) => c.a));
   for (const id of registry.unitIds) {

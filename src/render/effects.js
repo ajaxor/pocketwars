@@ -169,6 +169,12 @@ export class Effects {
     this.list.push({ k: 'txt', x: ev.dropped.x + .5, y: ev.dropped.y + .35, s: 'Deployed', sz: .28, c: '#fff', t0, d: 1200 });
   }
 
+  /** An infantryman sent to another city (a 'transfer' event): a call-out over where it left and where it arrived. Does not lock input. */
+  transfer(ev, t0) {
+    this.list.push({ k: 'txt', x: ev.from.x + .5, y: ev.from.y + .35, s: 'Transfer', sz: .28, c: '#9bd7ff', t0, d: 1000 });
+    this.list.push({ k: 'txt', x: ev.to.x + .5, y: ev.to.y + .35, s: 'Arrived', sz: .28, c: '#fff', t0: t0 + 250, d: 1200 });
+  }
+
   /** Pixel offset applied to a unit while a lunge or hit-shake is playing. */
   unitOffset(id, now, S) {
     let dx = 0;
