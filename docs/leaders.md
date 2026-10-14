@@ -31,7 +31,7 @@ Forward is, from the building, toward the average enemy HQ, snapped to N/S/E/W (
 | Dmitri (Deepmere) | conscript | mechanic, RPG trooper, mortar, recon, APC, artillery, flak, heavy tank, rocket launcher, copter, torpedo bomber, airship, fighter, mine layer, troop transport, destroyer, cruiser, missile sub, battleship |
 | Lysandra (Highspire) | royal guard | medic, sniper, flamethrower, recon, supply truck, artillery, flak, tank, heavy tank, rocket launcher, SAM, copters, radar plane, fighter, stealth bomber, gun boat, destroyer, cruiser, dreadnought |
 
-The Envoy (the Chorus) has no kit yet. Some factions have no unit for some buildings (they own it but build nothing there): Harlan chemical plant, sub pen, airbase; Ada artillery range, agency; Vex support factory, artillery range; Hiroshi agency, harbor; Ludwig harbor; Rex agency; Chase support factory, harbor; Dmitri agency; Lysandra sub pen. New faction units may fill them. HQ starting sets are three units each from the roster; the HQ armies are within 4,500 of each other (`tests/data/leaders.test.js`).
+The Envoy (the Chorus) has no kit yet. Every faction has at least one unit at every production building (the roster test pins it). HQ starting sets are three units each from the roster; the HQ armies are within 4,500 of each other (`tests/data/leaders.test.js`).
 
 ## Troop carriers and menus
 

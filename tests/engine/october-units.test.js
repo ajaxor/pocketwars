@@ -211,14 +211,15 @@ test('the default menus list every unit a building can build; a leader\'s roster
   assert.deepEqual(menuAt('rex', 'factory'), ['amphibious_tank', 'flak'], 'Rex: the amphibious tank and flak');
   assert.deepEqual(menuAt('harlan', 'airfield'), ['torpedo_bomber', 'vintage_bomber', 'vintage_fighter']);
   assert.deepEqual(menuAt('vex', 'airfield'), ['stealth_copter', 'transport_copter']);
-  assert.deepEqual(menuAt('harlan', 'chemical_plant'), [], 'a building none of whose units a faction has builds nothing');
+  assert.deepEqual(menuAt('harlan', 'chemical_plant'), ['flamethrower'], 'Harlan: one unit of his own at each building');
   assert.deepEqual(menuAt('lysandra', 'shipyard'), ['cruiser', 'destroyer', 'dreadnought']);
   // a lab swaps a unit for its upgrade, but only where the leader has the unit
   assert.deepEqual(menuAt('harlan', 'factory', ['1']), ['flak', 'heavy_tank', 'hover_tank', 'mech'], 'the hover lab: tank -> hover tank');
   assert.deepEqual(menuAt('harlan', 'factory', ['1', '2']), ['flak', 'heavy_tank', 'hover_tank', 'mech', 'stealth_tank'], 'two labs offer both upgrades');
   assert.deepEqual(menuAt('harlan', 'shipyard', ['3']), ['cruiser', 'destroyer', 'dreadnought'], 'the heavy lab: battleship -> dreadnought');
   assert.deepEqual(menuAt('ada', 'factory', ['1']), ['missile_tank'], 'Ada has no tank, so the hover lab gives her nothing');
-  assert.deepEqual(menuAt('harlan', 'sub_pen', ['4']), [], 'Harlan has no submarine');
+  assert.deepEqual(menuAt('harlan', 'sub_pen', ['4']), ['missile_sub'], 'Harlan has the submarine, so the missile lab upgrades it');
+  assert.deepEqual(menuAt('ada', 'sub_pen', ['4']), ['hunter_sub'], 'Ada has no submarine, so the missile lab does nothing for her');
   assert.deepEqual(menuAt('chase', 'sub_pen', ['4']), ['missile_sub'], 'the missile lab: submarine -> missile sub');
 });
 

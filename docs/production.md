@@ -23,7 +23,7 @@ Every building but the HQ builds one unit per turn. Infantry and vehicles are mi
 
 ## Rosters
 
-Each leader has a `roster` in `data/loadouts.json`: the old faction units, so Ada has the missile tank and no tank, Harlan the vintage planes, and so on (the nine rosters are the old build lists, see `docs/leaders.md`). The menu a player sees at a building is the building's menu limited to their roster, cheapest first. A faction that has none of a building's units can still own it but builds nothing there (for now: Harlan's chemical plant, sub pen and airbase; Ada's artillery range and agency; and so on). New faction units may be invented to fill those gaps. The default kit (no leader chosen) has a base roster without the lab-upgrade units and the faction-only units.
+Each leader has a `roster` in `data/loadouts.json`: the old faction units, so Ada has the missile tank and no tank, Harlan the vintage planes, and so on (the nine rosters are the old build lists, see `docs/leaders.md`). The menu a player sees at a building is the building's menu limited to their roster, cheapest first. Every faction has at least one unit at every building, so no building is dead to them. The default kit (no leader chosen) has a base roster without the lab-upgrade units and the faction-only units.
 
 The starting units of a building are the default one, or the unit of the leader's menu there nearest to it in price.
 

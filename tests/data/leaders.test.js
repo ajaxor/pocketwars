@@ -92,6 +92,16 @@ test('every leader starts with three HQ units from their own roster, at most one
   assert.ok(Math.max(...costs) - Math.min(...costs) <= 4500, `HQ armies cost ${costs.join(', ')}: within 4,500 of each other`);
 });
 
+test('every leader can build at least one unit at every production building (shore-only units aside)', () => {
+  for (const id of registry.leaderIds) {
+    const kit = registry.loadoutFor(id);
+    for (const [site, menu] of Object.entries(kit.build)) {
+      if (site === 'hq') continue;
+      assert.ok(menu.some((u) => kit.roster.includes(u) && u !== 'mine_layer'), `${id}: nothing to build at the ${site}`);
+    }
+  }
+});
+
 // ---- validation -----------------------------------------------------------------------------------------------------------------------
 test('valid loadouts pass; a bundle without loadouts.json is still valid', () => {
   assert.equal(problemsOf(KIT), '');
