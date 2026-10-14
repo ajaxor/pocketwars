@@ -4,7 +4,7 @@ import { attributeConfig } from './attributes.js';
 import { isHidden } from './detection.js';
 import { refuelAtTurnStart } from './fuel.js';
 import { healAtTurnStart } from './heal.js';
-import { costFor, distance, isInertDef, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, terrainIdAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
+import { costFor, DIRS, distance, isInertDef, inBounds, propertiesOwnedBy, propertyAt, ownerAt, terrainAt, terrainIdAt, round1, snapshotUnit, tileIndex, unitAt, unitCost, unitDef } from './queries.js';
 import { makeUnit } from './state.js';
 
 export const incomeFor = (game, player) => propertiesOwnedBy(game, player).reduce((sum, p) => sum + p.property.income, 0);
@@ -86,19 +86,46 @@ export function startTurn(game, player) {
   return [{ type: 'turnStart', player, day: state.day, income, incomes, repaired, healed, refuelled }];
 }
 
+/** Where the labs are on this map: [{ x, y, adds }] (labs are terrain, so they never move; who owns one is read from the game). */
+const labCache = new WeakMap();
+function labsOf(game) {
+  let labs = labCache.get(game.map);
+  if (!labs) {
+    labs = [];
+    game.map.terrain.forEach((row, y) => row.forEach((t, x) => { const adds = game.registry.terrain[t].attributes.property?.adds; if (adds) labs.push({ x, y, adds }); }));
+    labCache.set(game.map, labs);
+  }
+  return labs;
+}
+
+/** Does a tile next to (x, y) let a unit of `def` stand and move (water for a ship)? */
+const touchesWater = (game, x, y, def) => DIRS.some(([dx, dy]) => inBounds(game.map, x + dx, y + dy) && terrainAt(game, x + dx, y + dy).moveCost[def.moveClass] != null);
+
 /**
- * The menu of the production building at (x, y) for `player`: the units their leader's loadout lists for that kind of building
- * (data/loadouts.json), cheapest first for that player (a troop carrier's price moves with their leader's infantry, so the order is worked out here
- * rather than kept in the data; ties keep the loadout's order). A building the loadout says nothing
- * about (a lab, say) gives the same menu to everyone: the units of the categories its `builds` names, cheapest first. No player (a neutral building) gets the standard menu.
+ * The menu of the production building at (x, y) for `player`, cheapest first for that player (a troop carrier's price moves with their leader's
+ * infantry, so the order is worked out here rather than kept in the data; ties keep the loadout's order):
+ *   1. the units the leader's loadout lists for that kind of building (data/loadouts.json; the HQ builds the leader's own infantry),
+ *   2. plus the units of every lab the player owns that add to that kind of building (`adds` on the lab's terrain),
+ *   3. plus the units the leader's loadout `unlock`s that some lab adds to it (the leader has them without the lab),
+ *   4. minus a unit the building lists under `shore` when no water touches it (the chemical plant lays mines from its own pier).
+ * A building the loadout says nothing about gives the same menu to everyone: the units of the categories its `builds` names, cheapest first.
+ * No player (a neutral building) gets the standard menu, with no labs and no unlocks.
  */
 export function menuFor(game, player, x, y) {
   const property = propertyAt(game, x, y);
   if (!property) return [];
   const { registry, map } = game;
-  const leader = player == null ? null : map.players[player].leader ?? null;
-  const ids = registry.loadoutFor(leader).build[terrainIdAt(game, x, y)];   // the terrain NOW: a rebuilt ruin builds what its new building builds
-  return menuByPrice(game, player, ids ? ids.map((id) => registry.unit(id)) : [...registry.unitsInCategories(property.builds)]);
+  const terrainId = terrainIdAt(game, x, y);   // the terrain NOW: a rebuilt ruin builds what its new building builds
+  const kit = registry.loadoutFor(player == null ? null : map.players[player].leader ?? null);
+  const listed = kit.build[terrainId];
+  if (!listed) return menuByPrice(game, player, [...registry.unitsInCategories(property.builds)]);
+  const ids = new Set(listed);
+  if (player != null) {
+    for (const lab of labsOf(game)) if (ownerAt(game, lab.x, lab.y) === player) for (const id of lab.adds[terrainId] ?? []) ids.add(id);
+    for (const id of kit.unlock ?? []) if (registry.labUnits[id]?.includes(terrainId)) ids.add(id);
+  }
+  const defs = [...ids].map((id) => registry.unit(id)).filter((def) => !property.shore?.includes(def.id) || touchesWater(game, x, y, def));
+  return menuByPrice(game, player, defs);
 }
 
 /** `defs` cheapest first for `player` (what each costs them, see costFor); units that cost the same keep their order. */

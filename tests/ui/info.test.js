@@ -33,11 +33,13 @@ test('property info: owner, income, repair, capture points and what it builds', 
   const t = terrainInfo(game, mine.x, mine.y);
   assert.equal(t.property.owner.name, 'Ashmark');
   assert.deepEqual([t.property.income, t.property.repair, t.property.capturePoints], [1000, 2, 20]);
-  assert.deepEqual(t.property.builds, ['Vehicles']);
+  assert.deepEqual(t.property.builds, ['Infantry', 'Vehicles']);
+  assert.deepEqual(t.property.menu.map((u) => u.id), ['mech', 'flak', 'tank'], 'the menu its owner gets, cheapest first');
+  assert.equal(t.property.adds, null);
   const city = allProperties(game).find((p) => p.owner === null);
   assert.equal(terrainInfo(game, city.x, city.y).property.owner, null, 'an unowned city is neutral');
-  const barracks = allProperties(game).find((p) => p.terrain.id === 'barracks');
-  assert.deepEqual(terrainInfo(game, barracks.x, barracks.y).property.builds, ['Infantry']);
+  const hq = allProperties(game).find((p) => p.terrain.id === 'hq' && p.owner === 0);
+  assert.deepEqual(terrainInfo(game, hq.x, hq.y).property.menu.map((u) => u.id), ['soldier'], 'the HQ builds the faction infantry');
 });
 
 test('unit stats read the weapon, armor and attribute labels from the data', () => {
@@ -89,4 +91,14 @@ test('cover follows the tile the unit is going to, and the forecast is the damag
   const target = { ...soldier, x: tank.x, y: tank.y + 1 };
   const u = unitInfo(game, target, { attacker: { ...tank, hp: 10 } });
   assert.ok(u.forecast > 0 && Number.isInteger(u.forecast));
+});
+
+test('a lab\'s info lists the units it adds, building by building', async () => {
+  const { loadMap } = await import('../../src/data/loader.js');
+  const game = new Game(registry, await loadMap(readData, registry, 'dune_sea'));
+  const lab = allProperties(game).find((p) => p.terrain.id === 'heavy_lab');
+  const t = terrainInfo(game, lab.x, lab.y);
+  assert.equal(t.property.owner, null, 'a contested lab starts neutral');
+  assert.deepEqual(t.property.menu, [], 'a lab builds nothing itself');
+  assert.deepEqual(t.property.adds.map((a) => [a.buildingId, a.building, a.units.map((u) => u.id)]), [['factory', 'Tank Factory', ['heavy_tank']], ['shipyard', 'Shipyard', ['dreadnought']], ['airfield', 'Airfield', ['airship']]]);
 });

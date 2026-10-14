@@ -5,82 +5,46 @@
   "name": "Harbor Front",
   "description": "A bay between two armies. Fight over the land bridge in the north, or build a shipyard fleet and take the bay. Subs hide in the deep; destroyers hunt them with sonar.",
   "players": [
-    {
-      "faction": "ashmark",
-      "controller": "human",
-      "funds": 14000
-    },
-    {
-      "faction": "vantor_reach",
-      "controller": "ai",
-      "funds": 14000
-    }
+    { "faction": "ashmark", "controller": "human", "funds": 14000 },
+    { "faction": "vantor_reach", "controller": "ai", "funds": 14000 }
   ],
   "legend": {
-    "k": { "terrain": "barracks", "owner": 0 },
-    "K": { "terrain": "barracks", "owner": 1 },
-    ".": {
-      "terrain": "plain"
-    },
-    "F": {
-      "terrain": "forest"
-    },
-    "M": {
-      "terrain": "mountain"
-    },
-    "c": {
-      "terrain": "city"
-    },
-    "r": {
-      "terrain": "road"
-    },
-    "~": {
-      "terrain": "sea"
-    },
-    "o": {
-      "terrain": "shoals"
-    },
-    "O": {
-      "terrain": "hq",
-      "owner": 0
-    },
-    "B": {
-      "terrain": "hq",
-      "owner": 1
-    },
-    "f": {
-      "terrain": "factory",
-      "owner": 0
-    },
-    "g": {
-      "terrain": "factory",
-      "owner": 1
-    },
-    "Y": {
-      "terrain": "shipyard",
-      "owner": 0
-    },
-    "Z": {
-      "terrain": "shipyard",
-      "owner": 1
-    },
-    "y": { "terrain": "airfield", "owner": 0 },
-    "z": { "terrain": "airfield", "owner": 1 }
+    "1": { "terrain": "hover_lab" },
+    "4": { "terrain": "missile_lab" },
+    ".": { "terrain": "plain" },
+    "F": { "terrain": "forest" },
+    "M": { "terrain": "mountain" },
+    "c": { "terrain": "city" },
+    "r": { "terrain": "road" },
+    "~": { "terrain": "sea" },
+    "o": { "terrain": "shoals" },
+    "O": { "terrain": "hq", "owner": 0 },
+    "g": { "terrain": "garage", "owner": 0 },
+    "f": { "terrain": "factory", "owner": 0 },
+    "A": { "terrain": "factory", "owner": 1 },
+    "p": { "terrain": "chemical_plant", "owner": 1 },
+    "B": { "terrain": "hq", "owner": 1 },
+    "v": { "terrain": "airfield", "owner": 0 },
+    "y": { "terrain": "shipyard", "owner": 0 },
+    "b": { "terrain": "harbor", "owner": 1 },
+    "C": { "terrain": "airfield", "owner": 1 },
+    "s": { "terrain": "sub_pen", "owner": 0 },
+    "D": { "terrain": "shipyard", "owner": 1 }
   },
   "tiles": [
     "MM.FF..rrrrrrrr..FF.MM",
     "M..c..rr......rr..c..M",
     "...F..r........r..F...",
-    "..rrrrr..o~~o..rrrrr..",
-    "..rOkfr~~~~~~~~rgKBr..",
-    "..ry.crY~~~~~~Zrc.zr..",
+    "..rrrrr.1o~~o..rrrrr..",
+    "..rOgfr~~~~~~~~rApBr..",
+    "..rv.cry~~~~~~brc.Cr..",
     "FF.c..r~~~~~~~~r..c.FF",
     "FF..rrr.~~oo~~.rrr..FF",
     "FF..r.c.~o~~o~.c.r..FF",
     "..r...r~~~~~~~~r...r..",
-    "..rrrrrY~~~~~~Zrrrrr..",
+    "..rrrrrs~~~~~~Drrrrr..",
     "..rc..r~~~~~~~~r..cr..",
-    "M...F.r..o~~o..r.F...M",
+    "M...F.r..o~~o4.r.F...M",
     "M..FF..r.~~~~.r..FF..M",
     "MM.FF..r..~~..r..FF.MM",
     "MMM.F..rr....rr..F.MMM"

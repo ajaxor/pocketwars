@@ -87,7 +87,7 @@ rounded (each corner is filled with the colour it opens onto). What is drawn on 
 `terrain.json -> render.decor` names a drawing (`road`, `forest`, `mountain`, `sea`, `shoals`; ground.json names `grass` and `dirt`) and `TERRAIN_DECOR` supplies one
 function per name, `decor(g, px, py, S, {x, y, now})`, where `x, y` seed per-tile variation and `now` twinkles the sea. A test
 requires a drawing for every decor name the data uses. Buildings (`buildings.js`: flat-shaded boxes seen from the front-left
-with a soft ground shadow, one silhouette per kind; the barracks is a pair of squat canvas tents with a flag) are drawn on top.
+with a soft ground shadow, one silhouette per kind; the garage has two roll-up doors, the chemical plant two round tanks and a flare, the labs a dome, a faceted bunker, a gear or a missile on a gantry) are drawn on top.
 
 **Tilesets.** `data/tilesets.json` gives each biome (`temperate`, `tundra`, `desert`, `ruins`, `islands`) one or two home `factions`:
 a default ground plus per-terrain overrides `{ name, render: { base, decor, mini, style, group } }`. A tileset is a skin: `registry.skin(tilesetId, terrainId)` is the

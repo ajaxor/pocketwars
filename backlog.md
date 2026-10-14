@@ -2,7 +2,7 @@
 
 Things to build, tune or decide: AI capability, balance, rules, content, presentation. Code-quality problems are in `tech-debt.md`.
 
-Last sorted 9 October 2026.
+Last sorted 13 October 2026.
 
 ## AI capability
 
@@ -143,3 +143,17 @@ Last sorted 9 October 2026.
 - **Sound review cannot judge concept art pages**: concepts and walls have no sounds yet.
 
 - AI stalemate impatience: strategist units hold back once armies meet (day-10 advance ~0.0-0.17 vs greedy 0.2-0.3). Track days since combat in `ctx.memory` and lower `caution`/`balance` after a quiet spell. Not yet tried.
+
+## Production design (October 2026)
+
+Concept units and structures that the new production design names but the game does not have yet:
+- **Spy plane**: the agency's air unit. The radar plane stands in for it on the agency menu until it exists.
+- **Hover artillery** (artillery range, hover lab) and **hover recon** (garage, hover lab): new units; the hover lab only adds the hover tank and amphibious tank today.
+- **Tesla truck** (garage): lab-gated; which lab is undecided.
+- **Launch pad** (new building) with the **drop pod**, **satellite** and **cruise missile** it would build; the missile lab might add the cruise missile too.
+- **Chorus (Envoy) kit**: no infantry or unlock yet; a husk infantry was floated.
+- **Vintage fighter and bomber** are shelved (`shelved: true`): in `units.json` but built nowhere.
+- **The AI does not prize labs.** It captures them like any property but never plans around them (no "take the heavy lab, then build heavy tanks"). It also does not weigh which side's unlock it faces.
+- **Four-player maps draw.** In the 176-game arena run, `four_corners` finished 8 of 8 games undecided and `four_seas` 6 of 8; the new asymmetric layouts have not been balanced for the AI at all, and no map has been tuned for the nine unlocks.
+- **No per-map leaders.** Maps give each side different buildings but not a leader; a map could pin leaders (the `players[i].leader` field exists) to make the asymmetry intentional.
+- **Lab info is text only**: tapping a lab lists the units it adds per building; there is no highlight on the map of the buildings it feeds.

@@ -96,7 +96,7 @@ for (const id of ids) {
     map.players.forEach((_, p) => {
       const mine = props.filter((q) => q.owner === p);
       assert.ok(mine.some((q) => q.terrain.id === 'hq'), `player ${p} has an HQ`);
-      assert.ok(mine.some((q) => ['factory', 'barracks', 'airfield'].includes(q.terrain.id)), `player ${p} can build`);
+      assert.ok(mine.some((q) => q.terrain.id !== 'hq' && q.terrain.id !== 'city' && q.property.builds?.length), `player ${p} can build`);
     });
     const hqs = props.filter((q) => q.terrain.id === 'hq');
     const field = distanceField(game, 'foot', [[hqs[0].x, hqs[0].y]]);
@@ -129,10 +129,10 @@ test('in a 3+ player game, losing an HQ eliminates that player and the game goes
   void events;
 });
 
-test('every shipped map gives each player a barracks, so every kit can build infantry', async () => {
+test('every shipped map gives each player an HQ, so every kit can build its infantry', async () => {
   for (const id of ids) {
     const game = new Game(registry, await loadMap(readData, registry, id));
     const props = allProperties(game);
-    game.state.funds.forEach((_, p) => assert.ok(props.some((q) => q.owner === p && q.terrain.id === 'barracks'), `${id}: player ${p} has a barracks`));
+    game.state.funds.forEach((_, p) => assert.ok(props.some((q) => q.owner === p && q.terrain.id === 'hq'), `${id}: player ${p} has an HQ`));
   }
 });

@@ -163,7 +163,17 @@ export class Hud {
     w.body.append(chips);
     const notes = [...t.notes];
     if (t.property && t.property.builds.length) notes.unshift(`Builds ${t.property.builds.join(', ').toLowerCase()}`);
+    if (t.property?.adds) notes.unshift('Lab');
     if (notes.length) w.body.append(this.#tags(notes));
+    if (t.property?.menu?.length) w.body.append(h(d, 'div', 'note prod-note', `Builds: ${t.property.menu.map((u) => u.name).join(', ')}`));
+    if (t.property?.adds) {   // a lab: which units it adds to which of its owner's buildings
+      w.body.append(h(d, 'div', 'note prod-note', owner ? `${owner.name} production gains:` : 'Whoever holds it adds to their production:'));
+      for (const a of t.property.adds) {
+        const line = h(d, 'div', 'prod-lab');
+        line.append(h(d, 'span', 'prod-lab-k', a.building), h(d, 'span', 'prod-lab-v', a.units.map((u) => `${u.name} (${fmtMoney(u.cost)})`).join(', ')));
+        w.body.append(line);
+      }
+    }
     return w.root;
   }
 

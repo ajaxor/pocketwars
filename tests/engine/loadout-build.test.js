@@ -104,8 +104,8 @@ test('the computer also considers a category its leader added to a building, aft
 test('two AI teams with different kits build only what their menus allow, over a whole game', async () => {
   const base = await loadRegistry(readData);
   const custom = JSON.parse(JSON.stringify(await readData('loadouts.json')));
-  custom.leaders.ada = { build: { barracks: ['soldier'], factory: ['tank'] } };
-  custom.leaders.vex = { build: { barracks: ['sniper', 'mech'], factory: ['artillery', 'recon'] }, start: { hq: [{ unit: 'soldier', at: [0, 1] }], barracks: [], factory: [], airfield: [], shipyard: [] } };
+  custom.leaders.ada = { build: { garage: ['mechanic'], factory: ['tank'] } };
+  custom.leaders.vex = { build: { garage: ['recon', 'mechanic'], factory: ['tank', 'flak'] }, start: { hq: [{ unit: 'soldier', at: [0, 1] }], garage: [], factory: [], airfield: [], shipyard: [] } };
   const registry = await loadRegistry(async (p) => (p === 'loadouts.json' ? custom : readData(p)));
   const classic = await loadMap(readData, registry, 'classic');
   const rich = { ...classic, players: classic.players.map((p) => ({ ...p, controller: 'ai', funds: 40000 })) };
@@ -115,7 +115,7 @@ test('two AI teams with different kits build only what their menus allow, over a
     g.aiSeed = 1;
     assert.equal(g.state.units.filter((u) => u.owner === 1).length, 1, 'vex starts with the one soldier her kit gives (no sets for her factories)');
     assert.equal(g.state.units.filter((u) => u.owner === 0).length, placeStart(classic, base, 0, base.loadoutFor('ada').start).units.length);
-    const built = { 0: { barracks: new Set(), factory: new Set() }, 1: { barracks: new Set(), factory: new Set() } };
+    const built = { 0: { garage: new Set(), factory: new Set() }, 1: { garage: new Set(), factory: new Set() } };
     for (let turn = 0; turn < 24 && !g.isOver; turn++) {
       for (const ev of playTurn(g)) {
         if (ev.type !== 'build') continue;
@@ -130,8 +130,8 @@ test('two AI teams with different kits build only what their menus allow, over a
   };
   play('strategist');   // every engine keeps to the menus; which buildings it uses depends on its plan
   const built = play('greedy');   // greedy's fixed lists use every building
-  assert.deepEqual([...built[0].barracks], ['soldier']);
+  assert.ok([...built[0].garage].every((t) => t === 'mechanic'));
   assert.deepEqual([...built[0].factory], ['tank']);
-  assert.ok(built[1].barracks.size && [...built[1].barracks].every((t) => ['sniper', 'mech'].includes(t)), 'vex builds snipers and mechs at the barracks');
-  assert.ok(built[1].factory.size && [...built[1].factory].every((t) => ['artillery', 'recon'].includes(t)), 'and artillery and recon at the factory');
+  assert.ok(built[1].garage.size && [...built[1].garage].every((t) => ['recon', 'mechanic'].includes(t)), 'vex builds recons and mechanics at the garage');
+  assert.ok(built[1].factory.size && [...built[1].factory].every((t) => ['tank', 'flak'].includes(t)), 'and tanks and flak at the factory');
 });

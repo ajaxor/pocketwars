@@ -107,7 +107,7 @@ test('an armed neutral structure is an enemy of everyone; the AI does not march 
 });
 
 test('structures do not keep a player in the game, and turn neutral when their owner is knocked out', () => {
-  const g = game(['A.......B'], [u('cannon_turret', 1, 6, 0), u('jammer', 1, 5, 0), u('soldier', 0, 1, 0)]);
+  const g = game(['A.......B'], [u('cannon_turret', 1, 6, 0), u('jammer', 1, 5, 0), u('soldier', 0, 1, 0)], { legend: { ...LEGEND, B: { terrain: 'hq' } } });   // (their HQ is nobody's: an HQ that can build infantry keeps its owner in the game)
   assert.equal(isDefeated(g, 1), true, 'only structures and no money: defeated');
   const res = g.endTurn();
   assert.equal(g.state.winner, 0);

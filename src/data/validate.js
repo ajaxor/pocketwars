@@ -206,6 +206,7 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
     if (u.tags !== undefined && (!Array.isArray(u.tags) || u.tags.some((t) => !isStr(t)))) problems.push(`unit "${id}": tags must be a list of names (weapons with onlyTags can only hit units that carry one)`);
     if (u.vision !== undefined && !(Number.isInteger(u.vision) && u.vision >= 0)) problems.push(`unit "${id}": vision (how far it sees in fog of war) must be a whole number of tiles`);
     if (u.exclusive !== undefined && typeof u.exclusive !== 'boolean') problems.push(`unit "${id}": exclusive must be true or false (true: only a leader's loadout can put it on a build menu)`);
+    if (u.shelved !== undefined && typeof u.shelved !== 'boolean') problems.push(`unit "${id}": shelved must be true or false (true: kept in the data for later but on no build menu for now)`);
     if (u.attributes && u.attributes.indirect && Array.isArray(u.weapons) && isObj(weapons)) {
       for (const w of u.weapons) if (weapons[w] && Array.isArray(weapons[w].range) && weapons[w].range[0] < 2) problems.push(`unit "${id}": attribute "indirect" requires every weapon to have a minimum range of at least 2 ("${w}" does not)`);
     }
@@ -265,6 +266,15 @@ export function validateUnits(units, terrain, rules, weapons, problems) {
       if (!isObj(u)) problems.push(`terrain "${id}": attribute "wall" names unknown unit "${wall.structure}"`);
       else if (!isObj(u.attributes) || !u.attributes.structure) problems.push(`terrain "${id}": attribute "wall" names "${wall.structure}", which is not a structure (it needs the "structure" attribute)`);
       else if (isObj(t.moveCost) && t.moveCost[u.moveClass] == null) problems.push(`terrain "${id}": the "${wall.structure}" placed on it must be able to stand on it (moveCost.${u.moveClass})`);
+    }
+    const prop = t && t.attributes && t.attributes.property;
+    if (isObj(prop) && Array.isArray(prop.shore)) for (const unit of prop.shore) if (typeof unit === 'string' && !isObj(units[unit])) problems.push(`terrain "${id}": shore names unknown unit "${unit}"`);
+    if (isObj(prop) && isObj(prop.adds)) {
+      for (const [building, ids] of Object.entries(prop.adds)) {
+        const target = terrain[building]?.attributes?.property;
+        if (!isObj(target) || !Array.isArray(target.builds) || !target.builds.length) problems.push(`terrain "${id}": adds names "${building}", which is not a production building`);
+        for (const unit of Array.isArray(ids) ? ids : []) if (typeof unit === 'string' && !isObj(units[unit])) problems.push(`terrain "${id}": adds.${building} names unknown unit "${unit}"`);
+      }
     }
     const supplies = t && t.attributes && t.attributes.resupply && t.attributes.resupply.categories;
     if (Array.isArray(supplies)) for (const c of supplies) if (!categories.has(c)) problems.push(`terrain "${id}": resupplies unknown unit category "${c}"`);
@@ -353,7 +363,20 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
 
   const checkKit = (kit, where, whole) => {
     if (!isObj(kit)) return problems.push(`${where} must be an object`);
-    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start' && k !== 'infantry') problems.push(`${where}: unknown key "${k}" (expected build, start and infantry)`);
+    for (const k of Object.keys(kit)) if (k !== 'build' && k !== 'start' && k !== 'infantry' && k !== 'unlock') problems.push(`${where}: unknown key "${k}" (expected build, start, infantry and unlock)`);
+    if (kit.unlock !== undefined) {
+      if (!Array.isArray(kit.unlock)) problems.push(`${where}: unlock must be a list of unit ids`);
+      else {
+        const labbed = new Set(Object.values(terrain).flatMap((t) => (isObj(t?.attributes?.property?.adds) ? Object.values(t.attributes.property.adds).flat() : [])));
+        const seen = new Set();
+        for (const id of kit.unlock) {
+          if (!isObj(units[id])) problems.push(`${where}: unlock names unknown unit "${id}"`);
+          else if (!labbed.has(id)) problems.push(`${where}: unlock "${id}" is not added by any lab, so there is no building to unlock it in`);
+          if (seen.has(id)) problems.push(`${where}: unlock lists "${id}" twice`);
+          seen.add(id);
+        }
+      }
+    }
     if (kit.infantry !== undefined && (!isObj(units[kit.infantry]) || units[kit.infantry].attributes?.capture !== true)) problems.push(`${where}: infantry must name a unit that can capture (the basic soldier that transports carry)`);
     if (kit.build !== undefined) checkBuild(kit.build, where);
     else if (whole) problems.push(`${where}: build is required`);
@@ -374,34 +397,44 @@ export function validateLoadouts(loadouts, units, terrain, problems) {
 }
 
 /**
- * Extra checks for the SHIPPED loadouts (tools/validate-data.mjs and the test suite, not the registry: tests build small synthetic data sets):
- * the standard kit lists what every building's categories give, and no exclusive unit is stranded.
+ * Extra checks for the SHIPPED data (tools/validate-data.mjs and the test suite, not the registry: tests build small synthetic data sets):
+ * every production building has a menu of units it can build, every unit can be built somewhere (or is shelved on purpose), and a menu
+ * only lists what its building can produce. Where a unit can be built:
+ *   - the default kit's `build` menus (the same for everyone) and any leader's own `build` menu
+ *   - a leader's `infantry` at the HQ, which builds it
+ *   - a lab's `adds` (a lab adds units to the buildings its owner holds; a leader's `unlock` brings them without the lab)
  */
 export function validateShippedKit(loadouts, units, terrain, problems) {
   if (!isObj(loadouts) || !isObj(units) || !isObj(terrain)) return;
-  // the standard kit must list what each building's categories give: a unit added to units.json has to be added to it as well
+  const producers = Object.entries(terrain).filter(([, t]) => Array.isArray(t?.attributes?.property?.builds) && t.attributes.property.builds.length);
+  const buildable = new Map();   // unit id -> where it can be built, for the messages
+  const note = (id, where) => { if (!buildable.has(id)) buildable.set(id, where); };
+  const fits = (building, unitId, where) => {
+    const def = units[unitId];
+    const builds = terrain[building]?.attributes?.property?.builds ?? [];
+    if (isObj(def) && builds.length && !builds.includes(def.category)) problems.push(`${where}: "${unitId}" is a ${def.category} unit, which the ${building} does not build (it builds ${builds.join(', ')})`);
+  };
   if (isObj(loadouts.default?.build)) {
-    for (const [tid, t] of Object.entries(terrain)) {
-      const builds = t?.attributes?.property?.builds;
-      if (!Array.isArray(builds) || !builds.length) continue;
-      const want = Object.entries(units).filter(([, u]) => isObj(u) && builds.includes(u.category) && !u.exclusive).map(([id]) => id).sort();
-      const have = Array.isArray(loadouts.default.build[tid]) ? [...loadouts.default.build[tid]].sort() : [];
-      const missing = want.filter((id) => !have.includes(id));
-      const extra = have.filter((id) => !want.includes(id));
-      if (missing.length) problems.push(`loadouts.default: build.${tid} is missing ${missing.join(', ')} (a unit of a category the building builds)`);
-      if (extra.length) problems.push(`loadouts.default: build.${tid} lists ${extra.join(', ')}, which the building's categories do not give`);
+    for (const [tid] of producers) {
+      if (tid === 'hq') continue;   // the HQ builds its leader's own infantry (see resolveLoadouts)
+      if (!Array.isArray(loadouts.default.build[tid]) || !loadouts.default.build[tid].length) problems.push(`loadouts.default: build.${tid} is missing (every production building needs a menu)`);
     }
   }
-  // an exclusive unit is only built where a leader's kit lists it: one on no menu and in no starting army can never be fielded
-  const used = new Set();
-  for (const kit of [loadouts.default, ...Object.values(isObj(loadouts.leaders) ? loadouts.leaders : {})]) {
+  for (const [name, kit] of [['default', loadouts.default], ...Object.entries(isObj(loadouts.leaders) ? loadouts.leaders : {})]) {
     if (!isObj(kit)) continue;
-    for (const menu of Object.values(isObj(kit.build) ? kit.build : {})) if (Array.isArray(menu)) menu.forEach((id) => used.add(id));
-    for (const group of Object.values(isObj(kit.start) ? kit.start : {})) if (Array.isArray(group)) group.forEach((e) => used.add(e?.unit));
-    if (kit.infantry) used.add(kit.infantry);
+    const where = name === 'default' ? 'loadouts.default' : `loadouts.leaders.${name}`;
+    for (const [tid, menu] of Object.entries(isObj(kit.build) ? kit.build : {})) if (Array.isArray(menu)) for (const id of menu) { note(id, `${where} ${tid}`); fits(tid, id, `${where}: build.${tid}`); }
+    if (kit.infantry) { note(kit.infantry, `${where} infantry`); fits('hq', kit.infantry, `${where}: infantry`); }
+  }
+  for (const [tid, t] of Object.entries(terrain)) {
+    const prop = t?.attributes?.property;
+    for (const [building, ids] of Object.entries(isObj(prop?.adds) ? prop.adds : {})) for (const id of ids) { note(id, `${tid} adds`); fits(building, id, `terrain ${tid}: adds.${building}`); }
+    for (const id of Array.isArray(prop?.shore) ? prop.shore : []) if (!Object.values(loadouts.default?.build ?? {}).some((m) => m.includes(id))) problems.push(`terrain ${tid}: shore names "${id}", which is on no default menu`);
   }
   for (const [id, u] of Object.entries(units)) {
-    if (isObj(u) && u.exclusive && !u.attributes?.structure && !u.attributes?.mine && !used.has(id)) problems.push(`unit "${id}" is exclusive but on no leader's menu or starting army, so it can never be built`);
+    if (!isObj(u) || u.attributes?.structure || u.attributes?.mine) continue;   // structures come from maps and mines from mine layers
+    if (u.shelved && buildable.has(id)) problems.push(`unit "${id}" is shelved but ${buildable.get(id)} still builds it`);
+    else if (!u.shelved && !buildable.has(id)) problems.push(`unit "${id}" can be built nowhere: put it on a menu, add it to a lab, or mark it "shelved": true`);
   }
 }
 

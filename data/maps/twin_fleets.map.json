@@ -5,82 +5,48 @@
   "name": "Twin Fleets",
   "description": "A wide sea with a shoal island in the middle and a road along the north shore. Start with fleets, and build more: battleships win the open water, subs win the ambush.",
   "players": [
-    {
-      "faction": "ashmark",
-      "controller": "human",
-      "funds": 20000
-    },
-    {
-      "faction": "vantor_reach",
-      "controller": "ai",
-      "funds": 20000
-    }
+    { "faction": "ashmark", "controller": "human", "funds": 20000 },
+    { "faction": "vantor_reach", "controller": "ai", "funds": 20000 }
   ],
   "legend": {
-    "k": { "terrain": "barracks", "owner": 0 },
-    "K": { "terrain": "barracks", "owner": 1 },
-    ".": {
-      "terrain": "plain"
-    },
-    "F": {
-      "terrain": "forest"
-    },
-    "M": {
-      "terrain": "mountain"
-    },
-    "c": {
-      "terrain": "city"
-    },
-    "r": {
-      "terrain": "road"
-    },
-    "~": {
-      "terrain": "sea"
-    },
-    "o": {
-      "terrain": "shoals"
-    },
-    "O": {
-      "terrain": "hq",
-      "owner": 0
-    },
-    "B": {
-      "terrain": "hq",
-      "owner": 1
-    },
-    "f": {
-      "terrain": "factory",
-      "owner": 0
-    },
-    "g": {
-      "terrain": "factory",
-      "owner": 1
-    },
-    "Y": {
-      "terrain": "shipyard",
-      "owner": 0
-    },
-    "Z": {
-      "terrain": "shipyard",
-      "owner": 1
-    },
-    "y": { "terrain": "airfield", "owner": 0 },
-    "z": { "terrain": "airfield", "owner": 1 }
+    "1": { "terrain": "hover_lab" },
+    "4": { "terrain": "missile_lab" },
+    ".": { "terrain": "plain" },
+    "F": { "terrain": "forest" },
+    "M": { "terrain": "mountain" },
+    "c": { "terrain": "city" },
+    "r": { "terrain": "road" },
+    "~": { "terrain": "sea" },
+    "o": { "terrain": "shoals" },
+    "a": { "terrain": "agency", "owner": 0 },
+    "p": { "terrain": "chemical_plant", "owner": 1 },
+    "v": { "terrain": "airfield", "owner": 0 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "f": { "terrain": "factory", "owner": 0 },
+    "A": { "terrain": "factory", "owner": 1 },
+    "B": { "terrain": "hq", "owner": 1 },
+    "C": { "terrain": "airfield", "owner": 1 },
+    "y": { "terrain": "shipyard", "owner": 0 },
+    "b": { "terrain": "harbor", "owner": 1 },
+    "s": { "terrain": "sub_pen", "owner": 0 },
+    "D": { "terrain": "shipyard", "owner": 1 },
+    "E": { "terrain": "harbor", "owner": 0 },
+    "G": { "terrain": "sub_pen", "owner": 1 }
   },
   "tiles": [
-    "MMkFF..rrrrrrrrrrrr..FFKMM",
-    "MycOfrr..c......c..rrgBczM",
-    "..rr..~o~~~~~~~~~~o~..rr..",
-    "F.r.Y~~~o~~~~~~~~o~~~Z.r.F",
+    "MMaFF..rrrrrrrrrrrr..FFpMM",
+    "MvcOfrr..c......c..rrABcCM",
+    "..rr..~1~~~~~~~~~~o~..rr..",
+    "F.r.y~~~o~~~~~~~~o~~~b.r.F",
     "..rc~~~~~~~~~~~~~~~~~~cr..",
-    "..r.Y~~~~~~~~~~~~~~~~Z.r..",
+    "..r.s~~~~~~~~~~~~~~~~D.r..",
     "F.rc.~~o~~~~~~~~~~o~~.cr.F",
     "..r..~~~o~~~~~~~~o~~~..r..",
-    "F.r.Y~~~~~~~~~~~~~~~~Z.r.F",
+    "F.r.E~~~~~~~~~~~~~~~~G.r.F",
     "..rc.~~~~~~~~~~~~~~~~.cr..",
     "..rr..~o~~~~~~~~~~o~..rr..",
     "M.r..~~~~~~~~~~~~~~~~..r.M",
-    "MM.FF.o~~~~~~~~~~~~o.FF.MM",
+    "MM.FF.o~~~~~~~~~~~~4.FF.MM",
     "MMM.F..~~~~~~~~~~~~..F.MMM"
   ],
   "units": [

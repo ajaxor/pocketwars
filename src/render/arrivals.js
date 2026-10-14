@@ -101,7 +101,7 @@ export function entryPath(target, bounds, { facing = 1, margin = 1.5, from = nul
 
 /**
  * A unit that starts the battle comes out of a building: the nearest property of its owner that builds its kind (a factory for a tank,
- * a barracks for infantry, ...) or their HQ. A unit with no such building (or already on it) comes in from the edge like a reinforcement.
+ * an agency for snipers, ...) or their HQ. A unit with no such building (or already on it) comes in from the edge like a reinforcement.
  */
 export function buildingPath(game, unit, bounds) {
   const cat = game.registry.unit(unit.type).category;

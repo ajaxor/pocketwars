@@ -1,4 +1,4 @@
-// October 8 tweaks on the shipped data: flamethrowers burn out structures, the royal guard is armoured, barracks build without a per-turn limit,
+// October 8 tweaks on the shipped data: flamethrowers burn out structures, the royal guard is armoured, the HQ builds without a per-turn limit,
 // and the dreadnought fires once a turn but hits harder than the battleship.
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -29,16 +29,16 @@ test('the royal guard has more armour than before, and the dreadnought is a sing
   assert.ok(dm.damage > bm.damage && dm.armorPiercing > bm.armorPiercing && ds.damage >= bs.damage);
 });
 
-test('a barracks may build again the same turn once the first unit has moved off; a factory may not', async () => {
+test('an HQ may build again the same turn once the first unit has moved off; a factory may not', async () => {
   const g = await game();
   const tile = (id) => { for (let y = 0; y < g.map.height; y++) for (let x = 0; x < g.map.width; x++) if (g.map.terrain[y][x] === id && g.map.owners[y][x] === 0) return { x, y }; };
-  const b = tile('barracks'), f = tile('factory');
+  const b = tile('hq'), f = tile('factory');
   g.state.funds[0] = 50000;
   g.state.units = g.state.units.filter((u) => !(u.x === b.x && u.y === b.y) && !(u.x === f.x && u.y === f.y));
   assert.ok(buildUnit(g, 0, b.x, b.y, 'soldier').ok);
   g.state.units = g.state.units.filter((u) => !(u.x === b.x && u.y === b.y));   // it drove off
   assert.equal(buildProblem(g, 0, b.x, b.y, 'soldier'), null);
-  assert.ok(buildUnit(g, 0, f.x, f.y, 'recon').ok);
+  assert.ok(buildUnit(g, 0, f.x, f.y, 'tank').ok);
   g.state.units = g.state.units.filter((u) => !(u.x === f.x && u.y === f.y));
-  assert.equal(buildProblem(g, 0, f.x, f.y, 'recon'), 'already-built');
+  assert.equal(buildProblem(g, 0, f.x, f.y, 'tank'), 'already-built');
 });

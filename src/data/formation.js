@@ -8,7 +8,7 @@
 //                                                 the player owns whose type the kit lists: { units, sites, moved, skipped } or null
 //   withLeaders(map, registry, leaders)           a copy of the map in which player i fights with leaders[i] (an id or null)
 //
-// THE START. A kit's `start` (data/loadouts.json) is { hq: [...], barracks: [...], factory: [...], ... }: one formation around the
+// THE START. A kit's `start` (data/loadouts.json) is { hq: [...], garage: [...], factory: [...], ... }: one formation around the
 // HQ, and one around EACH production building of that type the player owns (two factories get two copies of the factory set).
 // Sets are placed in this order: the HQ's, then buildings in reading order. A set is a list of units with an offset [side, forward]
 // from its building. "Forward" is the

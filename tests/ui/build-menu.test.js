@@ -10,16 +10,17 @@ const registry = await loadRegistry(readData);
 const classic = await loadMap(readData, registry, 'classic');
 const factory = (game) => allProperties(game).find((p) => p.owner === 0 && p.terrain.id === 'factory');
 
-test('a factory lists the vehicles cheapest first with what the player can and cannot pay', () => {
+test('a tank factory lists its units cheapest first with what the player can and cannot pay', () => {
   const game = new Game(registry, classic);
   const f = factory(game);
+  game.state.funds[0] = 6500;
   const m = buildMenuModel(game, 0, f.x, f.y);
-  assert.equal(m.title, 'Factory');
-  assert.equal(m.funds, 8000);
-  assert.deepEqual(m.options.map((o) => o.id), ['recon', 'artillery', 'flak', 'tank', 'stealth_tank', 'heavy_tank', 'rocket_launcher'], 'cheapest first');
-  assert.deepEqual(m.options.map((o) => o.affordable), [true, true, true, true, false, false, false]);
-  const heavy = m.options.find((o) => o.id === 'heavy_tank');
-  assert.equal(heavy.missing, 2000);
+  assert.equal(m.title, 'Tank Factory');
+  assert.equal(m.funds, 6500);
+  assert.deepEqual(m.options.map((o) => o.id), ['mech', 'flak', 'tank'], 'cheapest first');
+  assert.deepEqual(m.options.map((o) => o.affordable), [true, true, false]);
+  const tank = m.options.find((o) => o.id === 'tank');
+  assert.equal(tank.missing, 500);
   assert.equal(m.options[0].missing, 0);
 });
 
@@ -27,9 +28,9 @@ test('the menu starts on the first unit that can be afforded, or the first one w
   const game = new Game(registry, classic);
   const f = factory(game);
   game.state.funds[0] = 5000;
-  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'recon');
+  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'mech');
   game.state.funds[0] = 100;
-  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'recon', 'nothing affordable: first row');
+  assert.equal(defaultChoice(buildMenuModel(game, 0, f.x, f.y).options), 'mech', 'nothing affordable: first row');
   assert.equal(defaultChoice([]), null);
 });
 

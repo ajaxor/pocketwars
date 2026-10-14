@@ -75,21 +75,22 @@ test('attributes are assigned to the intended units', () => {
   for (const id of withAttr('structure')) assert.equal(registry.unit(id).category, 'structure', `${id} is in the structure category`);
 });
 
-test('exclusive units are on no standard menu, and every one of them is on some leader\'s menu', () => {
-  const exclusive = registry.unitIds.filter((id) => registry.unit(id).exclusive).sort();
-  assert.equal(exclusive.length, 42, 'the seventeen drafted units, the thirteen gallery units (supply truck to hunter sub), the six drafted from the gallery in October 2026 (flamethrower, royal guard, shock trooper, swordsman, missile tank, airship), the marine and the five structures');
-  const standard = new Set(Object.values(registry.loadouts.default.build).flat());
-  for (const id of exclusive) {
-    assert.ok(!standard.has(id), `${id} is not on the standard menu`);
-    if (['mine', 'structure'].includes(registry.unit(id).category)) continue;   // a mine is laid by a mine layer and a structure placed by the map: never built
-    const owners = registry.leaderIds.filter((l) => Object.values(registry.loadoutFor(l).build).flat().includes(id));
-    assert.ok(owners.length >= 1, `${id} is on at least one leader's menu`);
+test('every unit can be built somewhere: a default menu, a lab, a faction HQ, or it is shelved, laid by a mine layer or a structure placed by the map', () => {
+  const onMenus = new Set(Object.values(registry.loadouts.default.build).flat());
+  for (const id of registry.leaderIds) for (const ids of Object.values(registry.loadoutFor(id).build)) for (const u of ids) onMenus.add(u);
+  for (const u of Object.keys(registry.labUnits)) onMenus.add(u);
+  for (const id of registry.unitIds) {
+    const def = registry.unit(id);
+    if (['mine', 'structure'].includes(def.category)) continue;
+    if (def.shelved) { assert.ok(!onMenus.has(id), `${id} is shelved, so it is on no menu`); continue; }
+    assert.ok(onMenus.has(id), `${id} is on some menu`);
   }
+  assert.deepEqual(registry.unitIds.filter((id) => registry.unit(id).shelved).sort(), ['vintage_bomber', 'vintage_fighter']);
 });
 
 test('terrain attributes: properties, income and the HQ victory condition', () => {
   const props = Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'property')).sort();
-  assert.deepEqual(props, ['airfield', 'barracks', 'city', 'factory', 'hq', 'shipyard']);
+  assert.deepEqual(props, ['agency', 'airbase', 'airfield', 'artillery_range', 'chemical_plant', 'city', 'factory', 'garage', 'harbor', 'heavy_lab', 'hover_lab', 'hq', 'missile_lab', 'shipyard', 'stealth_lab', 'sub_pen', 'support_factory']);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'submergible')), ['sea']);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'victoryOnCapture')), ['hq']);
   for (const id of props) assert.equal(registry.terrainDef(id).attributes.property.capturePoints, 20);
@@ -139,8 +140,8 @@ test('obstacles: forests, mountains and buildings block direct fire; only mounta
   const height = (id) => registry.terrainDef(id).attributes.blocksLineOfSight;
   assert.equal(height('forest'), 1);
   assert.equal(height('mountain'), 2);
-  for (const id of ['city', 'hq', 'factory', 'barracks', 'airfield']) assert.equal(height(id), 2, id);
-  assert.equal(height('shipyard'), 1, 'cranes and slips block less than a hall');
+  for (const id of ['city', 'hq', 'factory', 'garage', 'airfield', 'agency', 'hover_lab']) assert.equal(height(id), 2, id);
+  for (const id of ['shipyard', 'harbor', 'sub_pen']) assert.equal(height(id), 1, `${id}: cranes and slips block less than a hall`);
   for (const id of ['plain', 'road', 'sea']) assert.equal(height(id), undefined, id);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => registry.terrainDef(id).attributes.vantage), ['mountain']);
   assert.ok(registry.terrainDef('mountain').attributes.vantage > height('forest'), 'a mountain sees over forests');

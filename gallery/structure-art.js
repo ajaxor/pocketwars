@@ -1,4 +1,4 @@
-// Experimental structures (NOT in the game): bases and labs drawn like the game's buildings (src/render/buildings.js: flat-shaded, seen from
+// Experimental structures (NOT in the game): bases drawn like the game's buildings (src/render/buildings.js: flat-shaded, seen from
 // the front-left and above, a soft shadow to the lower right). The linkable walls are in the game now: their drawing lives in src/render/walls.js
 // and is re-exported here for the gallery.
 //   BASES[id](g, px, py, S, owner)               draws a building into the square (px, py, S), in the owner's colour
@@ -22,15 +22,6 @@ export const BASES = {
     k.line([[.78, .76], [.78, .4]], '#4a3a26', .035);                                    // target post
     disc(g, k.X(.78), k.Y(.36), .09 * S, WHITE); disc(g, k.X(.78), k.Y(.36), .055 * S, RED); disc(g, k.X(.78), k.Y(.36), .02 * S, WHITE);
   },
-  // Hover Lab: a low hall with a glass dome and a glowing launch pad.
-  hover_lab(g, px, py, S, owner) {
-    const k = kit(g, px, py, S);
-    k.boxShadow(.08, .6, .6, .28, .12); k.box(.08, .6, .6, .28, .12, owner);
-    g.fillStyle = GLASSY; g.beginPath(); g.arc(k.X(.38), k.Y(.6), .2 * S, Math.PI, 0); g.fill();   // the dome
-    g.fillStyle = 'rgba(255,255,255,.5)'; g.beginPath(); g.arc(k.X(.38), k.Y(.6), .2 * S, Math.PI * 1.1, Math.PI * 1.4); g.lineTo(k.X(.38), k.Y(.6)); g.fill();
-    g.fillStyle = '#5fd0ff'; g.beginPath(); g.ellipse(k.X(.84), k.Y(.86), .14 * S, .05 * S, 0, 0, 7); g.fill();   // the pad
-    g.fillStyle = '#dff6ff'; g.beginPath(); g.ellipse(k.X(.84), k.Y(.86), .08 * S, .028 * S, 0, 0, 7); g.fill();
-  },
   // Mech Factory: a tall hall with a big bay door and a robot standing in it.
   mech_factory(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
@@ -39,16 +30,6 @@ export const BASES = {
     k.rect(.3, .54, .14, .1, STEEL); k.rect(.27, .64, .2, .16, STEEL);                   // the robot: head and body
     k.rect(.29, .8, .06, .08, STEEL); k.rect(.39, .8, .06, .08, STEEL);                  // its legs
     k.line([[.62, .34], [.62, .1], [.84, .1]], shade(owner, -.4), .04);                  // a crane arm
-  },
-  // Stealth Lab: a dark angular bunker with a slit and a dish.
-  stealth_lab(g, px, py, S, owner) {
-    const k = kit(g, px, py, S), d = shade(owner, -.55);
-    k.poly([[.1, .9], [.84, .9], [.92, .8], [.2, .8]], 'rgba(0,0,0,.2)');
-    k.poly([[.08, .88], [.08, .6], [.3, .44], [.66, .44], [.86, .6], [.86, .88]], d);     // the faceted body
-    k.poly([[.08, .6], [.3, .44], [.66, .44], [.86, .6]], shade(owner, -.25));           // its roof planes
-    k.poly([[.3, .44], [.66, .44], [.58, .6], [.38, .6]], shade(owner, -.4));
-    k.rect(.3, .7, .4, .04, shade(owner, .35));                                          // one lit slit
-    k.line([[.5, .44], [.5, .26]], '#222', .025); disc(g, k.X(.5), k.Y(.24), .05 * S, '#c9ccd2');   // a mast and dish
   },
   // Glider Field: a launch ramp with a glider on it, and a windsock.
   glider_field(g, px, py, S, owner) {
@@ -126,16 +107,6 @@ export const BASES = {
     k.rect(.38, .74, .14, .08, shade(owner, -.35));                                       // a low door
   },
   // ---- production buildings for the "units are built in their own building" idea (gallery/production.json) -------------------------------------
-  // Agency: a plain office block with a satellite dish and one dark window, nothing else: spies and snipers work from the shadows.
-  agency(g, px, py, S, owner) {
-    const k = kit(g, px, py, S);
-    k.boxShadow(.14, .4, .5, .48, .14); k.box(.14, .4, .5, .48, .14, shade(owner, -.3));
-    k.rect(.14, .4, .5, .06, shade(owner, -.5));                                         // a dark cornice
-    k.rect(.26, .58, .12, .14, '#10131a'); k.rect(.44, .58, .12, .14, '#10131a');        // two blind windows
-    k.rect(.34, .74, .14, .14, DARK);                                                    // a door
-    k.line([[.8, .62], [.8, .3]], '#555a64', .03);                                       // a mast with a small dish
-    g.fillStyle = '#e6e8ee'; g.beginPath(); g.ellipse(k.X(.8), k.Y(.28), .1 * S, .05 * S, -.5, 0, 7); g.fill();
-  },
   // Heavy Factory: a squat, wide hall under a thick roof with two smokestacks and a tread-wide bay door, with a plated tank face at the door.
   heavy_factory(g, px, py, S, owner) {
     const k = kit(g, px, py, S);
@@ -180,25 +151,6 @@ export const BASES = {
     k.rect(.39, .7, .035, .12, WHITE); k.rect(.575, .7, .035, .12, WHITE); k.rect(.39, .745, .22, .03, WHITE);     // the H
     k.box(.04, .46, .2, .2, .08, shade(owner, -.2));                                     // a hut
     k.line([[.86, .72], [.86, .3]], '#4a3a26', .03); k.poly([[.86, .3], [.66, .34], [.86, .42]], '#ffb347');       // windsock
-  },
-  // Harbor (needs a sea backdrop): a pier running out over the water with a small crane and a boat tied up.
-  harbor(g, px, py, S, owner) {
-    const k = kit(g, px, py, S);
-    k.boxShadow(.04, .62, .94, .06, .14); k.box(.04, .62, .94, .06, .14, '#8a7350');       // the pier
-    for (const x of [.14, .4, .66, .9]) k.rect(x, .68, .035, .12, '#4a3a26');             // pilings
-    k.box(.06, .38, .22, .24, .1, owner);                                                // a warehouse at the root
-    k.line([[.62, .62], [.62, .22], [.84, .22]], shade(owner, -.4), .04); k.line([[.82, .22], [.82, .36]], '#222', .015);   // a crane
-    k.poly([[.36, .9], [.9, .9], [.84, .96], [.42, .96]], '#b9b5a8'); k.rect(.5, .82, .2, .08, owner);                       // a boat
-  },
-  // Sub Pen (needs a sea backdrop): a hardened concrete shelter with a dark arched mouth at the waterline, slabs stacked on top.
-  sub_pen(g, px, py, S, owner) {
-    const k = kit(g, px, py, S), CONC = '#a9a69b';
-    k.boxShadow(.06, .4, .84, .5, .16); k.box(.06, .4, .84, .5, .16, CONC);
-    k.box(.1, .3, .76, .1, .16, shade(CONC, -.12));                                      // a thick roof
-    g.fillStyle = '#10131a'; g.beginPath(); g.moveTo(k.X(.24), k.Y(.9)); g.lineTo(k.X(.24), k.Y(.66)); g.arc(k.X(.44), k.Y(.66), .2 * S, Math.PI, 0); g.lineTo(k.X(.64), k.Y(.9)); g.fill();   // the mouth
-    g.fillStyle = 'rgba(80,170,230,.55)'; g.fillRect(k.X(.24), k.Y(.82), .4 * S, .08 * S);   // water in it
-    k.rect(.7, .46, .12, .14, owner);                                                    // a marker plate in the owner's colour
-    g.fillStyle = shade(owner, -.35); g.beginPath(); g.ellipse(k.X(.44), k.Y(.82), .09 * S, .028 * S, 0, 0, 7); g.fill();   // a hull lurking
   },
   // Dry Dock (needs a sea backdrop): two tall gantry towers straddling a berth, a big hull sitting between them.
   dry_dock(g, px, py, S, owner) {

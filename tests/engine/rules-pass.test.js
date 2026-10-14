@@ -13,7 +13,7 @@ import { startTurn } from '../../src/engine/economy.js';
 const registry = await loadRegistry(readData);
 const legend = {
   '~': { terrain: 'sea' }, '.': { terrain: 'plain' }, M: { terrain: 'mountain' },
-  H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, Z: { terrain: 'shipyard', owner: 1 },
+  H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, Y: { terrain: 'shipyard', owner: 0 }, Z: { terrain: 'shipyard', owner: 1 }, P: { terrain: 'sub_pen', owner: 0 },
 };
 const players = [{ faction: 'ashmark', controller: 'human', funds: 30000 }, { faction: 'vantor_reach', controller: 'human', funds: 30000 }];
 const world = (rows, unitsOnMap) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players, legend }), registry));
@@ -47,7 +47,7 @@ test('a shipyard is land: a ship is built on it and sails off, cannot sail back 
 });
 
 test('a submarine can dive on the turn it is built', () => {
-  const g = world(['H~~~~~h', '.Y~~~~Z'], [['recon', 1, 6, 0]]);
+  const g = world(['H~~~~~h', '.P~~~~Z'], [['recon', 1, 6, 0]]);
   assert.equal(g.build(1, 1, 'submarine').ok, true);
   const sub = g.state.units.find((u) => u.type === 'submarine');
   const res = g.act({ unitId: sub.id, to: { x: 3, y: 1 }, action: { type: 'submerge' } });

@@ -18,7 +18,7 @@ export function fortLayout() {
   return m;
 }
 /** Fixed buildings inside the fort: { 'x,y': building id }. */
-export const FORT_BUILDINGS = { '3,3': 'factory', '5,3': 'hq', '7,3': 'barracks' };
+export const FORT_BUILDINGS = { '3,3': 'factory', '5,3': 'hq', '7,3': 'garage' };
 
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 

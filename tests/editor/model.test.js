@@ -150,7 +150,7 @@ test('the palette lists terrain, buildings, units and defences from the data', (
   const p = palette(registry);
   assert.ok(p.terrain.some((i) => i.id === 'wall') && p.terrain.some((i) => i.id === 'wall_breach' && i.label === 'Cracked Wall'));
   assert.ok(p.terrain.some((i) => i.kind === 'ground' && i.id === 'dirt'));
-  assert.deepEqual(p.buildings.map((i) => i.id).sort(), ['airfield', 'barracks', 'city', 'factory', 'hq', 'shipyard']);
+  assert.deepEqual(p.buildings.map((i) => i.id).sort(), ['agency', 'airbase', 'airfield', 'artillery_range', 'chemical_plant', 'city', 'factory', 'garage', 'harbor', 'heavy_lab', 'hover_lab', 'hq', 'missile_lab', 'shipyard', 'stealth_lab', 'sub_pen', 'support_factory']);
   assert.deepEqual(p.defences.map((i) => i.id), ['cannon_turret', 'sam_turret', 'artillery_turret', 'jammer']);
   assert.ok(!p.units.some((i) => i.id === 'sea_mine' || i.id === 'cracked_wall' || i.id === 'jammer'));
   assert.ok(p.units.every((i) => !i.neutralOk) && p.defences.every((i) => i.neutralOk));

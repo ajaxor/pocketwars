@@ -61,7 +61,7 @@ function unitPool(registry) {
 }
 
 /** A building that can be placed on the field, and how often. */
-const BUILDINGS = [['city', 4], ['factory', 2], ['barracks', 2], ['airfield', 1], ['hq', 1]];
+const BUILDINGS = [['city', 4], ['factory', 2], ['garage', 2], ['airfield', 1], ['hq', 1]];
 
 /**
  * Make a battlefield.

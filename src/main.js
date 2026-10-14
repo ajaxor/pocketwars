@@ -76,7 +76,7 @@ export async function boot({ onQuit } = {}) {
 
 /**
  * Hooks for the browser smoke tests (tools/smoke): only present when the page is opened with ?smoke, so a normal game exposes nothing.
- *   showBuilding(id)       scroll the map to the current player's first building of that terrain id ('factory', 'barracks')
+ *   showBuilding(id)       scroll the map to the current player's first building of that terrain id ('factory', 'garage')
  *   buildingSpot(id)       where it is on screen, in window pixels (ask a moment after showBuilding: the layout updates on the next frame)
  *   unitCount()            how many units are on the board
  *   ready()                the opening is over and the player's input is idle

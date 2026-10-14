@@ -2,10 +2,17 @@
   "default": {
     "infantry": "soldier",
     "build": {
-      "barracks": ["soldier", "sniper", "mech"],
-      "factory": ["recon", "artillery", "flak", "tank", "stealth_tank", "heavy_tank", "rocket_launcher"],
-      "airfield": ["transport_copter", "copter", "bomber", "fighter"],
-      "shipyard": ["destroyer", "submarine", "cruiser", "battleship"]
+      "garage": ["recon", "rocket_buggy", "mechanic"],
+      "chemical_plant": ["flamethrower", "rocket_launcher", "mine_layer"],
+      "factory": ["mech", "tank", "flak"],
+      "support_factory": ["medic", "supply_truck", "apc"],
+      "artillery_range": ["mortar", "artillery"],
+      "agency": ["sniper", "radar_plane"],
+      "shipyard": ["diver", "destroyer", "cruiser", "battleship", "aircraft_carrier"],
+      "harbor": ["gun_boat", "troop_transport"],
+      "sub_pen": ["submarine", "hunter_sub"],
+      "airfield": ["copter", "transport_copter", "torpedo_bomber", "rpg_trooper"],
+      "airbase": ["fighter", "bomber", "sam_launcher"]
     },
     "start": {
       "hq": [
@@ -13,230 +20,115 @@
         { "unit": "artillery", "at": [1, 1] },
         { "unit": "tank", "at": [0, 1] }
       ],
-      "barracks": [
-        { "unit": "soldier", "at": [0, 1] }
-      ],
-      "factory": [
-        { "unit": "recon", "at": [0, 1] }
-      ],
-      "airfield": [
-        { "unit": "copter", "at": [0, 1] }
-      ],
-      "shipyard": [
-        { "unit": "destroyer", "at": [0, 1] }
-      ]
+      "garage": [{ "unit": "recon", "at": [0, 1] }],
+      "chemical_plant": [{ "unit": "flamethrower", "at": [0, 1] }],
+      "factory": [{ "unit": "tank", "at": [0, 1] }],
+      "support_factory": [{ "unit": "medic", "at": [0, 1] }],
+      "artillery_range": [{ "unit": "mortar", "at": [0, 1] }],
+      "agency": [{ "unit": "sniper", "at": [0, 1] }],
+      "shipyard": [{ "unit": "destroyer", "at": [0, 1] }],
+      "harbor": [{ "unit": "gun_boat", "at": [0, 1] }],
+      "sub_pen": [{ "unit": "submarine", "at": [0, 1] }],
+      "airfield": [{ "unit": "copter", "at": [0, 1] }],
+      "airbase": [{ "unit": "sam_launcher", "at": [0, 1] }]
     }
   },
   "leaders": {
     "harlan": {
-      "build": {
-        "barracks": ["soldier", "medic", "sniper", "mech"],
-        "airfield": ["vintage_fighter", "vintage_bomber", "torpedo_bomber"],
-        "factory": ["recon", "artillery", "apc", "flak", "tank", "heavy_tank"],
-        "shipyard": ["destroyer", "troop_transport", "cruiser", "battleship"]
-      },
+      "unlock": ["heavy_tank"],
       "start": {
         "hq": [
-          { "unit": "mech", "at": [-1, 1] },
-          { "unit": "heavy_tank", "at": [1, 1] },
-          { "unit": "artillery", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "vintage_bomber", "at": [0, 1] }
+          { "unit": "soldier", "at": [-1, 1] },
+          { "unit": "artillery", "at": [1, 1] },
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     },
     "ada": {
       "infantry": "commando",
-      "build": {
-        "barracks": ["mechanic", "commando", "rpg_trooper"],
-        "factory": ["rocket_buggy", "supply_truck", "missile_tank", "rocket_launcher", "sam_launcher"],
-        "airfield": ["copter", "transport_copter", "bomber", "fighter"],
-        "shipyard": ["gun_boat", "mine_layer", "hunter_sub", "cruiser", "battleship"]
-      },
+      "unlock": ["hover_tank"],
       "start": {
         "hq": [
           { "unit": "commando", "at": [-1, 1] },
-          { "unit": "missile_tank", "at": [1, 1] },
-          { "unit": "rocket_launcher", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "mechanic", "at": [0, 1] }
-        ],
-        "factory": [
-          { "unit": "rocket_buggy", "at": [0, 1] }
-        ],
-        "shipyard": [
-          { "unit": "gun_boat", "at": [0, 1] }
+          { "unit": "artillery", "at": [1, 1] },
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     },
     "vex": {
       "infantry": "spy",
-      "build": {
-        "barracks": ["spy", "sniper"],
-        "factory": ["recon", "flak", "tank", "rocket_launcher", "sam_launcher"],
-        "airfield": ["transport_copter", "stealth_copter", "bomber", "fighter"],
-        "shipyard": ["gun_boat", "diver", "destroyer", "submarine", "cruiser", "missile_sub"]
-      },
+      "unlock": ["missile_sub"],
       "start": {
         "hq": [
           { "unit": "spy", "at": [-1, 1] },
-          { "unit": "sniper", "at": [1, 1] },
+          { "unit": "artillery", "at": [1, 1] },
           { "unit": "tank", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "sniper", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "torpedo_bomber", "at": [0, 1] }
         ]
       }
     },
     "hiroshi": {
       "infantry": "swordsman",
-      "build": {
-        "barracks": ["swordsman", "mechanic", "mech", "mortar"],
-        "factory": ["recon", "supply_truck", "artillery", "tank", "heavy_tank", "sam_launcher"],
-        "airfield": ["transport_copter", "copter", "bomber", "fighter"],
-        "shipyard": ["mine_layer", "destroyer", "submarine", "cruiser", "dreadnought"]
-      },
+      "unlock": ["missile_tank"],
       "start": {
         "hq": [
-          { "unit": "mech", "at": [-1, 1] },
-          { "unit": "mortar", "at": [1, 1] },
+          { "unit": "swordsman", "at": [-1, 1] },
+          { "unit": "artillery", "at": [1, 1] },
           { "unit": "tank", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "mechanic", "at": [0, 1] }
-        ],
-        "factory": [
-          { "unit": "recon", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "radar_plane", "at": [0, 1] }
         ]
       }
     },
     "ludwig": {
       "infantry": "shock_trooper",
-      "build": {
-        "barracks": ["shock_trooper", "medic", "mechanic"],
-        "factory": ["rocket_buggy", "supply_truck", "artillery", "flak", "hover_tank", "rocket_launcher"],
-        "airfield": ["stealth_copter", "radar_plane", "bomber", "fighter"],
-        "shipyard": ["diver", "destroyer", "cruiser", "missile_sub", "battleship"]
-      },
+      "unlock": ["stealth_bomber"],
       "start": {
         "hq": [
-          { "unit": "medic", "at": [-1, 1] },
-          { "unit": "rocket_buggy", "at": [1, 1] },
-          { "unit": "mechanic", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "mechanic", "at": [0, 1] }
-        ],
-        "factory": [
-          { "unit": "hover_tank", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "radar_plane", "at": [0, 1] }
+          { "unit": "shock_trooper", "at": [-1, 1] },
+          { "unit": "artillery", "at": [1, 1] },
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     },
     "rex": {
       "infantry": "marine",
-      "build": {
-        "barracks": ["marine", "medic", "rpg_trooper", "mortar"],
-        "factory": ["recon", "artillery", "flak", "amphibious_tank", "rocket_launcher"],
-        "airfield": ["copter", "torpedo_bomber", "bomber", "fighter"],
-        "shipyard": ["gun_boat", "mine_layer", "troop_transport", "hunter_sub", "cruiser", "aircraft_carrier", "battleship"]
-      },
+      "unlock": ["amphibious_tank"],
       "start": {
         "hq": [
           { "unit": "marine", "at": [-1, 1] },
-          { "unit": "amphibious_tank", "at": [1, 1] },
-          { "unit": "artillery", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "rpg_trooper", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "torpedo_bomber", "at": [0, 1] }
-        ],
-        "shipyard": [
-          { "unit": "gun_boat", "at": [0, 1] }
+          { "unit": "artillery", "at": [1, 1] },
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     },
     "chase": {
       "infantry": "motorcycle",
-      "build": {
-        "barracks": ["motorcycle", "flamethrower", "sniper"],
-        "factory": ["recon", "artillery", "hover_tank", "heavy_tank", "rocket_launcher", "sam_launcher"],
-        "airfield": ["transport_copter", "copter", "radar_plane", "bomber", "stealth_fighter"],
-        "shipyard": ["destroyer", "submarine", "cruiser", "aircraft_carrier", "battleship"]
-      },
+      "unlock": ["stealth_copter"],
       "start": {
         "hq": [
           { "unit": "motorcycle", "at": [-1, 1] },
-          { "unit": "hover_tank", "at": [1, 1] },
-          { "unit": "flamethrower", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "motorcycle", "at": [0, 1] }
-        ],
-        "factory": [
-          { "unit": "artillery", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "radar_plane", "at": [0, 1] }
+          { "unit": "artillery", "at": [1, 1] },
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     },
     "dmitri": {
       "infantry": "conscript",
-      "build": {
-        "barracks": ["conscript", "mechanic", "rpg_trooper", "mortar"],
-        "factory": ["recon", "apc", "artillery", "flak", "heavy_tank", "rocket_launcher"],
-        "airfield": ["copter", "torpedo_bomber", "airship", "fighter"],
-        "shipyard": ["mine_layer", "troop_transport", "destroyer", "cruiser", "missile_sub", "battleship"]
-      },
+      "unlock": ["airship"],
       "start": {
         "hq": [
-          { "unit": "rpg_trooper", "at": [-1, 1] },
+          { "unit": "conscript", "at": [-1, 1] },
           { "unit": "artillery", "at": [1, 1] },
-          { "unit": "heavy_tank", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "conscript", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "copter", "at": [0, 1] }
-        ],
-        "shipyard": [
-          { "unit": "mine_layer", "at": [0, 1] }
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     },
     "lysandra": {
       "infantry": "royal_guard",
-      "build": {
-        "barracks": ["royal_guard", "medic", "sniper", "flamethrower"],
-        "factory": ["recon", "supply_truck", "artillery", "flak", "tank", "heavy_tank", "rocket_launcher", "sam_launcher"],
-        "airfield": ["transport_copter", "copter", "radar_plane", "fighter", "stealth_bomber"],
-        "shipyard": ["gun_boat", "destroyer", "cruiser", "dreadnought"]
-      },
+      "unlock": ["dreadnought"],
       "start": {
         "hq": [
           { "unit": "royal_guard", "at": [-1, 1] },
-          { "unit": "tank", "at": [1, 1] },
-          { "unit": "artillery", "at": [0, 1] }
-        ],
-        "barracks": [
-          { "unit": "flamethrower", "at": [0, 1] }
-        ],
-        "airfield": [
-          { "unit": "copter", "at": [0, 1] }
+          { "unit": "artillery", "at": [1, 1] },
+          { "unit": "tank", "at": [0, 1] }
         ]
       }
     }

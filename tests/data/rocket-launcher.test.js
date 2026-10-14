@@ -23,7 +23,7 @@ test('rocket launcher: range 3 to 5, indirect, three rockets, hits ground and sh
 
 test('rocket launcher: each salvo costs a rocket, and a factory refills them', async () => {
   const game = await fresh();
-  const factory = allProperties(game).find((p) => p.terrain.name === 'Factory');
+  const factory = allProperties(game).find((p) => p.terrain.id === 'factory');
   const rl = put(game, 'rocket_launcher', game.currentPlayer, factory.x, factory.y + 1);
   rl.ammo = 1;
   game.state.owners[factory.y][factory.x] = rl.owner;

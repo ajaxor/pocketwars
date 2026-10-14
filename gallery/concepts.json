@@ -364,21 +364,6 @@
    "mechanic": "Builds specialist infantry: commando, RPG trooper, mechanic, medic, mortar team, conscript, spy, diver, motorcycle."
   },
   {
-   "id": "hover_lab",
-   "name": "Hover Lab",
-   "kind": "building",
-   "section": "Labs and bases",
-   "group": "structure",
-   "sprite": "hover_lab",
-   "facility": null,
-   "altitude": 0,
-   "cost": 12000,
-   "move": 0,
-   "role": "Base",
-   "overlaps": "",
-   "mechanic": "Builds the anti-gravity craft: hover scout, hover tank and hover carrier."
-  },
-  {
    "id": "mech_factory",
    "name": "Mech Factory",
    "kind": "building",
@@ -392,21 +377,6 @@
    "role": "Base",
    "overlaps": "",
    "mechanic": "Builds the legged walkers: strider and titan."
-  },
-  {
-   "id": "stealth_lab",
-   "name": "Stealth Lab",
-   "kind": "building",
-   "section": "Labs and bases",
-   "group": "structure",
-   "sprite": "stealth_lab",
-   "facility": null,
-   "altitude": 0,
-   "cost": 14000,
-   "move": 0,
-   "role": "Base",
-   "overlaps": "",
-   "mechanic": "Builds the cloaked units: stealth tank and stealth copter."
   },
   {
    "id": "glider_field",

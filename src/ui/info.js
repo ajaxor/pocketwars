@@ -6,6 +6,7 @@ import { attributeHelp, attributeLabel, TERRAIN_ATTRIBUTES, UNIT_ATTRIBUTES } fr
 import { ammoConfig, ammoOf } from '../engine/ammo.js';
 import { fuelConfig, fuelOf } from '../engine/fuel.js';
 import { calcDamage, terrainStars, weaponFor } from '../engine/combat.js';
+import { menuFor } from '../engine/economy.js';
 import { factionOf, isInertDef, layerInfo, ownerAt, propertyAt, skinAt, terrainAt, unitCost, unitDef } from '../engine/queries.js';
 
 const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
@@ -51,6 +52,8 @@ export function unitStats(game, def) {
   };
 }
 
+const unitLine = (def) => ({ id: def.id, name: def.name, cost: def.cost });
+
 /** Facts about one tile's terrain, including who owns it when it is a property. */
 export function terrainInfo(game, x, y) {
   const { registry } = game;
@@ -63,6 +66,8 @@ export function terrainInfo(game, x, y) {
     moves: registry.rules.moveClasses.map((c) => ({ id: c, label: moveLabel(c), cost: t.moveCost[c] ?? null })),
     property: prop ? {
       income: prop.income, repair: prop.repair, capturePoints: prop.capturePoints, builds: prop.builds.map(categoryLabel),
+      menu: prop.builds.length ? menuFor(game, owner ?? null, x, y).map((d) => unitLine(d)) : [],   // what it builds for its owner now (the standard menu when nobody owns it)
+      adds: prop.adds ? Object.entries(prop.adds).map(([id, units]) => ({ buildingId: id, building: registry.terrainDef(id).name, units: units.map((u) => unitLine(registry.unit(u))) })) : null,   // a lab: what it adds to which building
       owner: owner === null ? null : { player: owner, name: factionOf(game, owner).name, color: factionOf(game, owner).color },
     } : null,
     notes,

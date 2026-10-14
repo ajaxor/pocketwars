@@ -15,27 +15,28 @@
     "r": { "terrain": "road" },
     "~": { "terrain": "sea" },
     "c": { "terrain": "city" },
-    "O": { "terrain": "hq", "owner": 0 },
-    "o": { "terrain": "factory", "owner": 0 },
-    "k": { "terrain": "barracks", "owner": 0 },
-    "v": { "terrain": "airfield", "owner": 0 },
+    "v": { "terrain": "airfield", "owner": 1 },
+    "f": { "terrain": "factory", "owner": 1 },
     "B": { "terrain": "hq", "owner": 1 },
-    "b": { "terrain": "factory", "owner": 1 },
-    "K": { "terrain": "barracks", "owner": 1 },
-    "V": { "terrain": "airfield", "owner": 1 }
+    "g": { "terrain": "garage", "owner": 1 },
+    "A": { "terrain": "artillery_range" },
+    "C": { "terrain": "airfield", "owner": 0 },
+    "D": { "terrain": "factory", "owner": 0 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "E": { "terrain": "garage", "owner": 0 }
   },
   "tiles": [
-    "MFFVbBKFFM",
+    "MFFvfBgFFM",
     "F.c.rr.c.F",
     "..F.r..F..",
     ".c..rr..c.",
     "~~c.rr.c~~",
-    "~~~.rr.~~~",
+    "~~~ArrA~~~",
     "~~c.rr.c~~",
     ".c..rr..c.",
     "..F.r..F..",
     "F.c.rr.c.F",
-    "MFFvoOkFFM"
+    "MFFCDOEFFM"
   ],
   "units": [
     { "type": "soldier", "owner": 0, "x": 3, "y": 9 },

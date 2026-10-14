@@ -1,12 +1,11 @@
 # Leaders in battle
 
-A leader brings a **kit** to a battle: what each factory builds, and which units you start with.
+A leader brings a **kit** to a battle: their own infantry, one unlocked lab unit, and the units you start with. What each building builds is the same for everyone (`docs/production.md`).
 
 ## Data: `data/loadouts.json`
-- `default`: the kit everyone inherits. `build` maps a production building's terrain id (barracks, factory, airfield, shipyard) to the unit ids it offers, in menu order.
-- `start` maps `hq` or a production building's terrain id to a list of `{ "unit": id, "at": [side, forward] }` offsets (`side` positive = right-hand, `forward` positive = toward the enemy). The `hq` set is placed around the HQ; every other set is placed around **each** building of that type the player owns, so two factories get two copies of the factory set, and a building type the map has none of gives nothing.
-- `leaders.<id>`: overrides. A `build` or `start` entry that names a building replaces just that building's list (an empty `[]` removes it). Anything omitted is inherited. Every campaign leader (except the Envoy) needs an entry, even an empty `{}`.
-- A menu may list units of a category the building does not normally build. Buildings with no loadout entry (labs and the like) fall back to their category menus.
+- `default`: the kit everyone inherits. `infantry` is the unit its HQ builds; `build` maps a production building's terrain id to the unit ids it offers, in menu order (the HQ's menu is made from `infantry`).
+- `start` maps `hq` or a production building's terrain id to a list of `{ "unit": id, "at": [side, forward] }` offsets (`side` positive = right-hand, `forward` positive = toward the enemy). The `hq` set is placed around the HQ; every other set is placed around **each** building of that type the player owns, so two garages get two copies of the garage set, and a building type the map has none of gives nothing.
+- `leaders.<id>`: `infantry` (their HQ unit; omitted = the soldier), `unlock` (a list with the one lab unit they can build without owning the lab) and `start.hq` (their opening HQ set). Anything omitted is inherited. Every campaign leader (except the Envoy) needs an entry.
 - `npm run validate` checks the file and that every formation fits on every shipped map.
 
 ## Using a leader
@@ -18,18 +17,21 @@ A leader brings a **kit** to a battle: what each factory builds, and which units
 Sets are placed in order: the HQ's, then buildings in reading order (`placeStart`); each set is placed by `placeFormation` around its own building.
 Forward is, from the building, toward the average enemy HQ, snapped to N/S/E/W (map centre if there is none). Units are placed in list order at their offset. A tile is invalid if it is off the map, impassable for the unit, taken, any property, or not connected to the HQ. An invalid spot takes the nearest valid tile (then same row, nearest the HQ, nearest the centre line). Units with nowhere to stand are skipped (validation fails if that happens on a shipped map).
 
-## Exclusive units
+## The nine kits
 
-Units flagged `"exclusive": true` in `data/units.json` stay off the default kit and category menus; only a leader's `build` list can offer them. The thirty-one units (thirty drafted plus the marine) are assigned this way in `data/loadouts.json`: spy, commando, medic, mortar, mechanic, RPG trooper, conscript, marine (a barracks unit; the shipyard builds only ships plus the diver), diver, motorcycle infantry, gun boat, vintage fighter/bomber, torpedo bomber, radar plane, stealth copter/fighter/bomber, and (from the gallery) supply truck, hover tank, amphibious tank, SAM launcher, rocket buggy, APC, mine layer, sea mine (laid by the mine layer, never built), aircraft carrier, dreadnought, troop transport, missile sub, hunter sub.
+| Leader | HQ infantry | Unlock (lab unit, built without the lab) |
+|---|---|---|
+| Harlan (Lastholm) | soldier | heavy tank |
+| Ada (Ashmark) | commando | hover tank |
+| Vex (Vantor Reach) | spy | missile sub |
+| Hiroshi (Ironvale) | swordsman | missile tank |
+| Ludwig (Solace) | shock trooper | stealth bomber |
+| Rex (Tidehaven) | marine | amphibious tank |
+| Chase (Skyreach) | motorcycle | stealth copter |
+| Dmitri (Deepmere) | conscript | airship |
+| Lysandra (Highspire) | royal guard | dreadnought |
 
-## Faction rules (rework)
-- Variants replace their original: a leader has one tank, recon, AA, copter, fighter, bomber, submarine, big-gun ship, small ship and mech/RPG trooper.
-- Each leader has exactly one basic infantry: soldier (Harlan), swordsman (Hiroshi), shock trooper (Ludwig), royal guard (Lysandra), motorcycle infantry (Chase, who has no soldier), commando (Ada), spy (Vex), conscript (Dmitri), marine (Rex). Chase and Ludwig also build the flamethrower (its attack is never answered). Ada has the missile tank, Dmitri the airship.
-- Each leader can carry troops over water: transport copter, troop transport, marine or diver (Lysandra, who lost the marine, has a transport copter). The diver builds at Vex's shipyard.
-- No technology belongs to one leader; units sit on several kits.
-- Starting armies: three HQ units that show the faction's spirit, plus one unit per production building. Totals are within 4,000 of each other (35,500 to 38,500); `tests/data/leaders.test.js` pins this.
-- Colours: Vex dark grey, Ada brown, Hiroshi red, Ludwig white, Chase orange, Dmitri teal, Lysandra purple (Rex blue, Harlan olive).
-
+The Envoy (the Chorus) has no kit yet. Starting armies are the faction's infantry, an artillery and a tank at the HQ, plus one unit per production building the map gives them, so armies differ only by the infantry (about 1,500 apart; `tests/data/leaders.test.js`).
 
 ## Troop carriers and menus
 

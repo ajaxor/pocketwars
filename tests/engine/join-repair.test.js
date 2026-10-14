@@ -12,7 +12,7 @@ import { computeReach } from '../../src/engine/movement.js';
 const registry = await loadRegistry(readData);
 const legend = {
   '.': { terrain: 'plain' }, '~': { terrain: 'sea' }, H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 },
-  c: { terrain: 'city', owner: 0 }, F: { terrain: 'factory', owner: 0 }, B: { terrain: 'barracks', owner: 0 }, A: { terrain: 'airfield', owner: 0 }, Y: { terrain: 'shipyard', owner: 0 },
+  c: { terrain: 'city', owner: 0 }, F: { terrain: 'factory', owner: 0 }, B: { terrain: 'agency', owner: 0 }, A: { terrain: 'airfield', owner: 0 }, Y: { terrain: 'shipyard', owner: 0 },
 };
 const players = (funds = 20000) => [{ faction: 'ashmark', controller: 'human', funds }, { faction: 'vantor_reach', controller: 'human', funds: 20000 }];
 const world = (rows, unitsOnMap, funds) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players: players(funds), legend }), registry));

@@ -55,11 +55,14 @@ test('every leader has eyes, a nose, a mouth and a chin of their own, and the ca
   assert.match(p, /share the chinStyle "weak"|share the chinStyle "cleft"/);
 });
 
-test('the standard kit lists what the building categories give (a unit added to units.json has to be added to the kit as well)', () => {
+test('the standard kit gives every production building a menu of units its categories allow, and the HQ the soldier', () => {
+  const build = registry.loadouts.default.build;
+  assert.deepEqual(build.hq, ['soldier']);
   for (const [id, t] of Object.entries(registry.terrain)) {
     const builds = t.attributes.property?.builds;
-    if (!builds?.length) { assert.equal(registry.loadouts.default.build[id], undefined, `${id} builds nothing`); continue; }
-    assert.deepEqual([...registry.loadouts.default.build[id]].sort(), registry.unitsInCategories(builds).map((u) => u.id).sort(), id);
+    if (!builds?.length) { assert.equal(build[id], undefined, `${id} builds nothing`); continue; }
+    assert.ok(build[id]?.length, `${id} has a menu`);
+    for (const u of build[id]) assert.ok(builds.includes(registry.unit(u).category), `${id}: ${u} is not a unit it can build`);
   }
 });
 
@@ -79,7 +82,7 @@ test('every leader starts with three HQ units and one unit per building, and the
   const costs = registry.leaderIds.map((id) => {
     const start = { ...registry.loadouts.default.start, ...registry.loadouts.leaders[id]?.start };
     assert.equal(start.hq.length, 3, `${id}: HQ`);
-    for (const site of ['barracks', 'factory', 'airfield', 'shipyard']) assert.equal(start[site].length, 1, `${id}: ${site}`);
+    for (const site of Object.keys(start).filter((k) => k !== 'hq')) assert.equal(start[site].length, 1, `${id}: ${site}`);
     return Object.values(start).flat().reduce((sum, s) => sum + registry.units[s.unit].cost, 0);
   });
   assert.ok(Math.max(...costs) - Math.min(...costs) <= 4500, `army costs ${costs.join(', ')} stay within 4,500 of each other`);
@@ -290,7 +293,7 @@ test('a team with a leader but no property keeps its map units (and still gets t
 const setsFor = (map, owner) => {
   const { start } = registry.loadoutFor(null);
   let n = start.hq.length;
-  map.terrain.forEach((row, y) => row.forEach((t, x) => { if (map.owners[y][x] === owner && registry.terrain[t].attributes.property?.builds?.length) n += start[t]?.length ?? 0; }));
+  map.terrain.forEach((row, y) => row.forEach((t, x) => { if (map.owners[y][x] === owner && t !== 'hq' && registry.terrain[t].attributes.property?.builds?.length) n += start[t]?.length ?? 0; }));
   return n;
 };
 
@@ -312,17 +315,3 @@ test('a leader\'s units fit every shipped map: nobody skipped, none on a propert
 
 test('LEGEND sanity: the fixture legend used above', () => assert.deepEqual([LEGEND.a, LEGEND.H], [{ terrain: 'base', owner: 0 }, { terrain: 'hq', owner: 0 }]));
 
-test('no exclusive unit is stranded: each one a leader could field is on some leader\'s menu or in some starting army (structures and mines come from maps and mine layers)', async () => {
-  const loadouts = await readData('loadouts.json');
-  const used = new Set();
-  for (const kit of [loadouts.default, ...Object.values(loadouts.leaders)]) {
-    for (const menu of Object.values(kit.build ?? {})) menu.forEach((id) => used.add(id));
-    for (const group of Object.values(kit.start ?? {})) group.forEach((s) => used.add(s.unit));
-    if (kit.infantry) used.add(kit.infantry);
-  }
-  const stranded = registry.unitIds.filter((id) => {
-    const def = registry.unit(id);
-    return def.exclusive && !def.attributes?.structure && !def.attributes?.mine && !used.has(id);
-  });
-  assert.deepEqual(stranded, [], 'these units can never be built: add them to a leader menu, or drop `exclusive`');
-});

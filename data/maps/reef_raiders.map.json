@@ -5,79 +5,43 @@
   "name": "Reef Raiders",
   "description": "Small and mean: two island bases and a reef of shoals in the middle. Every shipyard opens onto open water, so the sea decides it.",
   "players": [
-    {
-      "faction": "ashmark",
-      "controller": "human",
-      "funds": 12000
-    },
-    {
-      "faction": "vantor_reach",
-      "controller": "ai",
-      "funds": 12000
-    }
+    { "faction": "ashmark", "controller": "human", "funds": 12000 },
+    { "faction": "vantor_reach", "controller": "ai", "funds": 12000 }
   ],
   "legend": {
-    "k": { "terrain": "barracks", "owner": 0 },
-    "K": { "terrain": "barracks", "owner": 1 },
-    ".": {
-      "terrain": "plain"
-    },
-    "F": {
-      "terrain": "forest"
-    },
-    "M": {
-      "terrain": "mountain"
-    },
-    "c": {
-      "terrain": "city"
-    },
-    "r": {
-      "terrain": "road"
-    },
-    "~": {
-      "terrain": "sea"
-    },
-    "o": {
-      "terrain": "shoals"
-    },
-    "O": {
-      "terrain": "hq",
-      "owner": 0
-    },
-    "B": {
-      "terrain": "hq",
-      "owner": 1
-    },
-    "f": {
-      "terrain": "factory",
-      "owner": 0
-    },
-    "g": {
-      "terrain": "factory",
-      "owner": 1
-    },
-    "Y": {
-      "terrain": "shipyard",
-      "owner": 0
-    },
-    "Z": {
-      "terrain": "shipyard",
-      "owner": 1
-    },
-    "y": { "terrain": "airfield", "owner": 0 },
-    "z": { "terrain": "airfield", "owner": 1 }
+    "3": { "terrain": "heavy_lab" },
+    "4": { "terrain": "missile_lab" },
+    ".": { "terrain": "plain" },
+    "F": { "terrain": "forest" },
+    "M": { "terrain": "mountain" },
+    "c": { "terrain": "city" },
+    "r": { "terrain": "road" },
+    "~": { "terrain": "sea" },
+    "o": { "terrain": "shoals" },
+    "v": { "terrain": "airfield", "owner": 0 },
+    "O": { "terrain": "hq", "owner": 0 },
+    "g": { "terrain": "garage", "owner": 0 },
+    "f": { "terrain": "factory", "owner": 0 },
+    "A": { "terrain": "factory", "owner": 1 },
+    "u": { "terrain": "support_factory", "owner": 1 },
+    "B": { "terrain": "hq", "owner": 1 },
+    "C": { "terrain": "airfield", "owner": 1 },
+    "y": { "terrain": "shipyard", "owner": 0 },
+    "b": { "terrain": "harbor", "owner": 1 },
+    "s": { "terrain": "sub_pen", "owner": 0 },
+    "D": { "terrain": "shipyard", "owner": 1 }
   },
   "tiles": [
     "MM.FFrrrrrrrrFF.MM",
-    "MycOkfrr..rrgKBczM",
+    "MvcOgfrr..rrAuBcCM",
     "..rrrr..~~..rrrr..",
     "F.r.c.~~~~~~.c.r.F",
-    "..r.Y~~~~~~~~Z.r..",
-    "..rc.~~o~~o~~.cr..",
+    "..r.y~~~~~~~~b.r..",
+    "..rc.~~4~~o~~.cr..",
     "F.r..~~~oo~~~..r.F",
-    "..r.Y~~~~~~~~Z.r..",
+    "..r.s~~~~~~~~D.r..",
     "..rr.~~~~~~~~.rr..",
-    "M..F.~~o~~o~~.F..M",
+    "M..F.~~o~~3~~.F..M",
     "MM.FF.~~~~~~.FF.MM",
     "MMM.Fo~~~~~~oF.MMM"
   ],

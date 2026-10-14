@@ -16,12 +16,28 @@ const withIds = (obj) => Object.fromEntries(Object.entries(obj).map(([id, def]) 
 
 /**
  * Resolve loadouts.json: every leader's kit with the default's parts filled in. A kit is { build: { <terrain id>: [unit ids] },
- * start: { hq|<building id>: [{ unit, at }] }, infantry: the leader's basic foot soldier (what a transport with `deploy.basic` carries) }. Without loadouts.json there are no leaders, and every building gives the menu of its `builds` categories.
+ * start: { hq|<building id>: [{ unit, at }] }, infantry: the leader's basic foot soldier (what a transport with `deploy.basic` carries),
+ * unlock: [unit ids] (lab units the leader has without owning the lab, see economy.js) }. The HQ builds the leader's own infantry: unless the
+ * kit gives the HQ a menu of its own, `build.hq` is `[infantry]`. Without loadouts.json there are no leaders, and every building gives
+ * the menu of its `builds` categories.
  */
 function resolveLoadouts(raw) {
-  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? {}, infantry: raw?.default?.infantry };
-  const kit = (own = {}) => ({ ...((own.infantry ?? base.infantry) !== undefined && { infantry: own.infantry ?? base.infantry }), build: { ...base.build, ...(own.build ?? {}) }, start: { ...base.start, ...(own.start ?? {}) } });
+  const base = { build: raw?.default?.build ?? {}, start: raw?.default?.start ?? {}, infantry: raw?.default?.infantry, unlock: raw?.default?.unlock };
+  const kit = (own = {}) => {
+    const infantry = own.infantry ?? base.infantry;
+    const unlock = own.unlock ?? base.unlock;
+    const build = { ...base.build, ...(own.build ?? {}) };
+    if (infantry !== undefined && !own.build?.hq) build.hq = [infantry];
+    return { ...(infantry !== undefined && { infantry }), ...(unlock !== undefined && { unlock }), build, start: { ...base.start, ...(own.start ?? {}) } };
+  };
   return { default: kit(), leaders: Object.fromEntries(Object.entries(raw?.leaders ?? {}).map(([id, own]) => [id, kit(own)])) };
+}
+
+/** Which buildings a lab can add each unit to: { <unit id>: [building terrain ids] } (from the labs' `adds`). */
+function labUnitsOf(terrain) {
+  const out = {};
+  for (const t of Object.values(terrain)) for (const [building, ids] of Object.entries(t.attributes?.property?.adds ?? {})) for (const id of ids) (out[id] ??= []).includes(building) || out[id].push(building);
+  return out;
 }
 
 /**
@@ -49,9 +65,10 @@ export function createRegistry(raw) {
   const factionIds = Object.keys(factions); // JSON order = the order colours are offered in
   const loadouts = deepFreeze(resolveLoadouts(structuredClone(raw.loadouts)));
   const leaderIds = Object.keys(loadouts.leaders); // JSON order = the order leaders are offered in
+  const labUnits = deepFreeze(labUnitsOf(terrain));
 
   return Object.freeze({
-    rules, factions, terrain, ground, tilesets, tilesetIds, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds,
+    rules, factions, terrain, ground, tilesets, tilesetIds, units, weapons, ai, aiStrategies, unitIds, terrainIds, groundIds, factionIds, loadouts, leaderIds, labUnits,
     /** The kit a leader brings: { build, start } (see resolveLoadouts). No leader (null) gets the default kit. */
     loadoutFor: (leaderId) => {
       if (leaderId == null) return loadouts.default;

@@ -14,7 +14,7 @@ import { menuByPrice, menuFor } from '../../src/engine/economy.js';
 import { buildMenuModel } from '../../src/ui/build-menu.js';
 
 const registry = await loadRegistry(readData);
-const legend = { '.': { terrain: 'plain' }, F: { terrain: 'forest' }, H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, B: { terrain: 'barracks', owner: 0 }, A: { terrain: 'airfield', owner: 0 } };
+const legend = { '.': { terrain: 'plain' }, F: { terrain: 'forest' }, H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 }, B: { terrain: 'agency', owner: 0 }, A: { terrain: 'airfield', owner: 0 } };
 const players = [{ faction: 'ashmark', controller: 'human', funds: 20000 }, { faction: 'vantor_reach', controller: 'human', funds: 20000 }];
 const world = (rows, unitsOnMap, p = players) => new Game(registry, parseMap(rawMap({ rows, unitsOnMap, players: p, legend }), registry));
 const unit = (id) => registry.unit(id);
@@ -166,42 +166,32 @@ test('a carrier deploys the leader\'s basic infantry (a motorcycle for Chase)', 
 const kit = (leader) => registry.loadoutFor(leader);
 const menu = (leader, building) => kit(leader).build[building] ?? registry.loadouts.default.build[building];
 
-test('primary infantry: Lysandra royal guard, Ludwig shock trooper, Hiroshi swordsman, Chase motorcycle (no soldier on his menu)', () => {
+test('every faction builds its own infantry at the HQ: Lysandra royal guard, Ludwig shock trooper, Hiroshi swordsman, Chase motorcycle', () => {
   assert.equal(kit('lysandra').infantry, 'royal_guard');
   assert.equal(kit('ludwig').infantry, 'shock_trooper');
   assert.equal(kit('hiroshi').infantry, 'swordsman');
   assert.equal(kit('chase').infantry, 'motorcycle');
-  for (const [leader, id] of [['lysandra', 'royal_guard'], ['ludwig', 'shock_trooper'], ['hiroshi', 'swordsman'], ['chase', 'motorcycle']]) assert.ok(menu(leader, 'barracks').includes(id), `${leader} builds ${id}`);
-  for (const leader of ['lysandra', 'ludwig', 'hiroshi', 'chase']) assert.ok(!menu(leader, 'barracks').includes('soldier'), `${leader} has no soldier`);
-  assert.ok(!menu('lysandra', 'barracks').includes('marine'), 'the royal guard replaces the marine');
-  const starts = (leader) => Object.values(kit(leader).start).flat().map((s) => s.unit);
-  assert.ok(starts('lysandra').includes('royal_guard') && !starts('lysandra').includes('marine'));
-  assert.ok(!starts('chase').includes('mech'));
+  for (const leader of registry.leaderIds) assert.deepEqual(kit(leader).build.hq, [kit(leader).infantry], `${leader}'s HQ builds their infantry and nothing else`);
+  assert.deepEqual(registry.loadouts.default.build.hq, ['soldier']);
+  for (const leader of ['lysandra', 'ludwig', 'hiroshi', 'chase']) assert.ok(!Object.values(kit(leader).build).flat().includes('soldier'), `${leader} has no soldier`);
 });
 
-test('flamethrowers: Chase and Lysandra (instead of the AT infantry)', () => {
-  assert.ok(menu('chase', 'barracks').includes('flamethrower') && !menu('chase', 'barracks').includes('mech'));
-  assert.ok(menu('lysandra', 'barracks').includes('flamethrower') && !menu('lysandra', 'barracks').includes('mech'));
-  assert.ok(menu('ludwig', 'barracks').includes('mechanic'));
-  for (const leader of registry.leaderIds) {
-    const all = Object.values(kit(leader).build).flat();
-    assert.ok(!(all.includes('flamethrower') && (all.includes('mech') || all.includes('rpg_trooper'))), `${leader} has the flamethrower and an AT infantry`);
+test('each leader has exactly one unlock, a lab unit they build without owning the lab', () => {
+  const unlocks = { harlan: 'heavy_tank', ada: 'hover_tank', vex: 'missile_sub', hiroshi: 'missile_tank', ludwig: 'stealth_bomber', rex: 'amphibious_tank', chase: 'stealth_copter', dmitri: 'airship', lysandra: 'dreadnought' };
+  for (const [leader, unit] of Object.entries(unlocks)) {
+    assert.deepEqual(kit(leader).unlock, [unit], leader);
+    assert.ok(registry.labUnits[unit], `${unit} is added by a lab`);
   }
-  assert.ok(menu('chase', 'barracks').includes('sniper'), 'and Chase his sniper');
-  for (const leader of registry.leaderIds) if (!['chase', 'lysandra'].includes(leader)) assert.ok(!Object.values(kit(leader).build).flat().includes('flamethrower'), `${leader} has none`);
 });
 
-test('missile tank replaces Ada\'s tank, the airship goes to Dmitri, and the diver moves to Vex\'s shipyard', () => {
-  assert.ok(menu('ada', 'factory').includes('missile_tank') && !menu('ada', 'factory').includes('tank'));
-  assert.ok(Object.values(kit('ada').start).flat().some((s) => s.unit === 'missile_tank') && !Object.values(kit('ada').start).flat().some((s) => s.unit === 'tank'));
-  assert.ok(menu('dmitri', 'airfield').includes('airship'));
-  for (const leader of registry.leaderIds) if (leader !== 'dmitri') assert.ok(!Object.values(kit(leader).build).flat().includes('airship'), `${leader} has no airship`);
-  assert.ok(menu('vex', 'shipyard').includes('diver') && !menu('vex', 'barracks').includes('diver'));
-});
-
-test('Lysandra can still cross water without her marines', () => {
-  const crossing = ['transport_copter', 'troop_transport', 'marine', 'diver'];
-  assert.ok(Object.values(kit('lysandra').build).flat().some((id) => crossing.includes(id)));
+test('the default menus: infantry and vehicles mix in each building, and the labs add their own units', () => {
+  const b = registry.loadouts.default.build;
+  assert.deepEqual([...b.garage].sort(), ['mechanic', 'recon', 'rocket_buggy']);
+  assert.deepEqual([...b.chemical_plant].sort(), ['flamethrower', 'mine_layer', 'rocket_launcher']);
+  assert.deepEqual([...b.factory].sort(), ['flak', 'mech', 'tank']);
+  assert.deepEqual([...b.airbase].sort(), ['bomber', 'fighter', 'sam_launcher']);
+  assert.deepEqual(registry.labUnits.stealth_bomber, ['airbase']);
+  assert.deepEqual(registry.labUnits.heavy_tank, ['factory']);
 });
 
 test('every build menu is listed cheapest first for its leader, whatever order the data lists the units in', () => {

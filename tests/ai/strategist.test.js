@@ -22,7 +22,7 @@ const registry = await loadRegistry(readData);
 const legend = {
   '~': { terrain: 'sea' }, '.': { terrain: 'plain' }, c: { terrain: 'city' },
   H: { terrain: 'hq', owner: 0 }, h: { terrain: 'hq', owner: 1 },
-  F: { terrain: 'factory', owner: 0 }, B: { terrain: 'barracks', owner: 0 }, A: { terrain: 'airfield', owner: 0 }, Y: { terrain: 'shipyard', owner: 0 },
+  F: { terrain: 'factory', owner: 0 }, B: { terrain: 'agency', owner: 0 }, A: { terrain: 'airfield', owner: 0 }, Y: { terrain: 'shipyard', owner: 0 },
 };
 const world = (rows, unitsOnMap, funds = [30000, 30000], reg = registry) => {
   const players = [{ faction: 'ashmark', controller: 'ai', funds: funds[0] }, { faction: 'vantor_reach', controller: 'ai', funds: funds[1] }];
@@ -63,14 +63,14 @@ test('stuck on an island, it builds nothing that walks or drives: only what can 
   assert.ok(builds.length, 'it does build');
   for (const b of builds) {
     const def = registry.unit(b.unit);
-    assert.ok(['air', 'naval'].includes(def.moveClass), `${b.unit} (${def.moveClass}) at ${b.x},${b.y} cannot reach the other island`);
+    assert.ok(['air', 'naval', 'diver', 'amphibious', 'hover'].includes(def.moveClass), `${b.unit} (${def.moveClass}) at ${b.x},${b.y} cannot reach the other island`);
   }
 });
 
 test('once the enemy has landed on its island, ground units are worth building again', () => {
   const g = world(ISLANDS, [['tank', 1, 10, 1], ['tank', 1, 1, 2]]);   // an enemy tank ashore on our island
   const builds = planBuilds(situation(g));
-  assert.ok(builds.some((b) => registry.unit(b.unit).moveClass === 'tread' || registry.unit(b.unit).moveClass === 'wheels'), builds.map((b) => b.unit).join(','));
+  assert.ok(builds.some((b) => ['tread', 'wheels', 'foot'].includes(registry.unit(b.unit).moveClass)), builds.map((b) => b.unit).join(','));
 });
 
 test('with land to take across the water, a carrier is worth building, but not a walker that cannot get there', () => {

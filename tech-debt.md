@@ -2,7 +2,7 @@
 
 Code and architecture problems: duplication, hand-placed or tangled code, performance costs, test and tooling gaps. Features, balance work, content and AI capability are in `backlog.md`.
 
-Last sorted 9 October 2026, after a pass through every item. Nothing here is a known bug; every entry is a trade-off that was looked at and left on purpose, with the reason, so it is not rediscovered as "debt" each time. Revisit an entry when its trigger happens.
+Last sorted 13 October 2026 (production redesign entries added at the end). Nothing here is a known bug; every entry is a trade-off that was looked at and left on purpose, with the reason, so it is not rediscovered as "debt" each time. Revisit an entry when its trigger happens.
 
 ## Left on purpose (revisit when the trigger happens)
 
@@ -100,3 +100,15 @@ Also resolved earlier and removed from the lists: the mine hidden-tile leak, the
 - **The AI still keeps a large share of its army near home** (about 70% of units within 3 tiles of its own buildings on day 10 in headless games vs an active opponent; the same as before the ammo/fuel work). Massing (`tactics.mass`), caution and `threat` hold units back; tuning them (`npm run ai:tune`) is the next lever if it should press harder.
 - **Jammers are hard for ordinary vehicles to finish.** A tank does about 1 HP a shot to a jammer (10 HP) and carries 6 to 9 rounds, so it takes siege weapons, bombers, flamethrowers or several units; shooting a structure costs ammo like any other shot.
 - AI "stay home" share: at day 10 about a third of strategist units sit within 3 tiles of HQ/factory; most hold capture goals on nearby properties or attack goals against enemies already within 6 tiles, and ~55% of unit decisions are capture goals. Tuning threat/distance params barely moves it; needs a stalemate-impatience mechanism (see backlog.md).
+
+## Production redesign (October 2026)
+
+- **The maps were rewritten by a throwaway script**, which is not in the repo. Their layouts are now the source of truth; to restyle all of them again the script has to be rewritten. *Trigger: a second bulk map change.*
+- **Menus are written out in `loadouts.json` and again as `adds` on the labs.** `validate.js` checks that they agree (a lab unit must not be on a default menu), but the two lists are edited separately.
+- **`exclusive` is a leftover.** Menus are explicit now; the flag only keeps units out of the category-fallback menu of a building the loadout does not list. *Trigger: removing the fallback.*
+- **The HQ keeps `builds: [infantry, amphibious]`** so `buildPath` and arrivals treat it as an infantry source, while its real menu is its owner's one infantry (`registry.resolveLoadouts`). Two sources of truth for one thing.
+- **`gallery/production.json` was generated once from the game data** and is now hand-maintained; the test only checks unit coverage and that labs list what they add. It could be generated at load.
+- **Gallery concept art** (`BASES`) still holds a few drawings for buildings that are not in the game (bunker, radar station, dry dock...) and that no longer appear on the production page.
+- **Test fixtures use the agency as "a building that builds infantry"** where they used the barracks (the HQ has the kit's one infantry; the agency builds the sniper). A tiny test-only building would say it more honestly.
+- **Starting armies are the same at every building** (one fixed unit each), so a side with more producers starts with a bigger army; fine for now, but unbalanced where one side has six and the other two.
+- **The smoke test is not in `npm test`** and needs `npm ci` in `tools/smoke`; it passed (58 of 58) after this change.

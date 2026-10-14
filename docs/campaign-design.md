@@ -200,7 +200,7 @@ A leader is data. Each has:
 | Part | What it is |
 |---|---|
 | Identity | Name, army colours, portrait traits (see the [portrait gallery](https://ajaxor.github.io/pocketwars/gallery/portraits.html)), one-liners for each dialogue situation |
-| **Build sets** | For each basic building (barracks, factory, airfield, shipyard), the list of units it can produce for this leader |
+| **Build sets** | The leader's own infantry (built at the HQ) and one unlock: a lab unit they build without owning the lab. Every other menu is fixed per building (see `docs/production.md`) |
 | **Starting units** | The units and positions this leader begins a mission with, relative to their HQ (the map decides the exact tiles) |
 | Power | One special ability, charged by fighting, used once it is full (e.g. "all units move again"). Optional for the first build |
 | Flavour | Voice lines, a defeat scene, a recruit scene |

@@ -11,7 +11,7 @@ import { loadAnyMap, poolIds } from './maps.mjs';
 
 import { buildingGaps } from '../../../src/data/map-buildings.js';
 
-/** The maps of a pool, each with `gaps` (players missing a producing building; see map-buildings.js). */
+/** The maps of a pool, each with `gaps` (per player, the producing buildings they do not start with; see map-buildings.js). */
 export async function mapList(readData, registry, index, which = 'all') {
   const maps = [];
   for (const id of await poolIds(readData, which)) {

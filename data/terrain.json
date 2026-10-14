@@ -45,7 +45,11 @@
     "name": "City",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] }, "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] }, "blocksLineOfSight": 2 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
+      "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] },
+      "blocksLineOfSight": 2
+    },
     "render": { "building": "city" }
   },
   "hq": {
@@ -53,40 +57,173 @@
     "defense": 4,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
     "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": [] },
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "builds": ["infantry", "amphibious"], "unlimitedBuilds": true },
       "resupply": { "range": 1, "categories": ["infantry", "amphibious", "vehicle", "aircraft", "naval"] },
       "victoryOnCapture": true,
       "blocksLineOfSight": 2
     },
     "render": { "building": "hq" }
   },
-  "factory": {
-    "name": "Factory",
+  "garage": {
+    "name": "Garage",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle"], "builds": ["vehicle"] }, "resupply": { "range": 1, "categories": ["vehicle"] }, "blocksLineOfSight": 2 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "garage" }
+  },
+  "chemical_plant": {
+    "name": "Chemical Plant",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "vehicle", "naval"], "builds": ["infantry", "vehicle", "naval"], "shore": ["mine_layer"] },
+      "resupply": { "range": 1, "categories": ["infantry", "vehicle", "naval"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "chemical_plant" }
+  },
+  "factory": {
+    "name": "Tank Factory",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
+      "blocksLineOfSight": 2
+    },
     "render": { "building": "factory" }
   },
-  "barracks": {
-    "name": "Barracks",
+  "support_factory": {
+    "name": "Support Factory",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "amphibious"], "builds": ["infantry"], "unlimitedBuilds": true }, "resupply": { "range": 1, "categories": ["infantry"] }, "blocksLineOfSight": 2 },
-    "render": { "building": "barracks" }
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "support_factory" }
   },
-  "airfield": {
-    "name": "Airfield",
+  "artillery_range": {
+    "name": "Artillery Range",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["aircraft"], "builds": ["aircraft"] }, "resupply": { "range": 1, "categories": ["aircraft"] }, "blocksLineOfSight": 2 },
-    "render": { "building": "airfield" }
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["vehicle", "infantry"], "builds": ["infantry", "vehicle"] },
+      "resupply": { "range": 1, "categories": ["vehicle", "infantry"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "artillery_range" }
+  },
+  "agency": {
+    "name": "Agency",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["infantry", "aircraft"], "builds": ["infantry", "aircraft"] },
+      "resupply": { "range": 1, "categories": ["infantry", "aircraft"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "agency" }
   },
   "shipyard": {
     "name": "Shipyard",
     "defense": 3,
     "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
-    "attributes": { "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["naval"], "builds": ["naval"] }, "resupply": { "range": 1, "categories": ["naval"] }, "blocksLineOfSight": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["naval", "infantry"], "builds": ["infantry", "naval"] },
+      "resupply": { "range": 1, "categories": ["naval", "infantry"] },
+      "blocksLineOfSight": 1
+    },
     "render": { "building": "shipyard" }
+  },
+  "harbor": {
+    "name": "Harbor",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["naval", "vehicle"], "builds": ["naval", "vehicle"] },
+      "resupply": { "range": 1, "categories": ["naval", "vehicle"] },
+      "blocksLineOfSight": 1
+    },
+    "render": { "building": "harbor" }
+  },
+  "sub_pen": {
+    "name": "Sub Pen",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 1, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["naval"], "builds": ["naval"] },
+      "resupply": { "range": 1, "categories": ["naval"] },
+      "blocksLineOfSight": 1
+    },
+    "render": { "building": "sub_pen" }
+  },
+  "airfield": {
+    "name": "Airfield",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["aircraft", "infantry"], "builds": ["infantry", "aircraft"] },
+      "resupply": { "range": 1, "categories": ["aircraft", "infantry"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "airfield" }
+  },
+  "airbase": {
+    "name": "Airbase",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["aircraft", "vehicle"], "builds": ["aircraft", "vehicle"] },
+      "resupply": { "range": 1, "categories": ["aircraft", "vehicle"] },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "airbase" }
+  },
+  "hover_lab": {
+    "name": "Hover Lab",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["hover_tank"], "harbor": ["amphibious_tank"] } },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "hover_lab" }
+  },
+  "stealth_lab": {
+    "name": "Stealth Lab",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["stealth_tank"], "airbase": ["stealth_copter", "stealth_fighter", "stealth_bomber"] } },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "stealth_lab" }
+  },
+  "heavy_lab": {
+    "name": "Heavy Lab",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["heavy_tank"], "shipyard": ["dreadnought"], "airfield": ["airship"] } },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "heavy_lab" }
+  },
+  "missile_lab": {
+    "name": "Missile Lab",
+    "defense": 3,
+    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
+    "attributes": {
+      "property": { "income": 1000, "capturePoints": 20, "repair": 0, "builds": [], "adds": { "factory": ["missile_tank"], "sub_pen": ["missile_sub"] } },
+      "blocksLineOfSight": 2
+    },
+    "render": { "building": "missile_lab" }
   },
   "wall": {
     "name": "Wall",

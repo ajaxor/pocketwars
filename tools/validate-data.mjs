@@ -5,7 +5,7 @@ import { readData } from '../tests/helpers/node-io.js';
 import { loadRegistry, loadMapIndex, loadMap } from '../src/data/loader.js';
 import { loadCampaign } from '../src/data/campaign.js';
 import { placeStart } from '../src/data/formation.js';
-import { buildingGaps } from '../src/data/map-buildings.js';
+import { playersWithoutProducer } from '../src/data/map-buildings.js';
 import { validateShippedKit } from '../src/data/validate.js';
 
 let failed = false;
@@ -25,8 +25,8 @@ try {
     try {
       const map = await loadMap(readData, registry, id);
       if (map.id !== id) throw new Error(`file declares id "${map.id}" but is indexed as "${id}"`);
-      const gaps = buildingGaps(map);
-      if (gaps.length) console.warn(`  note: ${id} lacks ${gaps.map((g) => `${g.missing.join('/')} for player ${g.owner + 1}`).join('; ')} (balance runs skip it)`);
+      const idle = playersWithoutProducer(map);
+      if (idle.length) console.warn(`  note: ${id}: player ${idle.map((o) => o + 1).join(', ')} starts with no producing building besides the HQ`);
       console.log(`map ok: ${id} (${map.width}x${map.height}, ${map.players.length} players, ${map.units.length} units)`);
       // every leader on every team: every set must fit (nobody skipped), however many units are pushed off their spot
       const unplaced = [];

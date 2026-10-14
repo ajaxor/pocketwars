@@ -41,10 +41,10 @@ for (const id of Object.keys(index.maps)) {
 }
 
 for (const id of ['harbor_front', 'reef_raiders', 'twin_fleets', 'island_chain', 'sky_strait', 'four_seas']) {
-  test(`${id}: each shipyard opens onto deep water that reaches the other side's shipyards`, async () => {
+  test(`${id}: each shipyard, harbor and sub pen opens onto deep water that reaches the others`, async () => {
     const map = await loadMap(readData, registry, id);
     const game = new Game(registry, map);
-    const yards = allProperties(game).filter((p) => p.terrain.attributes.property.builds.includes('naval'));
+    const yards = allProperties(game).filter((p) => ['shipyard', 'harbor', 'sub_pen'].includes(p.terrain.id));
     assert.ok(yards.length >= 2);
     const berth = (y) => [[1, 0], [-1, 0], [0, 1], [0, -1]].map(([dx, dy]) => ({ x: y.x + dx, y: y.y + dy })).find((t) => registry.terrainDef(map.terrain[t.y]?.[t.x] ?? 'plain').moveCost.naval != null);
     assert.ok(yards.every(berth), `${id}: every shipyard has water beside it to launch onto`);

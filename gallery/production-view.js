@@ -1,5 +1,5 @@
 // The Production tab: which building produces which unit. gallery/production.json assigns every unit in the game to a building; the buildings are
-// the game's own four (barracks, factory, airfield, shipyard), concept buildings already drawn in the gallery, and new ones invented here.
+// the game's own production buildings and labs, plus a few concept buildings drawn in the gallery.
 // The pure checks (productionProblems) are unit-tested; the view only lays the data out.
 
 import { clipsFor } from './sfx-review.js';
@@ -21,6 +21,7 @@ export function productionProblems(data, unitIds, art) {
     }
   }
   for (const l of data.laid?.units || []) { if (seen.has(l.unit)) p.push(`"${l.unit}" is both built and laid`); seen.set(l.unit, 'laid'); }
+  for (const l of data.shelved?.units || []) { if (seen.has(l.unit)) p.push(`"${l.unit}" is both built and shelved`); seen.set(l.unit, 'shelved'); }
   for (const u of unitIds) if (!seen.has(u)) p.push(`unit "${u}" is not assigned to a building`);
   return p;
 }
@@ -59,17 +60,17 @@ export function createProductionView(ctx, root, data) {
     return { b, card };
   });
   for (const c of cards) grid.append(c.card);
-  if (data.laid?.units?.length) {
+  for (const group of [data.laid, data.shelved]) if (group?.units?.length) {
     const card = el('article', 'card unit st-draft wide');
     card.append(el('div', 'top'));
-    card.firstChild.append(el('div', 'name', 'Not bought'), el('span', 'tag', 'laid by a unit'));
+    card.firstChild.append(el('div', 'name', group === data.laid ? 'Not bought' : 'Shelved'), el('span', 'tag', group === data.laid ? 'laid by a unit' : 'not built'));
     const units = el('div', 'kunits prod-units');
     for (const l of data.laid.units) {
-      const d = registry.unit(l.unit), by = registry.unit(l.by), box = el('div', 'kunit');
-      box.append(ctx.icon(l.unit, factions[0], 56), el('span', 'kname', d.name), el('span', 'kcost', `laid by ${by.name}`));
+      const d = registry.unit(l.unit), box = el('div', 'kunit');
+      box.append(ctx.icon(l.unit, factions[0], 56), el('span', 'kname', d.name), el('span', 'kcost', l.by ? `laid by ${registry.unit(l.by).name}` : 'shelved'));
       units.append(box);
     }
-    card.append(el('p', 'mech', data.laid.note), units);
+    card.append(el('p', 'mech', group.note), units);
     grid.append(card);
   }
 

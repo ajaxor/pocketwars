@@ -225,8 +225,8 @@ export const UNIT_ATTRIBUTES = {
 export const TERRAIN_ATTRIBUTES = {
   property: {
     label: 'Property',
-    help: 'Can be owned and captured. It earns income, and repairs (for a price) the units of the kinds it serves that begin their turn on it.',
-    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored at the start of its owner\'s turn to a unit of one of the `repairs` categories that stands on it, or, for a unit that cannot enter the tile such as a ship beside its shipyard, next to it; it is paid for out of the owner\'s funds, see `rules.repairCostRate`), repairs (the unit categories it repairs: ground buildings never repair aircraft, the airfield repairs aircraft, the shipyard ships), builds (unit categories the owner may build here; a leader\'s loadout in data/loadouts.json can give the building its own list of units instead, see economy.js). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn, unless it has `unlimitedBuilds: true` (the barracks: it may build again as soon as the last unit has moved off the tile).',
+    help: 'Can be owned and captured. It earns income, and repairs (for a price) the units of the kinds it serves that begin their turn on it. A production building builds units here; a lab adds units to its owner\'s buildings.',
+    doc: 'An ownable, capturable tile. Config: income (funds per turn), capturePoints (needed to flip owner), repair (HP restored at the start of its owner\'s turn to a unit of one of the `repairs` categories that stands on it, or, for a unit that cannot enter the tile such as a ship beside its shipyard, next to it; it is paid for out of the owner\'s funds, see `rules.repairCostRate`), repairs (the unit categories it repairs: ground buildings never repair aircraft, the airfield repairs aircraft, the shipyard ships), builds (the unit categories the owner may build here; what it really builds is the menu data/loadouts.json gives that building, see menuFor in economy.js), shore (unit ids on its menu that are only offered when open water touches the tile: a chemical plant lays mines from its own pier), adds (a lab: { <building terrain id>: [unit ids] }; while its owner holds the lab, the units are added to the menu of every such building they own, and a leader whose loadout `unlock`s one of them gets it without the lab). A unit built here appears on the property itself and gets one free move (see `fresh` in game.js); each property builds at most one unit per turn, unless it has `unlimitedBuilds: true` (the HQ: it may build again as soon as the last unit has moved off the tile).',
     check: (v, e, fail) => {
       if (!v || typeof v !== 'object' || Array.isArray(v)) return fail('must be an object');
       if (!Number.isInteger(v.income) || v.income < 0) fail('income must be a non-negative integer');
@@ -235,6 +235,11 @@ export const TERRAIN_ATTRIBUTES = {
       if (v.repairs !== undefined && (!Array.isArray(v.repairs) || v.repairs.some((c) => typeof c !== 'string' || !c))) fail('repairs must be an array of unit category names');
       if (!Array.isArray(v.builds) || v.builds.some((c) => typeof c !== 'string')) fail('builds must be an array of unit category names');
       if (v.unlimitedBuilds !== undefined && typeof v.unlimitedBuilds !== 'boolean') fail('unlimitedBuilds must be true or false');
+      if (v.shore !== undefined && (!Array.isArray(v.shore) || v.shore.some((id) => typeof id !== 'string' || !id))) fail('shore must be an array of unit ids');
+      if (v.adds !== undefined) {
+        if (!v.adds || typeof v.adds !== 'object' || Array.isArray(v.adds) || !Object.keys(v.adds).length) fail('adds must be an object like { "factory": ["stealth_tank"] } (building terrain id -> unit ids)');
+        else for (const [building, ids] of Object.entries(v.adds)) if (!Array.isArray(ids) || !ids.length || ids.some((id) => typeof id !== 'string' || !id)) fail(`adds.${building} must be a non-empty array of unit ids`);
+      }
     },
   },
   resupply: {
