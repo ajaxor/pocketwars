@@ -449,6 +449,10 @@ export function validateShippedKit(loadouts, units, terrain, problems) {
     else if (!u.shelved && !buildable.has(id) && !upgraded.has(id)) problems.push(`unit "${id}" can be built nowhere: put it on a menu, make a lab upgrade to it, or mark it "shelved": true`);
     else if (!u.shelved && buildable.has(id) && !rosters.has(id) && !upgraded.has(id) && !Object.values(loadouts.leaders ?? {}).some((k) => k?.infantry === id) && loadouts.default?.infantry !== id && (unlocked.has(id) || menus.some((m) => m.includes(id)))) problems.push(`unit "${id}" is on a default menu but on no leader's roster, so nobody can build it`);
   }
+  for (const [lid, k] of Object.entries(loadouts.leaders ?? {})) {   // every faction can answer aircraft: fighters, or both an AA truck and flak (a shelved unit does not count)
+    const has = (id) => Array.isArray(k?.roster) && k.roster.includes(id) && units[id] && !units[id].shelved;
+    if (Array.isArray(k?.roster) && !has('fighter') && !(has('aa_truck') && has('flak'))) problems.push(`leader ${lid}: no anti-air: the roster needs the fighter, or both the AA truck and flak`);
+  }
 }
 
 /** Validate a full raw data bundle: { rules, factions, terrain, weapons, units, ai } plus an optional `ground`, `tilesets`, `loadouts` and `ai-strategies`. */

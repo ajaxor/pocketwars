@@ -29,9 +29,9 @@
    "units": [
     "recon",
     "rocket_buggy",
-    "aa_truck",
     "supply_truck",
     "rocket_launcher",
+    "sam_launcher",
     "motorcycle",
     "mechanic"
    ]
@@ -112,11 +112,10 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "Fighters, bombers and the SAM launcher that defends them.",
+   "blurb": "Fighters and bombers.",
    "units": [
     "fighter",
-    "bomber",
-    "sam_launcher"
+    "bomber"
    ]
   },
   {
@@ -222,6 +221,9 @@
    },
    {
     "unit": "troop_transport"
+   },
+   {
+    "unit": "aa_truck"
    }
   ]
  }

@@ -191,11 +191,6 @@
             "when": "enemyHasAirborne"
           },
           {
-            "unit": "aa_truck",
-            "max": 2,
-            "when": "enemyHasAirborne"
-          },
-          {
             "unit": "hover_tank",
             "max": 2
           },

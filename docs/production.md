@@ -8,19 +8,21 @@ Who can build what is decided by three things: the **building** (a fixed menu of
 |---|---|
 | HQ | the leader's own infantry, plus the unlocked infantry (below); unlimited builds |
 | City | marine and amphibious infantry, plus the unlocked infantry |
-| Garage | recon, rocket buggy, AA truck, supply truck, rocket launcher, motorcycle |
+| Garage | recon, rocket buggy, supply truck, rocket launcher, SAM launcher, motorcycle |
 | Factory | tank, flak, artillery (treads), heavy tank, hover tank, missile tank, amphibious tank, stealth tank |
 | Shipyard | destroyer, cruiser, battleship, dreadnought, aircraft carrier |
 | Harbor | gun boat |
 | Sub pen | diver, submarine, hunter sub, missile sub |
 | Airfield | gun copter, missile copter, torpedo bomber, vintage fighter, vintage bomber, stealth copter, airship |
-| Airbase | fighter, bomber, SAM launcher, stealth fighter, stealth bomber |
+| Airbase | fighter, bomber, stealth fighter, stealth bomber |
 
 **Hubs and unlocks.** The HQ and every city (`hub`) build infantry. Owning a building unlocks one more infantry for all your hubs (`unlocks`): garage -> mechanic, factory -> AT infantry (mech), airfield -> RPG trooper. Leader infantry is HQ-only. Exceptions to "infantry at hubs": the motorcycle is built at the garage and the diver at the sub pen.
 
 **Transfer.** An infantryman (attribute `transfer`) standing on a property of its owner can be sent to any other empty city that owner holds. It ends the unit's turn and resets capture. Fresh units, vehicles, the motorcycle and the diver cannot. The computer does not use it yet.
 
-**Shelved.** The agency, chemical plant, support factory and artillery range are `shelved` (in the data, off every menu and map). So are the transport units (APC, transport copter, troop transport) and the flamethrower, sniper, medic, mortar, mine layer and radar plane; they wait for labs.
+**Anti-air.** Every faction must be able to answer aircraft: its roster has the fighter, or both the AA truck and flak (`validate.js` checks it). The AA truck is shelved for now, so that means a fighter; Chase gained the fighter for this.
+
+**Shelved.** The agency, chemical plant, support factory and artillery range are `shelved` (in the data, off every menu and map). So are the transport units (APC, transport copter, troop transport) the AA truck, and the flamethrower, sniper, medic, mortar, mine layer and radar plane; they wait for labs.
 
 Every building but the HQ builds one unit per turn. Infantry and vehicles are mixed on purpose: a building has a theme, not a unit type.
 

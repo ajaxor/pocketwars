@@ -171,6 +171,7 @@ Concept units and structures that the new production design names but the game d
 - **Shelved units wait for labs**: transport copter, APC, troop transport, flamethrower, sniper, medic, mortar, mine layer, radar plane. They are in `units.json` with `shelved: true` and appear on no menu or roster.
 - **Shelved buildings** (agency, chemical plant, support factory, artillery range) stay in `terrain.json` with `property.shelved`; no map or editor palette uses them.
 - **Stand-in units are placeholders**: gun boat (Harlan, Dmitri), mech (Vex), RPG trooper (Chase), mechanic (Lysandra) fill gaps left by the shelving.
+- **The AA truck is shelved** (14 Oct: SAM launcher moved to the garage instead); it returns with a lab or when a faction needs ground AA without fighters.
 - **New sprites are first drafts**: AA truck, treaded artillery, gun copter, missile copter.
 - **Transfer has no animation of its own** and reuses the deploy sound.
 - **No UI hint for unlocks beyond info text**: tapping a garage, factory or airfield lists the infantry it unlocks; the map does not highlight the cities that gain it.

@@ -135,6 +135,7 @@
   },
   "aa_truck": {
     "name": "AA Truck",
+    "shelved": true,
     "category": "vehicle",
     "cost": 5000,
     "move": 5,

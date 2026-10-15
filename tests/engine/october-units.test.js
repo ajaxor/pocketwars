@@ -200,13 +200,14 @@ test('each leader builds only their own roster: the old units, spread over the f
   for (const [leader, units] of Object.entries(rosters)) for (const u of units) assert.ok(kit(leader).roster.includes(u), `${leader} builds ${u}`);
   assert.ok(!kit('ada').roster.includes('tank') && !kit('ludwig').roster.includes('tank'), 'Ada and Ludwig have no plain tank');
   assert.ok(!kit('lysandra').roster.includes('marine') && !kit('chase').roster.includes('flak'));
+  for (const leader of registry.leaderIds) assert.ok(kit(leader).roster.includes('fighter') || (kit(leader).roster.includes('aa_truck') && kit(leader).roster.includes('flak')), `${leader} can answer aircraft: fighters, or an AA truck and flak`);
   for (const leader of registry.leaderIds) assert.ok(!('unlock' in kit(leader)), 'no leader unlocks a lab unit any more');
   for (const leader of [null, ...registry.leaderIds]) for (const u of (leader ? kit(leader) : registry.loadouts.default).roster) assert.ok(!registry.unit(u).shelved, `${leader ?? 'default'}: ${u} is shelved, so on no roster`);
 });
 
 test('the default menus list every unit a building can build; a leader\'s roster cuts them down', () => {
   const b = registry.loadouts.default.build;
-  assert.deepEqual([...b.garage].sort(), ['aa_truck', 'motorcycle', 'recon', 'rocket_buggy', 'rocket_launcher', 'supply_truck']);
+  assert.deepEqual([...b.garage].sort(), ['motorcycle', 'recon', 'rocket_buggy', 'rocket_launcher', 'sam_launcher', 'supply_truck']);
   assert.deepEqual([...b.sub_pen].sort(), ['diver', 'hunter_sub', 'missile_sub', 'submarine'], 'the diver swims out of the sub pen');
   assert.ok(['tank', 'flak', 'artillery', 'heavy_tank', 'hover_tank', 'missile_tank', 'amphibious_tank', 'stealth_tank'].every((u) => b.factory.includes(u)));
   for (const gone of ['chemical_plant', 'support_factory', 'artillery_range', 'agency']) assert.equal(b[gone], undefined, `${gone} is shelved: no menu`);
@@ -223,7 +224,7 @@ test('the default menus list every unit a building can build; a leader\'s roster
   assert.deepEqual(menuAt('harlan', 'airfield'), ['torpedo_bomber', 'vintage_bomber', 'vintage_fighter']);
   assert.deepEqual(menuAt('vex', 'airfield'), ['gun_copter', 'stealth_copter']);
   assert.deepEqual(menuAt('harlan', 'chemical_plant'), [], 'a shelved building builds nothing');
-  assert.deepEqual(menuAt('chase', 'garage'), ['aa_truck', 'motorcycle', 'recon', 'rocket_launcher', 'supply_truck'], 'Chase: the motorcycle is built at the garage');
+  assert.deepEqual(menuAt('chase', 'garage'), ['motorcycle', 'recon', 'rocket_launcher', 'sam_launcher', 'supply_truck'], 'Chase: the motorcycle is built at the garage');
   assert.deepEqual(menuAt('lysandra', 'shipyard'), ['cruiser', 'destroyer', 'dreadnought']);
   // a lab swaps a unit for its upgrade, but only where the leader has the unit
   assert.deepEqual(menuAt('harlan', 'factory', ['1']), ['artillery', 'flak', 'heavy_tank', 'hover_tank'], 'the hover lab: tank -> hover tank');
