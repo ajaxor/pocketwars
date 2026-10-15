@@ -146,8 +146,8 @@ const copterOf = (kind) => (g, { s, c, dk, w, run }) => {
   if (kind === 'gun') {
     disc(g, s, .2, .1, .035, dk); g.fillStyle = INK; g.fillRect(s * .2, s * .09, s * .2, s * .03);   // the chin turret and its barrel
   } else {
-    stroke(g, s, -.1, .07, -.01, .12, 2.5, dk);                                               // a short diagonal strut hanging the box from the body
-    box(g, s, -.03, .11, .13, .1, 2, mix(c, dk, .45));                                        // a short square launcher box, up and a little forward
+    stroke(g, s, -.04, .05, .05, .09, 2.5, dk);                                               // a short diagonal strut hanging the box from the body
+    box(g, s, .02, .09, .13, .1, 2, mix(c, dk, .45));                                         // a short square launcher box, higher and further forward
   }
   const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .36 + s * .05;
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, INK); g.fillStyle = INK; g.fillRect(-s * .02, -s * .21, s * .04, s * .08);
