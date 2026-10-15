@@ -38,6 +38,9 @@ export class Effects {
   }
   isLocked(now) { return now < this.lockUntil; }
 
+  /** Is a unit still blowing up? The fog of war waits for it (renderer.fogFrame), so the wreck and what it saw stay on screen until it is gone. */
+  dyingActive(now) { return this.list.some((f) => f.k === 'die' && now < f.t0 + f.d); }
+
   /** Queue an attack (or counterattack). Returns the time the next strike in a sequence should start. */
   strike(ev, t0) {
     const { attacker: a, defender: d, damage, destroyed } = ev;
@@ -191,10 +194,11 @@ export class Effects {
   /** @param {(unit:object, alpha:number)=>void} drawDying draws a unit that has already been removed from the game */
   draw(g, now, S, drawDying) {
     this.list = this.list.filter((f) => now < f.t0 + f.d);
+    const held = this.dyingActive(now);   // while a unit dies the fog still shows what it showed, so its blast is not cut off when its sight goes
     for (const f of this.list) {
       if (now < f.t0 && f.k !== 'die') continue;
-      if ((f.k === 'txt' || f.k === 'burst' || f.k === 'cap') && !this.shownAt(Math.floor(f.x), Math.floor(f.y))) continue;   // in the fog: no numbers, no blast
-      if (f.k === 'die' && !this.shownAt(f.unit.x, f.unit.y)) continue;
+      if ((f.k === 'txt' || f.k === 'burst' || f.k === 'cap') && !held && !this.shownAt(Math.floor(f.x), Math.floor(f.y))) continue;   // in the fog: no numbers, no blast
+      if (f.k === 'die' && !held && !this.shownAt(f.unit.x, f.unit.y)) continue;
       const p = Math.max(0, (now - f.t0) / f.d);
       if (f.k === 'fx') {
         drawAttack(g, f, p, S, now);

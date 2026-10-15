@@ -228,3 +228,27 @@ test('Wait is replaced by a priced Resupply next to an airfield; without the mon
     }
   }
 });
+
+test('the fog of war waits for a destruction to finish: sight, units and the wreck stay as they were until the blast is over', () => {
+  const t = setup(['~~~~~~~~~.', '~~~~~~~~~.'], [['cruiser', 0, 0, 0], ['destroyer', 1, 3, 0], ['jammer', null, 9, 1]]);
+  globalThis.Path2D ??= class { moveTo() {} lineTo() {} arc() {} closePath() {} quadraticCurveTo() {} arcTo() {} rect() {} roundRect() {} addPath() {} bezierCurveTo() {} ellipse() {} };
+  const ctx = new Proxy({}, { get: (_, p) => (typeof p === 'symbol' ? undefined : () => ({ addColorStop() {} })), set: () => true });
+  const r = new Renderer({ getContext: () => ctx, style: {}, width: 0, height: 0, getBoundingClientRect: () => ({ left: 0, top: 0 }) }, t.game, t.effects, t.animator);
+  r.viewer = 0;
+  const view = { selectedId: null, dest: null, reach: null, attackTiles: null, targets: [], showTargets: false, pendingTargetId: null };
+  const enemy = t.game.state.units[1];
+  r.fogAnim = { revision: -1, viewer: 0, mapW: 10, from: null, to: { grey: new Uint8Array(20), black: new Uint8Array(20) }, t0: 0, shown: new Set([enemy.id]) };
+  r.fogAnim.from = r.fogAnim.to;
+  t.effects.list.push({ k: 'die', unit: { ...enemy }, t0: 0, d: 600 });
+  assert.equal(t.effects.dyingActive(100), true);
+  r.draw(view, 100);
+  assert.equal(r.fogHold, true);
+  assert.equal(r.fogAnim.revision, -1, 'the old fog frame is kept while the unit blows up');
+  t.game.state.units.splice(1, 1);                   // the engine has already removed it
+  assert.equal(r.isShown({ id: enemy.id, x: 3, y: 0, owner: 1, type: 'destroyer' }), true, 'what was in sight is still shown');
+  r.draw(view, 700);
+  assert.equal(t.effects.dyingActive(700), false);
+  assert.equal(r.fogHold, false);
+  r.draw(view, 800);
+  assert.equal(r.fogAnim.revision, t.game.revision, 'afterwards the fog catches up');
+});

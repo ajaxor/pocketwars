@@ -251,7 +251,7 @@ export class Renderer {
   }
 
   /** Is `u` drawn for the current viewer? */
-  isShown(u) { return this.viewer === null || canSee(this.game, this.viewer, u); }
+  isShown(u) { return this.viewer === null || canSee(this.game, this.viewer, u) || (!!this.fogHold && !!this.fogAnim?.shown?.has(u.id)); }
 
   logicalPos(u, view) {
     return view.dest && u.id === view.selectedId ? view.dest : u;
@@ -358,14 +358,15 @@ export class Renderer {
   fogFrame(now) {
     const { game, viewer } = this;
     const a = this.fogAnim;
-    if (a && a.revision === game.revision && a.viewer === viewer && a.mapW === game.map.width) return a;
+    if (a && a.viewer === viewer && a.mapW === game.map.width && (a.revision === game.revision || this.fogHold)) return a;   // (held: the change of sight waits for the destruction animation)
     const { width: W, height: H } = game.map;
     const grey = new Uint8Array(W * H), black = new Uint8Array(W * H);
     for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const k = y * W + x; grey[k] = tileVisible(game, viewer, x, y) ? 0 : 1; black[k] = tileExplored(game, viewer, x, y) ? 0 : 1; }
     const to = { grey, black };
+    const shown = new Set(game.state.units.filter((u) => canSee(game, viewer, u)).map((u) => u.id));
     const same = a && a.viewer === viewer && a.mapW === W && a.to.grey.every((v, k) => v === grey[k]) && a.to.black.every((v, k) => v === black[k]);
     // a change during a fade starts the next one from where the old one was heading
-    this.fogAnim = same ? { ...a, revision: game.revision } : { revision: game.revision, viewer, mapW: W, from: a && a.viewer === viewer && a.mapW === W ? a.to : to, to, t0: now };
+    this.fogAnim = same ? { ...a, revision: game.revision, shown } : { revision: game.revision, shown, viewer, mapW: W, from: a && a.viewer === viewer && a.mapW === W ? a.to : to, to, t0: now };
     return this.fogAnim;
   }
 
@@ -451,6 +452,7 @@ export class Renderer {
     const anim = this.animator.active;
     const { W, H, ox, oy, d } = this.layout;
     const seen = this.camera.visible(1);
+    this.fogHold = this.viewer !== null && !!this.fogAnim && this.effects.dyingActive(now);   // a unit is blowing up: the fog (and who is in sight) stays as it was until it is gone
     g.setTransform(d, 0, 0, d, 0, 0);
     g.clearRect(0, 0, W, H);
     g.setTransform(d, 0, 0, d, ox * d, oy * d);

@@ -95,7 +95,7 @@
    "art": "game",
    "origin": "existing",
    "water": false,
-   "blurb": "Copters and the light aircraft. Holding one unlocks the RPG trooper, who is built at the HQ and cities.",
+   "blurb": "Copters, fighters and bombers. Holding one unlocks the RPG trooper, who is built at the HQ and cities.",
    "units": [
     "gun_copter",
     "missile_copter",
@@ -103,19 +103,9 @@
     "vintage_fighter",
     "vintage_bomber",
     "airship",
-    "rpg_trooper"
-   ]
-  },
-  {
-   "id": "airbase",
-   "name": "Airbase",
-   "art": "game",
-   "origin": "existing",
-   "water": false,
-   "blurb": "Fighters and bombers.",
-   "units": [
     "fighter",
-    "bomber"
+    "bomber",
+    "rpg_trooper"
    ]
   },
   {

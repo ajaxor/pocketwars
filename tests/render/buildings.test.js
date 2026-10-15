@@ -14,7 +14,7 @@ function recorder() {
 }
 const drawn = (id, owner = '#e8712c', S = 40) => { const { ctx, calls } = recorder(); BUILDINGS[id](ctx, 0, 0, S, owner); return calls; };
 
-test('there is a drawing for every kind of property', () => assert.deepEqual(Object.keys(BUILDINGS).sort(), ['agency', 'airbase', 'airfield', 'artillery_range', 'chemical_plant', 'city', 'factory', 'garage', 'harbor', 'heavy_lab', 'hover_lab', 'hq', 'missile_lab', 'shipyard', 'stealth_lab', 'sub_pen', 'support_factory']));
+test('there is a drawing for every kind of property', () => assert.deepEqual(Object.keys(BUILDINGS).sort(), ['agency', 'airfield', 'artillery_range', 'chemical_plant', 'city', 'factory', 'garage', 'harbor', 'heavy_lab', 'hover_lab', 'hq', 'missile_lab', 'shipyard', 'stealth_lab', 'sub_pen', 'support_factory']));
 
 test('every building draws for orange, blue and neutral owners at several sizes', () => {
   for (const id of Object.keys(BUILDINGS)) {

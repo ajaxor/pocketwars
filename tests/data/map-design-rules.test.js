@@ -15,7 +15,7 @@ const info = (m) => {
 };
 
 const WATERFRONT = ['shipyard', 'harbor', 'sub_pen'];
-const MAKERS = ['garage', 'factory', 'shipyard', 'harbor', 'sub_pen', 'airfield', 'airbase', 'hover_lab', 'stealth_lab', 'heavy_lab', 'missile_lab'];
+const MAKERS = ['garage', 'factory', 'shipyard', 'harbor', 'sub_pen', 'airfield', 'hover_lab', 'stealth_lab', 'heavy_lab', 'missile_lab'];
 
 test('a shipyard, harbor or sub pen sits on a lake or sea big enough to sail, never a pond', () => {
   for (const m of maps) {

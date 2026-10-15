@@ -138,7 +138,7 @@ const flak = (g, { s, c, dk, w, ph, run, j }) => {
 };
 
 // ---- aircraft (plan view, facing right) ----------------------------------------------------------------------
-// Attack helicopters: the gun copter has a chin gun under the nose, the missile copter a pair of missile pods on stub wings.
+// Attack helicopters: the gun copter has a chin gun under the nose, the missile copter a single rocket pod on a side stub wing.
 const copterOf = (kind) => (g, { s, c, dk, w, run }) => {
   stroke(g, s, -.2, .25, .2, .25, 2, INK); stroke(g, s, -.1, .1, -.1, .25, 2, INK); stroke(g, s, .1, .1, .1, .25, 2, INK);   // the skid is centred under the body
   box(g, s, -.44, -.04, .34, .06, 1, dk); box(g, s, -.46, -.16, .05, .22, 1, dk);
@@ -146,9 +146,9 @@ const copterOf = (kind) => (g, { s, c, dk, w, run }) => {
   if (kind === 'gun') {
     disc(g, s, .2, .1, .035, dk); g.fillStyle = INK; g.fillRect(s * .2, s * .09, s * .2, s * .03);   // the chin turret and its barrel
   } else {
-    box(g, s, -.1, .08, .3, .045, 2, dk);                                                     // the stub wing
-    box(g, s, -.02, .115, .3, .05, 2, mix(c, dk, .5)); box(g, s, .28, .122, .05, .035, 1, RED);     // the missile pod and its nose
-    box(g, s, -.02, -.14, .3, .05, 2, mix(c, dk, .5)); box(g, s, .28, -.133, .05, .035, 1, RED);    // and one on the far wing
+    box(g, s, -.08, .075, .26, .04, 2, dk);                                                   // one stub wing on the near side
+    box(g, s, -.04, .105, .34, .075, 3, mix(c, dk, .45)); box(g, s, .3, .112, .06, .06, 2, RED);   // a single rocket pod slung under it, with its nose
+    g.fillStyle = INK; for (let i = 0; i < 3; i++) disc(g, s, .27, .125 + i * .017, .008, INK);   // the tube mouths
   }
   const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .36 + s * .05;
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, INK); g.fillStyle = INK; g.fillRect(-s * .02, -s * .21, s * .04, s * .08);

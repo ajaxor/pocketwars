@@ -120,3 +120,4 @@ Also resolved earlier and removed from the lists: the mine hidden-tile leak, the
 - **Leader infantry is HQ-only while other infantry is hub-built**: two code paths in `menuFor` (`hub` branch and the loadout branch).
 - **`transfer.js` and the controller's transfer mode reuse `layTiles`**, the build-lay highlight; a dedicated overlay would be clearer.
 - **Test fixtures that used the agency as an infantry-building** now use the city hub; a test-only building would say it more honestly.
+- **Fog hold is a renderer flag** (`fogHold`, set per frame while `effects.dyingActive`): the held fog frame and the `shown` unit set live in `fogAnim`. Other things that read live visibility during a death (remembered structures, `wallAt`, the camera) still use the new sight at once.

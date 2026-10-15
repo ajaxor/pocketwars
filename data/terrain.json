@@ -174,17 +174,6 @@
     },
     "render": { "building": "airfield" }
   },
-  "airbase": {
-    "name": "Airbase",
-    "defense": 3,
-    "moveCost": { "foot": 1, "wheels": 1, "tread": 1, "air": 1, "naval": null, "amphibious": 1, "bike": 1, "diver": 2, "hover": 1, "amphibious_tread": 1 },
-    "attributes": {
-      "property": { "income": 1000, "capturePoints": 20, "repair": 2, "repairs": ["aircraft", "vehicle"], "builds": ["aircraft", "vehicle"] },
-      "resupply": { "range": 1, "categories": ["aircraft", "vehicle"] },
-      "blocksLineOfSight": 2
-    },
-    "render": { "building": "airbase" }
-  },
   "hover_lab": {
     "name": "Hover Lab",
     "defense": 3,

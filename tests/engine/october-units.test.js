@@ -212,7 +212,7 @@ test('the default menus list every unit a building can build; a leader\'s roster
   assert.ok(['tank', 'flak', 'artillery', 'heavy_tank', 'hover_tank', 'missile_tank', 'amphibious_tank', 'stealth_tank'].every((u) => b.factory.includes(u)));
   for (const gone of ['chemical_plant', 'support_factory', 'artillery_range', 'agency']) assert.equal(b[gone], undefined, `${gone} is shelved: no menu`);
   const menuAt = (leader, building, labs = []) => {
-    const glyphs = { factory: 'f', airfield: 'a', shipyard: 'y', sub_pen: 's', airbase: 'x', chemical_plant: 'c', garage: 'g' };
+    const glyphs = { factory: 'f', airfield: 'a', shipyard: 'y', sub_pen: 's', chemical_plant: 'c', garage: 'g' };
     const lg = { ...legend, ...Object.fromEntries(Object.entries(glyphs).map(([t, g]) => [g, { terrain: t, owner: 0 }])), 1: { terrain: 'hover_lab', owner: 0 }, 2: { terrain: 'stealth_lab', owner: 0 }, 3: { terrain: 'heavy_lab', owner: 0 }, 4: { terrain: 'missile_lab', owner: 0 } };
     const row = `H${glyphs[building]}${labs.join('')}h`.padEnd(6, '.');
     const g = new Game(registry, parseMap(rawMap({ rows: [row, '.'.repeat(6)], unitsOnMap: [], players: [{ ...players[0], leader }, players[1]], legend: lg }), registry));
@@ -221,8 +221,8 @@ test('the default menus list every unit a building can build; a leader\'s roster
   assert.deepEqual(menuAt('harlan', 'factory'), ['artillery', 'flak', 'heavy_tank', 'tank'], 'Harlan: his tanks and the artillery');
   assert.deepEqual(menuAt('ada', 'factory'), ['missile_tank'], 'Ada: only her missile tank');
   assert.deepEqual(menuAt('rex', 'factory'), ['amphibious_tank', 'artillery', 'flak'], 'Rex: the amphibious tank, artillery and flak');
-  assert.deepEqual(menuAt('harlan', 'airfield'), ['torpedo_bomber', 'vintage_bomber', 'vintage_fighter']);
-  assert.deepEqual(menuAt('vex', 'airfield'), ['gun_copter', 'stealth_copter']);
+  assert.deepEqual(menuAt('harlan', 'airfield'), ['fighter', 'torpedo_bomber', 'vintage_bomber', 'vintage_fighter']);
+  assert.deepEqual(menuAt('vex', 'airfield'), ['bomber', 'fighter', 'gun_copter', 'stealth_copter']);
   assert.deepEqual(menuAt('harlan', 'chemical_plant'), [], 'a shelved building builds nothing');
   assert.deepEqual(menuAt('chase', 'garage'), ['motorcycle', 'recon', 'rocket_launcher', 'sam_launcher', 'supply_truck'], 'Chase: the motorcycle is built at the garage');
   assert.deepEqual(menuAt('lysandra', 'shipyard'), ['cruiser', 'destroyer', 'dreadnought']);

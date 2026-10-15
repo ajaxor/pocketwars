@@ -29,7 +29,7 @@
     "C": { "terrain": "factory", "owner": 1 },
     "D": { "terrain": "sub_pen", "owner": 0 },
     "v": { "terrain": "airfield", "owner": 0 },
-    "x": { "terrain": "airbase", "owner": 1 },
+    "x": { "terrain": "airfield", "owner": 1 },
     "E": { "terrain": "shipyard", "owner": 1 }
   },
   "tiles": [

@@ -9,7 +9,7 @@
 //   garage    a low hall with two roll-up doors and a tyre stack          chemical_plant  two round tanks, a flare stack and a pipe
 //   support_factory  a hall with a red cross panel and a supply crate      artillery_range  a low berm with a long gun barrel and a target post
 //   agency    a tall dark tower with a dish and an antenna                 harbor  a warehouse on a pier with a bollard and a small crane
-//   sub_pen   a concrete block with a dark arched pen and a conning tower  airbase  a long runway, a big hangar, a radar dome and a jet
+//   sub_pen   a concrete block with a dark arched pen and a conning tower
 //   hover_lab  a hall with a glass dome and a glowing pad                  stealth_lab  a dark faceted bunker with a slit and a dish
 //   heavy_lab  a squat armoured block with a press and a gear              missile_lab  a hall with a gantry and a missile on its pad
 // Each function draws into the square (px, py, S) and takes the owner's colour. Themes never change buildings.
@@ -242,18 +242,6 @@ export const BUILDINGS = {
     k.poly([[.28, .86], [.28, .74], [.36, .66], [.58, .66], [.64, .74], [.64, .86]], '#3b4250');                         // the sub inside
     k.rect(.4, .56, .1, .12, '#3b4250'); k.line([[.45, .56], [.45, .5]], '#222', .02);                                  // its conning tower and periscope
     k.rect(.64, .34, .08, .08, '#565a63');
-  },
-
-  airbase(g, px, py, S, owner) {
-    const k = kit(g, px, py, S);
-    k.poly([[.1, .66], [.9, .66], [1, .94], [0, .94]], '#585d66');                      // a wider runway
-    for (let i = 0; i < 4; i++) k.rect(.12 + i * .21, .8, .11, .03, '#e8e8e8');
-    k.boxShadow(.04, .36, .46, .3, .14); k.box(.04, .36, .46, .3, .14, owner);          // a big flat hangar
-    k.rect(.04, .36, .46, .05, shade(owner, -.18));
-    k.rect(.12, .46, .3, .2, '#2b2d33');
-    g.fillStyle = '#e8e8e8'; g.beginPath(); g.arc(k.X(.72), k.Y(.34), .09 * S, Math.PI, 0); g.fill();   // a radar dome
-    k.line([[.72, .34], [.72, .52]], '#565a63', .05);
-    k.poly([[.6, .78], [.92, .74], [.74, .7], [.7, .6], [.66, .7]], '#c9ccd2');         // a jet parked on the apron
   },
 
   hover_lab(g, px, py, S, owner) {

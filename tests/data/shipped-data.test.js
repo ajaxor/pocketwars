@@ -89,7 +89,7 @@ test('every unit can be built somewhere: a leader\'s roster, an HQ, a lab upgrad
 
 test('terrain attributes: properties, income and the HQ victory condition', () => {
   const props = Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'property')).sort();
-  assert.deepEqual(props, ['agency', 'airbase', 'airfield', 'artillery_range', 'chemical_plant', 'city', 'factory', 'garage', 'harbor', 'heavy_lab', 'hover_lab', 'hq', 'missile_lab', 'shipyard', 'stealth_lab', 'sub_pen', 'support_factory']);
+  assert.deepEqual(props, ['agency', 'airfield', 'artillery_range', 'chemical_plant', 'city', 'factory', 'garage', 'harbor', 'heavy_lab', 'hover_lab', 'hq', 'missile_lab', 'shipyard', 'stealth_lab', 'sub_pen', 'support_factory']);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'submergible')), ['sea']);
   assert.deepEqual(Object.keys(registry.terrain).filter((id) => hasAttribute(registry.terrain[id], 'victoryOnCapture')), ['hq']);
   for (const id of props) assert.equal(registry.terrainDef(id).attributes.property.capturePoints, 20);

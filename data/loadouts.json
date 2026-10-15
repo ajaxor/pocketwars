@@ -8,8 +8,7 @@
       "shipyard": ["destroyer", "cruiser", "battleship", "dreadnought", "aircraft_carrier"],
       "harbor": ["gun_boat"],
       "sub_pen": ["diver", "submarine", "hunter_sub", "missile_sub"],
-      "airfield": ["gun_copter", "missile_copter", "torpedo_bomber", "vintage_fighter", "vintage_bomber", "stealth_copter", "airship"],
-      "airbase": ["fighter", "bomber", "stealth_fighter", "stealth_bomber"]
+      "airfield": ["gun_copter", "missile_copter", "torpedo_bomber", "fighter", "bomber", "vintage_fighter", "vintage_bomber", "stealth_copter", "stealth_fighter", "stealth_bomber", "airship"]
     },
     "start": {
       "hq": [
@@ -22,8 +21,7 @@
       "shipyard": [{ "unit": "destroyer", "at": [0, 1] }],
       "harbor": [{ "unit": "gun_boat", "at": [0, 1] }],
       "sub_pen": [{ "unit": "submarine", "at": [0, 1] }],
-      "airfield": [{ "unit": "missile_copter", "at": [0, 1] }],
-      "airbase": [{ "unit": "fighter", "at": [0, 1] }]
+      "airfield": [{ "unit": "missile_copter", "at": [0, 1] }]
     }
   },
   "leaders": {
