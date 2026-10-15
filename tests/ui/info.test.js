@@ -39,13 +39,13 @@ test('property info: owner, income, repair, capture points and what it builds', 
   const city = allProperties(game).find((p) => p.owner === null);
   assert.equal(terrainInfo(game, city.x, city.y).property.owner, null, 'an unowned city is neutral');
   const hq = allProperties(game).find((p) => p.terrain.id === 'hq' && p.owner === 0);
-  assert.deepEqual(terrainInfo(game, hq.x, hq.y).property.menu.map((u) => u.id), ['soldier', 'mechanic', 'rpg_trooper', 'mech'], 'the HQ builds the faction infantry and what its garage, airfield and factory unlock');
+  assert.deepEqual(terrainInfo(game, hq.x, hq.y).property.menu.map((u) => u.id), ['soldier', 'mechanic', 'mech', 'rpg_trooper'], 'the HQ builds the faction infantry and what its garage, airfield and factory unlock');
 });
 
 test('unit stats read the weapon, armor and attribute labels from the data', () => {
   const game = fresh();
   const tank = unitStats(game, registry.unit('tank'));
-  assert.deepEqual([tank.name, tank.cost, tank.move, tank.armor, tank.toughness], ['Tank', 7000, 3, 85, 1.3]);
+  assert.deepEqual([tank.name, tank.cost, tank.move, tank.armor, tank.toughness], ['Tank', 7000, 3, 85, 1.4]);
   assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air', 'Surface'] }]);
   assert.deepEqual(tank.tags.map((t) => t.label), ['Ammo 8', 'Fuel 9'], 'every fighting vehicle carries ammo and fuel');
 

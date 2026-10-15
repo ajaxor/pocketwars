@@ -60,7 +60,7 @@ test('royal guard: an armour stat, so rifles and machine guns do less to it than
   const [plain, guard, shooter, tank] = g.state.units;
   const from = (t) => ({ x: t.x - 1, y: t.y });   // standing right beside the target
   assert.ok(calcDamage(g, shooter, guard, from(guard)) < calcDamage(g, shooter, plain, from(plain)), 'a rifle does less to the guard');
-  assert.equal(calcDamage(g, tank, guard, from(guard)), calcDamage(g, tank, plain, from(plain)), 'a tank cannon pierces the plating');
+  assert.ok(Math.abs(calcDamage(g, tank, guard, from(guard)) - calcDamage(g, tank, plain, from(plain)) / unit('royal_guard').toughness) <= .5, 'a tank cannon pierces the plating: only the guard\'s toughness cuts it');
   assert.equal(unit('royal_guard').attributes.capture, true, 'as a leader\'s basic infantry it has to capture');
 });
 

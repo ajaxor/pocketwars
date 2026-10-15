@@ -106,7 +106,7 @@
       "start": {
         "hq": [
           { "unit": "conscript", "at": [-1, 1] },
-          { "unit": "artillery", "at": [0, 1] },
+          { "unit": "recon", "at": [0, 1] },
           { "unit": "heavy_tank", "at": [1, 1] }
         ]
       }
