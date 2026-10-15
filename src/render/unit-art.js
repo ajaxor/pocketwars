@@ -147,8 +147,9 @@ const copterOf = (kind) => (g, { s, c, dk, w, run }) => {
     disc(g, s, .2, .1, .035, dk); g.fillStyle = INK; g.fillRect(s * .2, s * .09, s * .2, s * .03);   // the chin turret and its barrel
   } else {
     box(g, s, -.08, .075, .26, .04, 2, dk);                                                   // one stub wing on the near side
-    box(g, s, -.04, .105, .34, .075, 3, mix(c, dk, .45)); box(g, s, .3, .112, .06, .06, 2, RED);   // a single rocket pod slung under it, with its nose
-    g.fillStyle = INK; for (let i = 0; i < 3; i++) disc(g, s, .27, .125 + i * .017, .008, INK);   // the tube mouths
+    box(g, s, .0, .1, .2, .1, 2, mix(c, dk, .45));                                           // a short square launcher box slung under it
+    box(g, s, .16, .105, .04, .09, 1, INK);                                                   // its open front, where the rockets sit
+    for (let j = 0; j < 3; j++) disc(g, s, .18, .118 + j * .03, .011, RED);   // rocket tips peeking out of the box
   }
   const rl = (run ? Math.abs(Math.cos(w * 22)) : .6) * s * .36 + s * .05;
   stroke(g, s, -rl / s, -.19, rl / s, -.19, 2.5, INK); g.fillStyle = INK; g.fillRect(-s * .02, -s * .21, s * .04, s * .08);
