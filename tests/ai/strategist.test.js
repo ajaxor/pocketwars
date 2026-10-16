@@ -157,7 +157,7 @@ test('threat: with the enemy\'s reach counted, a unit stops short of where it wo
 test('matchups come from the data: a new unit is understood without any code', () => {
   const g = world(ISLANDS, [['tank', 1, 10, 1]]);
   assert.ok(matchup(g, 'tank', 'soldier') > matchup(g, 'soldier', 'tank'));
-  assert.equal(matchup(g, 'tank', 'fighter'), 0, 'a tank cannot shoot down a fighter');
+  assert.ok(matchup(g, 'tank', 'fighter') > 0 && matchup(g, 'tank', 'fighter') < matchup(g, 'tank', 'soldier'), 'a tank can only graze a fighter');
   assert.ok(matchup(g, 'fighter', 'bomber') > 0);
 });
 

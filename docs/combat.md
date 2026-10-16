@@ -56,6 +56,8 @@ A weapon lists the modes it can fire at.
 | `direct_ground` | ground units | needed |
 | `indirect_ground` | ground units | not needed (artillery, bombs) |
 | `low_air`, `high_air` | air units on that layer | not needed |
+
+**Low air reaches high air.** A weapon that lists `low_air` but not `high_air` also hits high air at `rules.highAirPenalty` (0.6) of its low-air multiplier; the registry adds the mode when it loads (`registry.js`), so tanks and rifles can graze a fighter or bomber. A weapon that lists `high_air` itself (missiles, flak, SAMs) is unchanged.
 | `surface`, `underwater` | ships / submerged submarines | not needed |
 | `structure` | structures (reserved, see below) | not needed |
 

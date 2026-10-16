@@ -269,7 +269,8 @@ test('every shipped map but the tiny Classic has jammers, all neutral', () => {
   for (const m of maps) {
     const jammers = m.units.filter((u) => u.type === 'jammer');
     if (m.id === 'classic') assert.equal(jammers.length, 0);
-    else { assert.ok(jammers.length >= 2, m.id); assert.ok(jammers.every((u) => u.owner === null), m.id); }
+    else { assert.ok(jammers.length >= (m.id === 'dust_bowl' ? 1 : 2), m.id);   // (Dust Bowl was reworked by hand with one central jammer)
+      assert.ok(jammers.every((u) => u.owner === null), m.id); }
   }
 });
 

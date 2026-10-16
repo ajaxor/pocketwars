@@ -15,7 +15,7 @@ Who can build what is decided by three things: the **building** (a fixed menu of
 | Sub pen | diver, submarine, hunter sub, missile sub |
 | Airfield | gun copter, missile copter, torpedo bomber, fighter, bomber, vintage fighter, vintage bomber, stealth copter, stealth fighter, stealth bomber, airship (the airbase was merged into it) |
 
-**Hubs and unlocks.** The HQ and every city (`hub`) build infantry. Owning a building unlocks one more infantry for all your hubs (`unlocks`): garage -> mechanic, factory -> AT infantry (mech), airfield -> RPG trooper. Leader infantry is HQ-only. Exceptions to "infantry at hubs": the motorcycle is built at the garage and the diver at the sub pen.
+**Hubs and unlocks.** The HQ and every city (`hub`) build infantry. Owning a building unlocks one more infantry for all your hubs (`unlocks`): garage -> mechanic, factory -> AT infantry (mech), airfield -> RPG trooper. Each leader's own infantry is built at the HQ (unlimited) and at cities (one a turn). Exceptions to "infantry at hubs": the motorcycle is built at the garage and the diver at the sub pen.
 
 **Transfer.** An infantryman (attribute `transfer`) standing on a property of its owner can be sent to any other empty city that owner holds. It ends the unit's turn and resets capture. Fresh units, vehicles, the motorcycle and the diver cannot. The computer does not use it yet.
 

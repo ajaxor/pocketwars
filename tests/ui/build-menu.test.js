@@ -36,6 +36,8 @@ test('the menu starts on the first unit that can be afforded, or the first one w
 
 test('a tile that builds nothing gives an empty menu', () => {
   const game = new Game(registry, classic);
-  const city = allProperties(game).find((p) => p.terrain.id === 'city');
-  assert.deepEqual(buildMenuModel(game, 0, city.x, city.y).options, []);
+  const props = allProperties(game);
+  const open = { x: 0, y: 0 };
+  while (props.some((p) => p.x === open.x && p.y === open.y)) open.x++;   // a tile that is no property at all
+  assert.deepEqual(buildMenuModel(game, 0, open.x, open.y).options, []);
 });

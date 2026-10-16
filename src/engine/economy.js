@@ -116,7 +116,7 @@ export function unlockedFor(game, player, kit) {
  * The menu of the production building at (x, y) for `player`, cheapest first for that player (a troop carrier's price moves with their leader's
  * infantry, so the order is worked out here rather than kept in the data; ties keep the loadout's order):
  *   0. a shelved building (kept in the data, out of play) builds nothing;
- *   1. the HQ and the cities (`hub`) build the leader's own infantry (HQ only) and the infantry the player has unlocked (unlockedFor);
+ *   1. the HQ and the cities (`hub`) build the leader's own infantry and the infantry the player has unlocked (unlockedFor);
  *   2. any other building: the units the loadout lists for that kind of building (data/loadouts.json: the same for everyone),
  *      limited to the leader's `roster`: a leader builds only the units of their own faction,
  *   3. where the player holds a lab, each unit it upgrades is replaced by its upgrade (hover lab: tank -> hover tank), if the upgrade is on that menu too,
@@ -133,7 +133,7 @@ export function menuFor(game, player, x, y) {
   const listed = kit.build[terrainId] ?? (property.hub ? [] : null);
   if (!listed) return menuByPrice(game, player, [...registry.unitsInCategories(property.builds)]);
   let ids;
-  if (property.hub) ids = [...listed, ...unlockedFor(game, player, kit)];
+  if (property.hub) ids = [...(terrainId === 'hq' ? [] : kit.build.hq ?? []), ...listed, ...unlockedFor(game, player, kit)];   // a city builds the leader's own infantry too (the HQ lists it itself)
   else {
     ids = kit.roster ? listed.filter((id) => kit.roster.includes(id)) : [...listed];
     if (player != null) {

@@ -121,3 +121,5 @@ Also resolved earlier and removed from the lists: the mine hidden-tile leak, the
 - **`transfer.js` and the controller's transfer mode reuse `layTiles`**, the build-lay highlight; a dedicated overlay would be clearer.
 - **Test fixtures that used the agency as an infantry-building** now use the city hub; a test-only building would say it more honestly.
 - **Fog hold is a renderer flag** (`fogHold`, set per frame while `effects.dyingActive`): the held fog frame and the `shown` unit set live in `fogAnim`. Other things that read live visibility during a death (remembered structures, `wallAt`, the camera) still use the new sight at once.
+- **`dust_bowl` is exempt from two map layout rules** (`HAND_EDITED` in `tests/data/map-design-rules.test.js`, and one jammer is enough in `skirmish.test.js`): the author reworked it in the editor with a single central jammer and no neutral producers. It also still places a shelved sniper on both sides.
+- **The high-air rule is applied in the registry**, so `registry.weapon(id).targets` no longer matches `weapons.json` for low-air weapons (the info panel shows "High air" on tanks and rifles).

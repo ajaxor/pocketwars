@@ -5,6 +5,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 
 const DIR = new URL('../../data/maps/', import.meta.url);
 const maps = readdirSync(DIR).filter((n) => n.endsWith('.map.json')).map((n) => JSON.parse(readFileSync(new URL(n, DIR), 'utf8')));
+const HAND_EDITED = ['dust_bowl'];   // maps the author reworked in the editor on purpose: one central jammer, no neutral producers; exempt from the two layout rules below
 const MIN_WATER = 40;   // a shipyard needs a lake or sea of at least this many tiles (sea and shoals joined up) to sail on
 
 const info = (m) => {
@@ -40,7 +41,7 @@ test('a factory, lab or other producer away from its owner\'s HQ (in the middle 
 });
 
 test('jammers are an advantage for the computer: one holds the middle, one sits in each enemy base, none are mirrored', () => {
-  for (const m of maps.filter((x) => x.id !== 'classic' && x.id !== 'iron_curtain')) {   // (Iron Curtain keeps its jammers sealed in the middle bunker, by design)
+  for (const m of maps.filter((x) => x.id !== 'classic' && x.id !== 'iron_curtain' && !HAND_EDITED.includes(x.id))) {   // (Iron Curtain keeps its jammers sealed in the middle bunker, by design)
     const { W, H, at } = info(m), jam = m.units.filter((u) => u.type === 'jammer'), hqs = at((t) => t.terrain === 'hq');
     const enemy = hqs.filter((h) => h.owner !== 0);
     assert.equal(jam.length, 1 + enemy.length, `${m.id}: a central jammer and one per enemy base`);
@@ -58,6 +59,7 @@ test('every player starts with one to six producers near their HQ, and the middl
       const near = at((t, x, y) => t.owner === h.owner && MAKERS.includes(t.terrain) && Math.abs(x - h.x) + Math.abs(y - h.y) <= 12);
       assert.ok(near.length >= 1 && near.length <= 6, `${m.id}: player ${h.owner} has ${near.length} producers near their HQ`);
     }
+    if (HAND_EDITED.includes(m.id)) continue;
     const contested = at((t) => t.owner == null && MAKERS.includes(t.terrain));
     assert.ok(contested.length >= 2, `${m.id}: only ${contested.length} neutral producers or labs`);
     assert.ok(contested.some((t) => t.terrain.endsWith('_lab')), `${m.id}: no contested lab`);

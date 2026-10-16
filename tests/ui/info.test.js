@@ -46,7 +46,7 @@ test('unit stats read the weapon, armor and attribute labels from the data', () 
   const game = fresh();
   const tank = unitStats(game, registry.unit('tank'));
   assert.deepEqual([tank.name, tank.cost, tank.move, tank.armor, tank.toughness], ['Tank', 7000, 3, 85, 1.4]);
-  assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air', 'Surface'] }]);
+  assert.deepEqual(tank.weapons, [{ name: 'Tank cannon', damage: 80, min: 1, max: 1, hits: ['Ground', 'Low air', 'Surface', 'High air'] }]);
   assert.deepEqual(tank.tags.map((t) => t.label), ['Ammo 8', 'Fuel 9'], 'every fighting vehicle carries ammo and fuel');
 
   assert.deepEqual(unitStats(game, registry.unit('soldier')).tags.map((t) => t.label), ['Captures', 'Ammo 9', 'Can transfer']);

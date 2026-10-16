@@ -129,8 +129,13 @@ test('targeting roles: who shoots over obstacles, who needs a clear line, who ca
   assert.ok(modes('sniper').has('direct_ground'), 'snipers need a clear line');
   assert.ok(modes('bomber').has('indirect_ground'));
   assert.ok(modes('flak').has('high_air') && modes('flak').has('low_air'));
-  assert.ok(modes('fighter').has('high_air') && !modes('fighter').has('direct_ground'));
-  assert.ok(!modes('soldier').has('high_air'));
+  assert.ok(modes('fighter').has('high_air') && modes('fighter').has('direct_ground'), 'the fighter has missiles for air and guns for the ground');
+  assert.equal(registry.weapon('fighter_guns').armorPiercing, 0, 'its guns do not pierce armour');
+  assert.ok(modes('tank').has('high_air') && registry.weapon('tank_cannon').targetMultipliers.high_air < registry.weapon('tank_cannon').targetMultipliers.low_air, 'whatever hits low air also hits high air, for less');
+  assert.deepEqual(registry.weapon('air_missiles').range, [1, 2]);
+  assert.deepEqual(registry.weapon('wing_guns').range, [1, 1], 'the vintage fighter keeps guns at point-blank range');
+  assert.ok(modes('soldier').has('high_air'), 'rifles reach high air too, at a penalty');
+  assert.ok(!modes('artillery').has('high_air') && !modes('artillery').has('low_air'));
   for (const mode of Object.values(registry.rules.targetModes)) assert.ok(registry.rules.layers[mode.layer], `${mode.layer} is a layer`);
   assert.deepEqual(Object.keys(registry.rules.targetModes).sort(), ['direct_ground', 'high_air', 'indirect_ground', 'low_air', 'structure', 'surface', 'underwater']);
 });
@@ -158,7 +163,8 @@ test('anti-air and anti-ground roles: flak hits air, artillery cannot hit low-ai
   assert.ok(canTarget(game, at('flak', 0), at('missile_copter', 1)));
   assert.ok(canTarget(game, at('flak', 0), at('bomber', 1)));
   assert.ok(!canTarget(game, at('artillery', 0), at('missile_copter', 1)));
-  assert.ok(!canTarget(game, at('soldier', 0), at('bomber', 1)));
+  assert.ok(canTarget(game, at('soldier', 0), at('bomber', 1)), 'low air shooters also reach high air');
+  assert.ok(!canTarget(game, at('artillery', 0), at('bomber', 1)));
   assert.ok(canTarget(game, at('bomber', 0), at('tank', 1)));
 });
 

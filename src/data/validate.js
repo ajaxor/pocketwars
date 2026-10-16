@@ -22,6 +22,7 @@ const isColor = (v) => typeof v === 'string' && /^#[0-9a-f]{3,8}$/i.test(v);
 export function validateRules(rules, problems) {
   if (!isObj(rules)) return problems.push('rules.json must be an object');
   if (!Number.isInteger(rules.maxHp) || rules.maxHp < 1) problems.push('rules: maxHp must be a positive integer');
+  if (rules.highAirPenalty !== undefined && !(typeof rules.highAirPenalty === 'number' && rules.highAirPenalty > 0 && rules.highAirPenalty <= 1)) problems.push('rules: highAirPenalty (the share of its damage a weapon that hits low air keeps against high air) must be a number above 0 and at most 1');
   if (rules.ambushMultiplier !== undefined && !(typeof rules.ambushMultiplier === 'number' && rules.ambushMultiplier >= 1)) problems.push('rules: ambushMultiplier (the damage bonus of a unit that starts its turn hidden) must be a number of at least 1');
   if (rules.carrierCargoRate !== undefined && !(isNum(rules.carrierCargoRate) && rules.carrierCargoRate >= 0 && rules.carrierCargoRate <= 1)) problems.push('rules: carrierCargoRate (the share of the cargo price difference a troop carrier passes on) must be a number from 0 to 1');
   if (rules.maxMinesPerPlayer !== undefined && !(Number.isInteger(rules.maxMinesPerPlayer) && rules.maxMinesPerPlayer >= 1)) problems.push('rules: maxMinesPerPlayer (how many mines one player may have laid at once) must be a positive integer');

@@ -60,7 +60,13 @@ export function createRegistry(raw) {
   const factions = deepFreeze(withIds(structuredClone(raw.factions)));
   const terrain = deepFreeze(withIds(structuredClone(raw.terrain)));
   const units = deepFreeze(withDefaults(withIds(structuredClone(raw.units))));
-  const weapons = deepFreeze(Object.fromEntries(Object.entries(structuredClone(raw.weapons)).map(([id, w]) => [id, { armorPiercing: 0, ...w, id }])));
+  // A weapon that can hit low air can also hit high air, at rules.highAirPenalty of its low-air damage, unless it lists high air itself.
+  const reachHigh = (w) => {
+    const k = raw.rules.highAirPenalty;
+    if (!k || !w.targets?.includes('low_air') || w.targets.includes('high_air') || !raw.rules.targetModes?.high_air) return w;
+    return { ...w, targets: [...w.targets, 'high_air'], targetMultipliers: { ...w.targetMultipliers, high_air: (w.targetMultipliers?.low_air ?? 1) * k } };
+  };
+  const weapons = deepFreeze(Object.fromEntries(Object.entries(structuredClone(raw.weapons)).map(([id, w]) => [id, reachHigh({ armorPiercing: 0, ...w, id })])));
   const ground = deepFreeze(withIds(structuredClone(raw.ground || {})));
   const tilesets = deepFreeze(withIds(structuredClone(raw.tilesets || {})));
   const ai = deepFreeze(structuredClone(raw.ai));

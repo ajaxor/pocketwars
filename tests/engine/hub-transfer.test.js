@@ -23,33 +23,33 @@ const world = (row, unitsOnMap = [], leader = null) => new Game(registry, parseM
 const ids = (g, x, y) => menuFor(g, 0, x, y).map((d) => d.id).sort();
 
 // ---- what the HQ and the cities build ---------------------------------------------------------------------------------------------------
-test('the HQ builds the faction infantry and what the garage, factory and airfield unlock; a city builds only what is unlocked', () => {
+test('the HQ and the cities build the faction infantry and what the garage, factory and airfield unlock', () => {
   const g = world('Hgfacd..h');
   assert.deepEqual(ids(g, 0, 0), ['mech', 'mechanic', 'rpg_trooper', 'soldier'], 'the HQ: the soldier and the three unlocked infantry');
-  assert.deepEqual(ids(g, 4, 0), ['mech', 'mechanic', 'rpg_trooper'], 'a city: only the unlocked ones');
+  assert.deepEqual(ids(g, 4, 0), ['mech', 'mechanic', 'rpg_trooper', 'soldier'], 'a city: the same');
   assert.deepEqual([...unlockedFor(g, 0, registry.loadoutFor(null))].sort(), ['mech', 'mechanic', 'rpg_trooper']);
 });
 
-test('with no garage, factory or airfield a city builds nothing, and an unlocking building must be yours: an enemy\'s or a neutral one does not count', () => {
+test('with no garage, factory or airfield a city builds only the faction infantry, and an unlocking building must be yours: an enemy\'s or a neutral one does not count', () => {
   const g = world('H.cd...h');
-  assert.deepEqual(ids(g, 2, 0), [], 'nothing unlocked');
+  assert.deepEqual(ids(g, 2, 0), ['soldier'], 'nothing unlocked');
   assert.deepEqual(ids(g, 0, 0), ['soldier'], 'the HQ still builds the soldier');
   const h = world('HGc.....h');   // an enemy garage
-  assert.deepEqual(ids(h, 2, 0), []);
+  assert.deepEqual(ids(h, 2, 0), ['soldier']);
   const k = world('Hgc.....h');
-  assert.deepEqual(ids(k, 2, 0), ['mechanic']);
+  assert.deepEqual(ids(k, 2, 0), ['mechanic', 'soldier']);
   k.edit((st) => { st.owners[0][1] = 1; });   // the garage is captured
-  assert.deepEqual(ids(k, 2, 0), [], 'losing the garage takes the mechanic away');
+  assert.deepEqual(ids(k, 2, 0), ['soldier'], 'losing the garage takes the mechanic away');
   k.edit((st) => { st.owners[0][1] = null; });
-  assert.deepEqual(ids(k, 2, 0), [], 'a neutral garage unlocks nothing for anyone');
+  assert.deepEqual(ids(k, 2, 0), ['soldier'], 'a neutral garage unlocks nothing for anyone');
 });
 
 test('a leader unlocks only the infantry on their roster: Vex has the AT infantry, Chase the RPG trooper, Lysandra the mechanic', () => {
   const g = world('Hgfacd..h', [], 'vex');
-  assert.deepEqual(ids(g, 4, 0), ['mech']);
-  assert.deepEqual(ids(g, 0, 0), ['mech', 'spy'], 'her own spy at the HQ, with the AT infantry');
-  assert.deepEqual(ids(world('Hgfacd..h', [], 'chase'), 4, 0), ['rpg_trooper']);
-  assert.deepEqual(ids(world('Hgfacd..h', [], 'lysandra'), 4, 0), ['mechanic']);
+  assert.deepEqual(ids(g, 4, 0), ['mech', 'spy'], 'a city: her own spy and the AT infantry');
+  assert.deepEqual(ids(g, 0, 0), ['mech', 'spy'], 'the same at the HQ');
+  assert.deepEqual(ids(world('Hgfacd..h', [], 'chase'), 4, 0), ['rpg_trooper', 'soldier']);
+  assert.deepEqual(ids(world('Hgfacd..h', [], 'lysandra'), 4, 0), ['mechanic', 'royal_guard']);
 });
 
 test('the motorcycle is built at the garage and the diver at the sub pen, never at the HQ or a city', () => {
@@ -72,7 +72,7 @@ test('a city builds one unit a turn and charges for it; the HQ may build again o
   assert.equal(g.build(0, 0, 'soldier').ok, true);
   g.state.units.at(-1).x = 4;
   assert.equal(g.build(0, 0, 'soldier').ok, true, 'the HQ builds as often as it can pay');
-  assert.equal(g.build(2, 0, 'soldier').error, 'cannot-build-here', 'the soldier is the HQ\'s own: not built at a city');
+  assert.equal(g.build(2, 0, 'tank').error, 'cannot-build-here', 'a city builds infantry only');
 });
 
 // ---- transfer ---------------------------------------------------------------------------------------------------------------------------
