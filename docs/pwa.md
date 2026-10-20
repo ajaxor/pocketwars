@@ -35,16 +35,15 @@ Updates reach an installed copy the way they reach a browser tab:
 - **Launching the app** (a cold start, with a connection): the shell asks for `version.json` fresh, finds the newest build and loads it, so you are always on the latest game. Offline, you get the last build the phone downloaded.
 - **Coming back to an app that was only suspended** (iOS keeps it in memory): nothing reloads by itself. If you are on the title screen, the launcher checks for a newer deploy and shows the update button (`src/launcher.js`); tapping it reloads onto the new build. A battle in progress is never interrupted.
 
-## Filling the screen
+## Filling the screen (the strip at the bottom)
 
-The map canvas is sized from `src/render/viewport.js`, not `innerHeight`. In an installed iPhone app (translucent status bar, `viewport-fit=cover`) `innerHeight` can leave out the home-indicator strip while the page itself still fills the screen, which left a band at the bottom. The helper measures an invisible `position: fixed; inset: 0` box instead (the same box the page is laid out in) and falls back to `innerWidth` / `innerHeight` without a DOM. `watchViewport` refits on resize, rotation, returning to the app (`pageshow`) and any change of that box. Floating windows keep clear of the home indicator with `--safe-b` (`env(safe-area-inset-bottom)`).
+On an iPhone 17 Pro Max the installed app's window measured 440x894 while the screen is 440x956, and an empty strip showed at the bottom. 894 is 956 minus the 62 px status bar: with `apple-mobile-web-app-status-bar-style` set to `black-translucent`, iOS draws the page under the status bar but sizes it as if it started below the status bar, so the last 62 px of the screen belong to no page and nothing CSS can paint reaches them (a taller `100vh` layer did not help; it is clipped). The strip shows the root's `background-color` (white before the root had a solid colour).
 
-That alone did not cure the bar (a white strip along the bottom of the installed app), which had two causes in `style.css`:
+What fixed it, for any phone: the shell now asks for the **opaque `black` status bar**, so iOS lays the page out in exactly the space below it. The game's own status bar sits under that black bar, and the safe-area insets the CSS already honours (`--safe-b` and the rest) cover the home indicator. `html, body` also keep a solid `background-color`, because iOS fills anything outside the page with it.
 
-- **No solid root colour.** `style.css` replaced the shell's solid background with a gradient, and iOS paints the area outside the page (the home-indicator strip) with the root's solid `background-color`, falling back to white for a gradient alone. `html, body` now also set `background-color: var(--bg)`.
-- **Layers shorter than the screen.** In an installed app the page box (`100%`, `inset: 0`) can be shorter than the screen. Every full-screen layer (`body`, the canvas, `#ui`, the title, skirmish, intro, world-map and editor screens) is sized by `height: var(--fill-h)`: `100%` in a browser tab, `100vh` (the whole screen) when installed (`display-mode: standalone`, or the `standalone` class the shell sets from `navigator.standalone`). The viewport probe uses the same variable.
+iOS reads the status bar style when the app is added to the Home Screen: **delete the installed app and add it again** after this change.
 
-An installed app's title screen shows `app WxH of WxH` after the build number (the window against the screen), so a window that stops short can be read off the phone.
+`src/render/viewport.js` measures the page box (an invisible `position: fixed; inset: 0` element) for the canvas rather than trusting `innerHeight`, and `watchViewport` refits on resize, rotation and returning to the app (`pageshow`). The installed app's title screen lists `layer`, `page`, `inner`, `visual` and `screen` sizes and the top/bottom safe-area insets after the build number; with the black status bar `page` should equal `screen` minus the status bar and the strip should be gone.
 
 ## Testing
 

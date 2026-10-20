@@ -34,12 +34,8 @@
   --safe-b: env(safe-area-inset-bottom, 0px);
   --safe-l: env(safe-area-inset-left, 0px);
   --safe-r: env(safe-area-inset-right, 0px);
-  /* How tall a full-screen layer is. 100% is the page's own box; in an installed app (home-screen icon) iOS makes that box
-     shorter than the screen by the home-indicator strip, so the layers use the full screen height there (docs/pwa.md). */
-  --fill-h: 100%;
+  /* (the page box is the right size: docs/pwa.md, "Filling the screen") */
 }
-@media (display-mode: standalone) { :root { --fill-h: 100vh; } }
-:root.standalone { --fill-h: 100vh; }
 
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
@@ -52,16 +48,16 @@ html, body {
   -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; -webkit-text-size-adjust: 100%;
 }
 
-body { position: fixed; inset: 0; width: 100%; height: var(--fill-h); }   /* iOS Safari cannot rubber-band a page that is pinned to the window */
+body { position: fixed; inset: 0; width: 100%; }   /* iOS Safari cannot rubber-band a page that is pinned to the window */
 
 /* The map: the canvas is the whole window, the renderer centres the board in it. */
-canvas#c { position: fixed; inset: 0; width: 100%; height: var(--fill-h); display: block; touch-action: none; }
+canvas#c { position: fixed; inset: 0; width: 100%; display: block; touch-action: none; }
 
 /* Leftovers of the old page layout, in case a cached copy of index.html still has them. */
 #hud, #msg, #btns { display: none; }
 
 /* ---- UI layer -------------------------------------------------------------------------------------------------------------- */
-#ui { position: fixed; inset: 0; height: var(--fill-h); z-index: 5; pointer-events: none; }
+#ui { position: fixed; inset: 0; z-index: 5; pointer-events: none; }
 #ui > * { pointer-events: auto; }
 
 /* ---- buttons ---------------------------------------------------------------------------------------------------------------- */
@@ -215,8 +211,8 @@ canvas.unit-icon { display: block; flex: none; }
 /* ---- title screen (src/ui/title-screen.js) ---------------------------------------------------------------------------------- */
 /* A battlefield canvas (src/render/menu-backdrop.js) fills the window behind a darkening shade; the logo, loading bar and one column of
    equally wide buttons sit in the middle. `margin: auto` on the body centres it when it fits and lets the page scroll when it does not. */
-.title { position: fixed; inset: 0; height: var(--fill-h); z-index: 10; display: flex; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; background: linear-gradient(#1b2347 0%, #4a3670 55%, #c8604a 100%); color: var(--ink); text-align: center; }
-.title-bg-slot, .title-shade { position: fixed; inset: 0; height: var(--fill-h); pointer-events: none; }
+.title { position: fixed; inset: 0; z-index: 10; display: flex; overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; background: linear-gradient(#1b2347 0%, #4a3670 55%, #c8604a 100%); color: var(--ink); text-align: center; }
+.title-bg-slot, .title-shade { position: fixed; inset: 0; pointer-events: none; }
 .title-bg { display: block; width: 100%; height: 100%; opacity: 0; transition: opacity 1.2s ease; }
 .title-bg.is-on { opacity: 1; }
 .title-shade { background: radial-gradient(ellipse at 50% 46%, rgba(14, 19, 34, .3) 0%, rgba(14, 19, 34, .78) 100%), linear-gradient(rgba(14, 19, 34, .4), rgba(14, 19, 34, 0) 30%, rgba(14, 19, 34, .45)); }
@@ -249,7 +245,7 @@ canvas.unit-icon { display: block; flex: none; }
 }
 
 /* ---- skirmish page (src/ui/skirmish-screen.js) ------------------------------------------------------------------------------- */
-.sk { position: fixed; inset: 0; height: var(--fill-h); z-index: 11; display: flex; flex-direction: column; background: linear-gradient(#2a3a3a, #1d2436 30%); color: var(--ink); }
+.sk { position: fixed; inset: 0; z-index: 11; display: flex; flex-direction: column; background: linear-gradient(#2a3a3a, #1d2436 30%); color: var(--ink); }
 .screen-head { flex: none; display: flex; align-items: center; gap: 12px; padding: calc(10px + var(--safe-t)) calc(12px + var(--safe-r)) 10px calc(12px + var(--safe-l)); background: linear-gradient(180deg, #2a3553, #1f2742); border-bottom: 3px solid var(--accent); box-shadow: 0 4px 0 rgba(0, 0, 0, .3); }
 .screen-title { margin: 0; font: 700 22px/1 var(--font); letter-spacing: .06em; text-transform: uppercase; }
 .sk-sec-title { margin: 0; color: var(--dim); font: 700 12px/1 var(--font); letter-spacing: .14em; text-transform: uppercase; }
@@ -352,10 +348,10 @@ canvas.unit-icon { display: block; flex: none; }
 }
 
 /* ---- campaign: the intro cutscene (src/ui/intro-screen.js) and the world map (src/ui/world-map-screen.js) -------------------- */
-.cine { position: fixed; inset: 0; height: var(--fill-h); z-index: 12; background: #000; touch-action: manipulation; }
+.cine { position: fixed; inset: 0; z-index: 12; background: #000; touch-action: manipulation; }
 .cine-canvas { display: block; width: 100%; height: 100%; }
 .cine-skip { position: absolute; top: calc(10px + var(--safe-t)); right: calc(12px + var(--safe-r)); background: rgba(10, 16, 34, .6); }
-.wm { position: fixed; inset: 0; height: var(--fill-h); z-index: 11; display: flex; flex-direction: column; background: #0a1226; color: var(--ink); }
+.wm { position: fixed; inset: 0; z-index: 11; display: flex; flex-direction: column; background: #0a1226; color: var(--ink); }
 .wm .screen-head { justify-content: space-between; }
 .wm .screen-title { flex: 1; text-align: center; }
 .wm-canvas { flex: 1 1 auto; min-height: 0; width: 100%; display: block; touch-action: manipulation; }
@@ -391,7 +387,7 @@ canvas.unit-icon { display: block; flex: none; }
 .cm-ff--hidden { display: none; }
 
 /* ---- map editor (src/editor/editor-screen.js): above the title screen, like the skirmish page ---------------------------------------- */
-.ed { position: fixed; inset: 0; height: var(--fill-h); z-index: 12; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); }
+.ed { position: fixed; inset: 0; z-index: 12; display: flex; flex-direction: column; background: var(--bg); color: var(--ink); }
 .ed-head { flex: none; display: flex; align-items: center; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: calc(6px + var(--safe-t)) calc(8px + var(--safe-r)) 6px calc(8px + var(--safe-l)); background: linear-gradient(180deg, #2a3553, #1f2742); border-bottom: 3px solid var(--accent); box-shadow: 0 4px 0 rgba(0, 0, 0, .3); position: relative; z-index: 1; }
 .ed-head .btn { flex: none; }
 .ed-head-tools { display: flex; gap: 6px; }
@@ -427,7 +423,7 @@ canvas.unit-icon { display: block; flex: none; }
 .ed-opt.is-picked { background: linear-gradient(#f28c47, #d6601d); color: #fff; text-shadow: 0 2px 0 rgba(0, 0, 0, .3); }
 .ed-select { font: 600 13px/1.2 var(--font); color: var(--ink); background: rgba(0, 0, 0, .3); border: 3px solid var(--edge); border-radius: 10px; padding: 8px 10px; min-height: 40px; }
 
-.ed-scrim { position: fixed; inset: 0; height: var(--fill-h); z-index: 2; display: flex; align-items: center; justify-content: center; padding: 12px; background: rgba(6, 9, 18, .62); }
+.ed-scrim { position: fixed; inset: 0; z-index: 2; display: flex; align-items: center; justify-content: center; padding: 12px; background: rgba(6, 9, 18, .62); }
 .ed-sheet { width: min(560px, 100%); max-height: calc(100% - 8px); display: flex; flex-direction: column; }
 .ed-sheet .win-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .ed-sheet .win-body { overflow-y: auto; overscroll-behavior: contain; touch-action: pan-y; gap: 10px; padding: 12px 14px 16px; }

@@ -3,7 +3,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pocket Wars">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#1d2436">
 <meta name="description" content="Pocket Wars: a turn-based tactics game for your phone browser. Capture the enemy HQ.">
@@ -32,8 +32,6 @@ body.loading>:not(#boot){visibility:hidden}
 (()=>{
 // BUILD is replaced with the short commit hash by the deploy workflow. Unreplaced = local/dev copy.
 const BUILD='__BUILD__',DEV=BUILD.startsWith('__');
-// An installed iPhone app (home-screen icon): style.css sizes full-screen layers to the whole screen, not the page box (--fill-h).
-if(navigator.standalone)document.documentElement.classList.add('standalone');
 // Offline play and the home-screen install (sw.js, docs/pwa.md). Not in a local checkout, so development never serves cached files.
 if(!DEV&&'serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{}));
 const getVersion=async()=>{try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return await r.json()}catch(e){return null}};

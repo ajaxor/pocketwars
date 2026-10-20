@@ -24,7 +24,7 @@ test('the size comes from an invisible fixed box that covers the window, not fro
   const win = fakeWindow({ inner: [390, 780], probe: [390, 844] });
   assert.deepEqual(viewportSize(win), { w: 390, h: 844 });
   assert.equal(win.document.body.kids.length, 1);
-  assert.match(win.document.body.kids[0].style.cssText, /position:fixed;inset:0;height:var\(--fill-h,100%\);visibility:hidden;pointer-events:none/);
+  assert.match(win.document.body.kids[0].style.cssText, /position:fixed;inset:0;visibility:hidden;pointer-events:none/);
 });
 
 test('the box is made once and measured afresh each time', () => {
