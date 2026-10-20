@@ -184,4 +184,5 @@ Concept units and structures that the new production design names but the game d
 - **The manifest has no screenshots or shortcuts**, which Android's richer install sheet and long-press menu can use (for example "Skirmish" and "Map editor").
 - **The galleries are not available offline** (the worker leaves them out of the cached build).
 - **No "new version ready" toast from the worker.** An installed copy updates on the next launch; the title screen's update button covers a running session.
+- **A suspended installed app only checks for a new version on the title screen.** Resuming mid-battle never offers the update (on purpose, so a battle is not interrupted); an "update ready" note on the status bar or the end-of-battle screen would close the gap.
 - **No orientation setting.** The manifest does not lock portrait or landscape; decide once the layout is settled for both.

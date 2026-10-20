@@ -30,7 +30,14 @@ The service worker follows that scheme:
 - **Clean-up:** the two newest builds are kept; older ones are deleted. The stamped `sw.js` differs on every deploy, so phones install the new worker (`skipWaiting` and `clients.claim`) and drop the old shell cache.
 - Everything else (the galleries, anything outside the scope) goes to the network untouched.
 
-Updates reach an installed copy the way they reach a browser tab: the shell finds the new hash, the title screen's update button and the shell's own check reload onto it.
+Updates reach an installed copy the way they reach a browser tab:
+
+- **Launching the app** (a cold start, with a connection): the shell asks for `version.json` fresh, finds the newest build and loads it, so you are always on the latest game. Offline, you get the last build the phone downloaded.
+- **Coming back to an app that was only suspended** (iOS keeps it in memory): nothing reloads by itself. If you are on the title screen, the launcher checks for a newer deploy and shows the update button (`src/launcher.js`); tapping it reloads onto the new build. A battle in progress is never interrupted.
+
+## Filling the screen
+
+The map canvas is sized from `src/render/viewport.js`, not `innerHeight`. In an installed iPhone app (translucent status bar, `viewport-fit=cover`) `innerHeight` can leave out the home-indicator strip while the page itself still fills the screen, which left a band at the bottom. The helper measures an invisible `position: fixed; inset: 0` box instead (the same box the page is laid out in) and falls back to `innerWidth` / `innerHeight` without a DOM. `watchViewport` refits on resize, rotation, returning to the app (`pageshow`) and any change of that box. Floating windows keep clear of the home indicator with `--safe-b` (`env(safe-area-inset-bottom)`).
 
 ## Testing
 

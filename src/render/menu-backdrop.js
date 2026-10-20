@@ -14,6 +14,7 @@
 
 import { drawTerrainLayer } from './terrain-layer.js';
 import { drawUnit } from './unit-sprites.js';
+import { viewportSize } from './viewport.js';
 
 /** Tiles along each side of the battlefield. */
 export const FIELD_SIZE = 24;
@@ -268,7 +269,8 @@ export class MenuBackdrop {
     if (this.stopped) return;
     const { win, registry } = this;
     const dpr = Math.min(win.devicePixelRatio || 1, MAX_DPR);
-    const long = Math.max(win.innerWidth || 800, win.innerHeight || 600);
+    const vp = viewportSize(win);
+    const long = Math.max(vp.w || 800, vp.h || 600);
     const tileCss = Math.max(64, Math.min(120, Math.round(long / 9)));          // how big a tile looks: zoomed right in, about nine tiles along the long side
     const tile = Math.max(24, Math.min(112, Math.round(tileCss * dpr)));         // how many pixels it is painted with (capped, so the picture stays small)
     this.scale = tileCss * dpr / tile;                                           // painted pixels -> canvas pixels
@@ -290,8 +292,9 @@ export class MenuBackdrop {
   #fit() {
     const dpr = Math.min(this.win.devicePixelRatio || 1, MAX_DPR);
     this.dpr = dpr;
-    this.canvas.width = Math.max(1, Math.round((this.win.innerWidth || 800) * dpr));
-    this.canvas.height = Math.max(1, Math.round((this.win.innerHeight || 600) * dpr));
+    const vp = viewportSize(this.win);
+    this.canvas.width = Math.max(1, Math.round((vp.w || 800) * dpr));
+    this.canvas.height = Math.max(1, Math.round((vp.h || 600) * dpr));
   }
 
   #tick(now) {

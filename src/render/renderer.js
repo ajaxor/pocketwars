@@ -31,6 +31,7 @@ import { drawWalls } from './walls.js';
 import { isFogged, rememberedStructures, tileExplored, tileVisible } from '../engine/fog.js';
 import { attributeConfig } from '../engine/attributes.js';
 import { font } from './font.js';
+import { viewportSize } from './viewport.js';
 import { BUBBLE_COUNTER, BUBBLE_HIT, drawBubble } from './bubble.js';
 import { drawUnit } from './unit-sprites.js';
 
@@ -191,7 +192,7 @@ export class Renderer {
    * bar). A map that fits at a comfortable tile size is shown whole and centred; a bigger one scrolls (see camera.js).
    */
   fit({ top = 0 } = {}) {
-    const W = innerWidth, H = innerHeight;
+    const { w: W, h: H } = viewportSize();
     const d = globalThis.devicePixelRatio || 1;
     this.dpr = d;
     this.camera.setViewport(W, H, top);

@@ -21,6 +21,7 @@ import { Presenter } from './presenter.js';
 import { Commentator } from '../campaign/commentary.js';
 import { CPS, CommentaryBanner } from './commentary-banner.js';
 import { Pacer } from './pacing.js';
+import { watchViewport } from '../render/viewport.js';
 
 export class Session {
   /**
@@ -130,7 +131,7 @@ export class Session {
     this.canvas.addEventListener('pointercancel', this.onPointerCancel);
     this.canvas.addEventListener('wheel', this.onWheel, { passive: false });
     this.canvas.addEventListener('contextmenu', this.onContextMenu);
-    addEventListener('resize', this.onResize);
+    this.stopWatching = watchViewport(this.onResize);
     globalThis.document?.addEventListener?.('touchmove', this.onTouchMove, { passive: false });
     globalThis.document?.addEventListener?.('pointerdown', this.onDocPointerDown, true);   // capture: before anything can stop the event
     globalThis.document?.addEventListener?.('click', this.onDocClick, true);
@@ -155,7 +156,7 @@ export class Session {
     this.pacer.setFast(false);
     this.banner?.hide();
     for (const el of this.banner?.elements ?? []) el.remove();
-    removeEventListener('resize', this.onResize);
+    this.stopWatching?.();
     globalThis.document?.removeEventListener?.('touchmove', this.onTouchMove);
     globalThis.document?.removeEventListener?.('pointerdown', this.onDocPointerDown, true);
     globalThis.document?.removeEventListener?.('click', this.onDocClick, true);

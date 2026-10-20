@@ -11,6 +11,7 @@
 
 import { buildTimeline, nextLineTime, stateAt } from '../campaign/cutscene.js';
 import { renderFrame } from '../render/campaign-art.js';
+import { viewportSize } from '../render/viewport.js';
 import { button, h } from './kit.js';
 
 export class IntroScreen {
@@ -30,7 +31,7 @@ export class IntroScreen {
 
   /** Match the canvas to the window, in device pixels. */
   fit() {
-    const dpr = Math.min(2, this.win.devicePixelRatio || 1), w = this.win.innerWidth || 390, h = this.win.innerHeight || 700;
+    const dpr = Math.min(2, this.win.devicePixelRatio || 1), { w: vw, h: vh } = viewportSize(this.win), w = vw || 390, h = vh || 700;
     this.w = Math.round(w * dpr); this.h = Math.round(h * dpr);
     this.canvas.width = this.w; this.canvas.height = this.h;
   }
