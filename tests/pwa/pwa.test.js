@@ -173,3 +173,15 @@ test('only the two newest builds are kept', async () => {
   const urls = (await cache.keys()).map((r) => r.url).filter((u) => u.endsWith('a.js'));
   assert.deepEqual(urls.sort(), [SCOPE + 'v/b2/a.js', SCOPE + 'v/b3/a.js']);
 });
+
+test('an installed app paints a solid colour outside the page and its full-screen layers use the whole screen height', () => {
+  const css = read('style.css');
+  assert.match(css, /html, body \{[^}]*background-color: var\(--bg\);/s, 'iOS fills the home-indicator strip with the root colour, and shows white for a gradient alone');
+  assert.match(css, /@media \(display-mode: standalone\) \{ :root \{ --fill-h: 100vh; \} \}/);
+  assert.match(css, /:root\.standalone \{ --fill-h: 100vh; \}/);
+  for (const sel of ['body', 'canvas#c', '#ui', '.title', '.title-bg-slot, .title-shade', '.sk', '.cine', '.wm', '.ed', '.ed-scrim']) {
+    const rule = css.split('\n').find((l) => l.startsWith(sel + ' {') && l.includes('position: fixed'));
+    assert.ok(rule && rule.includes('height: var(--fill-h)'), sel + ' is a fixed layer sized by --fill-h');
+  }
+  assert.match(read('index.html'), /if\(navigator\.standalone\)document\.documentElement\.classList\.add\('standalone'\)/);
+});

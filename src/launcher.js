@@ -12,6 +12,7 @@ import { ScreenStack } from './ui/screen-stack.js';
 import { IntroScreen } from './ui/intro-screen.js';
 import { WorldMapScreen } from './ui/world-map-screen.js';
 import { setFactions } from './render/portrait-art.js';
+import { viewportSize } from './render/viewport.js';
 
 /** Extra buttons on the title screen. */
 export const GALLERIES = [
@@ -50,6 +51,13 @@ export async function launch({
   doc.body.classList.remove('loading');
 
   const version = 'build ' + (hash === 'dev' ? 'dev' : hash + (built ? ' - ' + built.slice(0, 10) : ''));
+  // In an installed app the title screen also says how big its window is next to the screen, so a window that stops short is easy to spot.
+  const sizeNote = () => {
+    const installed = globalThis.navigator?.standalone === true || globalThis.matchMedia?.('(display-mode: standalone)')?.matches;
+    if (!installed) return '';
+    const v = viewportSize();
+    return ` - app ${Math.round(v.w)}x${Math.round(v.h)} of ${globalThis.screen?.width}x${globalThis.screen?.height}`;
+  };
   let title = null, started = false, ready = false, failed = null, game = null;
   // the pages that sit on top of the title screen (skirmish, editor, campaign); the stack covers and uncovers its battlefield
   const pages = new ScreenStack(doc, { onCover: () => title?.coverBackdrop(true), onUncover: () => title?.coverBackdrop(false) });
@@ -58,7 +66,7 @@ export async function launch({
   const show = () => {
     started = false;
     const t = title = new TitleScreen(doc, { links: GALLERIES });
-    t.setVersion(version);
+    t.setVersion(version + sizeNote());
     t.onRetry = () => reload();
     t.onSkirmish = () => openSkirmish(t);
     t.onCampaign = () => openCampaign(t);

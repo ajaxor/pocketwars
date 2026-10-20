@@ -39,6 +39,13 @@ Updates reach an installed copy the way they reach a browser tab:
 
 The map canvas is sized from `src/render/viewport.js`, not `innerHeight`. In an installed iPhone app (translucent status bar, `viewport-fit=cover`) `innerHeight` can leave out the home-indicator strip while the page itself still fills the screen, which left a band at the bottom. The helper measures an invisible `position: fixed; inset: 0` box instead (the same box the page is laid out in) and falls back to `innerWidth` / `innerHeight` without a DOM. `watchViewport` refits on resize, rotation, returning to the app (`pageshow`) and any change of that box. Floating windows keep clear of the home indicator with `--safe-b` (`env(safe-area-inset-bottom)`).
 
+That alone did not cure the bar (a white strip along the bottom of the installed app), which had two causes in `style.css`:
+
+- **No solid root colour.** `style.css` replaced the shell's solid background with a gradient, and iOS paints the area outside the page (the home-indicator strip) with the root's solid `background-color`, falling back to white for a gradient alone. `html, body` now also set `background-color: var(--bg)`.
+- **Layers shorter than the screen.** In an installed app the page box (`100%`, `inset: 0`) can be shorter than the screen. Every full-screen layer (`body`, the canvas, `#ui`, the title, skirmish, intro, world-map and editor screens) is sized by `height: var(--fill-h)`: `100%` in a browser tab, `100vh` (the whole screen) when installed (`display-mode: standalone`, or the `standalone` class the shell sets from `navigator.standalone`). The viewport probe uses the same variable.
+
+An installed app's title screen shows `app WxH of WxH` after the build number (the window against the screen), so a window that stops short can be read off the phone.
+
 ## Testing
 
 - `tests/pwa/pwa.test.js` checks the manifest and icon sizes, the shell's links, the deploy steps, the file list and the worker's rules against an in-memory Cache API (network first, cache first, the background download, offline fallback, keeping two builds).

@@ -3,7 +3,8 @@
 // `innerWidth` / `innerHeight` are not reliable for that: in an app opened from the iPhone home screen (standalone, with the
 // translucent status bar) `innerHeight` can leave out the home-indicator strip at the bottom, while the page itself (position:fixed;
 // inset:0) still fills the whole screen, so a canvas sized from `innerHeight` stops short and shows the background below it.
-// An invisible fixed element covering the window is sized by the same CSS as the page, so its box is what the game should fill.
+// An invisible fixed element covering the window is sized by the same CSS as the game's layers (including --fill-h in style.css,
+// which is the full screen height in an installed app), so its box is what the game should fill.
 // Without a DOM (tests, headless use) it falls back to `innerWidth` / `innerHeight`.
 
 const probes = new WeakMap();
@@ -14,7 +15,7 @@ function probeOf(doc) {
   if (!doc.body?.appendChild || !doc.createElement) return null;
   p = doc.createElement('div');
   p.setAttribute?.('aria-hidden', 'true');
-  p.style.cssText = 'position:fixed;inset:0;visibility:hidden;pointer-events:none;z-index:-1';
+  p.style.cssText = 'position:fixed;inset:0;height:var(--fill-h,100%);visibility:hidden;pointer-events:none;z-index:-1';
   doc.body.appendChild(p);
   probes.set(doc, p);
   return p;
