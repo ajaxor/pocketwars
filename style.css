@@ -235,7 +235,7 @@ canvas.unit-icon { display: block; flex: none; }
 .title-menu .btn--ghost { background: rgba(14, 19, 34, .55); }
 .title-foot { display: flex; flex-direction: column; align-items: center; gap: 8px; }
 .title-upd { color: var(--edge); background: linear-gradient(#fff07a, #ffd93d); text-shadow: none; }
-.title-ver { font-size: 12px; opacity: .75; letter-spacing: .04em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); }
+.title-ver { white-space: pre-line; max-width: 100%; font-size: 12px; opacity: .75; letter-spacing: .04em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 0 rgba(0, 0, 0, .6); }
 .title-ver:empty { display: none; }
 /* a wide, short window (a phone on its side): the logo beside the menu, and slimmer buttons */
 @media (orientation: landscape) and (max-height: 560px) {

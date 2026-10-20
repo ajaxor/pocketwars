@@ -41,3 +41,35 @@ export function watchViewport(onChange, win = globalThis) {
   observer?.observe(probe);
   return () => { for (const e of events) win.removeEventListener?.(e, onChange); observer?.disconnect(); };
 }
+
+/**
+ * One line saying how big each idea of "the window" is, for finding out why an installed app's window stops short of the screen:
+ * layer (what the game's full-screen layers use), page (the page's own fixed box), inner (innerWidth x innerHeight),
+ * visual (visualViewport), screen, and the top / bottom safe-area insets.
+ */
+export function describeViewport(win = globalThis) {
+  const doc = win.document;
+  const n = (v) => Math.round(v ?? 0);
+  const dim = (w, h) => `${n(w)}x${n(h)}`;
+  const measure = (css) => {
+    if (!doc?.body?.appendChild || !doc.createElement) return null;
+    const e = doc.createElement('div');
+    e.style.cssText = 'position:fixed;visibility:hidden;pointer-events:none;' + css;
+    doc.body.appendChild(e);
+    const out = { box: e.getBoundingClientRect(), style: win.getComputedStyle?.(e) };
+    e.remove();
+    return out;
+  };
+  const layer = viewportSize(win);
+  const page = measure('inset:0')?.box;
+  const insets = measure('top:0;left:0;padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0')?.style;
+  const vv = win.visualViewport;
+  return [
+    `layer ${dim(layer.w, layer.h)}`,
+    page && `page ${dim(page.width, page.height)}`,
+    `inner ${dim(win.innerWidth, win.innerHeight)}`,
+    vv && `visual ${dim(vv.width, vv.height)}`,
+    `screen ${dim(win.screen?.width, win.screen?.height)}`,
+    insets && `safe ${n(parseFloat(insets.paddingTop))}/${n(parseFloat(insets.paddingBottom))}`,
+  ].filter(Boolean).join(' - ');
+}

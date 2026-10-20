@@ -9,7 +9,7 @@ function fakeWindow({ inner = [390, 780], probe = [390, 844], withObserver = tru
   const observed = [];
   const doc = {
     body,
-    createElement: () => ({ style: {}, attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, getBoundingClientRect: () => ({ width: win.probe[0], height: win.probe[1] }) }),
+    createElement: () => ({ style: {}, attrs: {}, remove() {}, setAttribute(k, v) { this.attrs[k] = v; }, getBoundingClientRect: () => ({ width: win.probe[0], height: win.probe[1] }) }),
   };
   const win = {
     document: doc, innerWidth: inner[0], innerHeight: inner[1], probe: [...probe], listeners, observed,
@@ -60,4 +60,14 @@ test('watching works without a ResizeObserver', () => {
   win.listeners.resize[0]();
   assert.equal(n, 1);
   stop();
+});
+
+test('describeViewport lists every idea of the window size, for diagnosing an installed app', async () => {
+  const { describeViewport } = await import('../../src/render/viewport.js');
+  const win = fakeWindow({ inner: [440, 922], probe: [440, 956] });
+  win.screen = { width: 440, height: 956 };
+  win.visualViewport = { width: 440, height: 922 };
+  win.getComputedStyle = () => ({ paddingTop: '62px', paddingBottom: '34px' });
+  assert.equal(describeViewport(win), 'layer 440x956 - page 440x956 - inner 440x922 - visual 440x922 - screen 440x956 - safe 62/34');
+  assert.match(describeViewport({ innerWidth: 300, innerHeight: 500, screen: { width: 300, height: 600 } }), /^layer 300x500 - inner 300x500 - screen 300x600$/);
 });
