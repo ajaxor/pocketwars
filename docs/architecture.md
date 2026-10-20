@@ -23,8 +23,9 @@ src/ui/skirmish-screen.js  the skirmish page, in three steps (Map grid, Teams, O
 src/render/menu-backdrop.js  the title screen's background: a random battlefield in one random biome (generateField, wraps on a torus so it tiles); the terrain is painted once, the units are redrawn animated every frame
                  and scrolled diagonally on a canvas (MenuBackdrop). Paused while a page covers the menu; still under reduced motion
 index.html       tiny shell: the game's DOM plus a few lines that find the build folder and hand over to src/launcher.js
-tests/           node --test suites (attributes/, engine/, data/, ui/, render/)
-tools/           validate-data.mjs, serve.mjs, sprite-lab/ (offline PNG rendering of unit art styles; see its README)
+sw.js, manifest.webmanifest, icons/  the home-screen install and offline play (docs/pwa.md)
+tests/           node --test suites (attributes/, engine/, data/, ui/, render/, pwa/)
+tools/           validate-data.mjs, serve.mjs, build-file-list.mjs and make-icons.py (docs/pwa.md), sprite-lab/ (offline PNG rendering of unit art styles; see its README)
 gallery/         live preview pages published next to the game: unit art (index.html), which runs the game's own
                  render code on canvas and is linked from the title screen
 ```

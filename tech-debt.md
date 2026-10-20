@@ -2,7 +2,7 @@
 
 Code and architecture problems: duplication, hand-placed or tangled code, performance costs, test and tooling gaps. Features, balance work, content and AI capability are in `backlog.md`.
 
-Last sorted 13 October 2026 (production redesign entries added at the end). Nothing here is a known bug; every entry is a trade-off that was looked at and left on purpose, with the reason, so it is not rediscovered as "debt" each time. Revisit an entry when its trigger happens.
+Last sorted 13 October 2026 (production redesign entries added; home-screen install entries added 20 October). Nothing here is a known bug; every entry is a trade-off that was looked at and left on purpose, with the reason, so it is not rediscovered as "debt" each time. Revisit an entry when its trigger happens.
 
 ## Left on purpose (revisit when the trigger happens)
 
@@ -123,3 +123,12 @@ Also resolved earlier and removed from the lists: the mine hidden-tile leak, the
 - **Fog hold is a renderer flag** (`fogHold`, set per frame while `effects.dyingActive`): the held fog frame and the `shown` unit set live in `fogAnim`. Other things that read live visibility during a death (remembered structures, `wallAt`, the camera) still use the new sight at once.
 - **`dust_bowl` is exempt from two map layout rules** (`HAND_EDITED` in `tests/data/map-design-rules.test.js`, and one jammer is enough in `skirmish.test.js`): the author reworked it in the editor with a single central jammer and no neutral producers. It also still places a shelved sniper on both sides.
 - **The high-air rule is applied in the registry**, so `registry.weapon(id).targets` no longer matches `weapons.json` for low-air weapons (the info panel shows "High air" on tanks and rifles).
+
+## Home-screen install (October 20 2026)
+
+- **The service worker is tested against a fake Cache API, not a browser.** `tests/pwa/pwa.test.js` runs `sw.js` in a `vm` with an in-memory `caches`, so the caching rules are covered but real browser behaviour (update timing, iOS eviction, `ignoreSearch` matching) is not. The smoke test (`tools/smoke`) does not load the deployed site or go offline. *Trigger: an offline bug that only shows on a device.*
+- **The deploy stamps the build with `sed` in YAML**, now across `index.html` and `sw.js`, and a second step builds `files.json`. A small tested `tools/stamp-build.mjs` would hold the whole step (copy, stamp, file list, version.json) instead of shell lines only CI runs. *Trigger: a third stamped file.*
+- **`sw.js` is one classic script**, so it cannot share code with the game or be imported by tests; the tests read the file and run it in `vm`. Fine at this size.
+- **The icons come from a Python script** while every other tool is Node, and the unit art is drawn elsewhere (`src/render`), so the tank on the icon is a separate drawing that will not follow later art changes.
+- **Installed iOS copies have their own storage**, separate from Safari: My maps, the editor draft and the AI's play history (`src/editor/storage.js`, `src/ai/history.js`) are all in `localStorage` with no export of everything at once.
+- **The shell registers the worker from an inline script** in `index.html`; it is untested beyond a string check in `tests/pwa/pwa.test.js`, like the rest of that script.

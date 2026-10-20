@@ -41,12 +41,15 @@ jobs:
           SHORT="${GITHUB_SHA::7}"
           mkdir -p "_site/v/${SHORT}"
           cp -r src data style.css "_site/v/${SHORT}/"
-          cp index.html .nojekyll _site/
+          cp index.html sw.js manifest.webmanifest .nojekyll _site/
+          cp -r icons _site/icons
+          # the list of files the service worker downloads so the build plays offline (sw.js, docs/pwa.md)
+          node tools/build-file-list.mjs "_site/v/${SHORT}"
           # the gallery is versioned like the game: /gallery/ is a tiny loader that finds the current build via
           # version.json, and the code and data it runs live under v/<hash>/ (it imports the game's own src/render/unit-art.js)
           cp -r gallery _site/gallery
           cp -r gallery "_site/v/${SHORT}/gallery"
-          sed -i "s/__BUILD__/${SHORT}/g" _site/index.html
+          sed -i "s/__BUILD__/${SHORT}/g" _site/index.html _site/sw.js
           printf '{"hash":"%s","full":"%s","built":"%s"}\n' \
             "$SHORT" "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > _site/version.json
           cat _site/version.json

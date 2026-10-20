@@ -2,7 +2,7 @@
 
 Things to build, tune or decide: AI capability, balance, rules, content, presentation. Code-quality problems are in `tech-debt.md`.
 
-Last sorted 13 October 2026.
+Last sorted 13 October 2026 (home-screen install entries added 20 October).
 
 ## AI capability
 
@@ -175,3 +175,13 @@ Concept units and structures that the new production design names but the game d
 - **New sprites are first drafts**: AA truck, treaded artillery, gun copter, missile copter.
 - **Transfer has no animation of its own** and reuses the deploy sound.
 - **No UI hint for unlocks beyond info text**: tapping a garage, factory or airfield lists the infantry it unlocks; the map does not highlight the cities that gain it.
+
+## Home-screen install (see docs/pwa.md)
+
+- **No install hint in the game.** iPhone has no install prompt, so a one-line "Add to Home Screen" tip on the title screen (shown in a browser tab, hidden once installed: `navigator.standalone` or `display-mode: standalone`) would help; Android's `beforeinstallprompt` could drive a real Install button.
+- **No iPhone launch screens.** `apple-touch-startup-image` per device size would replace the plain dark-blue flash at launch; the manifest's colours cover Android.
+- **The maskable icon is the plain icon.** The tank sits inside the safe zone, so it works, but a bolder mark filling more of the circle would read better on Android.
+- **The manifest has no screenshots or shortcuts**, which Android's richer install sheet and long-press menu can use (for example "Skirmish" and "Map editor").
+- **The galleries are not available offline** (the worker leaves them out of the cached build).
+- **No "new version ready" toast from the worker.** An installed copy updates on the next launch; the title screen's update button covers a running session.
+- **No orientation setting.** The manifest does not lock portrait or landscape; decide once the layout is settled for both.

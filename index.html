@@ -10,6 +10,8 @@
 <meta property="og:title" content="Pocket Wars">
 <meta property="og:description" content="A turn-based tactics game for your phone browser. Capture the enemy HQ.">
 <meta property="og:type" content="website">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%231d2436'/%3E%3Crect x='6' y='16' width='20' height='8' rx='2' fill='%23e8712c'/%3E%3Crect x='11' y='10' width='10' height='7' rx='2' fill='%239a3f0e'/%3E%3Crect x='19' y='12' width='9' height='2' fill='%23f3ecd6'/%3E%3C/svg%3E">
 <title>Pocket Wars</title>
 <!-- Shell: stays tiny and stable. The map fills the whole window (canvas#c) and every window floats over it in #ui; both are
@@ -30,6 +32,8 @@ body.loading>:not(#boot){visibility:hidden}
 (()=>{
 // BUILD is replaced with the short commit hash by the deploy workflow. Unreplaced = local/dev copy.
 const BUILD='__BUILD__',DEV=BUILD.startsWith('__');
+// Offline play and the home-screen install (sw.js, docs/pwa.md). Not in a local checkout, so development never serves cached files.
+if(!DEV&&'serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{}));
 const getVersion=async()=>{try{const r=await fetch('version.json?t='+Date.now(),{cache:'no-store'});if(!r.ok)throw 0;return await r.json()}catch(e){return null}};
 const goTo=h=>{const q=new URLSearchParams(location.search);q.set('v',h);location.replace(location.pathname+'?'+q)};
 (async()=>{

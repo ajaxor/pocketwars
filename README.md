@@ -4,6 +4,8 @@ A turn-based tactics game that runs in your phone's browser. Build units, captur
 
 **Play:** https://ajaxor.github.io/pocketwars/
 
+**Install it on your phone:** on iPhone open the page in Safari, tap Share, then Add to Home Screen; on Android use Chrome's menu, Install app. It then opens full screen and works offline (open it once online first). See `docs/pwa.md`.
+
 ## How to play
 
 - Tap any tile to see what is on it (unit and terrain info cards). Tap one of your units to select it, tap a highlighted tile to move, then choose Capture or Wait, or tap an enemy and press Attack (tapping it again also confirms).
